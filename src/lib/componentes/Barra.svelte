@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { Barra, Vista } from '#lib/resultado';
+	import { colocarEtiqueta, type Barra, type Vista } from '#lib/resultado';
 
 	let { barra, vista }: { barra: Barra; vista: Vista } = $props();
 
@@ -17,6 +17,7 @@
 	let wTecho = $state(0);
 	let wDelta = $state(0);
 	let wRef = $state(0);
+	let wCero = $state(0);
 
 	let armado = $state(false);
 	let reducido = $state(false);
@@ -38,8 +39,8 @@
 
 	const X = (f: number) => f * W;
 	const centrar = (x: number, w: number) => Math.min(Math.max(x - w / 2, 0), W - w);
-	// Alineada a la derecha de su marca; si no cabe, a la izquierda; si tampoco, centrada
-	const anclarDerecha = (x: number, w: number) => (x - w >= 0 ? x - w : x + w <= W ? x : centrar(x, w));
+	// A la izquierda de su marca; si no cabe (o pisaría `libre`, el «0 €»), a su derecha, siempre dentro de la barra
+	const anclarDerecha = colocarEtiqueta;
 
 	const precioX = $derived(X(barra.posiciones.precio));
 	const bandaIzq = $derived(X(barra.banda.desde));
@@ -59,8 +60,9 @@
 	const alto = $derived(esA ? 124 : 102);
 
 	const anuncioIzq = $derived(centrar(precioX, wAnuncio));
-	const parteIzq = $derived(anclarDerecha(parteMax, wParte));
-	const techoIzq = $derived(anclarDerecha(techoMax, wTecho));
+	// La fila de «parte alta» es la del «0 €» (salvo en el nivel a); la del techo queda debajo
+	const parteIzq = $derived(anclarDerecha(parteMax, wParte, W, esA ? 0 : wCero + 8));
+	const techoIzq = $derived(anclarDerecha(techoMax, wTecho, W));
 	const deltaIzq = $derived(
 		Math.min(Math.max((parteMax + precioX) / 2 - wDelta / 2, parteIzq + wParte + 8, techoMax + 6), W - wDelta)
 	);
@@ -106,7 +108,7 @@
 		style:left="{armado ? precioX : 0}px"
 	></div>
 
-	<div class="et cero">0{NB}€</div>
+	<div class="et cero" bind:offsetWidth={wCero}>0{NB}€</div>
 
 	{#if esA}
 		<div class="tercios" style:left="{bandaIzq}px" style:width="{bandaAncho}px">

@@ -4,7 +4,7 @@
  * ni ubicación y se envían sin esperar respuesta: si falla, no pasa nada.
  */
 type Tipo =
-	| 'llegada' | 'empieza' | 'completa' | 'servido_si' | 'servido_no' | 'comparte' | 'desde_tarjeta' | 'segundo' | 'aporta' | 'habitacion'
+	| 'llegada' | 'empieza' | 'completa' | 'servido_si' | 'servido_no' | 'comparte' | 'desde_tarjeta' | 'segundo' | 'aporta' | 'habitacion' | 'confirma_precio'
 	| 'comparte_whatsapp' | 'comparte_x' | 'comparte_copiar' | 'comparte_descarga';
 
 const memoria = new Map<string, string>();

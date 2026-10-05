@@ -20,7 +20,8 @@ test.describe('niveles', () => {
 		['02-nivel-a-dentro', '1700', 'Dentro de la referencia', /PARTE (BAJA|MEDIA|ALTA)/i],
 		['03-nivel-b-explicable', '2100', 'Por encima, explicable si es excelente', /sobre la parte alta/i],
 		['04-nivel-c-por-encima', '2500', 'Por encima del techo para un piso excelente', /\+\d+(,\d)? %/],
-		['05-nivel-c-extremo', '4000', 'Por encima del techo para un piso excelente', /Casi el doble/]
+		['05-nivel-c-extremo', '4000', 'Por encima del techo para un piso excelente', /\+\d+\s%/],
+		['05b-nivel-c-en-veces', '4500', 'Por encima del techo para un piso excelente', /\d,\d\sveces/]
 	];
 	for (const [nombre, precio, etiqueta, texto] of niveles) {
 		test(nombre, async ({ page }) => {

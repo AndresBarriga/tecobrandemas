@@ -12,14 +12,14 @@ import { type Anuncio, type Analisis, type Nivel, type ResultadoSeccion, analiza
 import { type DatosMadrid, barrioDe, datosSeccion } from './datos';
 import { type Barra, construirBarra } from './barra';
 import { type Evolucion, evolucion } from './evolucion';
-import { euros, mesAnio, numero, porcentaje } from './formato';
+import { euros, mesAnio, numero } from './formato';
 import {
 	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, type ClaveSinDato, type MotivoPantalla,
 	PRECIO_PEDIDO, QUE_PUEDES_HACER, SIN_DATO, TEXTO_OFICIAL_SIN_DATO
 } from './textos';
 import type { Punto } from '../ubicacion/geocodificar';
 import type { Ubicacion } from './ubicacion';
-import { type Vista, construirVista } from './vista';
+import { type Vista, construirVista, principalPorEncima } from './vista';
 
 export interface PantallaSinDato {
 	tipo: 'sin_dato';
@@ -39,6 +39,8 @@ export interface PantallaSinDato {
 
 export interface PantallaResultado {
 	tipo: 'resultado';
+	/** Precio / R_sup en el caso más prudente (el menor de las zonas posibles); para avisar de un posible error al teclear */
+	ratioMin: number;
 	nivel: Nivel;
 	/** Frase del nivel: «Dentro de la referencia, en la parte media» … */
 	titular: string;
@@ -163,9 +165,8 @@ function desdeAnalisis(
 	let brechaPct: string | null = null;
 	let brechaEuros: string | null = null;
 	if (nivel.nivel === 'por_encima') {
-		brechaPct = an.horquilla
-			? intervalo(an.pctMin, an.pctMax, (x) => porcentaje(x, true))
-			: porcentaje(r.pct, true);
+		const cifra = principalPorEncima(an.horquilla ? an.pctMin + 1 : r.pct + 1, an.horquilla ? an.pctMax + 1 : null, '');
+		brechaPct = cifra.tipo === 'cifra' ? cifra.texto : cifra.tipo === 'rango' ? `entre ${cifra.desde} y ${cifra.hasta}` : null;
 		const mes = conBrecha.map((s) => s.brecha!.euroMes);
 		const año = conBrecha.map((s) => s.brecha!.euroAño);
 		brechaEuros = an.horquilla
@@ -179,6 +180,7 @@ function desdeAnalisis(
 	const vista = construirVista({ anuncio: a, ubicacion: u, analisis: an, barra, barrio, ipcMes: datos.ipc.ultimo_mes });
 	return {
 		tipo: 'resultado',
+		ratioMin: an.pctMin + 1,
 		nivel,
 		titular: titularNivel(nivel),
 		etiquetaBrecha: nivel.nivel === 'por_encima' ? ETIQUETA_BRECHA : null,

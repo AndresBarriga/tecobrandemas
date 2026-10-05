@@ -3,7 +3,7 @@
 	import Equivalencia from './Equivalencia.svelte';
 	import Icono from './Icono.svelte';
 	import {
-		AVISO_APROXIMADA_TITULO, BOTON_AÑADIR_NUMERO, BOTON_COMPARTIR, BOTON_OTRO_PISO, ENLACE_OFICIAL, REGISTRO, SERVIDO, TARJETA,
+		AVISO_APROXIMADA_TITULO, BOTON_AÑADIR_NUMERO, BOTON_COMPARTIR, BOTON_OTRO_PISO, ENLACE_OFICIAL, REGISTRO, SERVIDO, TARJETA, heroEnVeces,
 		type Canal, type Contador, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
@@ -63,7 +63,7 @@
 
 		{#if principal.tipo === 'cifra'}
 			<div class="principal">
-				<p class="cifra" aria-label="{principal.texto} {principal.nota}">{principal.texto}</p>
+				<p class="cifra" class:veces={heroEnVeces(principal.texto)} aria-label="{principal.texto} {principal.nota}">{principal.texto}</p>
 				<p class="nota">{principal.nota}</p>
 			</div>
 		{:else if principal.tipo === 'rango'}
@@ -278,11 +278,16 @@
 		display: flex;
 		flex-direction: column;
 		gap: 6px;
+		container-type: inline-size;
 	}
 	.cifra {
 		font: 900 clamp(100px, 37vw, 144px) / 0.82 var(--f-extra);
 		color: var(--acento);
 		letter-spacing: -0.01em;
+	}
+	/* «5,0 veces» es más ancha que «+240 %»: cabe entera en cualquier ancho (≈3,8 em) */
+	.cifra.veces {
+		font-size: min(144px, 25cqw);
 	}
 	.rango {
 		display: flex;
@@ -296,6 +301,7 @@
 	}
 	.rango .num {
 		font: 900 84px/0.85 var(--f-extra);
+		font-size: min(84px, 24cqw);
 	}
 	.titular {
 		font: 800 60px/0.88 var(--f-extra);

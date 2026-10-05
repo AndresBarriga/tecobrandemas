@@ -6,6 +6,7 @@
 	import Mapa from '#lib/componentes/Mapa.svelte';
 	import Negociar from '#lib/componentes/Negociar.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
+	import ConfirmarPrecio from '#lib/componentes/ConfirmarPrecio.svelte';
 	import Resultado from '#lib/componentes/Resultado.svelte';
 	import SinConexion from '#lib/componentes/SinConexion.svelte';
 	import SinDato from '#lib/componentes/SinDato.svelte';
@@ -14,6 +15,7 @@
 	import {
 		DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO,
 		construirTarjeta, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
+		parecePrecioErroneo,
 		type Pantalla, type PantallaResultado, type Ubicacion
 	} from '#lib/resultado';
 	import { type ErroresCampos, comprobar, validarCampo } from '#lib/cliente/analisis';
@@ -28,12 +30,13 @@
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
 	import { TARJETA } from '#lib/resultado';
 
-	type Fase = 'inicio' | 'buscando' | 'resultado' | 'negociar' | 'sin_conexion';
+	type Fase = 'inicio' | 'buscando' | 'confirmar' | 'resultado' | 'negociar' | 'sin_conexion';
 
 	let f = $state<EstadoFormulario>(estadoInicial());
 	let errores = $state<ErroresCampos>({});
 	let fase = $state<Fase>('inicio');
 	let pantalla = $state<Pantalla | null>(null);
+	let pendiente = $state<{ pantalla: PantallaResultado; ubicacion: Ubicacion | null } | null>(null);
 	let ubicacion = $state<Ubicacion | null>(null);
 	let problema = $state<Problema | null>(null);
 	let pin = $state<Ubicacion | null | 'fuera'>(null);
@@ -74,7 +77,7 @@
 	const contadorHome = $derived(contadorInicio(totalPisos));
 	const contadorDelBarrio = $derived(contadorBarrio(pisosBarrio));
 
-	const hayResultado = $derived(fase === 'resultado' || fase === 'negociar' || fase === 'sin_conexion');
+	const hayResultado = $derived(fase === 'resultado' || fase === 'negociar' || fase === 'sin_conexion' || fase === 'confirmar');
 	const resultado = $derived<PantallaResultado | null>(pantalla?.tipo === 'resultado' ? pantalla : null);
 
 	// Marca que la página ya responde (las pruebas esperan a esto antes de escribir)
@@ -199,6 +202,12 @@
 				problema = { tipo: 'pedir_numero', calle: r.calle, nSecciones: r.nSecciones };
 				errores = {};
 				fase = 'inicio';
+			} else if (r.pantalla.tipo === 'resultado' && parecePrecioErroneo(r.pantalla.ratioMin)) {
+				// Posible error al teclear: sin confirmar no hay resultado ni tarjeta
+				pendiente = { pantalla: r.pantalla, ubicacion: r.ubicacion };
+				errores = {};
+				fase = 'confirmar';
+				void irAlResultado();
 			} else {
 				mostrar(r.pantalla, r.ubicacion);
 			}
@@ -207,6 +216,23 @@
 			// Sin red o sin servidor (o datos que no cargan): se conservan los datos escritos y se ofrece reintentar
 			fase = 'sin_conexion';
 		}
+	}
+
+	function confirmarPrecio() {
+		if (!pendiente) return;
+		const { pantalla: p, ubicacion: u } = pendiente;
+		pendiente = null;
+		evento('confirma_precio');
+		mostrar(p, u);
+	}
+
+	function corregirPrecio() {
+		pendiente = null;
+		fase = 'inicio';
+		void tick().then(() => {
+			if (!matchMedia('(min-width: 1024px)').matches) scrollTo({ top: 0 });
+			document.getElementById('precio')?.focus();
+		});
 	}
 
 	function otroPiso() {
@@ -341,6 +367,8 @@
 		<main class="principal" bind:this={ficha} tabindex="-1">
 			{#if fase === 'sin_conexion'}
 				<SinConexion formulario={f} alReintentar={enviar} alEditar={otroPiso} />
+			{:else if fase === 'confirmar' && pendiente}
+				<ConfirmarPrecio precio={pendiente.pantalla.vista.precio} m2={pendiente.pantalla.vista.m2} alCorregir={corregirPrecio} alConfirmar={confirmarPrecio} />
 			{:else if fase === 'negociar' && resultado}
 				<Negociar pantalla={resultado} alVolver={() => (fase = 'resultado')} />
 			{:else if pantalla?.tipo === 'resultado'}
