@@ -5,6 +5,9 @@
  */
 import type { MotivoSinDato } from '../motor';
 
+/** Lema bajo el logotipo (diseño: el nombre manda, el lema acompaña) */
+export const LEMA = '¿Tiene sentido este precio?';
+
 export const ENLACE_OFICIAL = 'https://serpavi.mivau.gob.es';
 
 export const AVISO_INDEPENDIENTE =

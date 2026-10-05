@@ -11,7 +11,7 @@
 	import SinDato from '#lib/componentes/SinDato.svelte';
 	import {
 		DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO,
-		construirTarjeta, contadorBarrio, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato,
+		construirTarjeta, contadorBarrio, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
 		type Pantalla, type PantallaResultado, type Ubicacion
 	} from '#lib/resultado';
 	import { type ErroresCampos, comprobar, validarCampo } from '#lib/cliente/analisis';
@@ -61,6 +61,9 @@
 	onMount(() => {
 		listo = true;
 		leerOrigenDeLaUrl();
+		// Enlaces de «Cómo calculamos»: /?motivo=obra_nueva abre esa pantalla «sin dato» (no cuenta como comprobación)
+		const motivo = pantallaSinDatoDeClave(new URLSearchParams(location.search).get('motivo') ?? '');
+		if (motivo) mostrar(motivo, null, false);
 		evento('llegada', { unaVez: true });
 		void recuentos().then((r) => (totalPisos = r?.total ?? null));
 		precargarDatos();

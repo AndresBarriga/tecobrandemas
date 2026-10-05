@@ -117,6 +117,14 @@ export function pantallaSinDato(motivo: MotivoPantalla, c: ContextoSinDato | nul
 	};
 }
 
+/** Pantalla «sin dato» a partir de su clave (enlaces de «Cómo calculamos» a /?motivo=…); sin anuncio ni lugar */
+export function pantallaSinDatoDeClave(clave: string): PantallaSinDato | null {
+	if (!Object.hasOwn(SIN_DATO, clave)) return null;
+	const k = clave as ClaveSinDato;
+	const motivo: MotivoPantalla = k === 'superficie_menor' || k === 'superficie_mayor' ? 'superficie' : k;
+	return { ...pantallaSinDato(motivo), ...SIN_DATO[k] };
+}
+
 function titularNivel(n: Nivel): string {
 	if (n.nivel === 'dentro') {
 		const parte = { baja: 'baja', media: 'media', alta: 'alta' }[n.posicion];
