@@ -18,6 +18,12 @@ describe('página de metodología', () => {
 		expect(otro).toContain('factor 1,1');
 		expect(otro).toContain('enero de 2027');
 	});
+	it('Tus datos refleja lo que se guarda y Quiénes somos tiene el correo', () => {
+		const datos = m.secciones.find((x) => x.id === 'tus-datos')!.parrafos.join(' ');
+		expect(datos).toMatch(/barrio, el mes, el precio, los metros/);
+		expect(datos).toMatch(/nunca guardamos la dirección ni tu IP/i);
+		expect(m.secciones.find((x) => x.id === 'quienes-somos')!.contacto?.correo).toBe('andresbarrigaru@gmail.com');
+	});
 	it('no usa palabras prohibidas', () => {
 		expect(texto).not.toMatch(/ilegal|abusiv|actualizado a hoy/i);
 	});

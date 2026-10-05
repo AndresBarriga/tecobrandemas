@@ -296,6 +296,13 @@ export const ETIQUETA_HISTORIAL = { a: 'Dentro', b: 'Explicable', sinDato: 'Sin 
 
 // ——— «¿Cuánto pagas tú?» (R11) ———
 
+/** Casilla de consentimiento del registro anónimo de análisis (R7), bajo el resultado */
+export const REGISTRO = {
+	casilla: 'Suma este piso a las estadísticas de tu barrio (anónimo)',
+	enlace: 'Tus datos',
+	sumado: 'Sumado, gracias. Es anónimo, así que no podemos retirarlo después.'
+} as const;
+
 export const APORTACION = {
 	titulo: '¿Cuánto pagas tú?',
 	intro: 'Si ya alquilas, cuéntanos tu renta. Ayuda a que esto sea más fiable para todos.',

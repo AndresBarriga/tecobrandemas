@@ -18,6 +18,7 @@
 	import { precargarDatos } from '#lib/cliente/datos';
 	import { type EstadoFormulario, type ModoUbicacion, estadoInicial } from '#lib/cliente/estado';
 	import { type Entrada, guardarHistorial, leerHistorial } from '#lib/cliente/historial';
+	import { registrarAnalisis } from '#lib/cliente/registro';
 	import { compartirTarjeta } from '#lib/cliente/compartir';
 	import { contarCompletado, evento, leerOrigenDeLaUrl, recuentos, tarjetaOrigen } from '#lib/cliente/eventos';
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
@@ -35,6 +36,16 @@
 	let historial = $state<Entrada[]>([]);
 	let activa = $state<number | null>(null);
 	let ficha: HTMLElement | undefined = $state();
+	// Consentimiento del registro anónimo: desmarcado por defecto, por resultado
+	let registro = $state<'no' | 'enviando' | 'sumado'>('no');
+
+	async function registrar() {
+		if (registro !== 'no' || pantalla?.tipo !== 'resultado' || !pantalla.registro) return;
+		registro = 'enviando';
+		await registrarAnalisis(pantalla.registro);
+		// Si el servidor descarta o limita el registro, la persona ve lo mismo: no se le informa de antiabuso
+		registro = 'sumado';
+	}
 
 	// Los contadores son reales o no se muestran. Llegarán del servidor (Hito 5); sin dato, ocultos.
 	let totalPisos = $state<number | null>(null);
@@ -88,6 +99,7 @@
 
 	function mostrar(p: Pantalla, u: Ubicacion | null, alHistorial = true) {
 		pantalla = p;
+		registro = 'no';
 		ubicacion = u;
 		problema = null;
 		errores = {};
@@ -203,6 +215,7 @@
 		if (!e) return;
 		turno++;
 		pantalla = e.pantalla;
+		registro = 'no';
 		f = { ...estadoInicial(), ...(e.formulario as Partial<EstadoFormulario>) };
 		fase = 'resultado';
 		activa = i;
@@ -291,6 +304,8 @@
 					}}
 					alAñadirNumero={puedeAñadirNumero ? añadirNumero : undefined}
 					alCompartir={compartir}
+					{registro}
+					alRegistrar={registrar}
 					alServido={(si) => evento(si ? 'servido_si' : 'servido_no')}
 				>
 					{#snippet tarjeta()}

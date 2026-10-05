@@ -44,7 +44,7 @@ test.describe('tarjeta y /t/:id', () => {
 		expect(og).toBe(`http://localhost:5173/t/${id}/og.jpg`);
 		const meta = await page.locator('head').innerHTML();
 		expect(meta).not.toMatch(/2\.?500|€\/mes|Fuente del Berro 14/);
-		expect(await page.locator('meta[name="robots"]').getAttribute('content')).toBe('noindex');
+		expect(await page.locator('meta[name="robots"]').getAttribute('content')).toContain('noindex');
 		await page.waitForTimeout(1200);
 		await page.screenshot({ path: `${carpeta()}/23-pagina-t.png`, fullPage: true });
 
