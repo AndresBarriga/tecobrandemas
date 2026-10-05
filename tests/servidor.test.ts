@@ -162,6 +162,18 @@ describe.skipIf(!hayCallejero)('POST /api/geocode', () => {
 		expect(JSON.stringify(consultas)).not.toMatch(/Fuente del Berro/i);
 	});
 
+	it('si el límite no puede escribir en D1, la búsqueda sigue funcionando', async () => {
+		const roto = { prepare: () => { throw new Error('D1_ERROR: daily row write limit'); } };
+		const real = await d1Local();
+		const r = await postGeocode({
+			request: new Request('http://x/api/geocode', { method: 'POST', body: JSON.stringify({ texto: 'Calle de Fuente del Berro 14' }) }),
+			platform: { env: { CALLEJERO: real, DB: roto, SECRETO: 's' } },
+			getClientAddress: () => '203.0.113.9'
+		} as never);
+		expect(r.status).toBe(200);
+		expect(await r.json()).toMatchObject({ estado: 'exacta' });
+	});
+
 	it('rechaza cuerpos que no son una dirección', async () => {
 		const llamar = (cuerpo: string) =>
 			postGeocode({
