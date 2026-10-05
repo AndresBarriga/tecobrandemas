@@ -4,20 +4,43 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "datos": "node scripts/copiar_datos.mjs",
+    "dev": "npm run datos && vite dev",
+    "build": "npm run datos && vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "e2e": "playwright test"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261005.1",
+    "@playwright/test": "^1.63.0",
+    "@sveltejs/adapter-cloudflare": "^8.0.0",
+    "@sveltejs/kit": "^3.0.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^26.6.4",
     "@types/topojson-client": "^3.1.5",
     "@vitest/coverage-v8": "^5.0.3",
-    "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "svelte": "^5.57.1",
+    "svelte-check": "^4.7.6",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3",
+    "wrangler": "^4.147.0"
   },
   "dependencies": {
     "topojson-client": "^3.1.0"
+  },
+  "imports": {
+    "#lib/resultado": "./src/lib/resultado/index.ts",
+    "#lib/motor": "./src/lib/motor/index.ts",
+    "#lib/cliente/*": "./src/lib/cliente/*.ts",
+    "#lib/server/*": "./src/lib/server/*.ts",
+    "#lib/ubicacion/*": "./src/lib/ubicacion/*.ts",
+    "#lib/componentes/*": "./src/lib/componentes/*"
   }
 }

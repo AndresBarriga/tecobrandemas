@@ -8,3 +8,9 @@ __pycache__/
 data/processed/geocoder.sqlite
 *.egg-info/
 coverage/
+static/data/
+e2e/capturas/
+test-results/
+playwright-report/
+.svelte-kit/
+.wrangler/

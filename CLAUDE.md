@@ -1,4 +1,4 @@
-# ¿Tiene sentido este precio? — instrucciones para Claude Code
+# A su precio (antes «¿Tiene sentido este precio?») — instrucciones para Claude Code
 
 Herramienta web: el usuario introduce un anuncio de alquiler de Madrid y ve cuánto
 supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado por IPC).

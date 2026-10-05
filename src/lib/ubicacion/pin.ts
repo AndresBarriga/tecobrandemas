@@ -39,6 +39,10 @@ export type ResultadoPin =
 
 const aMetros = ([lon, lat]: number[]): [number, number] => [lon! * M_POR_GRADO_LON, lat! * M_POR_GRADO_LAT];
 
+/** Punto en grados → metros de la proyección del pin, y a la inversa (para dibujar el mapa) */
+export const puntoAMetros = (p: Punto): [number, number] => aMetros([p.lon, p.lat]);
+export const metrosAPunto = (x: number, y: number): Punto => ({ lon: x / M_POR_GRADO_LON, lat: y / M_POR_GRADO_LAT });
+
 export function prepararPoligonos(topo: Topology): Map<string, PoligonoSeccion> {
 	const capa = feature(topo, topo.objects.secciones!) as unknown as GeoJSON.FeatureCollection<
 		Polygon | MultiPolygon, { cusec: string; cx: number; cy: number }

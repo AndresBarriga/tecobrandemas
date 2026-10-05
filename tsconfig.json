@@ -1,13 +1,23 @@
 {
+  "extends": "$app/tsconfig",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
-    "types": ["node"],
+    "types": [
+      "node",
+      "$app/types"
+    ],
     "noEmit": true
   },
-  "include": ["src", "tests"]
+  "include": [
+    "src",
+    "tests",
+    "e2e",
+    "*.ts",
+    "*.js"
+  ],
+  "exclude": [
+    "src/service-worker"
+  ]
 }

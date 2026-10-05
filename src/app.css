@@ -1,0 +1,160 @@
+/* Tokens y base del diseño (docs/design). Sofia Sans se sirve desde /fonts (OFL), sin orígenes externos. */
+@font-face {
+	font-family: 'Sofia Sans';
+	src: url('/fonts/sofia-sans.woff2') format('woff2');
+	font-weight: 1 1000;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Sofia Sans Semi Condensed';
+	src: url('/fonts/sofia-sans-semi-condensed.woff2') format('woff2');
+	font-weight: 1 1000;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Sofia Sans Extra Condensed';
+	src: url('/fonts/sofia-sans-extra-condensed.woff2') format('woff2');
+	font-weight: 1 1000;
+	font-style: normal;
+	font-display: swap;
+}
+
+:root {
+	--paja: #ebc85a;
+	--paja-tarjeta: #d8b44a;
+	--papel: #f6f4ee;
+	--superficie: #ede9e0;
+	--blanco: #ffffff;
+	--tinta: #1c1b19;
+	--grafito: #5a5750;
+	--pista: #e4dfd5;
+	--piedra: #857f74;
+
+	--salvia: #2e6b52;
+	--salvia-tinte: #dce9e1;
+	--acero: #2f5f8a;
+	--acero-tinte: #dde6ef;
+	--ciruela: #6a3a8c;
+	--ciruela-tinte: #e9dff1;
+
+	--f-texto: 'Sofia Sans', system-ui, sans-serif;
+	--f-semi: 'Sofia Sans Semi Condensed', 'Sofia Sans', system-ui, sans-serif;
+	--f-extra: 'Sofia Sans Extra Condensed', 'Sofia Sans', system-ui, sans-serif;
+
+	--radio: 8px;
+	--margen: 20px;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	background: var(--papel);
+	color: var(--tinta);
+	font: 400 16px/1.5 var(--f-texto);
+	font-variant-numeric: tabular-nums;
+	-webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+	margin: 0;
+}
+
+a {
+	color: inherit;
+}
+
+button,
+input {
+	font: inherit;
+	color: inherit;
+}
+
+button {
+	cursor: pointer;
+}
+
+:focus-visible {
+	outline: 2px solid var(--tinta);
+	outline-offset: 3px;
+}
+
+.solo-lectores {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* Nivel: color de acento y tinte por clase */
+.nivel-a {
+	--acento: var(--salvia);
+	--tinte: var(--salvia-tinte);
+}
+.nivel-b {
+	--acento: var(--acero);
+	--tinte: var(--acero-tinte);
+}
+.nivel-c {
+	--acento: var(--ciruela);
+	--tinte: var(--ciruela-tinte);
+}
+
+/* Botones */
+.boton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	width: 100%;
+	min-height: 56px;
+	padding: 0 20px;
+	border: 0;
+	border-radius: var(--radio);
+	background: var(--paja);
+	color: var(--tinta);
+	font: 800 17px/1.2 var(--f-texto);
+	text-align: center;
+	text-decoration: none;
+}
+.boton:disabled,
+.boton[aria-disabled='true'] {
+	background: var(--pista);
+	color: var(--grafito);
+	cursor: not-allowed;
+}
+.boton-contorno {
+	min-height: 48px;
+	border: 1.5px solid var(--tinta);
+	background: transparent;
+	font-weight: 700;
+	font-size: 16px;
+}
+.enlace {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	font: 600 15px/1.2 var(--f-texto);
+	text-decoration: underline;
+	text-underline-offset: 4px;
+	text-decoration-color: var(--tinta);
+}

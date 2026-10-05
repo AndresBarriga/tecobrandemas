@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@400;500;600;700;800&family=Sofia+Sans+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@700;800;900&display=swap" rel="stylesheet"><style>a{color:inherit}a:hover{opacity:.75}</style></helmet>
+<div style="width:390px;background:#F6F4EE;color:#1C1B19;border-radius:8px;overflow:hidden;font-family:'Sofia Sans',sans-serif;font-variant-numeric:tabular-nums">
+<div style="padding:8px 20px;min-height:44px;display:flex;justify-content:space-between;align-items:center"><span data-logo="true" style="font:800 18px/1 'Sofia Sans Extra Condensed',sans-serif;text-transform:uppercase;letter-spacing:.01em">¿Tiene sentido este precio?</span><a href="#" style="min-height:44px;display:flex;align-items:center;font:600 15px 'Sofia Sans',sans-serif;text-underline-offset:4px;text-decoration-color:#EBC85A;text-decoration-thickness:2px">Otro piso</a></div>
+<div style="padding:24px 20px 0;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font:700 17px/1.3 'Sofia Sans',sans-serif">{{ lugar }}</span><span style="font:400 15px/1.4 'Sofia Sans',sans-serif;color:#5A5750">{{ ctx }}</span></div>
+<span style="display:inline-flex;align-self:flex-start;align-items:center;gap:8px;min-height:32px;padding:4px 12px 4px 8px;border:1.5px solid #1C1B19;border-radius:8px;font:700 14px 'Sofia Sans',sans-serif"><svg width="18" height="18" viewBox="0 0 20 20" style="flex:none"><circle cx="10" cy="10" r="8.5" stroke="#1C1B19" stroke-width="1.5" fill="none"></circle><path d="M6 10h8" stroke="#1C1B19" stroke-width="2"></path></svg>Sin referencia para este caso</span>
+<h2 style="margin:0;font:800 60px/.88 'Sofia Sans Extra Condensed',sans-serif;text-transform:uppercase">{{ titular }}</h2>
+<p style="margin:0;font:600 21px/1.3 'Sofia Sans',sans-serif;text-wrap:pretty">{{ frase }}</p>
+<p style="margin:0;font:400 16px/1.5 'Sofia Sans',sans-serif;text-wrap:pretty">{{ extra }}</p>
+<div style="display:flex;flex-direction:column;gap:10px">
+<a href="https://serpavi.mivau.gob.es" style="min-height:52px;border:1.5px solid #1C1B19;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 14px;box-sizing:border-box;text-decoration:none"><span style="font:700 16px 'Sofia Sans',sans-serif">Consultar el sistema oficial</span><span style="font:500 13px 'Sofia Sans',sans-serif;color:#5A5750">serpavi.mivau.gob.es</span></a>
+<div style="height:56px;background:#EBC85A;border-radius:8px;display:flex;align-items:center;justify-content:center;font:800 17px 'Sofia Sans',sans-serif">Comprobar otro piso</div>
+</div>
+</div>
+<div style="margin-top:28px;padding:20px 20px 24px;background:#EDE9E0;display:flex;flex-direction:column;gap:8px;font:400 12.5px/1.5 'Sofia Sans',sans-serif;color:#5A5750">
+<span>Estimación independiente basada en la metodología SERPAVI; el valor oficial está en <a href="#">serpavi.mivau.gob.es</a>.</span>
+<span>Origen de los datos: Ministerio de Vivienda y Agenda Urbana. Elaboración propia con datos del INE.</span>
+<span>CartoCiudad CC-BY 4.0 scne.es</span>
+<a href="#" style="min-height:44px;display:flex;align-items:center;font:700 14px 'Sofia Sans',sans-serif;color:#1C1B19;text-underline-offset:4px">Cómo calculamos</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:980},&quot;motivo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;pequeno&quot;,&quot;grande&quot;,&quot;obra&quot;,&quot;casa&quot;,&quot;temporal&quot;,&quot;pocos&quot;,&quot;habitacion&quot;],&quot;default&quot;:&quot;grande&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const NB = '\u00A0';
+const M = {
+  pequeno: { lugar: 'Lavapiés-Embajadores, Centro', ctx: '26' + NB + 'm², 950' + NB + '€/mes', titular: 'Menos de 30' + NB + 'm²', frase: 'Con menos de 30' + NB + 'm² hay tan pocos alquileres registrados de ese tamaño que la referencia no sería fiable.', extra: 'Los estudios y pisos muy pequeños se comportan de otra forma: el precio por metro se dispara y no hay suficientes casos para medirlo bien.' },
+  grande: { lugar: 'Fuente del Berro, Salamanca', ctx: '180' + NB + 'm², 4.500' + NB + '€/mes', titular: 'Más de 150' + NB + 'm²', frase: 'A partir de 150' + NB + 'm² hay tan pocos alquileres registrados que cualquier cifra sería un invento.', extra: 'Preferimos no darte un dato a darte uno que no se sostiene.' },
+  obra: { lugar: 'Valdebebas, Hortaleza', ctx: '85' + NB + 'm², 1.900' + NB + '€/mes, obra de 2023', titular: 'Obra nueva', frase: 'Es obra nueva y todavía no tiene historial: la referencia se construye con alquileres que ya llevan tiempo registrados.', extra: 'Las viviendas terminadas en 2022 o después aún no aparecen en los datos con los que se calcula la referencia de 2024.' },
+  casa: { lugar: 'Mirasierra, Fuencarral-El Pardo', ctx: 'Casa unifamiliar, 210' + NB + 'm²', titular: 'Casa unifamiliar', frase: 'La referencia está hecha con pisos. Una casa unifamiliar tiene otro mercado y compararla no sería honesto.', extra: 'Jardín, parcela o varias plantas cambian tanto el precio que no hay una referencia comparable.' },
+  temporal: { lugar: 'Trafalgar, Chamberí', ctx: '60' + NB + 'm², 1.800' + NB + '€/mes, contrato de 6 meses', titular: 'Alquiler temporal', frase: 'La referencia solo mide alquileres de larga duración. Los de temporada o media estancia no se registran igual y no hay con qué compararlos.', extra: 'Si el anuncio ofrece un contrato de menos de un año, esta herramienta no puede compararlo.' },
+  pocos: { lugar: 'El Plantío, Moncloa-Aravaca', ctx: '95' + NB + 'm², 2.100' + NB + '€/mes', titular: 'Pocos datos aquí', frase: 'En esta zona hay muy pocos alquileres registrados para dar una referencia fiable.', extra: 'Pasa en barrios pequeños, muy nuevos o con pocas viviendas en alquiler. Prueba con una calle cercana si el piso está en el límite de la zona.' },
+  habitacion: { lugar: 'Alquiler de una habitación', ctx: 'En un piso compartido', titular: 'Una habitación', frase: 'La referencia mide viviendas completas. Las habitaciones no figuran en los registros, así que no hay con qué compararlas.', extra: 'Si vas a alquilar el piso entero con otras personas, puedes comprobar el precio total del piso.' }
+};
+class Component extends DCLogic {
+  renderVals() { return M[this.props.motivo] || M.grande; }
+}
+</script>
+</body>
+</html>

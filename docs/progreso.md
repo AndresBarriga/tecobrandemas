@@ -9,10 +9,32 @@ Qué está hecho, con qué cifras y qué se desvió del plan. El plan está en `
 | 1. Datos | ✅ Hecho | 05/10/2026 |
 | 2. Motor | ✅ Hecho | 05/10/2026 |
 | 3. Ubicación | ✅ Hecho (endpoint `/api/geocode` → Hito 4) | 05/10/2026 |
-| 4. Interfaz mínima | Siguiente | |
+| 4. Interfaz | Paso 1 hecho (falta «Tu zona») | 05/10/2026 |
 | 5. Registro, aportaciones y eventos | Pendiente | |
 | 6. Metodología | Pendiente (antes: nombre, dominio, quiénes somos, financiación) | |
 | 7. Despliegue | Pendiente | |
+
+## Hito 4 — Interfaz (05/10/2026) · paso 1 hecho: formulario, resultado, sin dato, tarjeta y /t/:id
+
+Nombre del producto: **A su precio**. Diseño en `docs/design` (README del handoff como notas de desarrollo). Verificación visual: `npx playwright test` genera capturas en `e2e/capturas/` (390, 360 y 1280 px) y `node scripts/comparar_diseno.mjs` las pone junto al diseño (`e2e/capturas/index.html`).
+
+**Hecho**
+- SvelteKit 3 (config en `vite.config.ts`; `$lib` ya no existe: se usa `#lib/...` vía `imports` de package.json). Sofia Sans (3 anchos, OFL) en `static/fonts`; CSP sin orígenes externos.
+- View-models nuevos/ajustados: `barra.ts` (escala del diseño: 0 → 1,15·máx(precio, techo), tramos con horquilla), `vista.ts` (lugar, cifra, frase, etiquetas de la barra, meses), `tarjeta.ts` (datos serializables sin precio; la barra va en fracciones), `contadores.ts`, `negociar.ts`, `historial.ts`. Formato con espacio duro en todo.
+- Componentes en `src/lib/componentes`; cliente en `src/lib/cliente` (datos, geocodificación, canvas de la tarjeta y la vista previa OG, compartir, mapa del pin, historial en sessionStorage).
+- Servidor: `/api/geocode` (sin logs ni escrituras; test), `/api/tarjeta` (valida y descarta todo salvo la tarjeta), `/t/:id` y `/t/:id/og.jpg`. Almacén D1 + R2 implementado y probado con SQLite; en dev, memoria.
+- Tests: 240 (Vitest) y 91 (Playwright, 3 tamaños). Bundle inicial ≈ 66 KB gz.
+
+**Pendiente / decisiones a revisar**
+- «Cómo calculamos» y «¿Cuánto pagas tú?»: no hay página, así que no hay enlaces (Hitos 6 y 5/R11). «Tu zona» llegará con su diseño.
+- Contadores: sin servidor no se muestran (home ni barrio); lógica y umbral de 10 listos.
+- «¿Te ha servido?» responde en pantalla pero no envía nada (eventos: Hito 5).
+- Pie con la atribución larga del INE (CLAUDE.md), no la corta del diseño; fecha del IPC añadida a la línea de fuente.
+- Titular del nivel b («Cerca del techo» / «Sobre la parte alta») y textos de «sin datos aquí» y «fuera de Madrid» son míos: el diseño no los trae.
+- Compartir tarjeta también en nivel c con horquilla (README), aunque la captura 3h muestra «Comprobar otro piso».
+- Mapa del pin: secciones en canvas, sin callejero (Hito 7). Sin autocompletado de calles.
+- tabular-nums no existe en canvas: cifras de la tarjeta con numerales por defecto.
+- `/t/:id` sin límite por IP ni registro de eventos (Hito 5). TypeScript se comprueba con `npm run check` (svelte-check; `tsc` no entiende `$app/tsconfig`).
 
 ## Hito 3 — Ubicación (05/10/2026)
 

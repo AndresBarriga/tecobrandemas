@@ -1,0 +1,40 @@
+import type { Page } from '@playwright/test';
+
+export const NB = ' ';
+
+export interface Piso {
+	direccion?: string;
+	precio: string;
+	superficie: string;
+	modo?: 'direccion' | 'calle';
+	obraNueva?: boolean;
+	largaDuracion?: boolean;
+	tipo?: 'piso' | 'casa';
+}
+
+/** Un piso de Madrid con dato en su sección (la referencia sale de data/processed, no está escrita aquí) */
+export const BERRO = 'Calle de Fuente del Berro 14';
+
+/** Abre la portada y espera a que esté lista para escribir */
+export async function abrir(page: Page, ruta = '/') {
+	await page.goto(ruta);
+	await page.locator('[data-listo=true]').waitFor();
+}
+
+export async function rellenar(page: Page, p: Piso) {
+	if (p.modo === 'calle') await page.getByRole('radio', { name: 'Solo calle' }).check();
+	await page.fill('#direccion', p.direccion ?? BERRO);
+	await page.fill('#precio', p.precio);
+	await page.fill('#superficie', p.superficie);
+	if (p.obraNueva) await page.getByRole('radiogroup', { name: /obra nueva/ }).getByRole('radio', { name: 'Sí' }).check();
+	if (p.largaDuracion === false) await page.getByRole('radiogroup', { name: /larga duración/ }).getByRole('radio', { name: 'No' }).check();
+	if (p.tipo === 'casa') await page.getByRole('radiogroup', { name: /piso o casa/i }).getByRole('radio', { name: 'Casa' }).check();
+}
+
+export async function comprobar(page: Page, p: Piso) {
+	await rellenar(page, p);
+	await page.locator('form').getByRole('button', { name: /^Comprobar (el precio|otro piso)$/ }).click();
+}
+
+/** Espera a que el punto de la barra termine de deslizarse */
+export const esperarAnimacion = (page: Page) => page.waitForTimeout(1300);
