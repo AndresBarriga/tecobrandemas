@@ -133,7 +133,8 @@ async function faros() {
 	const chrome = await chromeLauncher.launch({ chromePath: chromium.executablePath(), chromeFlags: ['--headless=new', '--no-sandbox'] });
 	try {
 		for (const ruta of ['/', '/como-calculamos']) {
-			const { lhr } = await lighthouse(BASE + ruta, { port: chrome.port, output: 'json', logLevel: 'error' }, undefined);
+			const { lhr } = await lighthouse(BASE + ruta, // No se cuentan como visitas reales: se bloquea el registro de eventos
+				{ port: chrome.port, output: 'json', logLevel: 'error', blockedUrlPatterns: ['*api/evento*'] }, undefined);
 			const puntos = Object.fromEntries(Object.entries(lhr.categories).map(([k, c]) => [k, Math.round((c.score ?? 0) * 100)]));
 			const exigidas = ['performance', 'accessibility', 'best-practices'].filter((k) => puntos[k] < MINIMO_LIGHTHOUSE);
 			const seo = lhr.audits['is-crawlable']?.score === 0 ? ' (SEO baja solo por el noindex activo, esperado hasta el lanzamiento)' : '';
