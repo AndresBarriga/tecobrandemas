@@ -1,0 +1,50 @@
+name: IPC mensual
+
+# El INE publica el IPC a mediados de mes. Si cambia el factor, se abre un PR;
+# al fusionarlo, el CI despliega la web con la referencia actualizada.
+on:
+  schedule:
+    - cron: '0 8 18 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ipc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Descargar la serie del INE y recalcular el factor
+        run: |
+          mkdir -p data/raw
+          curl -fsS --retry 3 -A tiene-sentido-etl "https://servicios.ine.es/wstempus/js/ES/DATOS_SERIE/IPC291807?date=20240101:20991231" -o data/raw/ipc_alquiler_serie.json
+          python scripts/04_ipc.py
+      - name: Comprobar la forma del JSON
+        run: |
+          python - <<'PY'
+          import json
+          d = json.load(open('data/processed/ipc_alquiler.json'))
+          assert {'media_2024', 'ultimo_mes', 'valor', 'factor'} <= d.keys()
+          assert 0.9 < d['factor'] < 1.5, d['factor']
+          PY
+      - name: Abrir PR si hay cambios
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # fecha_extraccion cambia siempre: solo cuenta si cambia el dato
+          if git diff --quiet -I'"fecha_extraccion"' data/processed/ipc_alquiler.json; then
+            echo "Sin cambios en el IPC"; exit 0
+          fi
+          MES=$(python -c "import json;print(json.load(open('data/processed/ipc_alquiler.json'))['ultimo_mes'])")
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout -b "ipc-$MES"
+          git add data/processed/ipc_alquiler.json
+          git commit -m "IPC del alquiler hasta $MES"
+          git push -u origin "ipc-$MES"
+          gh pr create --title "IPC del alquiler hasta $MES" --body "Actualización automática del factor del IPC (INE, serie IPC291807). Revisar la variación antes de fusionar."

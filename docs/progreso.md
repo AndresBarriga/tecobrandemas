@@ -174,3 +174,12 @@ Nombre del producto: **A su precio**. Diseño en `docs/design` (README del hando
 - Texto en `src/lib/resultado/metodologia.ts`; test en `tests/metodologia.test.ts`; e2e en `e2e/metodologia.spec.ts`.
 - Enlazada desde la cabecera (escritorio), el pie y la línea de fuente del resultado. Las atribuciones salen del pie.
 - Pendiente: la explicación de «Tu zona», «Aquí estarías dentro» y la evolución, cuando existan esos componentes.
+
+## Hito 7 — Despliegue (en curso)
+- Producción: https://a-su-precio.tiene-sentido.workers.dev (Worker `a-su-precio`, D1 `a-su-precio-callejero` y `a-su-precio-registro`, R2 `a-su-precio-tarjetas`, secreto `SECRETO`). Sin dominio propio todavía.
+- El adaptador de Cloudflare ya no rellena `platform.env`: el entorno se lee de `cloudflare:workers` (`entornoDe`).
+- `static/.assetsignore` evita publicar `_worker.js`. `scripts/volcar_callejero.sh` genera el SQL del callejero para D1.
+- Prueba de humo contra producción: `BASE_URL=<url> npx playwright test e2e/flujo.spec.ts e2e/tarjeta.spec.ts`. Tres tests asumen `localhost` o no envían `Origin`: pendientes de adaptar.
+- CI (`.github/workflows/ci.yml`): check, tests y build en cada PR; despliegue al fusionar en `main`. Sin `geocoder.sqlite` (no está en git) se saltan 7 tests. Los e2e quedan en local.
+- IPC (`.github/workflows/ipc-mensual.yml`): el día 18 de cada mes descarga la serie del INE y abre un PR si cambia el dato.
+- Pendiente: secretos del repo (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`), vista previa en WhatsApp y X, dominio propio, PMTiles.
