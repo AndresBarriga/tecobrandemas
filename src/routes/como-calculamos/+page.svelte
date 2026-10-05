@@ -94,7 +94,6 @@
 		gap: 4px 16px;
 	}
 	nav a,
-	section a,
 	.volver {
 		display: inline-flex;
 		align-items: center;
@@ -104,11 +103,5 @@
 		text-decoration-color: var(--paja);
 		text-decoration-thickness: 2px;
 		text-underline-offset: 4px;
-	}
-	section p a {
-		min-height: 0;
-		display: inline;
-		font: inherit;
-		font-weight: 700;
 	}
 </style>
