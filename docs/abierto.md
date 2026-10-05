@@ -15,7 +15,7 @@ Se actualiza al cerrar cada tarea. Última revisión: 05/10/2026.
 - Si los dos extremos de una horquilla se escriben igual, se muestra una sola cifra.
 
 ## Pendiente de respuesta del usuario
-- **A5 (esquema de datos):** `seccion` y `created_at` exacto chocan con «nunca la sección» ni la fecha exacta; una tabla única con `tipo_dato` choca con «no se mezclan». Propuesta: tabla nueva `datos_v2` junto a las actuales, sin escrituras, con `created_at` en AAAA-MM y `seccion` solo si se confirma.
+- **A5 (esquema de datos): aparcado por decisión del usuario (05/10/2026).** `seccion` y `created_at` exacto chocan con «nunca la sección» ni la fecha exacta; una tabla única con `tipo_dato` choca con «no se mezclan». Propuesta: tabla nueva `datos_v2` junto a las actuales, sin escrituras, con `created_at` en AAAA-MM y `seccion` solo si se confirma.
 - **A4 (compartir):** los enlaces normales de WhatsApp y X necesitan el id `/t/:id` antes de pulsar; propuesta: «Compartir» sube la tarjeta y luego aparecen los cuatro botones.
 - **Mapa «En el mapa»:** orden respecto a A1–A5; URL de vista previa por rama (necesita activar preview URLs de Cloudflare y un job de CI; cambio en Cloudflare, requiere visto bueno); un PR o dos.
 
