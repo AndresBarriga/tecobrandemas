@@ -5,6 +5,9 @@
  */
 import type { MotivoSinDato } from '../motor';
 
+/** Lema bajo el logotipo (diseño: el nombre manda, el lema acompaña) */
+export const LEMA = '¿Tiene sentido este precio?';
+
 export const ENLACE_OFICIAL = 'https://serpavi.mivau.gob.es';
 
 export const AVISO_INDEPENDIENTE =
@@ -338,4 +341,30 @@ export const APORTACION = {
 		noGuardada: 'Hemos recibido tu aportación, pero estos datos no cuadran con lo habitual y no se han guardado. Revisa renta y metros.',
 		boton: 'Comprobar un piso'
 	}
+} as const;
+
+/** «Tu zona» (diseño 6a-6f). En todos los textos, «zona»; nunca «sección» */
+export const TU_ZONA = {
+	titulo: 'Tu zona',
+	intro: 'Tu zona y las que están a 1,5 km o menos, coloreadas por la parte alta de su referencia en €/m².',
+	introNumeros: 'Los números señalan dónde la referencia llega a este precio.',
+	mapa: 'Mapa de tu zona y las zonas a 1,5 km o menos, coloreadas por la parte alta de su referencia',
+	cargando: 'Cargando el mapa de la zona…',
+	circulo: 'círculo: 1,5 km',
+	tuZona: 'tu zona',
+	leyenda: 'Parte alta de la referencia, en €/m² al mes',
+	notaLeyenda: 'Sin dato: zonas con pocos alquileres registrados. Cortes iguales para toda la ciudad. Las líneas gruesas separan barrios.',
+	sinDato: 'Sin dato',
+	lista: {
+		titulo: 'Este precio entra en la referencia de…',
+		subtitulo: 'Zonas cercanas donde la referencia llega a este precio',
+		aviso: 'No son pisos disponibles: son zonas donde este precio quedaría dentro de lo que pagan los alquileres registrados.',
+		pie: 'Ordenadas por distancia. Toca una zona para verla en el mapa.'
+	},
+	vacia: {
+		titulo: 'Zonas cercanas donde la referencia llega a este precio: ninguna',
+		texto: (precioM2: string) => `Este precio (${precioM2}) supera la referencia de todas las zonas a 1,5\u00A0km o menos.`
+	},
+	contexto: 'Tu precio ya está dentro de la referencia, así que aquí solo tienes el contexto: cómo es la referencia en las zonas que te rodean.',
+	fallo: 'No hemos podido cargar el mapa de la zona.'
 } as const;

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@400;500;600;700;800&family=Sofia+Sans+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@700;800;900&display=swap" rel="stylesheet"><style>a{color:inherit}a:hover{opacity:.75}a:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid #1C1B19;outline-offset:3px}</style></helmet>
+<div style="width:{{ rootW }};background:#F6F4EE;color:#1C1B19;font-family:'Sofia Sans',sans-serif;font-variant-numeric:tabular-nums">
+
+<sc-if value="{{ desk }}" hint-placeholder-val="{{ false }}">
+<header style="height:80px;padding:0 40px;display:flex;align-items:center;justify-content:space-between">
+<span data-logo="true" style="display:flex;flex-direction:column;gap:4px"><span style="font:800 28px/1 'Sofia Sans Extra Condensed',sans-serif;text-transform:uppercase;letter-spacing:.01em">A su precio</span><span style="font:500 15px/1.2 'Sofia Sans',sans-serif">¿Tiene sentido este precio?</span></span>
+<nav style="display:flex;gap:28px"><a href="#" style="min-height:44px;display:flex;align-items:center;font:700 15px 'Sofia Sans',sans-serif;text-decoration:underline;text-decoration-color:#EBC85A;text-decoration-thickness:3px;text-underline-offset:6px" aria-current="page">Cómo calculamos</a><a href="#" style="min-height:44px;display:flex;align-items:center;font:600 15px 'Sofia Sans',sans-serif;text-decoration:none">¿Cuánto pagas tú?</a></nav>
+</header>
+</sc-if>
+<sc-if value="{{ mob }}" hint-placeholder-val="{{ true }}">
+<div style="padding:8px 20px;min-height:44px;display:flex;justify-content:space-between;align-items:center">
+<span data-logo="true" style="display:flex;flex-direction:column;gap:3px"><span style="font:800 21px/1 'Sofia Sans Extra Condensed',sans-serif;text-transform:uppercase;letter-spacing:.01em">A su precio</span><span style="font:500 12px/1.2 'Sofia Sans',sans-serif">¿Tiene sentido este precio?</span></span>
+<a href="#" style="min-height:44px;display:flex;align-items:center;font:600 15px 'Sofia Sans',sans-serif;text-underline-offset:4px;text-decoration-color:#EBC85A;text-decoration-thickness:2px">Volver</a>
+</div>
+<div style="position:sticky;top:0;z-index:2;background:#F6F4EE;padding:8px 20px 12px">
+<div style="position:relative">
+<select aria-label="Ir a una sección de la página" onChange="{{ onSelect }}" value="{{ activo }}" style="width:100%;height:48px;appearance:none;-webkit-appearance:none;border:1.5px solid #1C1B19;border-radius:8px;background:#FFFFFF;padding:0 44px 0 14px;font:600 16px 'Sofia Sans',sans-serif;color:#1C1B19;cursor:pointer">
+<sc-for list="{{ toc }}" as="o" hint-placeholder-count="9"><option value="{{ o.id }}">Ir a: {{ o.t }}</option></sc-for>
+</select>
+<svg width="16" height="16" viewBox="0 0 20 20" style="position:absolute;right:16px;top:16px;pointer-events:none"><path d="M5 8l5 5 5-5" stroke="#1C1B19" stroke-width="2" fill="none"></path></svg>
+</div>
+</div>
+</sc-if>
+
+<div style="display:grid;grid-template-columns:{{ cols }};gap:80px;justify-content:center;align-items:start;padding:{{ mainPad }}">
+<sc-if value="{{ desk }}" hint-placeholder-val="{{ false }}">
+<nav aria-label="En esta página" style="position:sticky;top:24px;display:flex;flex-direction:column;gap:2px;padding-top:8px">
+<span style="font:600 13px 'Sofia Sans',sans-serif;color:#5A5750;padding:0 14px 8px">En esta página</span>
+<sc-for list="{{ toc }}" as="o" hint-placeholder-count="9"><a href="{{ o.href }}" onClick="{{ o.go }}" aria-current="{{ o.cur }}" style="min-height:44px;display:flex;align-items:center;padding:0 14px;border-radius:8px;text-decoration:none;font:{{ o.fw }} 15px 'Sofia Sans',sans-serif;background:{{ o.bg }}">{{ o.t }}</a></sc-for>
+</nav>
+</sc-if>
+
+<main style="display:flex;flex-direction:column;gap:{{ secGap }};min-width:0">
+<div style="display:flex;flex-direction:column;gap:14px">
+<h1 style="margin:0;font:800 {{ h1 }}px/.86 'Sofia Sans Extra Condensed',sans-serif;text-transform:uppercase">Cómo calculamos</h1>
+<p style="margin:0;max-width:70ch;font:500 {{ lead }}px/1.45 'Sofia Sans',sans-serif;color:#3A3935;text-wrap:pretty">Qué datos usamos, qué hacemos con ellos y hasta dónde llegan.</p>
+</div>
+
+<section id="{{ p30 }}" style="background:#FFFFFF;border-radius:8px;padding:{{ boxPad }};display:flex;flex-direction:column;gap:16px;scroll-margin-top:80px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><h2 style="margin:0;font:800 {{ h30 }}px/.9 'Sofia Sans Extra Condensed',sans-serif;text-transform:uppercase">En 30 segundos</h2><span style="flex:none;padding:2px 6px;border:1.5px dashed #1A5FB4;color:#1A5FB4;border-radius:4px;font:700 10px system-ui,sans-serif;letter-spacing:.06em">NUEVO</span></div>
+<ol style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px;max-width:70ch">
+<li style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:baseline"><span style="font:800 24px/1 'Sofia Sans Extra Condensed',sans-serif">1</span><span style="font:600 {{ b30 }}px/1.4 'Sofia Sans',sans-serif;text-wrap:pretty">Comparamos el precio que piden en un anuncio con los alquileres registrados en su zona (datos oficiales de 2024).</span></li>
+<li style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:baseline"><span style="font:800 24px/1 'Sofia Sans Extra Condensed',sans-serif">2</span><span style="font:600 {{ b30 }}px/1.4 'Sofia Sans',sans-serif;text-wrap:pretty">Ajustamos esos datos con el IPC del alquiler: <span style="white-space:nowrap">{{ ipcPct }}</span> hasta {{ ipcMes }}.</span></li>
+<li style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:baseline"><span style="font:800 24px/1 'Sofia Sans Extra Condensed',sans-serif">3</span><span style="font:600 {{ b30 }}px/1.4 'Sofia Sans',sans-serif;text-wrap:pretty">No sabemos qué se firmará ni cómo es el piso por dentro: por eso hay tres niveles.</span></li>
+<li style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:baseline"><span style="font:800 24px/1 'Sofia Sans Extra Condensed',sans-serif">4</span><span style="font:600 {{ b30 }}px/1.4 'Sofia Sans',sans-serif;text-wrap:pretty">No somos una tasación ni sustituimos al valor oficial.</span></li>
+</ol>
+</section>
+
+<section id="{{ pEj }}" style="display:flex;flex-direction:column;gap:18px;scroll-margin-top:80px">
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0;font:700 {{ h2 }}px/1.2 'Sofia Sans',sans-serif">Un ejemplo, paso a paso</h2><span style="padding:2px 6px;border:1.5px dashed #C2185B;color:#C2185B;border-radius:4px;font:700 10px system-ui,sans-serif;letter-spacing:.06em">EJEMPLO</span><span style="padding:2px 6px;border:1.5px dashed #1A5FB4;color:#1A5FB4;border-radius:4px;font:700 10px system-ui,sans-serif;letter-spacing:.06em">NUEVO</span></div>
+<p style="margin:0;max-width:70ch;font:400 {{ body }}px/1.55 'Sofia Sans',sans-serif">Un piso de 90&nbsp;m² en Fuente del Berro (Salamanca) que se anuncia por 2.200&nbsp;€ al mes. Todas las barras usan la misma escala, de 0 a 2.530&nbsp;€.</p>
+</div>
+<ol style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+<li style="background:#EDE9E0;border-radius:8px;padding:{{ stepPad }};display:flex;flex-direction:column;gap:14px">
+<div style="display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;align-items:baseline">
+<span style="font:800 32px/1 'Sofia Sans Extra Condensed',sans-serif">{{ s.n }}</span>
+<div style="display:flex;flex-direction:column;gap:4px;max-width:70ch"><span style="font:700 {{ body }}px/1.35 'Sofia Sans',sans-serif">{{ s.t }}</span><span style="font:400 {{ body }}px/1.55 'Sofia Sans',sans-serif;text-wrap:pretty">{{ s.d }}</span></div>
+</div>
+<div style="position:relative;width:{{ s.W }}px;height:{{ s.H }}px;margin-left:{{ barMl }}px" role="img" aria-label="{{ s.aria }}">
+<sc-if value="{{ s.dot }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:0;left:{{ s.dX }}px;transform:translateX(-88%);white-space:nowrap;font:500 13px 'Sofia Sans Semi Condensed',sans-serif;color:#5A5750">tu precio <strong style="color:#6A3A8C;font-weight:700">2.200&nbsp;€</strong></div></sc-if>
+<div style="position:absolute;left:0;right:0;top:24px;height:24px;background:#E0DACE"></div>
+<div style="position:absolute;top:24px;height:24px;left:{{ s.bL }}px;width:{{ s.bW }}px;background:#1C1B19"></div>
+<sc-if value="{{ s.g }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:19px;height:34px;left:{{ s.gL }}px;width:{{ s.gW }}px;box-sizing:border-box;border:1.5px dashed #1C1B19;border-radius:2px"></div></sc-if>
+<sc-if value="{{ s.tc }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;top:24px;height:24px;left:{{ s.tL }}px;width:{{ s.tW }}px;background:#857F74"></div>
+<div style="position:absolute;top:48px;left:{{ s.tE }}px;width:1px;height:32px;background:#857F74"></div>
+<div style="position:absolute;top:82px;left:{{ s.tE }}px;transform:translateX(-100%);white-space:nowrap;font:500 12px 'Sofia Sans Semi Condensed',sans-serif;color:#5A5750;padding-right:4px">techo para un piso excelente <strong style="color:#1C1B19;font-weight:700">{{ s.tV }}</strong></div>
+</sc-if>
+<sc-if value="{{ s.dot }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;top:35px;height:2px;left:{{ s.tE }}px;width:{{ s.guW }}px;background:#6A3A8C"></div>
+<div style="position:absolute;top:24px;left:{{ s.dX }}px;width:24px;height:24px;margin-left:-12px;border-radius:50%;box-sizing:border-box;border:3px solid #EDE9E0;background:#6A3A8C"></div>
+<div style="position:absolute;top:82px;left:{{ s.tE }}px;padding-left:6px;white-space:nowrap;font:700 12px 'Sofia Sans Semi Condensed',sans-serif;color:#6A3A8C">+509&nbsp;€</div>
+</sc-if>
+<div style="position:absolute;top:56px;left:0;font:500 12px 'Sofia Sans Semi Condensed',sans-serif;color:#5A5750">0&nbsp;€</div>
+<div style="position:absolute;top:56px;left:{{ s.rX }}px;transform:{{ s.rT }};white-space:nowrap;font:500 12px 'Sofia Sans Semi Condensed',sans-serif;color:#5A5750">referencia <strong style="color:#1C1B19;font-weight:700">{{ s.rV }}</strong></div>
+</div>
+<sc-if value="{{ s.dot }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-self:flex-start;align-items:center;gap:8px;min-height:32px;padding:4px 12px 4px 8px;background:#E9DFF1;color:#6A3A8C;border-radius:8px;font:700 14px/1.25 'Sofia Sans',sans-serif"><svg width="18" height="18" viewBox="0 0 20 20" style="flex:none"><circle cx="10" cy="10" r="9" fill="#6A3A8C"></circle><path d="M6 12l4-4.5 4 4.5" stroke="#E9DFF1" stroke-width="2" fill="none"></path></svg>Por encima del techo para un piso excelente</span></sc-if>
+</li>
+</sc-for>
+</ol>
+</section>
+
+<section id="{{ pNiv }}" style="display:flex;flex-direction:column;gap:16px;scroll-margin-top:80px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0;font:700 {{ h2 }}px/1.2 'Sofia Sans',sans-serif">Los tres niveles</h2><span style="padding:2px 6px;border:1.5px dashed #1A5FB4;color:#1A5FB4;border-radius:4px;font:700 10px system-ui,sans-serif;letter-spacing:.06em">NUEVO</span></div>
+<div style="display:flex;flex-direction:column;gap:20px">
+<sc-for list="{{ levels }}" as="l" hint-placeholder-count="3">
+<div style="display:grid;grid-template-columns:{{ lvCols }};gap:12px 24px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:8px">
+<span style="display:inline-flex;align-self:flex-start;align-items:center;gap:8px;min-height:32px;padding:4px 12px 4px 8px;background:{{ l.tint }};color:{{ l.c }};border-radius:8px;font:700 14px/1.25 'Sofia Sans',sans-serif"><svg width="18" height="18" viewBox="0 0 20 20" style="flex:none"><circle cx="10" cy="10" r="9" fill="{{ l.c }}"></circle><path d="{{ l.icon }}" stroke="{{ l.tint }}" stroke-width="2" fill="none"></path></svg>{{ l.tag }}</span>
+<span style="font:400 {{ body }}px/1.5 'Sofia Sans',sans-serif;max-width:60ch;text-wrap:pretty">{{ l.d }}</span>
+</div>
+<div style="position:relative;width:{{ mW }}px;height:24px" aria-hidden="true">
+<div style="position:absolute;left:0;right:0;top:7px;height:10px;background:#E0DACE"></div>
+<div style="position:absolute;top:7px;height:10px;left:{{ mBL }}px;width:{{ mBW }}px;background:#1C1B19"></div>
+<div style="position:absolute;top:7px;height:10px;left:{{ mTL }}px;width:{{ mTW }}px;background:#857F74"></div>
+<div style="position:absolute;top:2px;left:{{ l.x }}px;width:20px;height:20px;margin-left:-10px;border-radius:50%;box-sizing:border-box;border:3px solid #F6F4EE;background:{{ l.c }}"></div>
+</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section id="{{ pPed }}" style="background:#1C1B19;color:#F6F4EE;border-radius:8px;padding:{{ boxPad }};display:flex;flex-direction:column;gap:12px;scroll-margin-top:80px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0;font:700 {{ h2 }}px/1.2 'Sofia Sans',sans-serif;color:#EBC85A">Un precio pedido, no firmado</h2><span style="padding:2px 6px;border:1.5px dashed #F2C26B;color:#F2C26B;border-radius:4px;font:700 10px system-ui,sans-serif;letter-spacing:.06em">BORRADOR</span></div>
+<p style="margin:0;max-width:70ch;font:500 {{ lead }}px/1.5 'Sofia Sans',sans-serif;text-wrap:pretty">La referencia sale de alquileres registrados: lo que se firmó. Un anuncio muestra lo que se pide, y lo que se pide no siempre es lo que se acaba firmando.</p>
+<p style="margin:0;max-width:70ch;font:400 {{ body }}px/1.55 'Sofia Sans',sans-serif;color:#E4DFD5;text-wrap:pretty">Por eso hablamos de un precio pedido frente a una referencia estadística, y nunca de precios correctos o incorrectos.</p>
+</section>
+
+<section id="{{ pDat }}" style="display:flex;flex-direction:column;gap:16px;scroll-margin-top:80px">
+<h2 style="margin:0;font:700 {{ h2 }}px/1.2 'Sofia Sans',sans-serif">Tus datos</h2>
+<p style="margin:0;max-width:70ch;font:400 {{ body }}px/1.55 'Sofia Sans',sans-serif;text-wrap:pretty">Los datos del anuncio los escribes tú; no leemos páginas de portales. Solo guardamos un análisis si marcas la casilla, y guardamos el barrio, el mes, el precio y los metros: nunca la dirección ni tu IP. Para limitar abusos usamos un código derivado de tu conexión que se borra a las 24 horas. La web se sirve desde Cloudflare, que, como cualquier alojamiento, ve la conexión. La lista de pisos comprobados en esta sesión se queda solo en tu navegador y se borra al cerrarlo.</p>
+<div style="display:grid;grid-template-columns:{{ two }};gap:12px">
+<div style="background:#FFFFFF;border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><h3 style="margin:0;font:700 17px/1.3 'Sofia Sans',sans-serif">Qué guardamos (solo si marcas la casilla)</h3><span style="flex:none;padding:2px 6px;border:1.5px dashed #1A5FB4;color:#1A5FB4;border-radius:4px;font:700 10px system-ui,sans-serif;letter-spacing:.06em">NUEVO</span></div>
+<ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font:500 {{ body }}px/1.4 'Sofia Sans',sans-serif">
+<li style="display:flex;gap:10px;align-items:baseline"><svg width="14" height="14" viewBox="0 0 20 20" style="flex:none"><path d="M4 10.5l4 4 8-9" stroke="#1C1B19" stroke-width="2.5" fill="none"></path></svg>El barrio</li>
+<li style="display:flex;gap:10px;align-items:baseline"><svg width="14" height="14" viewBox="0 0 20 20" style="flex:none"><path d="M4 10.5l4 4 8-9" stroke="#1C1B19" stroke-width="2.5" fill="none"></path></svg>El mes</li>
+<li style="display:flex;gap:10px;align-items:baseline"><svg width="14" height="14" viewBox="0 0 20 20" style="flex:none"><path d="M4 10.5l4 4 8-9" stroke="#1C1B19" stroke-width="2.5" fill="none"></path></svg>El precio</li>
+<li style="display:flex;gap:10px;align-items:baseline"><svg width="14" height="14" viewBox="0 0 20 20" style="flex:none"><path d="M4 10.5l4 4 8-9" stroke="#1C1B19" stroke-width="2.5" fill="none"></path></svg>Los metros</li>
+</ul>
+</div>
+<div style="background:#FFFFFF;border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:10px">
+<h3 style="margin:0;font:700 17px/1.3 'Sofia Sans',sans-serif">Qué no guardamos</h3>
+<ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font:500 {{ body }}px/1.4 'Sofia Sans',sans-serif">
+<li style="display:flex;gap:10px;align-items:baseline"><svg width="14" height="14" viewBox="0 0 20 20" style="flex:none"><path d="M5 5l10 10M15 5L5 15" stroke="#1C1B19" stroke-width="2.5"></path></svg>La dirección</li>
+<li style="display:flex;gap:10px;align-items:baseline"><svg width="14" height="14" viewBox="0 0 20 20" style="flex:none"><path d="M5 5l10 10M15 5L5 15" stroke="#1C1B19" stroke-width="2.5"></path></svg>Tu IP</li>
+<li style="display:flex;gap:10px;align-items:baseline"><svg width="14" height="14" viewBox="0 0 20 20" style="flex:none"><path d="M5 5l10 10M15 5L5 15" stroke="#1C1B19" stroke-width="2.5"></path></svg>Nada si no marcas la casilla</li>
+<li style="display:flex;gap:10px;align-items:baseline"><svg width="14" height="14" viewBox="0 0 20 20" style="flex:none"><path d="M5 5l10 10M15 5L5 15" stroke="#1C1B19" stroke-width="2.5"></path></svg>Tu lista de pisos de esta sesión, que se queda en tu navegador</li>
+</ul>
+</div>
+</div>
+<div style="background:#EDE9E0;border-radius:8px;padding:16px 18px;display:grid;grid-template-columns:{{ two }};gap:14px 24px">
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font:700 15px 'Sofia Sans',sans-serif">Código antiabuso</span><span style="font:400 15px/1.5 'Sofia Sans',sans-serif">Se deriva de tu conexión y se borra a las 24 horas.</span></div>
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font:700 15px 'Sofia Sans',sans-serif">Cloudflare</span><span style="font:400 15px/1.5 'Sofia Sans',sans-serif">Sirve la web y, como cualquier alojamiento, ve la conexión.</span></div>
+</div>
+</section>
+
+<section id="{{ pLim }}" style="display:flex;flex-direction:column;gap:14px;scroll-margin-top:80px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0;font:700 {{ h2 }}px/1.2 'Sofia Sans',sans-serif">Lo que no calculamos</h2><span style="padding:2px 6px;border:1.5px dashed #8A5A00;color:#8A5A00;border-radius:4px;font:700 10px system-ui,sans-serif;letter-spacing:.06em">BORRADOR</span></div>
+<p style="margin:0;max-width:70ch;font:400 {{ body }}px/1.55 'Sofia Sans',sans-serif;text-wrap:pretty">En estos casos no hay una referencia fiable, así que no damos cifra. Cada uno tiene su pantalla con la explicación.</p>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ limits }}" as="x" hint-placeholder-count="7"><a href="{{ x.href }}" style="min-height:52px;background:#EDE9E0;border-radius:8px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;box-sizing:border-box"><span style="display:flex;flex-direction:column;gap:2px"><span style="font:700 16px 'Sofia Sans',sans-serif">{{ x.t }}</span><span style="font:400 14px/1.4 'Sofia Sans',sans-serif;color:#3A3935">{{ x.d }}</span></span><span style="flex:none;font:600 14px 'Sofia Sans',sans-serif;text-decoration:underline;text-underline-offset:3px">Ver por qué</span></a></sc-for>
+</div>
+<p style="margin:0;max-width:70ch;font:400 {{ body }}px/1.55 'Sofia Sans',sans-serif;text-wrap:pretty">Y aunque haya cifra, no vemos el piso: su estado, su luz o su distribución pueden explicar diferencias. Si solo conocemos la calle, damos una horquilla.</p>
+</section>
+
+<section id="{{ pFue }}" style="display:flex;flex-direction:column;gap:14px;scroll-margin-top:80px">
+<h2 style="margin:0;font:700 {{ h2 }}px/1.2 'Sofia Sans',sans-serif">Fuentes</h2>
+<div role="table" aria-label="Fuentes de datos" style="display:flex;flex-direction:column;gap:6px">
+<sc-if value="{{ desk }}" hint-placeholder-val="{{ false }}"><div role="row" style="display:grid;grid-template-columns:1.1fr 1fr 1.1fr;gap:20px;padding:0 18px;font:600 13px 'Sofia Sans',sans-serif;color:#5A5750"><span role="columnheader">Fuente</span><span role="columnheader">Para qué la usamos</span><span role="columnheader">Atribución</span></div></sc-if>
+<sc-for list="{{ sources }}" as="f" hint-placeholder-count="3"><div role="row" style="display:grid;grid-template-columns:{{ srcCols }};gap:6px 20px;background:#FFFFFF;border-radius:8px;padding:16px 18px"><span role="cell" style="display:flex;flex-direction:column;gap:4px"><span style="font:700 16px/1.35 'Sofia Sans',sans-serif">{{ f.n }}</span><a href="{{ f.url }}" style="min-height:24px;font:600 14px 'Sofia Sans',sans-serif;text-underline-offset:3px">{{ f.host }}</a></span><span role="cell" style="font:400 15px/1.5 'Sofia Sans',sans-serif">{{ f.uso }}</span><span role="cell" style="font:500 15px/1.5 'Sofia Sans',sans-serif">{{ f.atr }}</span></div></sc-for>
+</div>
+<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;font:500 15px/1.5 'Sofia Sans',sans-serif"><span>Último dato del IPC del alquiler: <strong style="font-weight:700">{{ ipcMes }}</strong>, factor <strong style="font-weight:700">{{ ipcF }}</strong> ({{ ipcPct }}).</span></div>
+<p style="margin:0;max-width:70ch;font:400 15px/1.55 'Sofia Sans',sans-serif;text-wrap:pretty">Estimación independiente basada en la metodología SERPAVI; el valor oficial está en <a href="https://serpavi.mivau.gob.es">serpavi.mivau.gob.es</a>.</p>
+</section>
+
+<section id="{{ pQui }}" style="display:flex;flex-direction:column;gap:10px;scroll-margin-top:80px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0;font:700 {{ h2 }}px/1.2 'Sofia Sans',sans-serif">Quiénes somos</h2><span style="padding:2px 6px;border:1.5px dashed #C2185B;color:#C2185B;border-radius:4px;font:700 10px system-ui,sans-serif;letter-spacing:.06em">PENDIENTE</span></div>
+<p style="margin:0;max-width:70ch;font:400 {{ body }}px/1.55 'Sofia Sans',sans-serif;color:#5A5750">[Quién está detrás, en dos o tres frases.]</p>
+<p style="margin:0;font:500 {{ body }}px/1.55 'Sofia Sans',sans-serif">Correcciones y contacto: <a href="mailto:[CORREO]" style="font-weight:700;text-underline-offset:3px">[CORREO]</a></p>
+</section>
+
+<section id="{{ pFin }}" style="display:flex;flex-direction:column;gap:10px;scroll-margin-top:80px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0;font:700 {{ h2 }}px/1.2 'Sofia Sans',sans-serif">Financiación</h2><span style="padding:2px 6px;border:1.5px dashed #C2185B;color:#C2185B;border-radius:4px;font:700 10px system-ui,sans-serif;letter-spacing:.06em">PENDIENTE</span></div>
+<p style="margin:0;max-width:70ch;font:400 {{ body }}px/1.55 'Sofia Sans',sans-serif;color:#5A5750">[Cómo se financia el proyecto y su independencia.]</p>
+</section>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:{{ ctaAlign }}">
+<span style="font:700 {{ h2 }}px/1.2 'Sofia Sans',sans-serif">¿Lo pruebas con un anuncio?</span>
+<a href="#" style="width:{{ ctaW }};height:56px;background:#EBC85A;border-radius:8px;display:flex;align-items:center;justify-content:center;font:800 17px 'Sofia Sans',sans-serif;color:#1C1B19;text-decoration:none">Comprobar un piso</a>
+</div>
+</main>
+</div>
+
+<footer style="padding:{{ footPad }};background:#EDE9E0;display:grid;grid-template-columns:{{ footCols }};gap:12px 32px;align-items:start;font:400 13px/1.5 'Sofia Sans',sans-serif;color:#5A5750">
+<span>Estimación independiente basada en la metodología SERPAVI; el valor oficial está en <a href="#">serpavi.mivau.gob.es</a>.</span>
+<span>Origen de los datos: Ministerio de Vivienda y Agenda Urbana. Elaboración propia con datos del INE. CartoCiudad CC-BY 4.0 scne.es</span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:3600},&quot;desktop&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;activo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;30&quot;,&quot;ej&quot;,&quot;niv&quot;,&quot;ped&quot;,&quot;dat&quot;,&quot;lim&quot;,&quot;fue&quot;,&quot;qui&quot;,&quot;fin&quot;],&quot;default&quot;:&quot;30&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;ipcFactor&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;1,054&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;ipcPct&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;5,4&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;ipcMes&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;agosto de 2026&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const NB = '\u00A0';
+const IDS = ['30', 'ej', 'niv', 'ped', 'dat', 'lim', 'fue', 'qui', 'fin'];
+const TOC = ['En 30 segundos', 'Un ejemplo', 'Los tres niveles', 'Precio pedido', 'Tus datos', 'Lo que no calculamos', 'Fuentes', 'Quiénes somos', 'Financiación'];
+class Component extends DCLogic {
+  state = { activo: null };
+  componentDidMount() {
+    if (!window.IntersectionObserver) return;
+    const pre = this.pre();
+    const els = IDS.map(i => document.getElementById(pre + i)).filter(Boolean);
+    this.io = new IntersectionObserver(es => {
+      const vis = es.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (vis.length) this.setState({ activo: vis[0].target.id.slice(pre.length) });
+    }, { rootMargin: '-10% 0px -70% 0px' });
+    els.forEach(e => this.io.observe(e));
+  }
+  componentWillUnmount() { this.io && this.io.disconnect(); }
+  pre() { return this.props.desktop ? 'ccd-' : 'ccm-'; }
+  go(id) {
+    const el = document.getElementById(this.pre() + id);
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: 'smooth' });
+    this.setState({ activo: id });
+  }
+  renderVals() {
+    const desk = !!this.props.desktop, pre = this.pre();
+    const activo = this.state.activo || this.props.activo || '30';
+    const ipcF = (this.props.ipcFactor || '1,054'), ipcPct = '+' + (this.props.ipcPct || '5,4') + NB + '%', ipcMes = this.props.ipcMes || 'agosto de 2026';
+    const W = desk ? 600 : 302, max = 2530, X = v => v / max * W;
+    const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const base = (lo, hi, right) => ({ W, bL: X(lo), bW: X(hi) - X(lo), rX: right ? X(hi) : (X(lo) + X(hi)) / 2, rT: right ? 'translateX(-100%)' : 'translateX(-50%)', rV: fmt(lo) + '–' + fmt(hi) + NB + '€' });
+    const steps = [
+      Object.assign(base(1062, 1605), { n: 1, t: 'Referencia sin ajustar', d: 'Con los alquileres registrados en esta zona para 90' + NB + 'm², la referencia va de 1.062 a 1.605' + NB + '€ al mes.', H: 74, g: false, tc: false, dot: false, aria: 'Referencia sin ajustar, de 1.062 a 1.605 euros' }),
+      Object.assign(base(1119, 1691), { n: 2, t: 'Con el ajuste del IPC (×' + ipcF + ')', d: 'Multiplicamos por ' + ipcF + ' (' + ipcPct + ' hasta ' + ipcMes + '): la referencia pasa a ir de 1.119 a 1.691' + NB + '€ al mes. La línea discontinua marca la de antes.', H: 74, g: true, gL: X(1062), gW: X(1605) - X(1062), tc: false, dot: false, aria: 'Referencia ajustada, de 1.119 a 1.691 euros' }),
+      Object.assign(base(1119, 1691, true), { n: 3, t: 'Techo para un piso excelente', d: 'El margen para las mejores características: 1.727' + NB + '€ sin ajustar y 1.820' + NB + '€ con el ajuste.', H: 100, g: false, tc: true, tL: X(1691), tW: X(1820) - X(1691), tE: X(1820), tV: '1.820' + NB + '€', dot: false, aria: 'Techo para un piso excelente, 1.820 euros' }),
+      Object.assign(base(1119, 1691, true), { n: 4, t: 'Comparación con tu precio', d: 'Tu precio, 2.200' + NB + '€, supera la parte alta en 509' + NB + '€ al mes (+30' + NB + '%): nivel «por encima del techo».', H: 100, g: false, tc: true, tL: X(1691), tW: X(1820) - X(1691), tE: X(1820), tV: '1.820' + NB + '€', dot: true, dX: X(2200), guW: X(2200) - X(1820), aria: 'Tu precio, 2.200 euros, por encima del techo' })
+    ];
+    const mW = desk ? 260 : 302, MX = v => v / max * mW;
+    const levels = [
+      { c: '#2E6B52', tint: '#DCE9E1', icon: 'M5.5 10.2l3 3 6-6.4', tag: 'Dentro de la referencia', d: 'El precio está entre la parte baja y la parte alta. Te decimos si cae en la parte baja, media o alta.', x: MX(1400) },
+      { c: '#2F5F8A', tint: '#DDE6EF', icon: 'M5 11.5c1.6-2.4 3.4-2.4 5 0s3.4 2.4 5 0', tag: 'Por encima, explicable si es excelente', d: 'Supera la parte alta, pero no el techo: puede cuadrar si el piso tiene características excelentes.', x: MX(1780) },
+      { c: '#6A3A8C', tint: '#E9DFF1', icon: 'M6 12l4-4.5 4 4.5', tag: 'Por encima del techo para un piso excelente', d: 'Supera incluso el techo. Te mostramos cuánto: al mes, al año y en porcentaje.', x: MX(2200) }
+    ];
+    const limits = [
+      ['5j', 'Menos de 30' + NB + 'm²', 'Hay pocos alquileres registrados de ese tamaño.'],
+      ['5k', 'Más de 150' + NB + 'm²', 'Hay tan pocos casos que la cifra no se sostendría.'],
+      ['5l', 'Obra nueva, de 2022 o después', 'Aún no tiene historial en los datos de 2024.'],
+      ['5m', 'Casa unifamiliar', 'La referencia está hecha con pisos.'],
+      ['5n', 'Alquiler temporal o de media estancia', 'La referencia solo mide alquileres de larga duración.'],
+      ['5o', 'Pocos datos en la zona', 'No hay suficientes alquileres registrados para dar una referencia fiable.'],
+      ['5p', 'Habitación', 'Las habitaciones no figuran en los registros.']
+    ].map(([id, t, d]) => ({ href: '#' + id, t, d }));
+    const sources = [
+      { n: 'Sistema Estatal de Referencia del Precio del Alquiler de Vivienda (SERPAVI)', host: 'serpavi.mivau.gob.es', url: 'https://serpavi.mivau.gob.es', uso: 'La referencia por zona y superficie, con datos de 2024.', atr: 'Origen de los datos: Ministerio de Vivienda y Agenda Urbana.' },
+      { n: 'Índice de Precios de Consumo, alquiler de vivienda (INE)', host: 'ine.es', url: 'https://www.ine.es', uso: 'Poner la referencia al día hasta el último mes publicado.', atr: 'Elaboración propia con datos del INE.' },
+      { n: 'CartoCiudad', host: 'cartociudad.es', url: 'https://www.cartociudad.es', uso: 'Situar la dirección en su zona y dibujar el mapa.', atr: 'CartoCiudad CC-BY 4.0 scne.es' }
+    ];
+    return {
+      desk, mob: !desk, activo,
+      rootW: desk ? '1280px' : '390px', cols: desk ? '240px 680px' : 'minmax(0,1fr)', mainPad: desk ? '32px 40px 72px' : '12px 20px 48px',
+      secGap: desk ? '56px' : '44px', h1: desk ? 96 : 60, h2: desk ? 28 : 24, h30: desk ? 44 : 36, lead: desk ? 20 : 18, body: desk ? 17 : 16, b30: desk ? 19 : 17,
+      boxPad: desk ? '28px 32px' : '20px 18px', stepPad: desk ? '20px 24px 18px' : '16px 16px 14px', barMl: desk ? 0 : 0,
+      two: desk ? '1fr 1fr' : '1fr', lvCols: desk ? 'minmax(0,1fr) 260px' : '1fr', srcCols: desk ? '1.1fr 1fr 1.1fr' : '1fr',
+      ctaAlign: desk ? 'flex-start' : 'stretch', ctaW: desk ? '280px' : '100%',
+      footPad: desk ? '28px 40px 32px' : '20px 20px 24px', footCols: desk ? '1.4fr 1fr' : '1fr',
+      ipcF, ipcPct, ipcMes, steps, levels, limits, sources,
+      mW, mBL: MX(1119), mBW: MX(1691) - MX(1119), mTL: MX(1691), mTW: MX(1820) - MX(1691),
+      p30: pre + '30', pEj: pre + 'ej', pNiv: pre + 'niv', pPed: pre + 'ped', pDat: pre + 'dat', pLim: pre + 'lim', pFue: pre + 'fue', pQui: pre + 'qui', pFin: pre + 'fin',
+      toc: IDS.map((id, i) => ({ id, t: TOC[i], href: '#' + pre + id, cur: id === activo ? 'true' : 'false', fw: id === activo ? 700 : 500, bg: id === activo ? '#EDE9E0' : 'transparent', go: e => { e.preventDefault(); this.go(id); } })),
+      onSelect: e => this.go(e.target.value)
+    };
+  }
+}
+</script>
+</body>
+</html>

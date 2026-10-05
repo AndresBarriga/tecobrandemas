@@ -8,6 +8,8 @@ import { type PoligonoSeccion, metrosAPunto, prepararPoligonos, puntoAMetros, se
 import type { Punto } from '#lib/ubicacion/geocodificar';
 
 export interface DatosMapa {
+	/** Topología original: las líneas entre barrios se sacan de aquí (aristas compartidas) */
+	topo: Topology;
 	poligonos: Map<string, PoligonoSeccion>;
 	vecinas: Vecinas;
 	/** Extensión del municipio en metros */
@@ -25,6 +27,7 @@ export function cargarMapa(): Promise<DatosMapa> {
 			const poligonos = prepararPoligonos(topo);
 			const cajas = [...poligonos.values()].map((p) => p.bbox);
 			return {
+				topo,
 				poligonos,
 				vecinas,
 				extension: {

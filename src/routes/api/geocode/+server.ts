@@ -28,7 +28,8 @@ export async function POST({ request, platform, getClientAddress }) {
 	// Límite por IP y día para no agotar el plan gratuito de D1; sin base del registro no se limita
 	// Si el límite no puede escribir en D1 (p. ej. cuota diaria agotada), la búsqueda sigue: el límite es una
 	// protección, no una condición para responder
-	const c = await contextoRegistro(env);
+	// (En `vite dev` no se limita: las pruebas e2e hacen cientos de búsquedas desde la misma IP)
+	const c = import.meta.env.DEV ? null : await contextoRegistro(env);
 	const permitida = c ? await puedeGeocodificar(c, getClientAddress()).catch(() => true) : true;
 	if (!permitida) error(429, 'Demasiadas búsquedas hoy');
 	const resultado = await geocodificar(texto, await indiceD1(db), almacenD1(db));

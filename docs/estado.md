@@ -14,11 +14,11 @@ Lo que depende de un PR sin fusionar lleva su número. Producción: https://a-su
 | R5 | Pantallas «sin dato» (8 motivos) | Hecho | `e2e/estados.spec.ts` 07-14 |
 | R6 | Tarjeta compartible y `/t/:id` | Parcial | `e2e/tarjeta.spec.ts`. Falta comprobar la vista previa en WhatsApp y X desde un móvil (no se puede automatizar) |
 | R7 | Registro anónimo con consentimiento | Hecho con el PR #1 | Casilla desmarcada y POST solo si se marca: `e2e/consentimiento.spec.ts`. Se guarda barrio y mes, no sección ni fecha (desviación del diseño 5q) |
-| R8 | Metodología, fuentes, límites, quiénes somos, financiación | Parcial | `/como-calculamos`, `e2e/metodologia.spec.ts`. No sigue el diseño 5t/5u: faltan la fórmula en seis pasos con el ejemplo y el índice fijo en escritorio |
+| R8 | Metodología, fuentes, límites, quiénes somos, financiación | Hecho | `/como-calculamos` según el diseño 7a/7b: `e2e/como-calculamos.spec.ts`, `tests/metodologia.test.ts` (el ejemplo sale del motor y cambia con el IPC) |
 | R9 | Eventos del embudo sin cookies | Hecho | `e2e/registro.spec.ts`; `tests/registro.test.ts`; sin cookies: `npm run informe:lanzamiento` |
 | R10 | «Ya hemos analizado N pisos» (≥ 10) | Hecho | `tests/vista.test.ts` (contadores), `e2e/estados.spec.ts` («el contador del barrio no sale sin dato real») |
 | R11 | «¿Cuánto pagas tú?» | Hecho | `/cuanto-pagas`, `e2e/registro.spec.ts` 24-26 |
-| R12 | Evolución 2011-2024 | Falta | Existe el cálculo (`src/lib/resultado/evolucion.ts`, con tests) pero no el gráfico: llega con el diseño de «Tu zona» |
+| R12 | Evolución 2015-2024 | Hecho | Línea al pie de «Tu zona» según el diseño: `tests/resultado.test.ts` (evolución), `e2e/tu-zona.spec.ts`. El diseño es una frase con la variación, no un gráfico |
 | R13 | «¿Te ha servido?» | Hecho | `e2e/registro.spec.ts` (el embudo) |
 
 ## Pantallas del paquete de diseño
@@ -30,7 +30,7 @@ Lo que depende de un PR sin fusionar lleva su número. Producción: https://a-su
 | Caso extremo El Viso (3g) | Hecho | `e2e/estados.spec.ts` 05 |
 | Ubicación aproximada (3h, 5e) | Hecho | `e2e/estados.spec.ts` 06 |
 | Barra a 360 px (3i) | Hecho | proyecto `movil-360` de Playwright |
-| **Tu zona + «Aquí estarías dentro» (4f)** | **Falta** | Hay cálculo con tests (`zona.ts`, `aqui.ts`, `evolucion.ts`); faltan los componentes. Espera el diseño |
+| Tu zona: lista y selección (6a, 6e), sin zonas (6b), cargando (6c), nivel a (6d, 6f) | Hecho | `e2e/tu-zona.spec.ts` (lista, selección y nivel a); la caja «sin zonas» y los textos, en `tests/resultado.test.ts`. El estado «cargando» sale mientras llegan los datos, sin prueba propia |
 | Negociar con el dato (4g) | Hecho | `e2e/estados.spec.ts` 19 |
 | Contadores, 3 estados (4h) | Hecho | `tests/vista.test.ts` |
 | Dirección no encontrada (4i) | Hecho | `e2e/estados.spec.ts` 15 |
@@ -40,7 +40,7 @@ Lo que depende de un PR sin fusionar lleva su número. Producción: https://a-su
 | `/t/:id` (5f, 5g) | Hecho | `e2e/tarjeta.spec.ts` 23 |
 | Vista previa OG 1200×630 (5h, 5i) | Hecho | `e2e/tarjeta.spec.ts` 24 (`og.jpg`) |
 | ¿Cuánto pagas tú? (5q-5s) | Hecho | `e2e/registro.spec.ts` 24-26 |
-| Cómo calculamos (5t, 5u) | Parcial | Ver R8: la página existe con otro formato |
+| Cómo calculamos (7a, 7b) | Hecho | Ver R8 |
 
 ## Infraestructura y operación
 

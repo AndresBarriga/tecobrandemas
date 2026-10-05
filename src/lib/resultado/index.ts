@@ -12,6 +12,7 @@ export * from './tarjeta';
 export * from './formulario';
 export * from './aportacion';
 export * from './vista';
+export * from './tuzona';
 export * from './contadores';
 export * from './negociar';
 export * from './historial';

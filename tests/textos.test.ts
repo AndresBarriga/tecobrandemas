@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import type { Anuncio } from '../src/lib/motor';
 import * as textos from '../src/lib/resultado/textos';
 import {
-	type DatosMadrid, construirPantalla, construirTarjeta, validarAportacion, validarFormulario, zona
+	type DatosMadrid, TU_ZONA, construirPantalla, construirTarjeta, construirTuZona, validarAportacion, validarFormulario, zona
 } from '../src/lib/resultado';
 
 const PROHIBIDAS = ['ilegal', 'abusivo', 'actualizado a hoy', 'cuesta entrar'];
@@ -59,11 +59,21 @@ describe('textos', () => {
 		...cadenas(sinDato),
 		...cadenas(validarFormulario({ precio: '', superficie: '', obraNueva: false, largaDuracion: true, tipo: 'piso' })),
 		...cadenas(validarAportacion({ precio: '', superficie: '', anioContrato: '', barrio: '', consentimiento: false }, [], 2026)),
-		...cadenas(zona(70, { lon: 0, lat: 0 }, [], DATOS, new Map()))
+		...cadenas(zona(70, { lon: 0, lat: 0 }, [], DATOS, new Map())),
+		...cadenas(TU_ZONA),
+		...cadenas(construirTuZona({ anuncio: { precio: 2500, superficie: 70, obraNueva: false, tipo: 'piso', largaDuracion: true }, clase: 'c', origen: { lon: 0, lat: 0 }, cusecs: [], datos: DATOS, centros: new Map() }))
 	];
 
 	it('hay textos que revisar', () => {
 		expect(todos.length).toBeGreaterThan(60);
+	});
+
+	it('«Tu zona» dice «zona», nunca «sección»', () => {
+		const vista = construirTuZona({
+			anuncio: { precio: 2500, superficie: 70, obraNueva: false, tipo: 'piso', largaDuracion: true }, clase: 'c', origen: { lon: 0, lat: 0 },
+			cusecs: ['A'], datos: DATOS, centros: new Map([['A', { lon: 0, lat: 0 }]])
+		});
+		for (const t of [...cadenas(TU_ZONA), ...cadenas(vista)]) expect(sinTildes(t), t).not.toMatch(/seccion/);
 	});
 
 	it.each(PROHIBIDAS)('ningún texto dice «%s»', (palabra) => {

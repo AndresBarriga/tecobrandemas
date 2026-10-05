@@ -26,9 +26,10 @@ supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado
 - Es una estimación independiente: enlazar siempre a serpavi.mivau.gob.es para el valor legal.
 
 ## Estado (05/10/2026)
-- Producto: «A su precio». Hitos 1-7 hechos salvo «Tu zona» (Hito 4, paso 2), que espera su diseño:
-  mapa de la zona, «Aquí estarías dentro» y la evolución 2015-2024. El cálculo ya existe en
-  `src/lib/resultado` (`zona.ts`, `aqui.ts`, `evolucion.ts`); faltan los componentes.
+- Producto: «A su precio». Hitos 1-7 hechos, incluidas «Tu zona» (mapa por zonas, «Este precio entra en la
+  referencia de…» y evolución 2015-2024) y «Cómo calculamos» según el diseño actualizado (`docs/design`).
+  El cálculo está en `src/lib/resultado` (`zona.ts`, `aqui.ts`, `evolucion.ts`, `tuzona.ts`); la geometría
+  del mapa, en `src/lib/cliente/zona*.ts`. En los textos de «Tu zona» se dice «zona», nunca «sección».
 - Producción en Cloudflare (Worker + D1 + R2) con CI en GitHub. Sin dominio propio todavía.
 - `noindex` en todo el sitio hasta el lanzamiento: `config/indexacion.json`.
 - Se trabaja en ramas con PR; el CI despliega al fusionar en `main`.

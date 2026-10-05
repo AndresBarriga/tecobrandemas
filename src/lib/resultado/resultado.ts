@@ -17,6 +17,7 @@ import {
 	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, type ClaveSinDato, type MotivoPantalla,
 	PRECIO_PEDIDO, QUE_PUEDES_HACER, SIN_DATO, TEXTO_OFICIAL_SIN_DATO
 } from './textos';
+import type { Punto } from '../ubicacion/geocodificar';
 import type { Ubicacion } from './ubicacion';
 import { type Vista, construirVista } from './vista';
 
@@ -70,6 +71,17 @@ export interface PantallaResultado {
 	enlaceOficial: string;
 	/** Lo que se enviaría al registro anónimo (R7) si la persona marca la casilla; null si no hay barrio */
 	registro: RegistroAnalisis | null;
+	/** Lo que necesita «Tu zona» para calcularse en el navegador; el punto no sale del dispositivo */
+	zona: ParametrosZona | null;
+}
+
+/** Entrada de «Tu zona»: el anuncio, la ubicación (el punto, o null si solo hay calle) y las zonas */
+export interface ParametrosZona {
+	precio: number;
+	superficie: number;
+	origen: Punto | null;
+	cusecs: string[];
+	clase: 'a' | 'b' | 'c';
 }
 
 /** Cuerpo de POST /api/analisis: barrio, precio y m² exactos y nivel; sin dirección ni sección */
@@ -115,6 +127,14 @@ export function pantallaSinDato(motivo: MotivoPantalla, c: ContextoSinDato | nul
 		textoOficial: TEXTO_OFICIAL_SIN_DATO,
 		enlaceOficial: ENLACE_OFICIAL
 	};
+}
+
+/** Pantalla «sin dato» a partir de su clave (enlaces de «Cómo calculamos» a /?motivo=…); sin anuncio ni lugar */
+export function pantallaSinDatoDeClave(clave: string): PantallaSinDato | null {
+	if (!Object.hasOwn(SIN_DATO, clave)) return null;
+	const k = clave as ClaveSinDato;
+	const motivo: MotivoPantalla = k === 'superficie_menor' || k === 'superficie_mayor' ? 'superficie' : k;
+	return { ...pantallaSinDato(motivo), ...SIN_DATO[k] };
 }
 
 function titularNivel(n: Nivel): string {
@@ -182,6 +202,7 @@ function desdeAnalisis(
 		vista,
 		avisoIndependiente: AVISO_INDEPENDIENTE,
 		enlaceOficial: ENLACE_OFICIAL,
+		zona: { precio: a.precio, superficie: a.superficie, origen: u.punto, cusecs: u.cusecs, clase: vista.clase },
 		registro: barrio ? { barrio: barrio.codigo, precio: Math.round(a.precio), m2: a.superficie, nivel: vista.clase } : null
 	};
 }
