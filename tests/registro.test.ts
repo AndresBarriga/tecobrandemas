@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
 	type AnalisisEntrada, type Contexto, LIMITE_REGISTROS_DIA, claveLimite, leerAnalisis, leerAportacion, leerEvento,
-	plausible, recuentos, registrarAnalisis, registrarAportacion, registrarEvento, salDelDia
+	LIMITE_GEOCODIFICACIONES_DIA, plausible, puedeGeocodificar, recuentos, registrarAnalisis, registrarAportacion, registrarEvento, salDelDia
 } from '../src/lib/server/registro';
 import { d1Registro } from './d1';
 
@@ -208,5 +208,28 @@ describe('eventos y recuentos', () => {
 		await registrarEvento(c, 'x', { tipo: 'llegada', visita, tarjeta: null });
 		await registrarEvento(c, 'x', { tipo: 'completa', visita, tarjeta: null });
 		expect((await recuentos(d1, null)).total).toBe(1);
+	});
+});
+
+describe('límite del geocodificador', () => {
+	it('200 búsquedas al día por IP; la 201 se rechaza y al día siguiente vuelve a empezar', async () => {
+		const { c, avanzar } = contexto();
+		for (let i = 0; i < LIMITE_GEOCODIFICACIONES_DIA; i++) expect(await puedeGeocodificar(c, '203.0.113.9')).toBe(true);
+		expect(await puedeGeocodificar(c, '203.0.113.9')).toBe(false);
+		expect(await puedeGeocodificar(c, '203.0.113.10')).toBe(true); // otra IP, otro contador
+		avanzar(DIA + 1000);
+		expect(await puedeGeocodificar(c, '203.0.113.9')).toBe(true);
+	});
+
+	it('no guarda la IP: solo un HMAC, y las claves caducadas se borran con la primera acción del día', async () => {
+		const { db, c, avanzar } = contexto();
+		await puedeGeocodificar(c, '203.0.113.9');
+		const claves = (db.prepare('SELECT clave FROM limites').all() as { clave: string }[]).map((f) => f.clave);
+		expect(claves).toHaveLength(1);
+		expect(claves[0]).toMatch(/^g:[0-9a-f]{64}$/);
+		expect(claves.join()).not.toContain('203.0.113');
+		avanzar(2 * DIA);
+		await puedeGeocodificar(c, '198.51.100.7');
+		expect(cuenta(db, 'limites')).toBe(1); // la del día anterior se borró
 	});
 });

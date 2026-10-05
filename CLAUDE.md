@@ -9,6 +9,9 @@ supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado
 - docs/plan.md: plan de implementación aprobado (hitos, arquitectura, tests).
 - docs/progreso.md: qué está hecho, cifras y desviaciones del plan. Actualizarlo al
   cerrar cada hito o cuando cambie algo relevante.
+- docs/estado.md: tabla de R1-R13 y de las pantallas del diseño (hecho / parcial / falta).
+- docs/operacion.md: límites del plan gratuito, métricas y pasos antes del lanzamiento.
+- README.md: cómo desarrollar, regenerar datos, actualizar el IPC, desplegar y rotar el secreto.
 
 ## Reglas que no se rompen nunca
 - Los tests de tests/fixtures/tests_motor_serpavi.csv deben pasar siempre
@@ -21,6 +24,17 @@ supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado
   "Elaboración propia con datos extraídos del sitio web del INE: www.ine.es",
   "CartoCiudad CC-BY 4.0 scne.es". Nunca sugerir respaldo oficial.
 - Es una estimación independiente: enlazar siempre a serpavi.mivau.gob.es para el valor legal.
+
+## Estado (05/10/2026)
+- Producto: «A su precio». Hitos 1-7 hechos salvo «Tu zona» (Hito 4, paso 2), que espera su diseño:
+  mapa de la zona, «Aquí estarías dentro» y la evolución 2015-2024. El cálculo ya existe en
+  `src/lib/resultado` (`zona.ts`, `aqui.ts`, `evolucion.ts`); faltan los componentes.
+- Producción en Cloudflare (Worker + D1 + R2) con CI en GitHub. Sin dominio propio todavía.
+- `noindex` en todo el sitio hasta el lanzamiento: `config/indexacion.json`.
+- Se trabaja en ramas con PR; el CI despliega al fusionar en `main`.
+- Arquitectura: los componentes y las rutas no importan `src/lib/motor` ni `src/lib/ubicacion`
+  (un test lo comprueba). Alias de importación: `#lib/...` (SvelteKit 3 no tiene `$lib`).
+- Lo que se guarda: barrio y mes, nunca la sección, la dirección, la IP ni la fecha exacta del análisis.
 
 ## Forma de trabajar
 - Proponer un plan antes de escribir código.

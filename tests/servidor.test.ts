@@ -149,7 +149,8 @@ describe.skipIf(!hayCallejero)('POST /api/geocode', () => {
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ texto: direccion })
 			}),
-			platform: { env: { CALLEJERO: espiada } }
+			platform: { env: { CALLEJERO: espiada } },
+			getClientAddress: () => '203.0.113.9'
 		} as never);
 		const cuerpo = await r.json();
 
@@ -165,7 +166,8 @@ describe.skipIf(!hayCallejero)('POST /api/geocode', () => {
 		const llamar = (cuerpo: string) =>
 			postGeocode({
 				request: new Request('http://x/api/geocode', { method: 'POST', body: cuerpo }),
-				platform: { env: { CALLEJERO: await_d1() } }
+				platform: { env: { CALLEJERO: await_d1() } },
+				getClientAddress: () => '203.0.113.9'
 			} as never);
 		const await_d1 = () => ({ prepare: () => ({ bind: () => ({ all: async () => ({ results: [] }) }), all: async () => ({ results: [] }) }) });
 		await expect(llamar('no es json')).rejects.toMatchObject({ status: 400 });
