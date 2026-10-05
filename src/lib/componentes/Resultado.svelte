@@ -4,7 +4,7 @@
 	import Icono from './Icono.svelte';
 	import {
 		AVISO_APROXIMADA_TITULO, BOTON_AÑADIR_NUMERO, BOTON_COMPARTIR, BOTON_OTRO_PISO, ENLACE_OFICIAL, REGISTRO, SERVIDO, TARJETA, heroEnVeces,
-		type Contador, type PantallaResultado
+		type Canal, type Contador, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
 	let {
@@ -17,6 +17,9 @@
 		alNegociar,
 		alAñadirNumero,
 		alCompartir,
+		nativo = false,
+		enlaces = null,
+		alCompartirPor,
 		alServido,
 		registro = 'no',
 		alRegistrar
@@ -36,6 +39,10 @@
 		/** Solo cuando la ubicación es una calle sin número */
 		alAñadirNumero?: () => void;
 		alCompartir: () => void;
+		/** Móvil con hoja de compartir: un solo botón. Si no, los canales (escritorio) */
+		nativo?: boolean;
+		enlaces?: EnlacesCompartir | null;
+		alCompartirPor?: (canal: Canal) => void;
 		/** «¿Te ha servido?»: true = sí */
 		alServido?: (si: boolean) => void;
 	} = $props();
@@ -132,9 +139,23 @@
 					<span class="tarjeta-detalle">{TARJETA.detalle}</span>
 				</div>
 			</div>
-			<button type="button" class="boton" onclick={alCompartir} disabled={compartiendo}>
-				{compartiendo ? TARJETA.generando : BOTON_COMPARTIR}
-			</button>
+			{#if nativo}
+				<button type="button" class="boton" onclick={alCompartir} disabled={compartiendo}>
+					{compartiendo ? TARJETA.generando : BOTON_COMPARTIR}
+				</button>
+			{:else if enlaces}
+				<div class="canales" role="group" aria-label={BOTON_COMPARTIR}>
+					<a class="boton canal" href={enlaces.whatsapp} target="_blank" rel="noopener noreferrer" onclick={() => alCompartirPor?.('whatsapp')}
+						>{TARJETA.canales.whatsapp}</a
+					>
+					<a class="boton canal" href={enlaces.x} target="_blank" rel="noopener noreferrer" onclick={() => alCompartirPor?.('x')}
+						>{TARJETA.canales.x}</a
+					>
+					<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor?.('copiar')}>{TARJETA.canales.copiar}</button>
+					<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor?.('descarga')}>{TARJETA.canales.descarga}</button>
+				</div>
+				<p class="mensaje aviso">{TARJETA.canalesAviso}</p>
+			{/if}
 			<p class="mensaje" role="status">{mensajeTarjeta ?? ''}</p>
 		{:else}
 			<button type="button" class="boton" onclick={alOtro}>{BOTON_OTRO_PISO}</button>
@@ -386,6 +407,18 @@
 	.tarjeta-detalle {
 		font: 400 13px/1.4 var(--f-texto);
 		color: var(--grafito);
+	}
+	.canales {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 10px;
+	}
+	.canal {
+		min-height: 48px;
+		font-size: 16px;
+	}
+	.mensaje.aviso {
+		margin-top: -4px;
 	}
 	.mensaje {
 		font: 500 13px/1.4 var(--f-texto);

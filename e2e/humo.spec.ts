@@ -6,7 +6,7 @@
  * Las cifras exactas cambian con el IPC: se comprueba el nivel y la forma, no los números.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { abrir, comprobar } from './ayudas';
+import { abrir, comprobar, sinCompartirNativo } from './ayudas';
 
 const bloquearEventos = (page: Page) => page.route('**/api/evento', (r) => r.fulfill({ status: 204 }));
 
@@ -61,12 +61,11 @@ test.describe('humo', () => {
 	test('3. tarjeta: se crea, /t/:id la enseña con vista previa y la imagen OG sale', async ({ page, request, baseURL }) => {
 		test.skip(!process.env.HUMO_ESCRIBE, 'Escribe una tarjeta en producción: solo con HUMO_ESCRIBE=1');
 		await bloquearEventos(page);
+		await sinCompartirNativo(page);
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		const respuesta = page.waitForResponse((r) => r.url().endsWith('/api/tarjeta'));
-		const descarga = page.waitForEvent('download');
-		await page.getByRole('button', { name: 'Compartir el resultado' }).click();
-		await descarga;
+		await page.getByRole('button', { name: 'Copiar enlace' }).click();
 		const { id } = await (await respuesta).json();
 
 		await page.goto(`/t/${id}`);

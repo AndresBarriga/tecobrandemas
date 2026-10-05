@@ -196,3 +196,8 @@ Nombre del producto: **A su precio**. Diseño en `docs/design` (README del hando
 - **Ratio:** por debajo de 2 veces la parte alta, «+X %»; desde 2, «X,X veces la parte alta». Una sola función (`src/lib/resultado/ratio.ts`) para la pantalla y la tarjeta; sin frases fijas por tramo.
 - **Etiquetas de la barra:** `colocarEtiqueta` mantiene «techo para un piso excelente» y «parte alta» enteras y sin pisar el «0 €» con brechas de +100 %, +240 % y +400 %, en la tarjeta de 1080×1350 y en pantalla (390, 360 y 1280 px).
 - **Aviso de error al teclear:** más de 3 veces la parte alta (`UMBRAL_ERROR_TECLEO`) pide confirmar antes del resultado; sin confirmar no hay tarjeta; el evento `confirma_precio` no lleva precio.
+
+## Compartir la tarjeta por canales (05/10/2026)
+- **Opción A:** el id `/t/ID` se genera en el navegador al abrir el resultado; la tarjeta solo se sube cuando la persona elige un canal que necesita el enlace. `POST /api/tarjeta` acepta ese `id` (formato `[0-9a-z]{10}`) y no reescribe una tarjeta existente.
+- **Móvil con hoja nativa** (`navigator.canShare({files})` y puntero táctil): un botón; imagen y enlace; se sube la tarjeta; evento `comparte`.
+- **Escritorio:** WhatsApp y X como enlaces normales, «Copiar enlace» y «Descargar imagen» (esta última no sube nada). Eventos `comparte_whatsapp`, `comparte_x`, `comparte_copiar` y `comparte_descarga` (tipo y id de tarjeta, sin datos del anuncio). Instagram: sin botón propio. Sin SDK, scripts ni píxeles de terceros.

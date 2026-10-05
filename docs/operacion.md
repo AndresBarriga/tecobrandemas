@@ -37,7 +37,8 @@ npm run metricas -- --desde=2026-10-20 # solo desde una fecha (la evaluación es
 Escribe en `informe-metricas/`: `embudo.csv` (H1-H4, utilidad, segundo análisis y aportación, con su objetivo), `barrios.csv` (análisis por barrio, solo desde 10) y `aportaciones.csv` (residentes, aparte). Notas para leerlo:
 
 - Cuentan **visitas distintas** (id aleatorio de sesión), no clics.
-- H4 divide las visitas con un análisis desde una tarjeta entre las tarjetas creadas. La prueba de humo crea una tarjeta al día (`.github/workflows/humo.yml`): restarla al evaluar.
+- H4 divide las visitas con un análisis desde una tarjeta entre las tarjetas creadas. Desde el PR de compartir, una tarjeta solo se guarda cuando la persona elige WhatsApp, X, copiar el enlace o la hoja del móvil (descargar la imagen no guarda nada), así que «tarjetas creadas» son tarjetas compartidas. La prueba de humo crea una tarjeta al día (`.github/workflows/humo.yml`): restarla al evaluar.
+- `npm run metricas` imprime también las visitas por canal (`nativo`, `whatsapp`, `x`, `copiar`, `descarga`); H3 cuenta cualquier canal.
 - Los datos de prueba hechos en producción antes del lanzamiento deben borrarse (ver «Antes del lanzamiento»).
 
 ## Antes del lanzamiento

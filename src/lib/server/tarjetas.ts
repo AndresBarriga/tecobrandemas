@@ -10,7 +10,11 @@ export interface TarjetaGuardada {
 }
 
 export interface AlmacenTarjetas {
-	crear(datos: TarjetaDatos, og: Uint8Array | null): Promise<string>;
+	/**
+	 * Guarda la tarjeta. Con `id` (lo genera el navegador antes de subirla) se usa ese; si ya existe
+	 * no se toca nada y se devuelve el mismo id: subir dos veces es inofensivo y nadie reescribe una tarjeta.
+	 */
+	crear(datos: TarjetaDatos, og: Uint8Array | null, id?: string): Promise<string>;
 	leer(id: string): Promise<TarjetaGuardada | null>;
 	leerOg(id: string): Promise<Uint8Array | null>;
 }
@@ -26,9 +30,8 @@ export const ID_VALIDO = /^[0-9a-z]{10}$/;
 export function almacenMemoria(): AlmacenTarjetas {
 	const filas = new Map<string, { datos: TarjetaDatos; og: Uint8Array | null }>();
 	return {
-		async crear(datos, og) {
-			const id = nuevoId();
-			filas.set(id, { datos, og });
+		async crear(datos, og, id = nuevoId()) {
+			if (!filas.has(id)) filas.set(id, { datos, og });
 			return id;
 		},
 		async leer(id) {
@@ -63,8 +66,8 @@ export const SQL_TARJETAS =
 
 export function almacenCloudflare(db: D1TarjetasMinimo, r2: R2Minimo, ahora: () => Date = () => new Date()): AlmacenTarjetas {
 	return {
-		async crear(datos, og) {
-			const id = nuevoId();
+		async crear(datos, og, id = nuevoId()) {
+			if (await db.prepare('SELECT id FROM tarjetas WHERE id = ?').bind(id).first()) return id;
 			const mes = ahora().toISOString().slice(0, 7);
 			await db
 				.prepare('INSERT INTO tarjetas (id, mes, barrio, nivel, datos) VALUES (?, ?, ?, ?, ?)')

@@ -1,66 +1,84 @@
 /**
- * Compartir la tarjeta: se sube solo la tarjeta (sin precio ni dirección) y su vista previa para
- * obtener un enlace /t/:id, y se entrega la imagen con la hoja de compartir del sistema. Si el
- * navegador no puede compartir ficheros, se descarga la imagen. Nada se envía sin que la
- * persona pulse «Compartir el resultado».
+ * Compartir la tarjeta. El id de /t/:id lo genera el navegador al abrir el resultado, de modo que
+ * los enlaces ya existen; la tarjeta solo se sube al servidor cuando la persona elige un canal
+ * que necesita el enlace (WhatsApp, X, copiar o la hoja del móvil). «Descargar imagen» no sube nada.
  */
 import { NOMBRE, TARJETA, type TarjetaDatos } from '#lib/resultado';
 import { aBlob, dibujarOg } from './tarjeta-canvas';
 
-export type ViaCompartir = 'compartida' | 'descargada' | 'cancelada';
+const subidas = new Map<string, Promise<boolean>>();
 
-export interface ResultadoCompartir {
-	via: ViaCompartir;
-	/** Enlace /t/:id si el servidor guardó la tarjeta */
-	url: string | null;
-	/** true si el enlace se copió al portapapeles */
-	enlaceCopiado: boolean;
+/** Sube la tarjeta con su id una sola vez; subir otra vez (otro canal) reutiliza la misma subida */
+export function subirTarjeta(datos: TarjetaDatos, id: string): Promise<boolean> {
+	let p = subidas.get(id);
+	if (!p) {
+		p = (async () => {
+			try {
+				const og = document.createElement('canvas');
+				await dibujarOg(og, datos);
+				const cuerpo = new FormData();
+				cuerpo.append('tarjeta', JSON.stringify(datos));
+				cuerpo.append('id', id);
+				cuerpo.append('og', await aBlob(og, 0.85), 'og.jpg');
+				const r = await fetch('/api/tarjeta', { method: 'POST', body: cuerpo });
+				await r.text().catch(() => '');
+				return r.ok;
+			} catch {
+				return false;
+			}
+		})();
+		subidas.set(id, p);
+		// Si falla, un nuevo intento puede repetirla
+		void p.then((ok) => ok || subidas.delete(id));
+	}
+	return p;
 }
 
-async function subir(datos: TarjetaDatos): Promise<string | null> {
+export const urlDeTarjeta = (id: string) => `${location.origin}/t/${id}`;
+
+/** ¿Hay hoja de compartir con ficheros en un dispositivo táctil? Si no, se muestran los canales */
+export function puedeCompartirNativo(): boolean {
 	try {
-		const og = document.createElement('canvas');
-		await dibujarOg(og, datos);
-		const cuerpo = new FormData();
-		cuerpo.append('tarjeta', JSON.stringify(datos));
-		cuerpo.append('og', await aBlob(og, 0.85), 'og.jpg');
-		const r = await fetch('/api/tarjeta', { method: 'POST', body: cuerpo });
-		if (!r.ok) return null;
-		const { id } = (await r.json()) as { id: string };
-		return `${location.origin}/t/${id}`;
+		const fichero = new File([new Uint8Array(1)], 'a-su-precio.jpg', { type: 'image/jpeg' });
+		return matchMedia('(pointer: coarse)').matches && !!navigator.canShare?.({ files: [fichero] });
 	} catch {
-		return null;
+		return false;
 	}
 }
 
-export async function compartirTarjeta(datos: TarjetaDatos, canvas: HTMLCanvasElement): Promise<ResultadoCompartir> {
-	const [url, jpg] = await Promise.all([subir(datos), aBlob(canvas, 0.92)]);
+export type ViaNativa = 'compartida' | 'descargada' | 'cancelada';
+
+/** Hoja nativa con la imagen y el enlace; si falla (no cancelación), se descarga la imagen */
+export async function compartirNativo(datos: TarjetaDatos, canvas: HTMLCanvasElement, id: string): Promise<ViaNativa> {
+	const [subida, jpg] = await Promise.all([subirTarjeta(datos, id), aBlob(canvas, 0.92)]);
 	const fichero = new File([jpg], 'a-su-precio.jpg', { type: 'image/jpeg' });
-
-	if (navigator.canShare?.({ files: [fichero] })) {
-		try {
-			await navigator.share({ files: [fichero], title: NOMBRE, text: TARJETA.compartirTitulo, ...(url ? { url } : {}) });
-			return { via: 'compartida', url, enlaceCopiado: false };
-		} catch (e) {
-			if ((e as DOMException).name === 'AbortError') return { via: 'cancelada', url, enlaceCopiado: false };
-			// Cualquier otro fallo de la hoja de compartir: se cae a la descarga
-		}
+	try {
+		await navigator.share({ files: [fichero], title: NOMBRE, text: TARJETA.compartirTitulo, ...(subida ? { url: urlDeTarjeta(id) } : {}) });
+		return 'compartida';
+	} catch (e) {
+		if ((e as DOMException).name === 'AbortError') return 'cancelada';
 	}
+	descargarBlob(jpg, fichero.name);
+	return 'descargada';
+}
 
+export function descargarBlob(blob: Blob, nombre: string): void {
 	const enlace = document.createElement('a');
-	enlace.href = URL.createObjectURL(jpg);
-	enlace.download = fichero.name;
+	enlace.href = URL.createObjectURL(blob);
+	enlace.download = nombre;
 	enlace.click();
 	setTimeout(() => URL.revokeObjectURL(enlace.href), 10_000);
+}
 
-	let enlaceCopiado = false;
-	if (url) {
-		try {
-			await navigator.clipboard.writeText(url);
-			enlaceCopiado = true;
-		} catch {
-			// sin permiso de portapapeles: el enlace queda solo en el servidor
-		}
+export async function descargarImagen(canvas: HTMLCanvasElement): Promise<void> {
+	descargarBlob(await aBlob(canvas, 0.92), 'a-su-precio.jpg');
+}
+
+export async function copiarEnlace(id: string): Promise<boolean> {
+	try {
+		await navigator.clipboard.writeText(urlDeTarjeta(id));
+		return true;
+	} catch {
+		return false;
 	}
-	return { via: 'descargada', url, enlaceCopiado };
 }
