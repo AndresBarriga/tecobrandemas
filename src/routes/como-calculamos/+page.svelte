@@ -84,10 +84,6 @@
 		flex-direction: column;
 		gap: 8px;
 	}
-	.gris {
-		font-size: 13px;
-		color: var(--grafito);
-	}
 	nav {
 		display: flex;
 		flex-wrap: wrap;

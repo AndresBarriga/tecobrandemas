@@ -3,13 +3,13 @@
  * El cliente solo lo envía si la persona ha dado su consentimiento. Se guarda barrio y mes.
  */
 import { error, json } from '@sveltejs/kit';
-import { contextoRegistro } from '#lib/server/entorno';
+import { contextoRegistro, entornoDe } from '#lib/server/entorno';
 import { leerAnalisis, registrarAnalisis } from '#lib/server/registro';
 
 export const prerender = false;
 
 export async function POST({ request, platform, getClientAddress }) {
-	const c = await contextoRegistro(platform?.env);
+	const c = await contextoRegistro(await entornoDe(platform));
 	if (!c) error(503, 'Registro no disponible');
 	const entrada = leerAnalisis(await request.json().catch(() => null), c.barrios);
 	if (!entrada) error(400, 'Datos no válidos');

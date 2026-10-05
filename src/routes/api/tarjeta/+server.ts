@@ -5,7 +5,7 @@
  */
 import { json, error } from '@sveltejs/kit';
 import { validarTarjeta } from '#lib/resultado';
-import { almacenTarjetas } from '#lib/server/entorno';
+import { almacenTarjetas, entornoDe } from '#lib/server/entorno';
 
 export const prerender = false;
 
@@ -13,7 +13,7 @@ const MAX_OG = 300_000;
 const esJpeg = (b: Uint8Array) => b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
 
 export async function POST({ request, platform }) {
-	const almacen = almacenTarjetas(platform?.env);
+	const almacen = almacenTarjetas(await entornoDe(platform));
 	if (!almacen) error(503, 'Almacén no disponible');
 
 	let form: FormData;

@@ -19,6 +19,21 @@ export interface EntornoWorker {
 	SECRETO?: string;
 }
 
+/**
+ * El adaptador de Cloudflare ya no rellena `platform.env`: los recursos se leen de
+ * `cloudflare:workers` (en `vite dev` lo sustituye un módulo virtual del adaptador).
+ * Si el entorno viene en `platform` (tests), manda ese.
+ */
+export async function entornoDe(platform: { env?: EntornoWorker } | undefined): Promise<EntornoWorker | undefined> {
+	if (platform?.env) return platform.env;
+	try {
+		const { env } = await import('cloudflare:workers');
+		return env as unknown as EntornoWorker;
+	} catch {
+		return undefined;
+	}
+}
+
 let memoria: AlmacenTarjetas | null = null;
 
 export function almacenTarjetas(env: EntornoWorker | undefined): AlmacenTarjetas | null {
