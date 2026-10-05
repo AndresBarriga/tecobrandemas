@@ -13,6 +13,9 @@
 		{ "binding": "CALLEJERO", "database_name": "a-su-precio-callejero" },
 		{ "binding": "DB", "database_name": "a-su-precio-registro", "migrations_dir": "migrations" }
 	],
-	"r2_buckets": [{ "binding": "TARJETAS", "bucket_name": "a-su-precio-tarjetas" }],
+	"r2_buckets": [
+		{ "binding": "TARJETAS", "bucket_name": "a-su-precio-tarjetas" },
+		{ "binding": "MAPA", "bucket_name": "a-su-precio-mapa" }
+	],
 	"observability": { "enabled": true }
 }

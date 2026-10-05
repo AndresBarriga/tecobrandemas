@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { MAPA, type Ubicacion } from '#lib/resultado';
+	import type { BaseMapa } from '#lib/cliente/mapa-base';
 	import { type DatosMapa, cargarMapa, metrosAPunto, ubicacionDelPunto } from '#lib/cliente/mapa';
 
 	/** Recibe la ubicación del punto marcado, o null si cae fuera de Madrid */
@@ -8,6 +9,8 @@
 
 	let lienzo: HTMLCanvasElement;
 	let datos: DatosMapa | null = null;
+	let base: BaseMapa | null = null;
+	let pintarBase: typeof import('#lib/cliente/mapa-base').pintarBase | null = null;
 	let cargando = $state(true);
 	let fallo = $state(false);
 	let fuera = $state(false);
@@ -52,8 +55,12 @@
 		}
 		const ctx = lienzo.getContext('2d')!;
 		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-		ctx.fillStyle = '#EDE9E0';
-		ctx.fillRect(0, 0, w, h);
+		if (base && pintarBase) pintarBase(ctx, base, { cx, cy, mpp, w, h, dpr });
+		else {
+			ctx.fillStyle = '#EDE9E0';
+			ctx.fillRect(0, 0, w, h);
+		}
+		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
 		const [x0, y1] = aMapa(0, 0);
 		const [x1, y0] = aMapa(w, h);
@@ -70,10 +77,13 @@
 				ctx.closePath();
 			}
 		}
-		ctx.fillStyle = '#F6F4EE';
-		ctx.fill('evenodd');
+		// Con mapa base, las secciones solo se dibujan como contorno; sin él, también se rellenan
+		if (!base) {
+			ctx.fillStyle = '#F6F4EE';
+			ctx.fill('evenodd');
+		}
 		ctx.lineWidth = mpp > 60 ? 0.5 : 1;
-		ctx.strokeStyle = '#B9B3A6';
+		ctx.strokeStyle = base ? 'rgba(106, 58, 140, 0.3)' : '#B9B3A6';
 		ctx.stroke();
 
 		if (punto) {
@@ -165,6 +175,12 @@
 				cargando = false;
 				ajustar();
 				dibujar();
+				// El mapa base se carga aparte: si falla, el mapa de secciones sigue funcionando
+				return import('#lib/cliente/mapa-base').then((m) => {
+					base = m.crearBase(pedirDibujo);
+					pintarBase = m.pintarBase;
+					pedirDibujo();
+				});
 			})
 			.catch(() => {
 				cargando = false;
@@ -200,6 +216,7 @@
 			<button type="button" aria-label="Acercar" onclick={() => zoom(1.8)}>+</button>
 			<button type="button" aria-label="Alejar" onclick={() => zoom(1 / 1.8)}>−</button>
 		</div>
+		<span class="atribucion">{MAPA.atribucion}</span>
 		{#if cargando}<p class="estado">Cargando el mapa…</p>{/if}
 		{#if fallo}<p class="estado">No hemos podido cargar el mapa. Prueba con la dirección.</p>{/if}
 	</div>
@@ -247,6 +264,16 @@
 		border-radius: var(--radio);
 		background: var(--blanco);
 		font: 700 22px/1 var(--f-texto);
+	}
+	.atribucion {
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		padding: 2px 6px;
+		background: rgba(246, 244, 238, 0.85);
+		font: 400 11px/1.3 var(--f-texto);
+		color: var(--grafito);
+		pointer-events: none;
 	}
 	.estado {
 		position: absolute;

@@ -183,7 +183,8 @@ export const FORMULARIO = {
 export const MAPA = {
 	instruccion: 'Toca el punto del mapa donde está el piso. Las coordenadas no salen de tu dispositivo.',
 	sinPunto: 'Todavía no has marcado ningún punto.',
-	fuera: 'Ese punto está fuera del municipio de Madrid.'
+	fuera: 'Ese punto está fuera del municipio de Madrid.',
+	atribucion: '© OpenStreetMap contributors'
 } as const;
 
 export const ERRORES = {

@@ -15,3 +15,4 @@ playwright-report/
 .svelte-kit/
 .wrangler/
 data/processed/callejero.sql
+data/processed/madrid.pmtiles

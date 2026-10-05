@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { ATRIBUCIONES, AVISO_INDEPENDIENTE, ENLACE_OFICIAL } from '#lib/resultado';
 
-	// Las atribuciones obligatorias. «© OpenStreetMap contributors» saldrá con el mapa base (Hito 7).
-	const atribuciones = ATRIBUCIONES.filter((a) => !a.includes('OpenStreetMap'));
+	const atribuciones = ATRIBUCIONES;
 	const datos = atribuciones.slice(0, 2).join('. ') + '.';
 	const otras = atribuciones.slice(2).join('. ');
 	const [antes, despues] = AVISO_INDEPENDIENTE.split('serpavi.mivau.gob.es');

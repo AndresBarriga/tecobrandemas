@@ -110,7 +110,7 @@ export function construirMetodologia(ipc: IpcJson): Metodologia {
 				parrafos: [
 					'Origen de los datos: Ministerio de Vivienda y Agenda Urbana (SERPAVI, datos de 2024 por sección censal).',
 					`IPC del alquiler de vivienda: INE, subclase 04.1.1.0, serie IPC291807, hasta ${hasta}.`,
-					'Secciones censales y direcciones: INE (Censo 2021) y CartoCiudad (IGN).'
+					'Secciones censales y direcciones: INE (Censo 2021) y CartoCiudad (IGN). Barrios: Ayuntamiento de Madrid. Mapa base: © OpenStreetMap contributors, servido desde esta web.'
 				]
 			},
 			{
@@ -124,7 +124,7 @@ export function construirMetodologia(ipc: IpcJson): Metodologia {
 			QUIENES_SOMOS,
 			FINANCIACION
 		],
-		atribuciones: ATRIBUCIONES.filter((a) => !a.includes('OpenStreetMap')),
+		atribuciones: ATRIBUCIONES,
 		aviso: AVISO_INDEPENDIENTE,
 		enlaceOficial: ENLACE_OFICIAL
 	};
