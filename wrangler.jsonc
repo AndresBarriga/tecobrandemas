@@ -1,0 +1,18 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "a-su-precio",
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"compatibility_date": "2026-10-01",
+	"compatibility_flags": ["nodejs_compat"],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+	// Sin ids: wrangler crea los recursos la primera vez que se despliega.
+	"d1_databases": [
+		{ "binding": "CALLEJERO", "database_name": "a-su-precio-callejero" },
+		{ "binding": "DB", "database_name": "a-su-precio-registro", "migrations_dir": "migrations" }
+	],
+	"r2_buckets": [{ "binding": "TARJETAS", "bucket_name": "a-su-precio-tarjetas" }],
+	"observability": { "enabled": true }
+}
