@@ -154,10 +154,7 @@ export const ETIQUETA_NIVEL = {
 export const FRASE_NIVEL = {
 	a: 'No es barato, pero es lo que se paga aquí. Puedes respirar.',
 	b: 'Si tiene ascensor, garaje, reforma reciente, piscina o vistas, puede cuadrar. Si no, pregunta qué lo justifica.',
-	c: 'Ni con las mejores características la referencia llega a esta cifra.',
-	/** Brecha de 90 % o más sobre la parte alta */
-	c_casi_doble: 'Casi el doble de la parte alta. Ni con las mejores características la referencia llega aquí.',
-	c_mas_doble: 'Más del doble de la parte alta. Ni con las mejores características la referencia llega aquí.'
+	c: 'Ni con las mejores características la referencia llega a esta cifra.'
 } as const;
 
 export const ETIQUETA_SIN_REFERENCIA = 'Sin referencia para este caso';
@@ -275,23 +272,22 @@ export const NAVEGACION = { inicio: 'Inicio', otroPiso: 'Otro piso', madrid: 'Ma
 export const FRASE_TARJETA = {
 	a: 'No es barato, pero es lo que se paga aquí.',
 	b: 'Solo se explica si el piso es excelente.',
-	c: 'Ni con las mejores características la referencia llega a esta cifra.',
-	c_casi_doble: 'Casi el doble de lo que marca la referencia.',
-	c_mas_doble: 'Más del doble de lo que marca la referencia.'
+	c: 'Ni con las mejores características la referencia llega a esta cifra.'
 } as const;
 
 export const NOTA_TARJETA = {
 	a: (barrio: string) => `de la referencia en ${barrio}`,
 	b: (barrio: string) => `para la referencia en ${barrio}`,
-	c: (barrio: string, aproximada: boolean) =>
-		`sobre la parte alta de la referencia en ${barrio}` + (aproximada ? '. Ubicación aproximada.' : '')
+	/** `complemento` es «sobre la parte alta» o «la parte alta», según la cifra vaya en % o en veces */
+	c: (barrio: string, aproximada: boolean, complemento = 'sobre la parte alta') =>
+		`${complemento} de la referencia en ${barrio}` + (aproximada ? '. Ubicación aproximada.' : '')
 } as const;
 
 /** Vista previa del enlace (1200×630) */
 export const ETIQUETA_OG = { a: 'Dentro de la referencia', b: 'Por encima, explicable', c: 'Por encima del techo' } as const;
 export const OG = {
 	titular: (barrio: string | null) => `Un piso en ${barrio ?? 'Madrid'}, frente a los alquileres registrados de su zona.`,
-	notaCifra: 'sobre la parte alta de la referencia',
+	notaCifra: (enVeces: boolean) => `${enVeces ? 'la' : 'sobre la'} parte alta de la referencia`,
 	cta: 'Comprueba tu piso'
 } as const;
 
@@ -301,6 +297,15 @@ export const ETIQUETA_HISTORIAL = { a: 'Dentro', b: 'Explicable', sinDato: 'Sin 
 // ——— «¿Cuánto pagas tú?» (R11) ———
 
 /** Casilla de consentimiento del registro anónimo de análisis (R7), bajo el resultado */
+/** Aviso antes del resultado cuando el precio supera `UMBRAL_ERROR_TECLEO` veces la parte alta */
+export const CONFIRMAR_PRECIO = {
+	titulo: (veces: number) => `¿Seguro? Es más de ${veces} veces la parte alta de la referencia`,
+	texto: 'Por si ha sido un error al teclear. Si es correcto, te mostramos el resultado.',
+	escrito: (precio: string, m2: string) => `Has escrito ${precio} al mes para ${m2}.`,
+	corregir: 'Corregir',
+	confirmar: 'Sí, es correcto'
+} as const;
+
 export const REGISTRO = {
 	casilla: 'Suma este piso a las estadísticas de tu barrio (anónimo)',
 	enlace: 'Tus datos',

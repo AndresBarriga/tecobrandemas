@@ -4,6 +4,7 @@
  * y la barra en fracciones. Nunca lleva precio, superficie ni dirección: la barra va en
  * fracciones de su propia escala, de modo que no se puede volver al importe.
  */
+import { heroEnVeces } from './ratio';
 import type { PantallaResultado } from './resultado';
 import {
 	ATRIBUCIONES, ETIQUETA_NIVEL, ETIQUETA_OG, FRASE_TARJETA, NOMBRE, NOTA_TARJETA, OG, TARJETA
@@ -50,6 +51,9 @@ export interface TarjetaDatos {
 export const CTA_TARJETA = 'Comprueba otro piso';
 export const PIE_TARJETA = TARJETA.pie;
 
+const notaPorEncima = (h: Hero): string =>
+	(h.tipo === 'cifra' ? heroEnVeces(h.texto) : h.tipo === 'rango' && heroEnVeces(h.hasta)) ? 'la parte alta' : 'sobre la parte alta';
+
 export function construirTarjeta(p: PantallaResultado): TarjetaDatos {
 	const { vista, barra } = p;
 	const aproximada = p.horquilla;
@@ -67,8 +71,11 @@ export function construirTarjeta(p: PantallaResultado): TarjetaDatos {
 		clase: vista.clase,
 		etiqueta: ETIQUETA_NIVEL[vista.clase],
 		hero,
-		nota: vista.clase === 'c' ? NOTA_TARJETA.c(lugar, aproximada) : NOTA_TARJETA[vista.clase](lugar),
-		frase: FRASE_TARJETA[vista.grado],
+		nota:
+			vista.clase === 'c'
+				? NOTA_TARJETA.c(lugar, aproximada, notaPorEncima(hero))
+				: NOTA_TARJETA[vista.clase](lugar),
+		frase: FRASE_TARJETA[vista.clase],
 		barrio,
 		aproximada,
 		barra: {
@@ -89,12 +96,12 @@ export function textosEnlace(t: TarjetaDatos): { titulo: string; descripcion: st
 		titulo: `${NOMBRE} · Un piso en ${lugar}`,
 		descripcion:
 			t.clase === 'c'
-				? `${cifra} sobre la parte alta de la referencia de alquileres registrados en la zona. Comprueba tu piso.`
+				? `${cifra} ${notaPorEncima(t.hero)} de la referencia de alquileres registrados en la zona. Comprueba tu piso.`
 				: `${ETIQUETA_NIVEL[t.clase]} en ${lugar}. Comprueba tu piso.`,
 		og: {
 			etiqueta: ETIQUETA_OG[t.clase],
 			titular: OG.titular(t.barrio),
-			nota: t.hero.tipo === 'titular' ? t.nota : OG.notaCifra,
+			nota: t.hero.tipo === 'titular' ? t.nota : OG.notaCifra(notaPorEncima(t.hero) === 'la parte alta'),
 			cta: OG.cta
 		}
 	};

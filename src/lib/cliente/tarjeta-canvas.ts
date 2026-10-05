@@ -4,7 +4,7 @@
  * TarjetaDatos: no hay precio ni dirección que dibujar.
  */
 import {
-	CTA_TARJETA, NOMBRE, OG_ALTO, OG_ANCHO, PIE_TARJETA, TARJETA_ALTO, TARJETA_ANCHO,
+	CTA_TARJETA, NOMBRE, colocarEtiqueta, OG_ALTO, OG_ANCHO, PIE_TARJETA, TARJETA_ALTO, TARJETA_ANCHO,
 	textosEnlace, type TarjetaDatos
 } from '#lib/resultado';
 
@@ -141,9 +141,12 @@ function etiqueta(ctx: Ctx, t: TarjetaDatos, texto: string, x: number, y: number
 function hero(ctx: Ctx, t: TarjetaDatos, x: number, y: number, maxW: number, k: { cifra: number; titular: number; rango: number; lhCifra: number; palabra: number }, dibujar: boolean): number {
 	const h = t.hero;
 	if (h.tipo === 'cifra') {
+		// «5,0 veces» es más ancha que «+240 %»: la cifra se reduce lo justo para caber entera
 		fuente(ctx, 900, k.cifra, 'extra', -k.cifra * 0.015);
-		if (dibujar) linea(ctx, h.texto, x - k.cifra * 0.03, y, k.cifra * k.lhCifra, { color: COLOR.tinta });
-		return k.cifra * k.lhCifra;
+		const tam = Math.min(k.cifra, (k.cifra * maxW) / Math.max(ancho(ctx, h.texto), 1));
+		fuente(ctx, 900, tam, 'extra', -tam * 0.015);
+		if (dibujar) linea(ctx, h.texto, x - tam * 0.03, y, tam * k.lhCifra, { color: COLOR.tinta });
+		return tam * k.lhCifra;
 	}
 	if (h.tipo === 'titular') {
 		fuente(ctx, 900, k.titular, 'extra');
@@ -242,8 +245,11 @@ function barraTarjeta(ctx: Ctx, t: TarjetaDatos, x: number, y: number, g: Geom):
 			if (i === tercio) rect(ctx, cx - ancho(ctx, s) / 2, y + 118 + 36 - 2, ancho(ctx, s), 3, COLOR.tinta);
 		});
 	} else {
+		// Entera y sin pisar el «0 €»: a la izquierda de su marca si cabe; si no, a su derecha
 		fuente(ctx, 600, 30, 'semi');
-		linea(ctx, `techo para un piso excelente`, x + techoE, y + 118, 36, { color: COLOR.tinta, align: 'right' });
+		const texto = 'techo para un piso excelente';
+		const izq = colocarEtiqueta(techoE, ancho(ctx, texto), g.W, ancho(ctx, `0${NB}€`) + 16);
+		linea(ctx, texto, x + izq, y + 118, 36, { color: COLOR.tinta });
 	}
 }
 

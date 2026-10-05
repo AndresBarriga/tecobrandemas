@@ -85,11 +85,13 @@ describe('vista del resultado', () => {
 		expect(b.vista.barra.tercio).toBeNull();
 	});
 
-	it('la frase cambia con la brecha: casi el doble y más del doble', () => {
+	it('la cifra pasa de porcentaje a «veces» desde 2 veces la parte alta, sin frases fijas', () => {
 		const sup = resultado(2000).barra.sup.max;
-		expect(resultado(sup * 1.95).vista.grado).toBe('c_casi_doble');
-		expect(resultado(sup * 2.2).vista.grado).toBe('c_mas_doble');
-		expect(resultado(sup * 1.3).vista.grado).toBe('c');
+		const cerca = resultado(sup * 1.95).vista;
+		expect(cerca.principal).toMatchObject({ tipo: 'cifra', texto: expect.stringMatching(/%$/) });
+		const lejos = resultado(sup * 3.4).vista;
+		expect(lejos.principal).toMatchObject({ tipo: 'cifra', texto: `3,4${NB}veces` });
+		expect(lejos.frase).toBe(cerca.frase);
 	});
 
 	it('horquilla: intervalo, fuente con la suma de alquileres y aviso con la calle', () => {

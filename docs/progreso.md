@@ -190,3 +190,9 @@ Nombre del producto: **A su precio**. Diseño en `docs/design` (README del hando
 - **Cómo calculamos**: índice fijo en escritorio y selector en móvil; el ejemplo de cuatro pasos sale del motor con la sección de Fuente del Berro (2200 €, 90 m²) y cambia solo con el IPC; los siete límites enlazan a `/?motivo=…`.
 - Desviaciones del diseño, a propósito: «Tus datos» y las atribuciones (la del INE, literal, de CLAUDE.md) son más completos; el logotipo lleva el lema; la casilla del registro mantiene el texto pedido («Suma este piso a las estadísticas de tu barrio (anónimo)») y no el del diseño; las marcas NUEVO, BORRADOR, EJEMPLO y PENDIENTE no se publican; la lista de zonas con datos reales suele tener menos de 5 filas.
 - En `vite dev` el geocodificador no se limita y se usan siempre SQLite y memoria, no los D1 y R2 simulados de wrangler.
+
+
+## Tarjeta y resultado: ratio, etiquetas y aviso de error (05/10/2026)
+- **Ratio:** por debajo de 2 veces la parte alta, «+X %»; desde 2, «X,X veces la parte alta». Una sola función (`src/lib/resultado/ratio.ts`) para la pantalla y la tarjeta; sin frases fijas por tramo.
+- **Etiquetas de la barra:** `colocarEtiqueta` mantiene «techo para un piso excelente» y «parte alta» enteras y sin pisar el «0 €» con brechas de +100 %, +240 % y +400 %, en la tarjeta de 1080×1350 y en pantalla (390, 360 y 1280 px).
+- **Aviso de error al teclear:** más de 3 veces la parte alta (`UMBRAL_ERROR_TECLEO`) pide confirmar antes del resultado; sin confirmar no hay tarjeta; el evento `confirma_precio` no lleva precio.
