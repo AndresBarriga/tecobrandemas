@@ -15,5 +15,6 @@ playwright-report/
 .svelte-kit/
 .wrangler/
 data/processed/callejero.sql
+informe-metricas/
 informe-lanzamiento.md
 data/processed/madrid.pmtiles

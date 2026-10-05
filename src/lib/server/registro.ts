@@ -14,6 +14,8 @@ export const EUROS_M2_MIN = 5;
 export const EUROS_M2_MAX = 60;
 export const LIMITE_REGISTROS_DIA = 20;
 export const LIMITE_EVENTOS_DIA = 300;
+/** Cada «Comprobar» geocodifica 1-2 veces: con 200 al día cabe un uso normal y no un volcado */
+export const LIMITE_GEOCODIFICACIONES_DIA = 200;
 export const DEDUPE_MS = 30 * 24 * 3600 * 1000;
 export const LIMITE_MS = 24 * 3600 * 1000;
 /** Recuentos públicos solo desde este número de observaciones por barrio */
@@ -117,7 +119,7 @@ async function purgar(db: D1Registro, ahora: number) {
 }
 
 /** Cuenta una acción de esta IP hoy; false si ya pasó el máximo */
-async function dentroDelLimite(c: Contexto, ip: string, ambito: 'r' | 'e', maximo: number): Promise<boolean> {
+async function dentroDelLimite(c: Contexto, ip: string, ambito: 'r' | 'e' | 'g', maximo: number): Promise<boolean> {
 	const ahora = c.ahora();
 	const t = ahora.getTime();
 	const clave = `${ambito}:${await claveLimite(c.secreto, ip, ahora)}`;
@@ -127,9 +129,14 @@ async function dentroDelLimite(c: Contexto, ip: string, ambito: 'r' | 'e', maxim
 		await c.db.prepare('UPDATE limites SET n = n + 1 WHERE clave = ?').bind(clave).run();
 		return true;
 	}
+	// Primera acción del día de esta IP: aprovecha para borrar las claves que ya caducaron
+	await c.db.prepare('DELETE FROM limites WHERE caduca < ?').bind(t).run();
 	await c.db.prepare('INSERT OR REPLACE INTO limites (clave, n, caduca) VALUES (?, 1, ?)').bind(clave, t + LIMITE_MS).run();
 	return true;
 }
+
+/** Límite diario de geocodificaciones por IP (HMAC con sal diaria, como el resto: la IP no se guarda) */
+export const puedeGeocodificar = (c: Contexto, ip: string) => dentroDelLimite(c, ip, 'g', LIMITE_GEOCODIFICACIONES_DIA);
 
 /** true si es nuevo (y lo anota); false si ya se registró en los últimos 30 días */
 async function esNuevo(c: Contexto, tipo: 'a' | 'p', precio: number, m2: number, barrio: string): Promise<boolean> {
