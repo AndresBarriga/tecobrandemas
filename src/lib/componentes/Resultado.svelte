@@ -16,7 +16,8 @@
 		alOtro,
 		alNegociar,
 		alAñadirNumero,
-		alCompartir
+		alCompartir,
+		alServido
 	}: {
 		pantalla: PantallaResultado;
 		/** Contador del barrio: solo llega si es real y de 10 o más */
@@ -30,6 +31,8 @@
 		/** Solo cuando la ubicación es una calle sin número */
 		alAñadirNumero?: () => void;
 		alCompartir: () => void;
+		/** «¿Te ha servido?»: true = sí */
+		alServido?: (si: boolean) => void;
 	} = $props();
 
 	const v = $derived(pantalla.vista);
@@ -138,8 +141,14 @@
 				<span class="gracias" role="status">{SERVIDO.gracias}</span>
 			{:else}
 				<div class="servido-botones" role="group" aria-labelledby="servido">
-					<button type="button" class="boton boton-contorno" onclick={() => (respuesta = 'si')}>{SERVIDO.si}</button>
-					<button type="button" class="boton boton-contorno" onclick={() => (respuesta = 'no')}>{SERVIDO.no}</button>
+					<button type="button" class="boton boton-contorno" onclick={() => {
+						respuesta = 'si';
+						alServido?.(true);
+					}}>{SERVIDO.si}</button>
+					<button type="button" class="boton boton-contorno" onclick={() => {
+						respuesta = 'no';
+						alServido?.(false);
+					}}>{SERVIDO.no}</button>
 				</div>
 			{/if}
 		</div>

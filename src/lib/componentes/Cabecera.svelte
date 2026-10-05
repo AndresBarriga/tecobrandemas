@@ -15,6 +15,7 @@
 	{:else if derecha === 'madrid'}
 		<span class="madrid">{NAVEGACION.madrid}</span>
 	{/if}
+	<nav class="nav"><a href="/cuanto-pagas">¿Cuánto pagas tú?</a></nav>
 </header>
 
 <style>
@@ -45,6 +46,21 @@
 		text-decoration-color: var(--paja);
 		text-decoration-thickness: 2px;
 		text-underline-offset: 4px;
+	}
+	.nav {
+		display: none;
+	}
+	@media (min-width: 1024px) {
+		.nav {
+			display: flex;
+		}
+		.nav a {
+			display: flex;
+			align-items: center;
+			min-height: 44px;
+			font: 600 15px/1 var(--f-texto);
+			text-decoration: none;
+		}
 	}
 	@media (min-width: 960px) {
 		header {

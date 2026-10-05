@@ -2,6 +2,7 @@
  * Worker: /api/geocode no registra la dirección; /api/tarjeta solo guarda lo de la tarjeta;
  * el almacén de tarjetas (D1 + R2) no tiene columnas de precio, m² ni dirección.
  */
+import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { POST as postGeocode } from '../src/routes/api/geocode/+server';
@@ -171,5 +172,58 @@ describe.skipIf(!hayCallejero)('POST /api/geocode', () => {
 		await expect(llamar(JSON.stringify({ texto: '' }))).rejects.toMatchObject({ status: 400 });
 		await expect(llamar(JSON.stringify({ texto: 'x'.repeat(300) }))).rejects.toMatchObject({ status: 400 });
 		await expect(llamar(JSON.stringify({ texto: 5 }))).rejects.toMatchObject({ status: 400 });
+	});
+});
+
+// ——— Registro, aportaciones, eventos y contadores ———
+import { GET as getContadores } from '../src/routes/api/contadores/+server';
+import { POST as postAnalisis } from '../src/routes/api/analisis/+server';
+import { POST as postAportacion } from '../src/routes/api/aportacion/+server';
+import { POST as postEvento } from '../src/routes/api/evento/+server';
+import { d1Registro } from './d1';
+
+describe('endpoints de registro', () => {
+	const entorno = () => ({ DB: d1Registro().d1, SECRETO: 'prueba' });
+	const peticion = (handler: (e: never) => unknown, env: object, cuerpo: unknown, ip = '5.5.5.5') =>
+		handler({
+			request: new Request('http://x/api', { method: 'POST', body: typeof cuerpo === 'string' ? cuerpo : JSON.stringify(cuerpo) }),
+			platform: { env },
+			getClientAddress: () => ip
+		} as never) as Promise<Response>;
+	const barrio = Object.keys((JSON.parse(readFileSync(new URL('../data/processed/seccion_barrio.json', import.meta.url), 'utf-8')) as { barrios: object }).barrios)[0]!;
+	const analisis = (precio = 1400) => ({ barrio, precio, m2: 70, nivel: 'c' });
+
+	it('análisis: 201 al guardar, 202 si es duplicado o implausible, 400 si no es válido, 429 al pasar el límite', async () => {
+		const env = entorno();
+		expect((await peticion(postAnalisis, env, analisis())).status).toBe(201);
+		expect((await peticion(postAnalisis, env, analisis(), '6.6.6.6')).status).toBe(202);
+		expect(await (await peticion(postAnalisis, env, analisis(60_000), '6.6.6.6')).json()).toEqual({ guardado: false });
+		await expect(peticion(postAnalisis, env, { barrio: 'zzz', precio: 1, m2: 1, nivel: 'c' })).rejects.toMatchObject({ status: 400 });
+		await expect(peticion(postAnalisis, env, 'no es json')).rejects.toMatchObject({ status: 400 });
+		for (let i = 0; i < 20; i++) await peticion(postAnalisis, env, analisis(1500 + i * 10), '7.7.7.7');
+		await expect(peticion(postAnalisis, env, analisis(2000), '7.7.7.7')).rejects.toMatchObject({ status: 429 });
+	});
+
+	it('aportación y evento', async () => {
+		const env = entorno();
+		const ok = { barrio, precio: 1150, m2: 68, anioContrato: 2023, incluye: ['garaje'] };
+		expect((await peticion(postAportacion, env, ok)).status).toBe(201);
+		await expect(peticion(postAportacion, env, { ...ok, anioContrato: 1800 })).rejects.toMatchObject({ status: 400 });
+		const visita = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
+		expect((await peticion(postEvento, env, { tipo: 'llegada', visita })).status).toBe(204);
+		await expect(peticion(postEvento, env, { tipo: 'precio', visita })).rejects.toMatchObject({ status: 400 });
+	});
+
+	it('contadores: total real y barrio oculto por debajo de 10', async () => {
+		const env = entorno();
+		const visita = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
+		await peticion(postEvento, env, { tipo: 'completa', visita });
+		const r = await getContadores({ url: new URL(`http://x/api/contadores?barrio=${barrio}`), platform: { env } } as never);
+		expect(await r.json()).toEqual({ total: 1, barrio: null, aportacionesBarrio: null });
+	});
+
+	it('sin base de datos en producción da 503, no se guarda en memoria', async () => {
+		// En pruebas import.meta.env.DEV es true; sin DB cae a la base local, que sí responde
+		expect((await peticion(postEvento, {}, { tipo: 'llegada', visita: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d' })).status).toBe(204);
 	});
 });

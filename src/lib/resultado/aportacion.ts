@@ -20,6 +20,8 @@ export interface AportacionCrudo {
 	/** Código de barrio elegido; con una ubicación en varios barrios lo elige la persona */
 	barrio: string;
 	consentimiento: boolean;
+	/** garaje, trastero, comunidad, amueblado */
+	incluye?: string[];
 }
 
 export interface AportacionPayload {
@@ -27,6 +29,7 @@ export interface AportacionPayload {
 	precio: number;
 	m2: number;
 	anioContrato: number;
+	incluye: string[];
 }
 
 export type ErroresAportacion = Partial<Record<keyof AportacionCrudo, string>>;
@@ -56,5 +59,5 @@ export function validarAportacion(f: AportacionCrudo, barriosPosibles: BarrioDeS
 	}
 
 	if (Object.keys(errores).length) return { ok: false, errores };
-	return { ok: true, payload: { barrio: f.barrio, precio: precio!, m2: m2!, anioContrato: anio! } };
+	return { ok: true, payload: { barrio: f.barrio, precio: precio!, m2: m2!, anioContrato: anio!, incluye: f.incluye ?? [] } };
 }

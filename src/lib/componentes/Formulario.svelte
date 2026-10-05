@@ -15,6 +15,7 @@
 		comprobado = false,
 		problema = null,
 		mapa,
+		alEmpezar,
 		alEnviar,
 		alSalirDe,
 		alHabitacion,
@@ -29,6 +30,8 @@
 		problema?: Problema | null;
 		/** Mapa del modo «En el mapa» (carga diferida) */
 		mapa?: Snippet;
+		/** Primera vez que se toca un campo en esta visita */
+		alEmpezar?: () => void;
 		alEnviar: () => void;
 		alSalirDe: (campo: 'precio' | 'superficie') => void;
 		alHabitacion: () => void;
@@ -54,6 +57,7 @@
 <form
 	class="formulario"
 	novalidate
+	oninput={() => alEmpezar?.()}
 	onsubmit={(e) => {
 		e.preventDefault();
 		if (!buscando) alEnviar();

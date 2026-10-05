@@ -10,9 +10,26 @@ Qué está hecho, con qué cifras y qué se desvió del plan. El plan está en `
 | 2. Motor | ✅ Hecho | 05/10/2026 |
 | 3. Ubicación | ✅ Hecho (endpoint `/api/geocode` → Hito 4) | 05/10/2026 |
 | 4. Interfaz | Paso 1 hecho (falta «Tu zona») | 05/10/2026 |
-| 5. Registro, aportaciones y eventos | Pendiente | |
+| 5. Registro, aportaciones y eventos | Hecho salvo la interfaz de consentimiento del registro de análisis (R7) | 05/10/2026 |
 | 6. Metodología | Pendiente (antes: nombre, dominio, quiénes somos, financiación) | |
 | 7. Despliegue | Pendiente | |
+
+## Hito 5 — Registro, aportaciones y eventos (05/10/2026)
+
+**Hecho**
+- `migrations/0001_registro.sql` (tablas `analisis`, `aportaciones`, `eventos`, `limites`, `dedupe`, `tarjetas`) y `src/lib/server/registro.ts` con el antiabuso: €/m² entre 5 y 60, duplicado a 30 días con HMAC con secreto, 20 registros por IP y día con HMAC de sal diaria (la IP no se guarda).
+- Endpoints `/api/analisis`, `/api/aportacion`, `/api/evento` y `/api/contadores`. Fallo de antiabuso = 202 sin guardar (el resultado se ve igual); límite = 429.
+- Eventos del embudo (llegada, empieza, completa, servido, comparte, desde_tarjeta, segundo, aporta, habitación) con id de visita en sessionStorage y `?t=<id>` desde `/t/:id`. Las pantallas sin dato no emiten «completa».
+- Contadores reales: total de pisos comprobados (eventos «completa») en la portada; recuento del barrio solo desde 10.
+- «¿Cuánto pagas tú?» en `/cuanto-pagas`: botón desactivado sin casilla, sin ninguna petición hasta marcarla; del servidor solo se lleva el barrio.
+- Tests: esquema sin columnas `ip/direccion/cusec/seccion/fecha/ts`, 30 días con reloj simulado, 21.º registro → 429, rotación de sal, ninguna consulta cruza `analisis` y `aportaciones` (grep sobre el código), atribución de análisis desde tarjeta. 263 unitarios y 106 e2e.
+
+**Desviaciones y pendientes**
+- **Diseño vs privacidad:** la pantalla 5q dice que se guarda «la sección censal» y «la fecha». Se guarda el **barrio** y el **mes** (CLAUDE.md); el texto de la pantalla lo dice así. Añadí la columna `incluye` (garaje, trastero, comunidad, amueblado) a `aportaciones`, que el plan no tenía.
+- **R7 sin interfaz:** el endpoint `/api/analisis` está listo y probado, pero no hay pantalla para pedir el consentimiento al registrar un análisis (el diseño no la trae). Hoy no se registra ninguno desde la web.
+- Calle en varios barrios: se elige el barrio con chips; si la calle cruza más de 6 secciones se pide el número del portal.
+- Producción: hace falta aplicar la migración en D1 (`wrangler d1 migrations apply`) y definir el secreto `SECRETO`. En desarrollo todo va a SQLite en memoria.
+- El recuento de aportaciones por barrio existe en `/api/contadores` pero no se muestra aún (R11, «se muestra por barrio con n≥10»).
 
 ## Hito 4 — Interfaz (05/10/2026) · paso 1 hecho: formulario, resultado, sin dato, tarjeta y /t/:id
 

@@ -57,6 +57,8 @@ export interface PantallaResultado {
 	horquilla: boolean;
 	barra: Barra;
 	barrio: string | null;
+	/** Código del barrio (para el recuento público); nunca la sección */
+	barrioCodigo: string | null;
 	/** Secciones que entran en el cálculo (la interfaz las usa para «Tu zona» y la evolución) */
 	cusecs: string[];
 	evolucion: Evolucion | null;
@@ -162,6 +164,7 @@ function desdeAnalisis(
 		horquilla: an.horquilla,
 		barra,
 		barrio: barrio?.nombre ?? null,
+		barrioCodigo: barrio?.codigo ?? null,
 		cusecs,
 		evolucion: evolucion(datos, cusecs),
 		precioPedido: PRECIO_PEDIDO,

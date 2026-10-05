@@ -12,6 +12,7 @@
 	<p>{antes}<a href={ENLACE_OFICIAL}>serpavi.mivau.gob.es</a>{despues}</p>
 	<p>{datos}</p>
 	<p>{otras}</p>
+	<a class="enlace-pie" href="/cuanto-pagas">¿Cuánto pagas tú?</a>
 </footer>
 
 <style>
@@ -24,6 +25,19 @@
 		gap: 8px;
 		font: 400 12.5px/1.5 var(--f-texto);
 		color: var(--grafito);
+	}
+	.enlace-pie {
+		display: flex;
+		align-items: center;
+		min-height: 44px;
+		font: 700 14px/1 var(--f-texto);
+		color: var(--tinta);
+		text-underline-offset: 4px;
+	}
+	@media (min-width: 1024px) {
+		.enlace-pie {
+			display: none;
+		}
 	}
 	@media (min-width: 960px) {
 		footer {

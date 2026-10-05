@@ -42,7 +42,7 @@
 			<p class="intro">{PAGINA_TARJETA.intro(data.tarjeta.barrio)}</p>
 			<h1>{PAGINA_TARJETA.titular}</h1>
 			<p class="explicacion">{PAGINA_TARJETA.explicacion}</p>
-			<a class="boton" href="/">{PAGINA_TARJETA.boton}</a>
+			<a class="boton" href="/?t={data.id}">{PAGINA_TARJETA.boton}</a>
 			<p class="nota">{PAGINA_TARJETA.nota}</p>
 		</div>
 	</main>

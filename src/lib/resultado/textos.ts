@@ -293,3 +293,41 @@ export const OG = {
 
 /** Etiqueta corta de una fila del historial de la sesión */
 export const ETIQUETA_HISTORIAL = { a: 'Dentro', b: 'Explicable', sinDato: 'Sin dato' } as const;
+
+// ——— «¿Cuánto pagas tú?» (R11) ———
+
+export const APORTACION = {
+	titulo: '¿Cuánto pagas tú?',
+	intro: 'Si ya alquilas, cuéntanos tu renta. Ayuda a que esto sea más fiable para todos.',
+	anonimo: 'Es anónimo y se tarda menos de un minuto.',
+	cerrar: 'Cerrar',
+	calle: 'Tu calle, sin número',
+	ayudaCalle: 'Solo la usamos para saber el barrio. No se guarda.',
+	placeholderCalle: 'Nombre de tu calle',
+	renta: 'Renta al mes',
+	superficie: 'Metros construidos',
+	anio: 'Año en que empezó tu contrato',
+	incluye: 'La renta incluye (marca las que correspondan)',
+	opcionesIncluye: { garaje: 'Garaje', trastero: 'Trastero', comunidad: 'Gastos de comunidad', amueblado: 'Amueblado' },
+	barrio: 'Tu calle cruza varios barrios. Elige el tuyo',
+	consentimiento: 'Acepto que mi aportación se guarde, sin datos que me identifiquen, para mejorar la referencia.',
+	seGuarda:
+		'la zona (barrio) a la que pertenece la calle, los metros, la renta, el año del contrato, lo que incluye y el mes de la aportación.',
+	noSeGuarda: 'la calle, el número, tu nombre, tu correo, tu IP ni nada que permita saber quién eres o dónde vives exactamente.',
+	sinMarcar: 'Sin marcar la casilla no se envía nada. Puedes seguir usando la web igual.',
+	botonDesactivado: 'Marca la casilla para enviar',
+	enviar: 'Enviar mi aportación',
+	enviando: 'Enviando…',
+	calleLarga: 'Esa calle cruza demasiadas zonas. Escribe también el número del portal (no se guarda).',
+	calleNoEncontrada: 'No encontramos esa calle en Madrid. Revisa cómo está escrita.',
+	errorEnvio: 'No hemos podido enviar tu aportación. Inténtalo de nuevo.',
+	limite: 'Hoy ya se han enviado muchas aportaciones desde este dispositivo. Vuelve mañana.',
+	enviado: {
+		etiqueta: 'Aportación guardada',
+		titular: 'Gracias, ya cuenta',
+		frase: 'Tu renta se suma, sin tu nombre ni tu dirección, a la de otras personas de tu barrio.',
+		nota: 'No se muestra por separado: solo se usa agregada cuando hay suficientes aportaciones en el mismo barrio.',
+		noGuardada: 'Hemos recibido tu aportación, pero estos datos no cuadran con lo habitual y no se han guardado. Revisa renta y metros.',
+		boton: 'Comprobar un piso'
+	}
+} as const;

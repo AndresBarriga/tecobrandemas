@@ -19,6 +19,7 @@
 	import { type EstadoFormulario, type ModoUbicacion, estadoInicial } from '#lib/cliente/estado';
 	import { type Entrada, guardarHistorial, leerHistorial } from '#lib/cliente/historial';
 	import { compartirTarjeta } from '#lib/cliente/compartir';
+	import { contarCompletado, evento, leerOrigenDeLaUrl, recuentos, tarjetaOrigen } from '#lib/cliente/eventos';
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
 	import { TARJETA } from '#lib/resultado';
 
@@ -48,6 +49,9 @@
 	let listo = $state(false);
 	onMount(() => {
 		listo = true;
+		leerOrigenDeLaUrl();
+		evento('llegada', { unaVez: true });
+		void recuentos().then((r) => (totalPisos = r?.total ?? null));
 		precargarDatos();
 		historial = leerHistorial();
 	});
@@ -69,6 +73,7 @@
 		mensajeTarjeta = null;
 		try {
 			const r = await compartirTarjeta(construirTarjeta(resultado), canvasTarjeta);
+			if (r.via !== 'cancelada') evento('comparte', { tarjeta: r.url?.split('/').pop() ?? null });
 			mensajeTarjeta =
 				r.via === 'descargada' ? (r.enlaceCopiado ? `${TARJETA.descargada} ${TARJETA.enlaceCopiado}` : TARJETA.descargada) : null;
 		} catch {
@@ -97,6 +102,14 @@
 			activa = null;
 		}
 		void irAlResultado();
+		if (alHistorial && p.tipo === 'resultado') {
+			evento('completa');
+			const origen = tarjetaOrigen();
+			if (origen) evento('desde_tarjeta', { tarjeta: origen, unaVez: true });
+			if (contarCompletado() === 2) evento('segundo');
+			pisosBarrio = null;
+			void recuentos(p.barrioCodigo).then((r) => (pisosBarrio = r?.barrio ?? null));
+		}
 	}
 
 	async function irAlResultado() {
@@ -166,6 +179,7 @@
 
 	function habitacion() {
 		turno++;
+		evento('habitacion');
 		// La pantalla de habitación no cuenta como comprobación del historial
 		mostrar(pantallaSinDato('habitacion'), null, false);
 	}
@@ -247,6 +261,7 @@
 				{problema}
 				buscando={fase === 'buscando'}
 				comprobado={hayResultado}
+				alEmpezar={() => evento('empieza', { unaVez: true })}
 				alEnviar={enviar}
 				alSalirDe={salirDe}
 				alHabitacion={habitacion}
@@ -276,6 +291,7 @@
 					}}
 					alAñadirNumero={puedeAñadirNumero ? añadirNumero : undefined}
 					alCompartir={compartir}
+					alServido={(si) => evento(si ? 'servido_si' : 'servido_no')}
 				>
 					{#snippet tarjeta()}
 						<canvas bind:this={canvasTarjeta} class="tarjeta-canvas" aria-label="Vista previa de la tarjeta para compartir"></canvas>
