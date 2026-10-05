@@ -8,11 +8,42 @@ Qué está hecho, con qué cifras y qué se desvió del plan. El plan está en `
 |---|---|---|
 | 1. Datos | ✅ Hecho | 05/10/2026 |
 | 2. Motor | ✅ Hecho | 05/10/2026 |
-| 3. Ubicación | Siguiente | |
-| 4. Interfaz mínima | Pendiente | |
+| 3. Ubicación | ✅ Hecho (endpoint `/api/geocode` → Hito 4) | 05/10/2026 |
+| 4. Interfaz mínima | Siguiente | |
 | 5. Registro, aportaciones y eventos | Pendiente | |
 | 6. Metodología | Pendiente (antes: nombre, dominio, quiénes somos, financiación) | |
 | 7. Despliegue | Pendiente | |
+
+## Hito 3 — Ubicación (05/10/2026)
+
+**Código** en `src/lib/ubicacion/` (TypeScript puro) y `src/lib/server/`:
+
+| Fichero | Contenido |
+|---|---|
+| `normalizar.ts` | Misma normalización que el ETL en Python (un test lo comprueba en los 8.901 viales) y abreviaturas de tipo de vía (C/, Avda., Pº, Pza.…) |
+| `parser.ts` | Texto libre → interpretaciones (tipo, nombre, número, extensión). Descarta piso, puerta, código postal y «Madrid» |
+| `indice.ts` | Índice en memoria de viales: similitud de Dice por trigramas (tolera erratas); el tipo de vía desempata (±0,1) |
+| `geocodificar.ts` | Resultados: exacta · aproximada (número inexistente → portal más cercano de la misma paridad; portal en varias secciones) · calle (≤6 secciones) · demasiadas_secciones · no_encontrada con sugerencias |
+| `pin.ts` | Pin en el mapa, en el navegador: sección del punto + secciones a ≤150 m del punto, tope de 6 |
+| `server/callejero-d1.ts` | Adaptador de D1 para el Worker (índice cacheado por instancia) |
+
+**Datos de prueba** (generados con semilla fija):
+- `scripts/06_direcciones_prueba.py` → `tests/fixtures/direcciones_100.csv`: 55 exactas, 10 con errata, 10 conocidas escritas a mano, 10 calles sin número, 10 números inexistentes y 5 calles largas.
+- `scripts/07_puntos_prueba.py` → `tests/fixtures/puntos_pip.csv`: 1.000 puntos con su sección y sus vecinas calculadas en Python a precisión completa.
+- `scripts/08_direcciones_gate.py` → `tests/fixtures/direcciones_gate.csv`: las 50 direcciones del gate. Por cada una, la que se tecleó en la app oficial y la sección que dio (30 casos). Lee `data/raw/gate/gate_50_anuncios_madrid_relleno.xlsx`, que no va a git. El fixture lleva solo direcciones y secciones, sin precios.
+
+**Resultados:**
+- **Direcciones:** 99 de 100 resueltas (criterio: ≥95), con un p95 de 6,9 ms (criterio: <300 ms). El fallo es «santa lucercia», errata que se va a otra calle parecida.
+- **Pin:** la sección del punto coincide con Python en los 1.000 puntos. Las distancias difieren 0,74 m como mucho, y la horquilla es igual en todos los puntos (salvo las secciones a 150 ± 3 m). Tarda 0,2 ms por pin.
+- **Gate frente a la app oficial:** coinciden las 60 consultas, que son las 30 direcciones escritas como en el anuncio y como se teclearon en la app. Es la validación independiente de nuestro callejero.
+- **Resto del gate (20 sin consulta en la app):** coinciden 19. El fallo, A12 (Pradillo 26), no es del geocodificador. El gate calculó la sección con las coordenadas del anuncio, que caen en la acera de enfrente (impares, 2807905038), y el portal 26 está en la 2807905046.
+- 136 tests en total.
+
+**Desviaciones del plan:**
+- **Las 50 direcciones del gate van en un test aparte**, no dentro de las 100, porque el CSV del motor no trae las direcciones. Las 100 salen de portales reales con variantes de escritura, más 10 direcciones conocidas. Solo 9 de las 50 del gate son exactas en el anuncio; el resto son el portal más cercano a sus coordenadas.
+- **El endpoint `/api/geocode` y el test de «no registra la dirección»** pasan al Hito 4, con el esqueleto de SvelteKit y el Worker. La lógica y el adaptador de D1 ya están probados.
+- **Interpretaciones del parser:** se prueban todas y gana la que da un portal exacto. Hay 184 calles con dígitos en el nombre («PROV AHIJONES 18»).
+- **Números de portal en dos secciones (112 en Madrid):** se tratan como horquilla.
 
 ## Hito 2 — Motor (05/10/2026)
 

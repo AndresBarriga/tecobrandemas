@@ -28,8 +28,10 @@ def escribir_json(ruta: Path, datos, compacto: bool = True) -> None:
     print(f"  → {ruta.relative_to(RAIZ)} ({ruta.stat().st_size / 1024:.0f} KB)")
 
 
-def filas_xlsx(ruta: Path, hoja: str):
+def filas_xlsx(ruta: Path, hoja: str, fila_cabecera: int = 1):
     """Lee una hoja de un .xlsx en streaming y devuelve dicts {cabecera: valor_texto}.
+
+    Las filas anteriores a fila_cabecera (títulos, instrucciones) se ignoran.
 
     openpyxl tarda minutos con la hoja de secciones (211 MB de XML); iterparse, ~20 s.
     """
@@ -57,6 +59,9 @@ def filas_xlsx(ruta: Path, hoja: str):
     cabecera = None
     for _, el in ET.iterparse(z.open(xml_hoja)):
         if el.tag != ns + "row":
+            continue
+        if int(el.get("r")) < fila_cabecera:
+            el.clear()
             continue
         fila = {}
         for c in el.findall(ns + "c"):

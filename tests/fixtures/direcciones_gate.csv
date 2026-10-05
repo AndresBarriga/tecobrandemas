@@ -1,0 +1,51 @@
+caso,entrada,calidad,direccion_app,cusec_app,cusec_gate
+A01,Calle Zurbano 45,aproximada,CALLE ZURBANO 45,2807907084,2807907084
+A02,Calle Fernando El Catolico 55,aproximada,CALLE FERNANDO EL CATOLICO 55,2807907010,2807907010
+A03,Glorieta Bilbao 5,aproximada,GLORIETA BILBAO 5,2807907051,2807907051
+A04,Avenida Reina Victoria 15,aproximada,AVENIDA REINA VICTORIA 15,2807907119,2807907119
+A05,Calle de Méndez Álvaro 34,exacta,CALLE MENDEZ ALVARO 34 C,2807902106,2807902106
+A06,Calle del Maestro Arbós 2,exacta,CALLE MAESTRO ARBOS 2,2807902100,2807902100
+A07,Calle Toledo 143,aproximada,CALLE TOLEDO 143,2807902087,2807902087
+A08,Calle Embajadores 136,aproximada,CALLE EMBAJADORES 136,2807902041,2807902041
+A09,Calle Francisco Silvela 112,aproximada,CALLE FRANCISCO SILVELA 112,2807905013,2807905013
+A10,Calle Fuente Del Saz 9,aproximada,CALLE FUENTE DEL SAZ 9,2807905064,2807905064
+A11,Calle Hiedra 26,aproximada,,,2807905100
+A12,Calle Pradillo 26,aproximada,,,2807905038
+A13,Calle Pizarro 20,aproximada,CALLE PIZARRO 20,2807901114,2807901114
+A14,Calle Santa Engracia 10,aproximada,,,2807907076
+A15,Calle Coloreros 6,aproximada,,,2807901123
+A16,Calle del Alcalde Sainz de Baranda 54,exacta,CALLE ALCALDE SAINZ DE BARANDA 54,2807903088,2807903088
+A17,Calle Comercio 5,exacta,CALLE COMERCIO 5,2807903096,2807903096
+A18,Avenida Ciudad De Barcelona 208,aproximada,,,2807903024
+A19,Calle Cruz Del Sur 2,aproximada,,,2807903032
+A20,Calle Jose 2,aproximada,,,2807906129
+A21,Calle Sor Angela De La Cruz 15,aproximada,,,2807906059
+A22,Calle Orense 35,aproximada,,,2807906045
+A23,Calle Fulgencio De Miguel 2,aproximada,,,2807906119
+A24,Calle de Tremp 24,exacta,CALLE TREMP 24,2807909038,2807909038
+A25,Paseo Comandante Fortea 11,aproximada,PASEO COMANDANTE FORTEA 11,2807909002,2807909002
+A26,Calle Isla Soledad 12,aproximada,,,2807909044
+A27,Calle Fuente De Lima 19,aproximada,CALLE FUENTE DE LIMA 19,2807910161,2807910161
+A28,Paseo Extremadura 156,aproximada,PASEO EXTREMADURA 156,2807910044,2807910044
+A29,Calle Duraton 5,aproximada,,,2807910051
+A30,Calle del Peso Hispano 6,exacta,CALLE PESO HISPANO 6,2807911198,2807911198
+A31,Calle Aguilar Del Rio 4,aproximada,CALLE AGUILAR DEL RIO 4,2807911149,2807911149
+A32,Avenida Manzanares 58,aproximada,AVENIDA MANZANARES 58,2807911051,2807911051
+A33,Calle Baleares 10,aproximada,,,2807911012
+A34,Calle Ayala 87,aproximada,,,2807904029
+A35,Calle Peñascales 25,aproximada,,,2807904044
+A36,Calle Agustin Duran 26,aproximada,,,2807904091
+A37,Calle Velazquez 96,aproximada,,,2807904119
+A38,Calle de la Maquinilla 30,exacta,CALLE MAQUINILLA 30,2807913216,2807913216
+A39,Calle Peironcely 48,aproximada,CALLE PEIRONCELY 48,2807913031,2807913031
+A40,Calle Rodriguez Espinosa 18,aproximada,CALLE RODRIGUEZ ESPINOSA 18,2807913079,2807913079
+A41,Calle Dulzaina 2,aproximada,CALLE DULZAINA 2,2807915176,2807915176
+A42,Calle Hermanos De Pablo 42,aproximada,,,2807915102
+A43,Calle San Marcelo 13,aproximada,CALLE SAN MARCELO 13,2807915031,2807915031
+A44,Calle Torrox 28,exacta,CALLE TORROX 28,2807912109,2807912109
+A45,Calle Antonio Lopez 246,aproximada,CALLE ANTONIO LOPEZ 246 E,2807912107,2807912107
+A46,Calle Matilde Gayo 7,aproximada,CALLE MATILDE GAYO 7,2807912059,2807912059
+A47,Calle de Dulce Chacón 37,exacta,CALLE DULCE CHACON 37,2807916106,2807916106
+A48,Calle Añastro 41,aproximada,,,2807916080
+A49,Avenida Niceto Alcala Zamora 81,aproximada,AVENIDA NICETO ALCALA ZAMORA 81 E,2807916125,2807916125
+A50,Calle Elena Fortun 17,aproximada,,,2807916096

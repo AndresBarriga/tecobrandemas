@@ -1,0 +1,101 @@
+id,categoria,entrada,estado_esperado,cusecs_esperados
+D001,exacta,c/ de blanca luna nº 5 2ºA,exacta,2807913048
+D002,exacta,Calle gabriel ruiz 24 1º dcha,exacta,2807912094
+D003,exacta,"mezquite, 2d 2ºA",exacta,2807902098
+D004,exacta,"molina, nº 8a, 3º B",exacta,2807906073
+D005,exacta,C/ Rascafria nº 8,exacta,2807908139
+D006,exacta,"Bardegueral, nº 16, 28008 Madrid",exacta,2807909079
+D007,exacta,"c/ de Cyesa, 3",exacta,2807915001
+D008,exacta,"C/ playa de bolnuevo 64, 28040 Madrid",exacta,2807921031
+D009,exacta,"Calle Prov Los Berrocales 91, 2z",exacta,2807919001
+D010,exacta,"c/ Pablo Gargallo, nº 30, 28013 Madrid",exacta,2807908008
+D011,exacta,"Cl. de Lagartera, nº 60, Madrid",exacta,2807913029
+D012,exacta,Valgame Dios nº 5 1º dcha,exacta,2807901077
+D013,exacta,"C/ Pedriza 6, Madrid",exacta,2807905038
+D014,exacta,c/ de olimpo nº 25,exacta,2807916005
+D015,exacta,"c/ sierra de gredos, 9, Madrid",exacta,2807918004
+D016,exacta,Cl. Urola nº 5,exacta,2807905008
+D017,exacta,"Ronda tren, 66, 3º B",exacta,2807909079
+D018,exacta,"c/ de Mata Del Agua, nº 6",exacta,2807918042
+D019,exacta,"tejadillo, nº 13",exacta,2807909076
+D020,exacta,"C/ Tunez 3, 28013 Madrid",exacta,2807914092
+D021,exacta,"peruchos, 10",exacta,2807919036
+D022,exacta,Avenida Luis Aragones 2a 2ºA,exacta,2807920067
+D023,exacta,"C/ Domingo De Alboraya, 12",exacta,2807911185
+D024,exacta,"c/ de Abetal, nº 7 2ºA",exacta,2807908171
+D025,exacta,"c/ Prov Ahijones 18, nº 133, 3º B",exacta,2807919001
+D026,exacta,"arroyo de las pavas 6, Madrid",exacta,2807911069
+D027,exacta,"Calle de belmonte de tajo nº 67, 3º B",exacta,2807911039
+D028,exacta,"c/ Fereluz, 26 1º dcha",exacta,2807906105
+D029,exacta,"virgen de los rosales nº 82, 28004 Madrid",exacta,2807909087
+D030,exacta,"Calle bajamar nº 10, Madrid",exacta,2807917099
+D031,exacta,"Cl. madre celeste, nº 2 2ºA",exacta,2807911145
+D032,exacta,"C/ Agustin De Foxa nº 2, 3º B",exacta,2807905087
+D033,exacta,Cl. virgen de nieva nº 1 1º dcha,exacta,2807907118
+D034,exacta,"c/ san dacio, nº 31 1º dcha",exacta,2807908108
+D035,exacta,"Maseda nº 1b, bajo izq.",exacta,2807906113
+D036,exacta,C/ Samaria 2 2ºA,exacta,2807903081
+D037,exacta,Cl. de Fuente De Lima nº 27 2ºA,exacta,2807910162
+D038,exacta,"Calle de Corbeta, 14, bajo izq.",exacta,2807921009
+D039,exacta,Jose Lombana Iglesias nº 16,exacta,2807909072
+D040,exacta,Calle Ega 7,exacta,2807905008
+D041,exacta,"Cl. guillermo rovirosa, 6, bajo izq.",exacta,2807915111
+D042,exacta,"Cl. Hidratos, nº 7, 3º B",exacta,2807917106
+D043,exacta,"Calle Villafuerte 23, 3º B",exacta,2807917053
+D044,exacta,"c/ de Isla De Oza, 8",exacta,2807909041
+D045,exacta,"Tabernera Del Puerto, 19, 28018 Madrid",exacta,2807917080
+D046,exacta,"c/ de Monasterio De Leyre, 9, 3º B",exacta,2807906126
+D047,exacta,"Querol 4, bajo izq.",exacta,2807915176
+D048,exacta,"arjona, nº 5, Madrid",exacta,2807909075
+D049,exacta,"Cl. Serafin Gomez, nº 4a",exacta,2807911022
+D050,exacta,Cl. de Gran Poder 2 1º dcha,exacta,2807921026
+D051,exacta,"Calle Aurora Iglesias, nº 5b",exacta,2807913194
+D052,exacta,"Cl. Pablo Ortiz, nº 5 2ºA",exacta,2807912097
+D053,exacta,niño jesus nº 3 1º dcha,exacta,2807903084
+D054,exacta,"fernando vizcaino casas, nº 12 2ºA",exacta,2807909073
+D055,exacta,"c/ de Ferial nº 1, bajo izq.",exacta,2807909002
+D056,errata,"Pasaje Magniron, 2",exacta,2807905030
+D057,errata,"c/ de Ramon Zorin, 1b",exacta,2807910007
+D058,errata,Calle sanco davila nº 21,exacta,2807904054
+D059,errata,"santo angel de al guarda nº 21, 28030 Madrid",exacta,2807909070
+D060,errata,Peironcley nº 13 1º dcha,exacta,2807913024
+D061,errata,Franisco Vitoria 27,exacta,2807903080
+D062,errata,"Cl. santa lucercia, nº 1, 3º B",exacta,2807911184
+D063,errata,"Avda. ingeniero emilio herrera nº 33, Madrid",exacta,2807916117
+D064,errata,el huesped dle sevillano nº 22,exacta,2807917083
+D065,errata,"Manuel Fernanez Caballero 3, Madrid",exacta,2807911048
+D066,conocida,Calle de Alcalá 45,exacta,2807901074
+D067,conocida,"Paseo de la Castellana, 100",exacta,2807905002
+D068,conocida,Gran Vía 28,exacta,2807901116
+D069,conocida,"C/ Bravo Murillo nº 150, 4º izq",exacta,2807906036
+D070,conocida,Plaza Mayor 1,exacta,2807901121
+D071,conocida,calle atocha 70,exacta,2807901059
+D072,conocida,"Fuencarral 45, 28004 Madrid",exacta,2807901095
+D073,conocida,Avda. de la Albufera 112,exacta,2807913084
+D074,conocida,"Calle de Toledo, 80",exacta,2807901021
+D075,conocida,C/ Princesa 25 2ºA,exacta,2807909016
+D076,calle,Cl. de Sanchonuño,calle,2807908114|2807908115
+D077,calle,Maestro Alonso,calle,2807904055|2807904056|2807904058|2807904060
+D078,calle,C/ de Rio Nervion,calle,2807915074|2807915075
+D079,calle,C/ de cerro minguete,calle,2807908138|2807908154|2807908156|2807908163|2807908180
+D080,calle,c/ Vergara,calle,2807901004|2807901006
+D081,calle,planetario,calle,2807902049|2807902103|2807902104|2807902105
+D082,calle,C/ de alejandro ferrant,calle,2807902051|2807902055
+D083,calle,c/ Timanfaya,calle,2807914090|2807914093
+D084,calle,c/ lago calafate,calle,2807913150|2807913200|2807913214
+D085,calle,Calle Arfe,calle,2807915125|2807915126
+D086,numero_inexistente,gutierre de cetina nº 145,aproximada,2807915062
+D087,numero_inexistente,"Igualdad nº 217, 3º B",aproximada,2807919052
+D088,numero_inexistente,Duque De Tovar nº 19,aproximada,2807902011
+D089,numero_inexistente,"Avenida Prov Los Berrocales 62, nº 56",aproximada,2807919001
+D090,numero_inexistente,"c/ de Robledo nº 17, Madrid",aproximada,2807906103
+D091,numero_inexistente,"Ruperto Andres, nº 12",aproximada,2807909047
+D092,numero_inexistente,C/ de Angel Beato 53 1º dcha,aproximada,2807908008
+D093,numero_inexistente,"c/ vicenta villegas, 29 1º dcha",aproximada,2807910057
+D094,numero_inexistente,"campo de criptana 37, Madrid",aproximada,2807912041
+D095,numero_inexistente,Avda. Provisional Gran Via De Vicalvaro 34,aproximada,2807919052
+D096,larga,Calle de Rafael De Riego,demasiadas_secciones,
+D097,larga,c/ Joaquin Turina,demasiadas_secciones,
+D098,larga,Av. Portugal,demasiadas_secciones,
+D099,larga,Calle Melchor Fernandez Almagro,demasiadas_secciones,
+D100,larga,Av. Ciudad De Barcelona,demasiadas_secciones,
