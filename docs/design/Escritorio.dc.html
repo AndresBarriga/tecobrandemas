@@ -10,7 +10,7 @@
 <helmet><link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@400;500;600;700;800&family=Sofia+Sans+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@700;800;900&display=swap" rel="stylesheet"><style>a{color:inherit}a:hover{opacity:.75}</style></helmet>
 <div style="width:1280px;background:#F6F4EE;color:#1C1B19;font-family:'Sofia Sans',sans-serif;font-variant-numeric:tabular-nums;border-radius:8px;overflow:hidden">
 <header style="height:72px;padding:0 40px;display:flex;align-items:center;justify-content:space-between">
-<span data-logo="true" style="font:800 24px/1 'Sofia Sans Extra Condensed',sans-serif;text-transform:uppercase;letter-spacing:.01em">¿Tiene sentido este precio?</span>
+<span data-logo="true" style="display:flex;flex-direction:column;gap:4px"><span style="font:800 28px/1 'Sofia Sans Extra Condensed',sans-serif;text-transform:uppercase;letter-spacing:.01em">A su precio</span><span style="font:500 15px/1.2 'Sofia Sans',sans-serif">¿Tiene sentido este precio?</span></span>
 <nav style="display:flex;gap:28px"><a href="#" style="min-height:44px;display:flex;align-items:center;font:600 15px 'Sofia Sans',sans-serif;text-decoration:none">Cómo calculamos</a><a href="#" style="min-height:44px;display:flex;align-items:center;font:600 15px 'Sofia Sans',sans-serif;text-decoration:none">¿Cuánto pagas tú?</a></nav>
 </header>
 <div style="display:grid;grid-template-columns:440px minmax(0,1fr);align-items:start;min-height:960px">
@@ -44,7 +44,7 @@
 <span style="font:700 15px 'Sofia Sans Semi Condensed',sans-serif;color:{{ h.color }}">{{ h.res }}</span>
 </div>
 </sc-for>
-<span style="font:400 12.5px/1.4 'Sofia Sans',sans-serif;color:#5A5750">Solo en este navegador. Se borran al cerrar la pestaña.</span>
+<span style="font:400 12.5px/1.4 'Sofia Sans',sans-serif;color:#5A5750">Se guardan solo en este navegador y se borran al cerrarlo. No llegan a nuestros servidores.</span>
 </div>
 </sc-if>
 </aside>

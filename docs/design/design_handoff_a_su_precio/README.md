@@ -1,4 +1,6 @@
-# Handoff: «¿Tiene sentido este precio?» (nombre provisional)
+# Handoff: «A su precio»
+
+Lema: «¿Tiene sentido este precio?».
 
 ## Overview
 Herramienta web independiente, primero móvil, para quien está mirando un anuncio de alquiler en Madrid. El usuario introduce ubicación, precio y m², y ve el precio pedido frente a la **referencia** de alquileres registrados de su zona (SERPAVI 2024, ajustada por el IPC del alquiler del INE). El resultado tiene tres niveles. Incluye la zona, una tarjeta para compartir, estados sin dato y de error, aportación anónima de rentas y la página de metodología.
@@ -15,7 +17,7 @@ Para verlos, abre `Tiene sentido este precio.dc.html` en un navegador servido po
 - Cifras marcadas **EJEMPLO** (contadores de uso, recuentos de alquileres por zona, datos de «Tu zona»): son inventadas y deben salir de datos reales. Si no hay dato, no se muestran.
 - Secciones marcadas **PENDIENTE** («Quiénes somos», «Financiación»): falta el texto.
 - El mapa de «Tu zona» (4f) es un esquema. Hay que dibujarlo con las secciones censales reales de CartoCiudad.
-- La redacción del paso 5 de la fórmula («techo») debe validarse contra la metodología SERPAVI publicada.
+- La redacción del paso 5 de la fórmula («techo») está pendiente del texto definitivo, que facilitará el equipo.
 
 ## Índice de pantallas (ids del lienzo)
 | Pantalla | Móvil 390 | Escritorio 1280 |
@@ -26,8 +28,10 @@ Para verlos, abre `Tiene sentido este precio.dc.html` en un navegador servido po
 | Resultado nivel c (por encima del techo) | 3a | 5b |
 | Caso extremo El Viso | 3g | — |
 | Ubicación aproximada (horquilla) | 3h | 5e |
-| Prueba de barra a 360 px | 3i | — |
-| Tu zona + «Aquí estarías dentro» | 4f | (debajo del resultado, misma columna) |
+| Tu zona, niveles b y c (lista, zona seleccionada) | 6a | 6e |
+| Tu zona sin zonas que cumplan | 6b | — |
+| Tu zona con el mapa cargando | 6c | — |
+| Tu zona en el nivel a (solo contexto) | 6d | 6f |
 | Negociar con el dato | 4g | — |
 | Contadores: estados según el número | 4h | — |
 | Dirección no encontrada | 4i | — |
@@ -37,9 +41,9 @@ Para verlos, abre `Tiene sentido este precio.dc.html` en un navegador servido po
 | Página de tarjeta compartida /t/:id | 5f | 5g |
 | Vista previa del enlace 1200×630 | 5h, 5i | — |
 | ¿Cuánto pagas tú? | 5q, 5r, 5s | — |
-| Cómo calculamos | 5t | 5u |
+| Cómo calculamos | 7a | 7b (notas para desarrollo: 7c) |
 
-La pantalla 3b (resultado sobre fondo blanco) es una alternativa descartada. La 4j queda sustituida por 5j–5p, y la 4l por 5f. El turno 2 (2a) es la ficha del sistema de diseño.
+El lienzo está limpio: solo contiene pantallas aprobadas. El sistema de diseño se documenta abajo, en «Design Tokens».
 
 ## Design Tokens
 
@@ -166,11 +170,40 @@ Frases por nivel (en `Resultado.dc.html`, `CASOS`):
 - **b:** «Si tiene ascensor, garaje, reforma reciente, piscina o vistas, puede cuadrar. Si no, pregunta qué lo justifica.» (La terraza **no** forma parte del modelo.)
 - **c:** «Ni con las mejores características la referencia llega a esta cifra.»
 
-### Tu zona (4f)
-- Mapa con tu sección resaltada (contorno de 4 px en tinta) y las vecinas coloreadas por la parte alta de su referencia, con una rampa de 5 tonos de paja (`#F3EAD0` a `#6F5622`).
-- Las zonas «aquí estarías dentro» van con contorno discontinuo salvia y numeradas, con su lista debajo.
-- Aclaración obligatoria: «Son zonas donde ese precio sería normal según los alquileres registrados, no pisos disponibles».
-- Línea de evolución: «+X % ha subido la renta registrada en esta zona desde 2015».
+### Tu zona (6a–6f, `TuZona.dc.html`)
+Va debajo del resultado, en el mismo ancho de lectura que este: 390 px en móvil (mapa de 350×310) y 600 px centrados en escritorio (mapa de 600×531, lista debajo). **En todos los textos se dice «zona», nunca «sección».** Los datos de ejemplo son **idénticos** en móvil y escritorio.
+
+- **Mapa:**
+  - **Base:** gris muy suave `#ECEAE5` con contornos irregulares de zona (`#DDD9D1`). Las líneas de 2 px en `#A39D91` separan barrios.
+  - **Nombres de barrio:** un solo color, tinta `#1C1B19`, con halo papel. Sofia Sans 600 a 11,5 px en móvil y 13 px en escritorio, **nunca por debajo de 11 px**. Van en el centro del barrio y **solo se muestran si caben** sin pisar tu zona, su línea, los marcadores ni otro nombre; si no, se prueba a desplazarlos en vertical y, si aun así no caben, se omiten.
+  - **Radio:** las zonas a 1,5 km o menos (círculo discontinuo en tinta, con el rótulo «círculo: 1,5 km» bajo el mapa) se colorean por la parte alta de su referencia en €/m² al mes.
+  - **Escala:** Paja en 5 tonos, con **cortes fijos para toda la ciudad**: menos de 15 `#F3E4B0`, 15–18 `#E2BE55`, 18–21 `#BF962F`, 21–24 `#8E6B1D`, 24 o más `#5A4413`. Contorno de 1 px en piedra.
+  - **Sin dato:** rayado a 45°.
+  - **Tu zona:** contorno de 4 px en tinta. La etiqueta «tu zona» va **fuera del mapa, debajo**, unida con una línea de 1,5 px.
+  - **Marcadores:** numerados, en botones de 44×44. La zona seleccionada lleva contorno discontinuo y marcador invertido.
+- **Leyenda:** «Parte alta de la referencia, en €/m² al mes» y 6 muestras.
+  - Una **muesca** (triángulo y línea de 2 px en tinta) marca el tramo donde cae el precio del usuario, con la etiqueta «tu precio: 24,4 €/m²».
+  - La etiqueta se alinea a la izquierda, al centro o a la derecha de la muesca según su posición, para no salirse.
+  - Nota: «Sin dato: zonas con pocos alquileres registrados. Cortes iguales para toda la ciudad. Las líneas gruesas separan barrios.»
+- **Lista**, solo en los niveles b y c (marcada **EJEMPLO**):
+  - Título: «Este precio entra en la referencia de…»
+  - Subtítulo: «Zonas cercanas donde la referencia llega a este precio»
+  - Aviso: «No son pisos disponibles: son zonas donde este precio quedaría dentro de lo que pagan los alquileres registrados.»
+  - Hasta 5 zonas, una por barrio, ordenadas por distancia.
+  - **Cada fila:**
+    - número;
+    - «una zona de Goya»;
+    - «Referencia para 90 m²: 1.552 a 2.351 € al mes»;
+    - «Este precio caería en su parte baja / media / alta»;
+    - distancia.
+  - Nada que sugiera mudarse.
+- **Interacción:** al tocar una fila o un marcador se resalta en el mapa; un segundo toque lo deselecciona.
+- **Evolución:** «La renta registrada en esta zona ha subido / ha bajado un X % entre 2015 y 2024, sin descontar la inflación.»
+- **Estados:**
+  - **Sin zonas que cumplan (6b):** se ocultan el título y el aviso. Queda una caja con «Zonas cercanas donde la referencia llega a este precio: ninguna» y «Este precio (24,4 €/m²) supera la referencia de todas las zonas a 1,5 km o menos.» El mapa de este estado **no tiene ninguna zona de 24 €/m² o más**, en coherencia con el texto.
+  - **Cargando (6c):** silueta de las zonas en pista, el rótulo «Cargando el mapa de la zona…» y filas fantasma.
+  - **Nivel a (6d, 6f):** sin lista; solo el mapa de contexto, con la muesca en el precio del usuario (18,7 €/m² en el ejemplo de Virgen del Cortijo).
+- **Datos:** la geometría es un esquema generado. En producción, las zonas reales (secciones censales del INE) vienen de CartoCiudad y las referencias, de SERPAVI.
 
 ### Negociar con el dato (4g)
 - Texto editable para copiar, con opción Tú/Usted.
@@ -214,9 +247,29 @@ Siete motivos con la misma plantilla: menos de 30 m², más de 150 m², obra nue
 - **Qué no se guarda:** calle, número, nombre, correo, IP ni nada identificativo.
 - Hay pantalla de confirmación.
 
-### Cómo calculamos (5t, 5u)
-- Secciones: fórmula en seis pasos, con un ejemplo de Fuente del Berro; fuentes con la atribución literal; limitaciones; quiénes somos (PENDIENTE); financiación (PENDIENTE).
-- En escritorio, un índice fijo de 240 px y contenido de 680 px.
+### Cómo calculamos (7a móvil, 7b escritorio, `ComoCalculamos.dc.html`)
+Sustituye a 5t y 5u. Va dirigida a quien quiere comprobar que no nos inventamos nada (periodistas, sindicatos, curiosos): se escanea en 30 segundos y aguanta una lectura a fondo. Las notas para desarrollo (campos dinámicos, puntos de corte y componentes reutilizados) están en **7c**.
+
+- **Marcas de revisión:**
+  - **NUEVO:** microtexto nuevo, pendiente de revisar.
+  - **BORRADOR:** hay que sustituirlo por el texto de la página publicada, sin reescribirlo. Ese texto no llegó.
+  - **EJEMPLO:** cifras de ejemplo.
+  - **PENDIENTE:** falta el texto.
+- **Navegación:**
+  - **Escritorio:** índice fijo de 240 px con la sección activa (fondo `#EDE9E0`, peso 700, `aria-current`), que se actualiza con IntersectionObserver.
+  - **Móvil:** un `<select>` nativo «Ir a: …», fijo arriba, de 48 px. Sin menú hamburguesa.
+- **Orden:**
+  1. Título.
+  2. **En 30 segundos**, el protagonista: tarjeta blanca con cuatro frases numeradas en Sofia Sans 600, de 17 a 19 px.
+  3. **Un ejemplo, paso a paso**, con cuatro pasos numerados. Todas las barras usan la misma escala (0–2.530 €). El paso 2 muestra en discontinua la referencia sin ajustar.
+  4. **Los tres niveles**, cada uno con su etiqueta y una mini-barra.
+  5. **Un precio pedido, no firmado**, destacado en un bloque tinta con título Paja.
+  6. **Tus datos:** el texto literal, dos columnas (qué guardamos / qué no guardamos) y una nota sobre el código antiabuso y Cloudflare.
+  7. **Lo que no calculamos:** filas de 52 px que enlazan a las pantallas sin dato (5j–5p).
+  8. **Fuentes:** tabla en escritorio, que pasa a tarjetas en móvil, y el último dato del IPC.
+  9. **Quiénes somos** y **Financiación**, con [CORREO].
+  10. Botón Paja «Comprobar un piso» y el pie.
+- **Ancho de lectura:** 70ch como máximo. Texto de 16 px en móvil y 17 px en escritorio. Nada en tamaño de letra pequeña legal.
 
 ## Interactions & Behavior
 - **Precio y m²:**
@@ -231,7 +284,8 @@ Siete motivos con la misma plantilla: menos de 30 m², más de 150 m², obra nue
   - precio > techo → c.
 - **Reglas de sin dato:** m² < 30 o > 150; obra nueva desde 2022; casa; no es de larga duración; habitación; pocos registros en la zona.
 - **Contador del barrio:** se muestra a partir de 10; por debajo, el bloque desaparece sin dejar hueco.
-- **Escritorio:** «Comprobar otro piso» sustituye el resultado y añade el anterior arriba del historial; un clic en una fila lo restaura.
+- **Escritorio:** «Comprobar otro piso» sustituye el resultado y añade el anterior arriba del historial; un clic en una fila lo restaura. Los «Pisos comprobados en esta sesión» se guardan **solo en el navegador** (sessionStorage) y se borran al cerrarlo; nunca llegan al servidor. Así lo explica también la pantalla de privacidad de «¿Cuánto pagas tú?».
+- **Registro del análisis:** en la pantalla de resultado, antes de «¿Te ha servido?», hay una casilla **desmarcada por defecto** con el texto «Sumar este análisis, anónimo, al recuento del barrio». Solo si se marca, el análisis cuenta para los contadores.
 
 ## State Management
 - **form:** `{ modoUbicacion: 'direccion'|'calle'|'mapa', direccion, precio, m2, obraNueva, largaDuracion, tipo: 'piso'|'casa' }`
@@ -247,7 +301,7 @@ Siete motivos con la misma plantilla: menos de 30 m², más de 150 m², obra nue
 ## Assets
 - No hay imágenes. Iconos: SVG en línea de 20×20 (check, onda, chevron, información, guion).
 - **Fuente:** Sofia Sans, Sofia Sans Semi Condensed y Sofia Sans Extra Condensed (Google Fonts, OFL).
-- **Logotipo provisional:** texto en Extra Condensed con el atributo `data-logo="true"` en todos los sitios. Debe implementarse como un único componente `<Logo>` fácil de sustituir.
+- **Logotipo:** «A su precio» en Extra Condensed 800, en mayúsculas. Debajo va el lema «¿Tiene sentido este precio?» en Sofia Sans 500, a unos 0,6 veces el tamaño del nombre (en la tarjeta de 1080, a 30 px). Está marcado con `data-logo="true"` en todos los sitios y debe implementarse como un único componente `<Logo>`.
 
 ## Files
 - `Tiene sentido este precio.dc.html`: lienzo con todas las pantallas (turnos 5 → 2).
@@ -256,6 +310,9 @@ Siete motivos con la misma plantilla: menos de 30 m², más de 150 m², obra nue
 - `Tarjeta.dc.html`: tarjeta de 1080×1350. Prop `caso`.
 - `PreviaEnlace.dc.html`: imagen OG de 1200×630.
 - `SinDato.dc.html`: pantallas sin dato. Prop `motivo`.
+- `ComoCalculamos.dc.html`: página «Cómo calculamos». Props: `desktop`, `activo`, `ipcFactor`, `ipcPct` e `ipcMes`.
+- `TuZona.dc.html`: Tu zona. Props: `modo` (c, b, a, vacia, cargando), `desktop`, `tendencia` (sube, baja), `selInicial`.
+- `capturas/`: PNG de cada pantalla, con el id del lienzo en el nombre. `movil/` (390 px), `escritorio/` (1280 px) y `compartir/` (tarjetas y vista previa del enlace, a 2x).
 - `support.js`: entorno de ejecución para ver los `.dc.html`; no forma parte del producto.
 
 ## Datos de ejemplo reales

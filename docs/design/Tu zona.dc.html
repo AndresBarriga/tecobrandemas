@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wdth,wght@62..125,400..900&family=DM+Mono:wght@400;500&family=Sofia+Sans:wght@400;500;600;700;800&family=Sofia+Sans+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@700;800;900&display=swap" rel="stylesheet"><style>body{margin:0;background:#e9e6df;font-family:'IBM Plex Sans',system-ui,sans-serif}a{color:inherit}a:hover{opacity:.7}.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08)}.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}.dv-opts{display:flex;flex-direction:column;gap:56px}.dv-opt{display:flex;flex-direction:column;gap:12px;scroll-margin-top:16px}.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 12px/1.4 system-ui,sans-serif;color:rgba(0,0,0,.6)}.dv-next{margin:28px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.55)}</style></helmet>
+<template id="__bundler_thumbnail" data-bg-color="#F6F4EE"><svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg"><rect width="1200" height="800" fill="#F6F4EE"></rect><path d="M420 260 L560 230 L700 270 L760 400 L700 540 L540 570 L420 520 L380 390 Z" fill="#BF962F" stroke="#857F74" stroke-width="4"></path><path d="M520 340 L640 330 L660 440 L540 460 Z" fill="#E2BE55" stroke="#1C1B19" stroke-width="14"></path><circle cx="600" cy="400" r="260" fill="none" stroke="#1C1B19" stroke-width="5" stroke-dasharray="16 14"></circle></svg></template>
+<section class="dv-turn" id="t6">
+<div class="dv-thd"><a class="dv-tid" href="#t6">6</a><span class="dv-tname">A su precio · Tu zona (móvil 390 y escritorio 1280). Toca una zona de la lista o un número del mapa para resaltarla.</span></div>
+<div style="display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
+<div class="dv-opt" id="6a"><div class="dv-olabel"><a class="dv-oid" href="#6a">6a</a>Niveles b y c · lista con una zona seleccionada</div><div style="box-shadow:0 1px 3px rgba(0,0,0,.08);border-radius:8px;overflow:hidden"><dc-import name="TuZona" modo="c" sel-inicial="1" hint-size="390px,1400px"></dc-import></div></div>
+<div class="dv-opt" id="6b"><div class="dv-olabel"><a class="dv-oid" href="#6b">6b</a>Sin zonas cercanas que cumplan</div><div style="box-shadow:0 1px 3px rgba(0,0,0,.08);border-radius:8px;overflow:hidden"><dc-import name="TuZona" modo="vacia" tendencia="baja" hint-size="390px,1400px"></dc-import></div></div>
+<div class="dv-opt" id="6c"><div class="dv-olabel"><a class="dv-oid" href="#6c">6c</a>Mapa cargando</div><div style="box-shadow:0 1px 3px rgba(0,0,0,.08);border-radius:8px;overflow:hidden"><dc-import name="TuZona" modo="cargando"  hint-size="390px,1400px"></dc-import></div></div>
+<div class="dv-opt" id="6d"><div class="dv-olabel"><a class="dv-oid" href="#6d">6d</a>Nivel a · solo contexto</div><div style="box-shadow:0 1px 3px rgba(0,0,0,.08);border-radius:8px;overflow:hidden"><dc-import name="TuZona" modo="a"  hint-size="390px,1400px"></dc-import></div></div>
+</div>
+<div class="dv-opt" id="6e"><div class="dv-olabel"><a class="dv-oid" href="#6e">6e</a>Escritorio 1280 · niveles b y c</div><div style="width:1280px;background:#F6F4EE;color:#1C1B19;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);font-family:'Sofia Sans',sans-serif;font-variant-numeric:tabular-nums">
+<header style="height:80px;padding:0 40px;display:flex;align-items:center;justify-content:space-between"><span data-logo="true" style="display:flex;flex-direction:column;gap:4px"><span style="font:800 28px/1 'Sofia Sans Extra Condensed',sans-serif;text-transform:uppercase;letter-spacing:.01em">A su precio</span><span style="font:500 15px/1.2 'Sofia Sans',sans-serif">¿Tiene sentido este precio?</span></span><nav style="display:flex;gap:28px"><a href="#" style="min-height:44px;display:flex;align-items:center;font:600 15px 'Sofia Sans',sans-serif;text-decoration:none">Cómo calculamos</a><a href="#" style="min-height:44px;display:flex;align-items:center;font:600 15px 'Sofia Sans',sans-serif;text-decoration:none">¿Cuánto pagas tú?</a></nav></header>
+<div style="display:grid;grid-template-columns:440px minmax(0,1fr);align-items:start">
+<aside style="padding:16px 32px 40px 40px;display:flex;flex-direction:column;gap:14px">
+<span style="font:500 13px 'Sofia Sans',sans-serif;color:#5A5750">Formulario fijo (ver 5a); aquí, contraído tras desplazarse</span>
+<div style="background:#FFFFFF;border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:4px"><span style="font:700 16px 'Sofia Sans',sans-serif">Calle de Fuente del Berro, 14</span><span style="font:500 14px 'Sofia Sans Semi Condensed',sans-serif;color:#5A5750">2.200&nbsp;€ al mes, 90&nbsp;m², piso, larga duración</span></div>
+<div style="height:52px;background:#EBC85A;border-radius:8px;display:flex;align-items:center;justify-content:center;font:800 17px 'Sofia Sans',sans-serif">Comprobar otro piso</div>
+</aside>
+<main style="padding:16px 48px 48px;border-left:1px solid #E4DFD5;display:flex;flex-direction:column;gap:28px">
+<div style="height:1px;background:#E4DFD5;margin-top:4px"></div>
+<span style="width:600px;align-self:center;font:500 13px 'Sofia Sans',sans-serif;color:#5A5750">Debajo del resultado (5b), en el mismo ancho de lectura</span>
+<div style="width:600px;align-self:center"><dc-import name="TuZona" modo="c" desktop="{{ true }}" sel-inicial="0" hint-size="600px,1500px"></dc-import></div>
+</main></div></div></div>
+<div class="dv-opt" id="6f"><div class="dv-olabel"><a class="dv-oid" href="#6f">6f</a>Escritorio 1280 · nivel a</div><div style="width:1280px;background:#F6F4EE;color:#1C1B19;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);font-family:'Sofia Sans',sans-serif;font-variant-numeric:tabular-nums">
+<header style="height:80px;padding:0 40px;display:flex;align-items:center;justify-content:space-between"><span data-logo="true" style="display:flex;flex-direction:column;gap:4px"><span style="font:800 28px/1 'Sofia Sans Extra Condensed',sans-serif;text-transform:uppercase;letter-spacing:.01em">A su precio</span><span style="font:500 15px/1.2 'Sofia Sans',sans-serif">¿Tiene sentido este precio?</span></span><nav style="display:flex;gap:28px"><a href="#" style="min-height:44px;display:flex;align-items:center;font:600 15px 'Sofia Sans',sans-serif;text-decoration:none">Cómo calculamos</a><a href="#" style="min-height:44px;display:flex;align-items:center;font:600 15px 'Sofia Sans',sans-serif;text-decoration:none">¿Cuánto pagas tú?</a></nav></header>
+<div style="display:grid;grid-template-columns:440px minmax(0,1fr);align-items:start">
+<aside style="padding:16px 32px 40px 40px;display:flex;flex-direction:column;gap:14px">
+<span style="font:500 13px 'Sofia Sans',sans-serif;color:#5A5750">Formulario fijo (ver 5a); aquí, contraído tras desplazarse</span>
+<div style="background:#FFFFFF;border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:4px"><span style="font:700 16px 'Sofia Sans',sans-serif">Calle de Fuente del Berro, 14</span><span style="font:500 14px 'Sofia Sans Semi Condensed',sans-serif;color:#5A5750">1.400&nbsp;€ al mes, 90&nbsp;m², piso, larga duración</span></div>
+<div style="height:52px;background:#EBC85A;border-radius:8px;display:flex;align-items:center;justify-content:center;font:800 17px 'Sofia Sans',sans-serif">Comprobar otro piso</div>
+</aside>
+<main style="padding:16px 48px 48px;border-left:1px solid #E4DFD5;display:flex;flex-direction:column;gap:28px">
+<div style="height:1px;background:#E4DFD5;margin-top:4px"></div>
+<span style="width:600px;align-self:center;font:500 13px 'Sofia Sans',sans-serif;color:#5A5750">Debajo del resultado (5b), en el mismo ancho de lectura</span>
+<div style="width:600px;align-self:center"><dc-import name="TuZona" modo="a" desktop="{{ true }}"  hint-size="600px,1500px"></dc-import></div>
+</main></div></div></div>
+</div>
+</section>
+</x-dc>
+</body>
+</html>

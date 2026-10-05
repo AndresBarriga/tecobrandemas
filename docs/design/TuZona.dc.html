@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@400;500;600;700;800&family=Sofia+Sans+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@700;800;900&display=swap" rel="stylesheet"><style>button:focus-visible{outline:2px solid #1C1B19;outline-offset:3px}</style></helmet>
+<div style="width:{{ rootW }};background:#F6F4EE;color:#1C1B19;font-family:'Sofia Sans',sans-serif;font-variant-numeric:tabular-nums;padding:{{ pad }};box-sizing:border-box;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<h2 style="margin:0;font:800 {{ h2 }}px/.88 'Sofia Sans Extra Condensed',sans-serif;text-transform:uppercase">Tu zona</h2>
+<p style="margin:0;font:400 16px/1.5 'Sofia Sans',sans-serif;max-width:620px;text-wrap:pretty">{{ intro }}</p>
+</div>
+<div style="display:flex;flex-direction:{{ dir }};gap:{{ gap }};align-items:flex-start">
+<div style="display:flex;flex-direction:column;gap:14px;width:{{ mapW }}px;flex:none">
+<div style="position:relative;width:{{ mapW }}px;height:{{ svgH }}px">
+<svg viewBox="0 0 {{ mapW }} {{ svgH }}" width="{{ mapW }}" height="{{ svgH }}" style="display:block" role="img" aria-label="{{ mapAria }}">
+<defs><pattern id="tz-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#DAD5CA"></rect><line x1="0" y1="0" x2="0" y2="6" stroke="#857F74" stroke-width="1.5"></line></pattern><clipPath id="tz-clip"><rect x="0" y="{{ top }}" width="{{ mapW }}" height="{{ mapH }}" rx="8"></rect></clipPath></defs>
+<g clip-path="url(#tz-clip)">
+<rect x="0" y="{{ top }}" width="{{ mapW }}" height="{{ mapH }}" fill="#ECEAE5"></rect>
+<sc-for list="{{ cells }}" as="h" hint-placeholder-count="0"><path d="{{ h.d }}" fill="{{ h.fill }}" stroke="{{ h.stroke }}" stroke-width="{{ h.sw }}" stroke-linejoin="round"></path></sc-for>
+<sc-for list="{{ bounds }}" as="b" hint-placeholder-count="0"><path d="{{ b }}" fill="none" stroke="#A39D91" stroke-width="2" stroke-linejoin="round"></path></sc-for>
+<circle cx="{{ cx }}" cy="{{ cy }}" r="{{ ringR }}" fill="none" stroke="#1C1B19" stroke-width="1.25" stroke-dasharray="4 4"></circle>
+<sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}"><path d="{{ selD }}" fill="none" stroke="#1C1B19" stroke-width="3" stroke-dasharray="6 3" stroke-linejoin="round"></path></sc-if>
+<sc-if value="{{ notLoading }}" hint-placeholder-val="{{ true }}"><path d="{{ meD }}" fill="none" stroke="#1C1B19" stroke-width="4" stroke-linejoin="round"></path></sc-if>
+</g>
+<sc-if value="{{ notLoading }}" hint-placeholder-val="{{ true }}"><g><line x1="{{ cx }}" y1="{{ meTopY }}" x2="{{ cx }}" y2="{{ lblY }}" stroke="#1C1B19" stroke-width="1.5"></line><rect x="{{ meLblX }}" y="{{ lblY }}" width="72" height="22" rx="4" fill="#1C1B19"></rect><text x="{{ cx }}" y="{{ lblTY }}" text-anchor="middle" font-family="Sofia Sans, sans-serif" font-weight="700" font-size="13" fill="#F6F4EE">tu zona</text></g></sc-if>
+<text x="{{ ringLX }}" y="{{ lblTY }}" text-anchor="end" font-family="Sofia Sans Semi Condensed, sans-serif" font-weight="600" font-size="12" fill="#5A5750">círculo: 1,5 km</text>
+</svg>
+<sc-for list="{{ names }}" as="n" hint-placeholder-count="0"><span style="position:absolute;left:{{ n.x }}px;top:{{ n.y }}px;transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none;font:600 {{ n.fs }}px/1 'Sofia Sans',sans-serif;color:#1C1B19;text-shadow:0 0 1px #F6F4EE,0 0 2px #F6F4EE,0 0 2px #F6F4EE,0 0 3px #F6F4EE,0 0 4px #F6F4EE,0 0 5px #F6F4EE">{{ n.t }}</span></sc-for>
+<sc-for list="{{ marks }}" as="m" hint-placeholder-count="0"><button onClick="{{ m.pick }}" aria-label="{{ m.aria }}" style="position:absolute;left:{{ m.l }}px;top:{{ m.t }}px;width:44px;height:44px;padding:0;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer"><span style="width:{{ m.d }}px;height:{{ m.d }}px;border-radius:50%;border:2px solid #1C1B19;background:{{ m.bg }};color:{{ m.fg }};display:flex;align-items:center;justify-content:center;font:800 {{ m.fs }}px/1 'Sofia Sans',sans-serif;box-sizing:border-box">{{ m.n }}</span></button></sc-for>
+<sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:{{ top }}px;bottom:0;display:flex;align-items:center;justify-content:center"><span style="background:#F6F4EE;border-radius:8px;padding:10px 16px;font:600 15px 'Sofia Sans',sans-serif">Cargando el mapa de la zona…</span></div></sc-if>
+</div>
+<sc-if value="{{ notLoading }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:8px">
+<span style="font:600 13px 'Sofia Sans',sans-serif">Parte alta de la referencia, en €/m² al mes</span>
+<div style="position:relative;padding-top:24px">
+<div style="position:absolute;top:0;left:{{ nX }}%;transform:translateX({{ nT }});white-space:nowrap;font:700 12.5px/1 'Sofia Sans Semi Condensed',sans-serif">tu precio: {{ precioM2 }}</div>
+<div style="position:absolute;top:15px;left:{{ nX }}%;width:0;height:0;margin-left:-5px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #1C1B19"></div>
+<div style="position:absolute;top:22px;left:{{ nX }}%;width:2px;height:20px;margin-left:-1px;background:#1C1B19;z-index:1"></div>
+<div style="display:grid;grid-template-columns:repeat(5,1fr) 1.15fr;gap:4px">
+<sc-for list="{{ legend }}" as="l" hint-placeholder-count="6"><div style="display:flex;flex-direction:column;gap:4px"><span style="height:16px;border-radius:2px;box-sizing:border-box;border:1px solid #857F74;background:{{ l.bg }}"></span><span style="font:600 12px 'Sofia Sans Semi Condensed',sans-serif;white-space:nowrap">{{ l.t }}</span></div></sc-for>
+</div>
+</div>
+<span style="font:400 12.5px/1.45 'Sofia Sans',sans-serif;color:#5A5750">Sin dato: zonas con pocos alquileres registrados. Cortes iguales para toda la ciudad. Las líneas gruesas separan barrios.</span>
+</div>
+</sc-if>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;flex:1;min-width:0;width:{{ listW }}">
+<sc-if value="{{ showHead }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><h3 style="margin:0;font:700 21px/1.2 'Sofia Sans',sans-serif">Este precio entra en la referencia de…</h3><span style="flex:none;padding:2px 6px;border:1.5px dashed #C2185B;color:#C2185B;border-radius:4px;font:700 10px system-ui,sans-serif;letter-spacing:.06em">EJEMPLO</span></div>
+<span style="font:500 15px/1.4 'Sofia Sans',sans-serif;color:#5A5750">Zonas cercanas donde la referencia llega a este precio</span>
+</div>
+<div style="display:flex;gap:10px;align-items:flex-start;background:#EDE9E0;border-radius:8px;padding:12px 14px"><svg width="20" height="20" viewBox="0 0 20 20" style="flex:none;margin-top:1px"><circle cx="10" cy="10" r="8.5" stroke="#1C1B19" stroke-width="1.5" fill="none"></circle><path d="M10 9v5M10 6v.5" stroke="#1C1B19" stroke-width="2"></path></svg><span style="font:500 14px/1.45 'Sofia Sans',sans-serif">No son pisos disponibles: son zonas donde este precio quedaría dentro de lo que pagan los alquileres registrados.</span></div>
+</sc-if>
+<sc-if value="{{ showList }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ rows }}" as="z" hint-placeholder-count="5"><button onClick="{{ z.pick }}" aria-pressed="{{ z.on }}" style="min-height:64px;width:100%;text-align:left;background:{{ z.bg }};border:none;outline:{{ z.ol }};outline-offset:-2px;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;color:#1C1B19;font-family:inherit"><span style="flex:none;width:28px;height:28px;border-radius:50%;border:2px solid #1C1B19;background:{{ z.nbg }};color:{{ z.nfg }};display:flex;align-items:center;justify-content:center;font:800 14px 'Sofia Sans',sans-serif;box-sizing:border-box">{{ z.n }}</span><span style="flex:1;display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font:700 16px 'Sofia Sans',sans-serif">{{ z.name }}</span><span style="font:500 13px 'Sofia Sans Semi Condensed',sans-serif;color:#5A5750">Referencia para {{ z.m2 }}: {{ z.ref }}</span><span style="font:600 13px 'Sofia Sans Semi Condensed',sans-serif">Este precio caería en su parte {{ z.pos }}</span></span><span style="flex:none;font:600 14px 'Sofia Sans Semi Condensed',sans-serif;color:#5A5750">{{ z.km }}</span></button></sc-for>
+</div>
+<span style="font:400 12.5px/1.45 'Sofia Sans',sans-serif;color:#5A5750">Ordenadas por distancia. Toca una zona para verla en el mapa.</span>
+</sc-if>
+<sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+<div style="background:#EDE9E0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span style="font:700 16px 'Sofia Sans',sans-serif">Zonas cercanas donde la referencia llega a este precio: ninguna</span><span style="flex:none;padding:2px 6px;border:1.5px dashed #C2185B;color:#C2185B;border-radius:4px;font:700 10px system-ui,sans-serif;letter-spacing:.06em">EJEMPLO</span></div><span style="font:400 15px/1.5 'Sofia Sans',sans-serif;text-wrap:pretty">Este precio ({{ precioM2 }}) supera la referencia de todas las zonas a 1,5 km o menos.</span></div>
+</sc-if>
+<sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+<span style="height:22px;width:80%;background:#E4DFD5;border-radius:4px"></span>
+<span style="height:64px;background:#EDE9E0;border-radius:8px"></span>
+<span style="height:64px;background:#EDE9E0;border-radius:8px"></span>
+<span style="height:64px;background:#EDE9E0;border-radius:8px"></span>
+</sc-if>
+<sc-if value="{{ isA }}" hint-placeholder-val="{{ false }}">
+<p style="margin:0;font:400 15px/1.5 'Sofia Sans',sans-serif;color:#5A5750;text-wrap:pretty">Tu precio ya está dentro de la referencia, así que aquí solo tienes el contexto: cómo es la referencia en las zonas que te rodean.</p>
+</sc-if>
+</div>
+</div>
+<sc-if value="{{ notLoading }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<svg width="22" height="22" viewBox="0 0 20 20" style="flex:none"><path d="{{ trendIcon }}" stroke="#1C1B19" stroke-width="2" fill="none"></path></svg>
+<span style="font:500 16px/1.4 'Sofia Sans',sans-serif;flex:1;min-width:0">La renta registrada en esta zona {{ trendVerb }} un <strong style="font-weight:800;font-family:'Sofia Sans Semi Condensed',sans-serif">{{ trendPct }}</strong> entre 2015 y 2024, sin descontar la inflación.</span>
+<span style="flex:none;padding:2px 6px;border:1.5px dashed #C2185B;color:#C2185B;border-radius:4px;font:700 10px system-ui,sans-serif;letter-spacing:.06em">EJEMPLO</span>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:1250},&quot;modo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;c&quot;,&quot;b&quot;,&quot;a&quot;,&quot;vacia&quot;,&quot;cargando&quot;],&quot;default&quot;:&quot;c&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;desktop&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;tendencia&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;sube&quot;,&quot;baja&quot;],&quot;default&quot;:&quot;sube&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;selInicial&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:-1,&quot;tsType&quot;:&quot;number&quot;}}">
+const NB = '\u00A0';
+const fmt = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const TONES = ['#F3E4B0', '#E2BE55', '#BF962F', '#8E6B1D', '#5A4413'];
+const CUTS = [15, 18, 21, 24];
+const BARRIOS = [
+  { t: 'Castellana', x: .14, y: .1, v: 30 }, { t: 'Lista', x: .46, y: .1, v: 24.8 }, { t: 'Guindalera', x: .84, y: .12, v: 17.5 },
+  { t: 'Recoletos', x: .12, y: .5, v: 29 }, { t: 'Goya', x: .3, y: .3, v: 25 }, { t: 'Fuente del Berro', x: .62, y: .7, v: 19 },
+  { t: 'Jerónimos', x: .16, y: .9, v: 25.5 }, { t: 'Ibiza', x: .5, y: .9, v: 21 }, { t: 'Niño Jesús', x: .84, y: .7, v: 18 }
+];
+const rnd = (a, b, c) => { const s = Math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453; return s - Math.floor(s); };
+const COLS = 9, ROWS = 8;
+class Component extends DCLogic {
+  state = { sel: null };
+  renderVals() {
+    const desk = !!this.props.desktop;
+    const modo = this.props.modo || 'c';
+    const sel = this.state.sel != null ? this.state.sel : (this.props.selInicial != null ? Number(this.props.selInicial) : -1);
+    const loading = modo === 'cargando', isA = modo === 'a', empty = modo === 'vacia';
+    const mapW = desk ? 600 : 350, mapH = Math.round(mapW * 310 / 350), top = 0, svgH = mapH + 34, k = mapW / 350;
+    const cw = mapW / COLS, ch = mapH / ROWS;
+    const V = [];
+    for (let j = 0; j <= ROWS; j++) { V.push([]); for (let i = 0; i <= COLS; i++) {
+      const jx = (i === 0 || i === COLS) ? 0 : (rnd(i, j, 1) - .5) * cw * .55;
+      const jy = (j === 0 || j === ROWS) ? 0 : (rnd(i, j, 2) - .5) * ch * .55;
+      V[j].push([i * cw + jx, top + j * ch + jy]);
+    } }
+    const mid = (p, q, a, b, c) => { const dx = q[0] - p[0], dy = q[1] - p[1]; const o = (rnd(a, b, c) - .5) * 9 * k; const L = Math.hypot(dx, dy) || 1; return [(p[0] + q[0]) / 2 - dy / L * o, (p[1] + q[1]) / 2 + dx / L * o]; };
+    const H = (i, j) => mid(V[j][i], V[j][i + 1], i, j, 3), Vv = (i, j) => mid(V[j][i], V[j + 1][i], i, j, 4);
+    const ring = (i, j) => { const a = V[j][i], b = V[j][i + 1], c = V[j + 1][i + 1], d = V[j + 1][i]; return [a, H(i, j), b, Vv(i + 1, j), c, H(i, j + 1), d, Vv(i, j)]; };
+    const toD = ps => 'M' + ps.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L') + 'Z';
+    const mi = Math.floor(COLS / 2), mj = Math.floor(ROWS / 2);
+    const cen = (i, j) => { const r = ring(i, j); return [r.reduce((s, p) => s + p[0], 0) / 8, r.reduce((s, p) => s + p[1], 0) / 8]; };
+    const [cx, cy] = cen(mi, mj);
+    const ringR = Math.min(mapW, mapH) * .44;
+    const m2 = isA ? 75 : 90, precio = isA ? 1400 : modo === 'b' ? 1780 : 2200, pm2 = precio / m2;
+    const grid = [];
+    for (let j = 0; j < ROWS; j++) { grid.push([]); for (let i = 0; i < COLS; i++) {
+      const nx = (i + .5) / COLS, ny = (j + .5) / ROWS;
+      let bi = 0, bd = 1e9;
+      BARRIOS.forEach((b, q) => { const d = Math.hypot((nx - b.x) * 350, (ny - b.y) * 310); if (d < bd) { bd = d; bi = q; } });
+      const me = i === mi && j === mj;
+      let v = me ? (isA ? 22.6 : 18.8) : BARRIOS[bi].v + (rnd(i, j, 5) - .5) * 2.6;
+      if (empty && !me) v = Math.min(v, 22.6 + rnd(i, j, 7) * 1.2);
+      const [x, y] = cen(i, j);
+      const dist = Math.hypot(x - cx, y - cy);
+      const inside = dist <= ringR;
+      const nodata = !me && inside && rnd(i, j, 6) < .08;
+      grid[j].push({ i, j, x, y, bi, v, me, dist, inside, nodata });
+    } }
+    const cells = [], cand = [];
+    grid.flat().forEach(g => {
+      const d = toD(ring(g.i, g.j));
+      if (loading) { cells.push({ d, fill: '#E4DFD5', stroke: '#ECEAE5', sw: 1 }); return; }
+      if (!g.inside) { cells.push({ d, fill: '#ECEAE5', stroke: '#DDD9D1', sw: 1 }); return; }
+      cells.push({ d, fill: g.nodata ? 'url(#tz-hatch)' : TONES[CUTS.filter(c => g.v >= c).length], stroke: '#857F74', sw: 1 });
+      if (!g.nodata && !g.me && g.v >= pm2 && !isA && !empty) cand.push(g);
+    });
+    const bounds = [];
+    if (!loading) for (let j = 0; j < ROWS; j++) for (let i = 0; i < COLS; i++) {
+      const g = grid[j][i];
+      if (i < COLS - 1 && grid[j][i + 1].bi !== g.bi) { const p = V[j][i + 1], q = V[j + 1][i + 1]; bounds.push(toD([p, Vv(i + 1, j), q]).slice(0, -1)); }
+      if (j < ROWS - 1 && grid[j + 1][i].bi !== g.bi) { const p = V[j + 1][i], q = V[j + 1][i + 1]; bounds.push(toD([p, H(i, j + 1), q]).slice(0, -1)); }
+    }
+    cand.sort((a, b) => a.dist - b.dist);
+    const seen = new Set(), top5 = [];
+    for (const g of cand) { if (seen.has(g.bi)) continue; seen.add(g.bi); top5.push(g); if (top5.length === 5) break; }
+    const pick = q => () => this.setState({ sel: q === sel ? -1 : q });
+    const md = desk ? 26 : 22;
+    const marks = top5.map((g, q) => ({ l: (g.x - 22).toFixed(1), t: (g.y - 22).toFixed(1), d: md, fs: desk ? 14 : 12, n: String(q + 1), aria: 'Zona ' + (q + 1) + ', una zona de ' + BARRIOS[g.bi].t, bg: q === sel ? '#1C1B19' : '#F6F4EE', fg: q === sel ? '#F6F4EE' : '#1C1B19', pick: pick(q) }));
+    const posOf = v => { const lo = v * .66, f = (pm2 - lo) / (v - lo); return f < 1 / 3 ? 'baja' : f < 2 / 3 ? 'media' : 'alta'; };
+    const rows = top5.map((g, q) => ({ n: q + 1, name: 'una zona de ' + BARRIOS[g.bi].t, km: (g.dist / ringR * 1.5).toFixed(1).replace('.', ',') + NB + 'km', m2: m2 + NB + 'm²', ref: fmt(g.v * .66 * m2) + ' a ' + fmt(g.v * m2) + NB + '€ al mes', pos: posOf(g.v), on: q === sel ? 'true' : 'false', bg: q === sel ? '#FFFFFF' : '#EDE9E0', ol: q === sel ? '2px solid #1C1B19' : 'none', nbg: q === sel ? '#1C1B19' : '#F6F4EE', nfg: q === sel ? '#F6F4EE' : '#1C1B19', pick: pick(q) }));
+    const hasSel = sel >= 0 && sel < top5.length;
+    const meRing = ring(mi, mj);
+    const meXs = meRing.map(p => p[0]), meYs = meRing.map(p => p[1]);
+    const meBottom = Math.max(...meYs);
+    // barrio labels: centroid of barrio cells, Tinta + halo, only if they fit
+    const fs = desk ? 13 : 11.5, pad = 3;
+    const obst = [[Math.min(...meXs) - pad, Math.min(...meYs) - pad, Math.max(...meXs) + pad, meBottom + pad], [cx - 4, meBottom, cx + 4, mapH]];
+    if (!loading) marks.forEach(m => { const x = +m.l + 22, y = +m.t + 22, r = md / 2 + 3; obst.push([x - r, y - r, x + r, y + r]); });
+    const hit = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
+    const names = [];
+    if (!loading) BARRIOS.forEach((b, q) => {
+      const cs = grid.flat().filter(g => g.bi === q);
+      if (!cs.length) return;
+      let x = cs.reduce((s, g) => s + g.x, 0) / cs.length, y = cs.reduce((s, g) => s + g.y, 0) / cs.length;
+      const w = b.t.length * fs * .56 + 6, h = fs + 6;
+      x = Math.min(Math.max(x, w / 2 + 4), mapW - w / 2 - 4); y = Math.min(Math.max(y, h / 2 + 4), mapH - h / 2 - 4);
+      let box = [x - w / 2, y - h / 2, x + w / 2, y + h / 2];
+      for (const dy of [0, -h, h, -2 * h, 2 * h]) { const bx = [box[0], box[1] + dy, box[2], box[3] + dy]; if (bx[1] >= 4 && bx[3] <= mapH - 4 && !obst.some(o => hit(o, bx))) { obst.push(bx); names.push({ t: b.t, x: x.toFixed(1), y: (y + dy).toFixed(1), fs }); return; } }
+    });
+    // legend notch
+    const tIdx = CUTS.filter(c => pm2 >= c).length;
+    const lo = [0, 15, 18, 21, 24][tIdx], hi = [15, 18, 21, 24, 27][tIdx];
+    const f = Math.min(.85, Math.max(.15, (pm2 - (tIdx === 0 ? 12 : lo)) / (hi - (tIdx === 0 ? 12 : lo))));
+    const nX = (tIdx + f) / 6.15 * 100;
+    const baja = this.props.tendencia === 'baja';
+    return {
+      rootW: desk ? '600px' : '390px', pad: desk ? '0' : '28px 20px', h2: desk ? 64 : 60, dir: 'column', gap: desk ? '28px' : '20px', listW: '100%',
+      intro: (isA || empty || loading) ? 'Tu zona y las que están a 1,5 km o menos, coloreadas por la parte alta de su referencia en €/m².' : 'Tu zona y las que están a 1,5 km o menos, coloreadas por la parte alta de su referencia en €/m². Los números señalan dónde la referencia llega a este precio.',
+      mapW, mapH, svgH, top, cx: cx.toFixed(1), cy: cy.toFixed(1), ringR: ringR.toFixed(1), ringLX: mapW,
+      cells, bounds, names,
+      marks: loading ? [] : marks, meD: toD(meRing), meTopY: (meBottom + 1).toFixed(1), lblY: mapH + 8, lblTY: mapH + 23.5, meLblX: Math.min(Math.max(cx - 36, 0), mapW - 72).toFixed(1),
+      hasSel, selD: hasSel ? toD(ring(top5[sel].i, top5[sel].j)) : '',
+      mapAria: 'Mapa de tu zona y las zonas a 1,5 km o menos, coloreadas por la parte alta de su referencia',
+      legend: [{ bg: TONES[0], t: '<' + NB + '15' }, { bg: TONES[1], t: '15–18' }, { bg: TONES[2], t: '18–21' }, { bg: TONES[3], t: '21–24' }, { bg: TONES[4], t: '≥' + NB + '24' }, { bg: 'repeating-linear-gradient(45deg,#DAD5CA 0 3px,#857F74 3px 4.5px)', t: 'Sin dato' }],
+      nX: nX.toFixed(1), nT: nX > 62 ? 'calc(-100% + 10px)' : nX < 20 ? '-10px' : '-50%',
+      loading, notLoading: !loading, isA, empty, showHead: !loading && !isA && !empty, showList: !loading && !isA && !empty && top5.length > 0, rows,
+      precioM2: pm2.toFixed(1).replace('.', ',') + NB + '€/m²',
+      trendVerb: baja ? 'ha bajado' : 'ha subido', trendPct: (baja ? '4' : '38') + NB + '%', trendIcon: baja ? 'M3 6l5 5 3-3 6 6M17 9v5h-5' : 'M3 14l5-5 3 3 6-6M17 11V6h-5'
+    };
+  }
+}
+</script>
+</body>
+</html>
