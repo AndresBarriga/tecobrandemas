@@ -1,0 +1,30 @@
+name: Informe de lanzamiento
+
+# CSP, fuentes, cookies, bundle, Lighthouse y axe contra la web desplegada. Manual, y los lunes.
+on:
+  schedule:
+    - cron: '30 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BASE_URL: ${{ vars.URL_PRODUCCION || 'https://a-su-precio.tiene-sentido.workers.dev' }}
+
+jobs:
+  informe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Informe
+        run: npm run informe:lanzamiento
+      - name: Resumen en la ejecución
+        if: always()
+        run: cat informe-lanzamiento.md >> "$GITHUB_STEP_SUMMARY"

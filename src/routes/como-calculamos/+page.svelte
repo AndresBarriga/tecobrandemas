@@ -28,6 +28,9 @@
 				{#if s.puntos}
 					<ul>{#each s.puntos as t (t)}<li>{t}</li>{/each}</ul>
 				{/if}
+				{#if s.contacto}
+					<p>{s.contacto.texto} <a class="correo" href="mailto:{s.contacto.correo}">{s.contacto.correo}</a>.</p>
+				{/if}
 			</section>
 		{/each}
 
@@ -99,5 +102,9 @@
 		text-decoration-color: var(--paja);
 		text-decoration-thickness: 2px;
 		text-underline-offset: 4px;
+	}
+	.correo {
+		font-weight: 700;
+		text-underline-offset: 3px;
 	}
 </style>

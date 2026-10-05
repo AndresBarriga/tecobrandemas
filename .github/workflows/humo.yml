@@ -1,0 +1,65 @@
+name: Prueba de humo
+
+# Cada hora comprueba la web desplegada y abre un issue si algo falla. Una vez al día (06:00 UTC), o a mano,
+# también crea una tarjeta compartida para comprobar R2, D1 y la vista previa.
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+    inputs:
+      escribir:
+        description: 'Crear también una tarjeta de prueba'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  # Sin dominio propio todavía: se cambia aquí, o con la variable de repositorio URL_PRODUCCION
+  BASE_URL: ${{ vars.URL_PRODUCCION || 'https://a-su-precio.tiene-sentido.workers.dev' }}
+
+jobs:
+  humo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Decidir si se escribe una tarjeta
+        run: |
+          if [ "${{ inputs.escribir }}" = "true" ] || [ "$(date -u +%H)" = "06" ]; then echo "HUMO_ESCRIBE=1" >> "$GITHUB_ENV"; fi
+      - name: Prueba de humo
+        id: humo
+        run: npx playwright test e2e/humo.spec.ts --project=movil-390 --reporter=list
+        continue-on-error: true
+      - uses: actions/upload-artifact@v4
+        if: steps.humo.outcome == 'failure'
+        with:
+          name: informe-humo
+          path: test-results/
+          retention-days: 7
+      - name: Abrir o actualizar el issue si falla; cerrarlo cuando vuelve a pasar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EXISTENTE=$(gh issue list --label humo --state open --json number --jq '.[0].number // empty')
+          ENLACE="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          if [ "${{ steps.humo.outcome }}" = "failure" ]; then
+            gh label create humo --color B60205 --description "Fallo de la prueba de humo en producción" 2>/dev/null || true
+            if [ -z "$EXISTENTE" ]; then
+              gh issue create --label humo --title "La prueba de humo falla en producción" \
+                --body "Falla desde $(date -u +%FT%TZ) contra $BASE_URL. Ejecución: $ENLACE"
+            else
+              gh issue comment "$EXISTENTE" --body "Sigue fallando ($(date -u +%FT%TZ)). Ejecución: $ENLACE"
+            fi
+            exit 1
+          elif [ -n "$EXISTENTE" ]; then
+            gh issue comment "$EXISTENTE" --body "Vuelve a pasar ($(date -u +%FT%TZ)). Ejecución: $ENLACE"
+            gh issue close "$EXISTENTE"
+          fi

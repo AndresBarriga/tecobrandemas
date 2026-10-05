@@ -68,6 +68,16 @@ export interface PantallaResultado {
 	vista: Vista;
 	avisoIndependiente: string;
 	enlaceOficial: string;
+	/** Lo que se enviaría al registro anónimo (R7) si la persona marca la casilla; null si no hay barrio */
+	registro: RegistroAnalisis | null;
+}
+
+/** Cuerpo de POST /api/analisis: barrio, precio y m² exactos y nivel; sin dirección ni sección */
+export interface RegistroAnalisis {
+	barrio: string;
+	precio: number;
+	m2: number;
+	nivel: 'a' | 'b' | 'c';
 }
 
 export type Pantalla = PantallaSinDato | PantallaResultado;
@@ -171,7 +181,8 @@ function desdeAnalisis(
 		quePuedesHacer: QUE_PUEDES_HACER,
 		vista,
 		avisoIndependiente: AVISO_INDEPENDIENTE,
-		enlaceOficial: ENLACE_OFICIAL
+		enlaceOficial: ENLACE_OFICIAL,
+		registro: barrio ? { barrio: barrio.codigo, precio: Math.round(a.precio), m2: a.superficie, nivel: vista.clase } : null
 	};
 }
 
