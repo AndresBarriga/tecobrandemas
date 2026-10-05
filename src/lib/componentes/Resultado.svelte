@@ -3,7 +3,7 @@
 	import Equivalencia from './Equivalencia.svelte';
 	import Icono from './Icono.svelte';
 	import {
-		AVISO_APROXIMADA_TITULO, BOTON_AÑADIR_NUMERO, BOTON_COMPARTIR, BOTON_OTRO_PISO, ENLACE_OFICIAL, SERVIDO, TARJETA,
+		AVISO_APROXIMADA_TITULO, BOTON_AÑADIR_NUMERO, BOTON_COMPARTIR, BOTON_OTRO_PISO, ENLACE_OFICIAL, REGISTRO, SERVIDO, TARJETA,
 		type Contador, type PantallaResultado
 	} from '#lib/resultado';
 
@@ -17,9 +17,14 @@
 		alNegociar,
 		alAñadirNumero,
 		alCompartir,
-		alServido
+		alServido,
+		registro = 'no',
+		alRegistrar
 	}: {
 		pantalla: PantallaResultado;
+		/** Estado del consentimiento del registro anónimo: desmarcado por defecto */
+		registro?: 'no' | 'enviando' | 'sumado';
+		alRegistrar?: () => void;
 		/** Contador del barrio: solo llega si es real y de 10 o más */
 		contador?: Contador | null;
 		/** Miniatura de la tarjeta (canvas) que dibuja la página */
@@ -135,6 +140,20 @@
 			<button type="button" class="boton" onclick={alOtro}>{BOTON_OTRO_PISO}</button>
 		{/if}
 
+		{#if pantalla.registro && alRegistrar}
+			<label class="consentimiento">
+				<input type="checkbox" checked={registro !== 'no'} disabled={registro !== 'no'} onchange={alRegistrar} />
+				<span class="casilla" aria-hidden="true">
+					{#if registro !== 'no'}
+						<svg width="16" height="16" viewBox="0 0 20 20"><path d="M4.5 10.5l3.5 3.5 7.5-8" stroke="var(--paja)" stroke-width="2.5" fill="none" /></svg>
+					{/if}
+				</span>
+				<span class="texto-consentimiento">{REGISTRO.casilla}</span>
+			</label>
+			<a class="enlace-datos" href="/como-calculamos#tus-datos">{REGISTRO.enlace}</a>
+			<p class="mensaje" role="status">{registro === 'sumado' ? REGISTRO.sumado : ''}</p>
+		{/if}
+
 		<div class="servido">
 			<span class="servido-pregunta" id="servido">{SERVIDO.pregunta}</span>
 			{#if respuesta}
@@ -156,6 +175,54 @@
 </article>
 
 <style>
+	.consentimiento {
+		position: relative;
+		display: flex;
+		gap: 12px;
+		align-items: flex-start;
+		min-height: 44px;
+		cursor: pointer;
+	}
+	.consentimiento input {
+		position: absolute;
+		opacity: 0;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		cursor: inherit;
+	}
+	.consentimiento:has(input:focus-visible) {
+		outline: 2px solid var(--tinta);
+		outline-offset: 3px;
+	}
+	.casilla {
+		flex: none;
+		width: 26px;
+		height: 26px;
+		margin-top: 1px;
+		border: 2px solid var(--tinta);
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--blanco);
+	}
+	.consentimiento:has(input:checked) .casilla {
+		background: var(--tinta);
+	}
+	.texto-consentimiento {
+		font: 600 15px/1.4 var(--f-texto);
+	}
+	.enlace-datos {
+		align-self: flex-start;
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		margin: -8px 0 0 38px;
+		font: 700 14px/1 var(--f-texto);
+		text-underline-offset: 3px;
+	}
 	.resultado {
 		background: var(--papel);
 		width: 100%;

@@ -9,12 +9,22 @@ import type { Contexto } from './registro';
 import barriosJson from '../../../data/processed/seccion_barrio.json';
 import esquema from '../../../migrations/0001_registro.sql?raw';
 
+/** Lo mínimo de R2 que usa la ruta del mapa: lectura con rangos de bytes */
+export interface R2Mapa {
+	get(
+		clave: string,
+		opciones: { range: Headers }
+	): Promise<{ body?: ReadableStream; size: number; httpEtag: string; range?: { offset?: number; length?: number } } | null>;
+}
+
 export interface EntornoWorker {
 	/** Callejero (viales y portales) */
 	CALLEJERO?: D1Minimo;
 	/** Tarjetas compartidas */
 	DB?: D1TarjetasMinimo & D1Registro;
 	TARJETAS?: R2Minimo;
+	/** Teselas del mapa base (PMTiles de Madrid) */
+	MAPA?: R2Mapa;
 	/** Secreto cifrado del Worker para los HMAC (sal diaria y deduplicación) */
 	SECRETO?: string;
 }

@@ -183,7 +183,8 @@ export const FORMULARIO = {
 export const MAPA = {
 	instruccion: 'Toca el punto del mapa donde está el piso. Las coordenadas no salen de tu dispositivo.',
 	sinPunto: 'Todavía no has marcado ningún punto.',
-	fuera: 'Ese punto está fuera del municipio de Madrid.'
+	fuera: 'Ese punto está fuera del municipio de Madrid.',
+	atribucion: '© OpenStreetMap contributors'
 } as const;
 
 export const ERRORES = {
@@ -295,6 +296,13 @@ export const OG = {
 export const ETIQUETA_HISTORIAL = { a: 'Dentro', b: 'Explicable', sinDato: 'Sin dato' } as const;
 
 // ——— «¿Cuánto pagas tú?» (R11) ———
+
+/** Casilla de consentimiento del registro anónimo de análisis (R7), bajo el resultado */
+export const REGISTRO = {
+	casilla: 'Suma este piso a las estadísticas de tu barrio (anónimo)',
+	enlace: 'Tus datos',
+	sumado: 'Sumado, gracias. Es anónimo, así que no podemos retirarlo después.'
+} as const;
 
 export const APORTACION = {
 	titulo: '¿Cuánto pagas tú?',

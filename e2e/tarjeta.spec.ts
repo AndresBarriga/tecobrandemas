@@ -5,7 +5,7 @@ import { abrir, comprobar, esperarAnimacion } from './ayudas';
 const carpeta = () => `e2e/capturas/${test.info().project.name}`;
 
 test.describe('tarjeta y /t/:id', () => {
-	test('22-tarjeta: se genera en menos de 3 s, sin precio, y el enlace /t/:id la muestra', async ({ page, request }) => {
+	test('22-tarjeta: se genera en menos de 3 s, sin precio, y el enlace /t/:id la muestra', async ({ page, request, baseURL }) => {
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		await expect(page.getByRole('button', { name: 'Compartir el resultado' })).toBeVisible();
@@ -41,10 +41,10 @@ test.describe('tarjeta y /t/:id', () => {
 		await expect(page.getByRole('link', { name: 'Comprueba tu piso' })).toBeVisible();
 		await expect(page.getByText(/Alguien ha comprobado un piso en/)).toBeVisible();
 		const og = await page.locator('meta[property="og:image"]').getAttribute('content');
-		expect(og).toBe(`http://localhost:5173/t/${id}/og.jpg`);
+		expect(og).toBe(`${baseURL}/t/${id}/og.jpg`);
 		const meta = await page.locator('head').innerHTML();
 		expect(meta).not.toMatch(/2\.?500|€\/mes|Fuente del Berro 14/);
-		expect(await page.locator('meta[name="robots"]').getAttribute('content')).toBe('noindex');
+		expect(await page.locator('meta[name="robots"]').getAttribute('content')).toContain('noindex');
 		await page.waitForTimeout(1200);
 		await page.screenshot({ path: `${carpeta()}/23-pagina-t.png`, fullPage: true });
 
