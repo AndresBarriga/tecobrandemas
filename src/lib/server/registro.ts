@@ -25,7 +25,7 @@ export type Resultado = 'guardado' | 'descartado' | 'limite';
 
 export const NIVELES = ['a', 'b', 'c'] as const;
 export const EVENTOS = [
-	'llegada', 'empieza', 'completa', 'servido_si', 'servido_no', 'comparte', 'desde_tarjeta', 'segundo', 'aporta', 'habitacion'
+	'llegada', 'empieza', 'completa', 'servido_si', 'servido_no', 'comparte', 'desde_tarjeta', 'segundo', 'aporta', 'habitacion', 'confirma_precio'
 ] as const;
 export type TipoEvento = (typeof EVENTOS)[number];
 export const INCLUYE = ['garaje', 'trastero', 'comunidad', 'amueblado'] as const;

@@ -12,6 +12,7 @@ import type { Analisis, Anuncio, Nivel } from '../motor';
 import type { Barra } from './barra';
 import type { BarrioDeSeccion } from './datos';
 import { euros, mesAnio, numero, porcentaje } from './formato';
+import { partesRatio, UMBRAL_VECES } from './ratio';
 import {
 	ETIQUETA_NIVEL, FRASE_NIVEL, type ContextoAviso, AVISO_UBICACION
 } from './textos';
@@ -37,8 +38,6 @@ export interface Meses {
 
 export interface Vista {
 	clase: Clase;
-	/** Variante de la frase: la tarjeta usa la suya con la misma clave */
-	grado: 'a' | 'b' | 'c' | 'c_casi_doble' | 'c_mas_doble';
 	/** «Fuente del Berro, Salamanca» */
 	lugar: string;
 	/** «90 m², 2.200 €/mes» */
@@ -84,6 +83,23 @@ export function rangoEuros(min: number, max: number): string {
 const intervalo = (min: number, max: number, f: (x: number) => string) =>
 	f(min) === f(max) ? f(min) : `${f(min)} a ${f(max)}`;
 
+/**
+ * La cifra principal del nivel «por encima», a partir del ratio precio / R_sup. Con horquilla
+ * (`ratioMax` no nulo) la unidad la marca el ratio menor, el prudente: si ese ya es de 2 veces o
+ * más, ambos extremos van en «veces»; si no, ambos en porcentaje.
+ */
+export function principalPorEncima(ratio: number, ratioMax: number | null, m2: string): Principal {
+	const p = partesRatio(ratio);
+	const nota = `${p.complemento} de la referencia para ${m2} en esta zona`;
+	if (ratioMax !== null) {
+		const veces = ratio >= UMBRAL_VECES;
+		const formato = (r: number) => (veces ? partesRatio(r).cifra : porcentaje(r - 1, true));
+		const [desde, hasta] = [formato(ratio), formato(ratioMax)];
+		if (desde !== hasta) return { tipo: 'rango', desde, hasta, nota };
+	}
+	return { tipo: 'cifra', texto: p.cifra, nota };
+}
+
 function claseDe(n: Nivel): Clase {
 	return n.nivel === 'dentro' ? 'a' : n.nivel === 'explicable' ? 'b' : 'c';
 }
@@ -111,12 +127,7 @@ export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ip
 	let delta: string | null = null;
 
 	if (nivel.nivel === 'por_encima') {
-		const pcts = [analisis.pctMin, analisis.pctMax];
-		const nota = `sobre la parte alta de la referencia para ${m2} en esta zona`;
-		principal =
-			horquilla && porcentaje(pcts[0]!, true) !== porcentaje(pcts[1]!, true)
-				? { tipo: 'rango', desde: porcentaje(pcts[0]!, true), hasta: porcentaje(pcts[1]!, true), nota }
-				: { tipo: 'cifra', texto: porcentaje(horquilla ? pcts[0]! : prudente.pct, true), nota };
+		principal = principalPorEncima(horquilla ? analisis.pctMin + 1 : prudente.pct + 1, horquilla ? analisis.pctMax + 1 : null, m2);
 
 		const mes = conBrecha.map((s) => s.brecha!.euroMes);
 		const año = conBrecha.map((s) => s.brecha!.euroAño);
@@ -150,8 +161,7 @@ export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ip
 		};
 	}
 
-	const grado = clase === 'c' ? (analisis.pctMin >= 1 ? 'c_mas_doble' : analisis.pctMin >= 0.9 ? 'c_casi_doble' : 'c') : clase;
-	const frase = FRASE_NIVEL[grado];
+	const frase = FRASE_NIVEL[clase];
 
 	const suma = secciones.reduce((t, s) => t + s.seccion.n, 0);
 	const ref = `referencia 2024 ajustada por el IPC del alquiler (hasta ${mesAnio(ipcMes)})`;
@@ -165,7 +175,6 @@ export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ip
 
 	return {
 		clase,
-		grado,
 		lugar: barrio ? `${barrio.nombre}, ${barrio.distrito}` : 'Madrid',
 		contexto: `${m2}, ${euros(anuncio.precio)}/mes`,
 		m2,
