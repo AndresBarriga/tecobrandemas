@@ -26,8 +26,11 @@ export async function POST({ request, platform, getClientAddress }) {
 	if (!db) error(503, 'Callejero no disponible');
 
 	// Límite por IP y día para no agotar el plan gratuito de D1; sin base del registro no se limita
+	// Si el límite no puede escribir en D1 (p. ej. cuota diaria agotada), la búsqueda sigue: el límite es una
+	// protección, no una condición para responder
 	const c = await contextoRegistro(env);
-	if (c && !(await puedeGeocodificar(c, getClientAddress()))) error(429, 'Demasiadas búsquedas hoy');
+	const permitida = c ? await puedeGeocodificar(c, getClientAddress()).catch(() => true) : true;
+	if (!permitida) error(429, 'Demasiadas búsquedas hoy');
 	const resultado = await geocodificar(texto, await indiceD1(db), almacenD1(db));
 	return json(resultado, { headers: { 'cache-control': 'no-store' } });
 }
