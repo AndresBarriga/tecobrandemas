@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { type Anuncio, type SeccionConDato, referencia } from '../src/lib/motor';
 import {
-	type DatosMadrid, type SeccionJson, aquiEstariasDentro, barriosDe, construirBarra, construirPantalla,
+	type DatosMadrid, type SeccionJson, aquiEstariasDentro, barriosDe, claseZona, construirTuZona, construirBarra, construirPantalla,
 	construirTarjeta, distancia, euros, evolucion, interpretarNumero, mesAnio, numero, porcentaje,
 	resolverDireccion, ubicacionDesdePin, validarAportacion, validarFormulario, zona
 } from '../src/lib/resultado';
@@ -257,43 +257,58 @@ describe('con los datos reales (caso A01 del gate)', () => {
 
 // ——— Aquí estarías dentro ———
 
-describe('aquí estarías dentro', () => {
-	it('solo secciones cercanas, elegibles y con precio ≤ R_sup; por distancia', () => {
-		// B (420 m) y C (840 m) tienen R_sup menor que A; E (880 m) tiene mayor
+describe('este precio entra en la referencia de…', () => {
+	it('solo zonas cercanas, elegibles y con el precio dentro de la referencia; por distancia, una por barrio', () => {
+		// B (420 m, barrio 072) y C (840 m, barrio 072) tienen R_sup menor que A; E (880 m, barrio 071) tiene mayor
 		const precio = (refDe('B').sup + refDe('E').sup) / 2 + 1;
 		const r = aquiEstariasDentro(anuncio(precio), ORIGEN, ['A'], DATOS, CENTROS);
 		const ids = r.opciones.map((o) => o.cusec);
 		expect(ids).toEqual(['E']);
 		for (const o of r.opciones) {
 			expect(o.refSup).toBeGreaterThanOrEqual(precio);
+			expect(o.refInf).toBeLessThan(o.refSup);
 			expect(o.distanciaM).toBeLessThanOrEqual(1500);
 		}
 		expect(ids).not.toContain('D'); // 10 testigos
 		expect(ids).not.toContain('F'); // sin dato
 		expect(ids).not.toContain('LEJOS'); // a 1,7\u00A0km
-		expect(ids).not.toContain('A'); // la propia sección
-		expect(r.aviso).toContain('No son pisos disponibles');
-		expect(r.mensajeVacio).toBeNull();
+		expect(ids).not.toContain('A'); // la propia zona
 	});
 
-	it('ordenadas por distancia y como mucho 5', () => {
+	it('la posición es la del motor: parte baja, media o alta entre la referencia inferior y la superior', () => {
+		const r = refDe('E');
+		const en = (p: number) => aquiEstariasDentro(anuncio(p), ORIGEN, ['A', 'B', 'C'], DATOS, CENTROS).opciones[0]!.posicion;
+		expect(en(r.inf + (r.sup - r.inf) * 0.2)).toBe('baja');
+		expect(en(r.inf + (r.sup - r.inf) * 0.5)).toBe('media');
+		expect(en(r.inf + (r.sup - r.inf) * 0.9)).toBe('alta');
+	});
+
+	it('una por barrio, ordenadas por distancia y como mucho 5', () => {
 		const muchas: Record<string, SeccionJson> = {};
 		const centros = new Map<string, Punto>();
+		const barrios: DatosMadrid['barrios'] = {};
 		for (let i = 0; i < 9; i++) {
-			muchas[`S${i}`] = sec(12, 20, 100);
+			// S0…S8 en 9 barrios distintos; S9 comparte barrio con S8, pero está más lejos
+			muchas[`S${i}`] = sec(12, 20, 100, { barrio: `B${i}` });
+			barrios[`B${i}`] = { nombre: `Barrio ${i}`, cod_distrito: '01', distrito: 'Centro' };
 			centros.set(`S${i}`, { lon: -3.7 + (9 - i) * 0.0008, lat: 40.42 }); // S8 es la más cercana
 		}
-		const r = aquiEstariasDentro(anuncio(refDe('A').sup), ORIGEN, [], { ...DATOS, secciones: muchas }, centros);
+		muchas.S9 = sec(12, 20, 100, { barrio: 'B8' });
+		centros.set('S9', { lon: -3.7 + 0.0001 + 0.0, lat: 40.4215 });
+		const datos = { ...DATOS, secciones: muchas, barrios };
+		const r = aquiEstariasDentro(anuncio(refDe('A').sup), ORIGEN, [], datos, centros);
 		expect(r.opciones).toHaveLength(5);
-		expect(r.opciones.map((o) => o.cusec)).toEqual(['S8', 'S7', 'S6', 'S5', 'S4']);
+		const barriosElegidos = r.opciones.map((o) => o.barrio!.codigo);
+		expect(new Set(barriosElegidos).size).toBe(5);
 		const d = r.opciones.map((o) => o.distanciaM);
 		expect([...d].sort((a, b) => a - b)).toEqual(d);
+		// El barrio B8 aparece con su zona más cercana (S8), no con S9, que está más lejos
+		expect(r.opciones[0]).toMatchObject({ cusec: 'S8' });
+		expect(r.opciones.map((o) => o.cusec)).not.toContain('S9');
 	});
 
-	it('lista vacía con su mensaje', () => {
-		const r = aquiEstariasDentro(anuncio(5000), ORIGEN, ['A'], DATOS, CENTROS);
-		expect(r.opciones).toEqual([]);
-		expect(r.mensajeVacio).toContain('no hay secciones');
+	it('lista vacía si ninguna cumple', () => {
+		expect(aquiEstariasDentro(anuncio(5000), ORIGEN, ['A'], DATOS, CENTROS).opciones).toEqual([]);
 	});
 });
 
@@ -303,43 +318,111 @@ describe('tu zona', () => {
 	const z = zona(70, ORIGEN, ['A'], DATOS, CENTROS);
 	const celda = (id: string) => z.celdas.find((c) => c.cusec === id)!;
 
-	it('solo las cercanas y la del usuario; sin dato en gris', () => {
+	it('solo las cercanas y la del usuario; sin dato aparte', () => {
 		expect(z.celdas.map((c) => c.cusec)).toEqual(['A', 'B', 'C', 'D', 'E', 'F']);
 		expect(celda('A').esUsuario).toBe(true);
 		expect(celda('B').esUsuario).toBe(false);
 		for (const id of ['D', 'F']) expect(celda(id)).toMatchObject({ eurosM2: null, clase: null });
+		expect(celda('A').barrio).toBe('071');
 	});
 
-	it('clases por quintiles, crecientes con la referencia', () => {
-		expect(z.cortes).toHaveLength(4);
-		const conDato = z.celdas.filter((c) => c.eurosM2 !== null).sort((a, b) => a.eurosM2! - b.eurosM2!);
-		const clases = conDato.map((c) => c.clase!);
-		expect([...clases].sort((a, b) => a - b)).toEqual(clases);
-		expect(clases[0]).toBe(0);
-		expect(clases.at(-1)).toBe(4);
+	it('los cortes son fijos para toda la ciudad: 15, 18, 21 y 24 €/m²', () => {
+		expect(z.cortes).toEqual([15, 18, 21, 24]);
+		expect(claseZona(14.99)).toBe(0);
+		expect(claseZona(15)).toBe(1);
+		expect(claseZona(18)).toBe(2);
+		expect(claseZona(21)).toBe(3);
+		expect(claseZona(24)).toBe(4);
+		expect(claseZona(31)).toBe(4);
 	});
 
-	it('la sección del usuario entra aunque esté lejos', () => {
+	it('la clase de cada zona depende solo de su referencia, no de las demás', () => {
+		for (const c of z.celdas.filter((x) => x.eurosM2 !== null)) expect(c.clase).toBe(claseZona(c.eurosM2!));
+		// La misma zona, con otro vecindario, da la misma clase
+		const sola = zona(70, ORIGEN, ['A'], DATOS, new Map([['A', ORIGEN]]));
+		expect(sola.celdas[0]!.clase).toBe(celda('A').clase);
+	});
+
+	it('la zona del usuario entra aunque esté lejos', () => {
 		const lejos = zona(70, ORIGEN, ['LEJOS'], DATOS, CENTROS);
 		expect(lejos.celdas.some((c) => c.cusec === 'LEJOS' && c.esUsuario)).toBe(true);
 	});
 
-	it('sin ninguna sección con dato: todo gris', () => {
+	it('sin ninguna zona con dato: todo sin dato', () => {
 		const vacia = zona(70, ORIGEN, ['F'], DATOS, new Map([['F', ORIGEN]]));
-		expect(vacia.cortes).toEqual([]);
-		expect(vacia.celdas[0]).toMatchObject({ clase: null });
+		expect(vacia.celdas[0]).toMatchObject({ clase: null, eurosM2: null });
+	});
+});
+
+describe('tu zona (vista)', () => {
+	const entrada = (precio: number, clase: 'a' | 'b' | 'c', extra = {}) => ({
+		anuncio: anuncio(precio), clase, origen: ORIGEN, cusecs: ['A'], datos: DATOS, centros: CENTROS, ...extra
+	});
+
+	it('niveles b y c: lista con filas numeradas, referencia, posición y distancia', () => {
+		const v = construirTuZona(entrada(refDe('E').sup - 1, 'c'));
+		expect(v.modo).toBe('lista');
+		const f = v.lista!.filas[0]!;
+		expect(f).toMatchObject({ n: 1, cusec: 'E', nombre: 'una zona de Almagro' });
+		expect(f.referencia).toMatch(/^Referencia para 70\u00A0m²: [\d.]+ a [\d.]+\u00A0€ al mes$/);
+		expect(f.posicion).toMatch(/^Este precio caería en su parte (baja|media|alta)$/);
+		expect(f.distancia).toBe('0,9\u00A0km');
+		expect(v.intro).toContain('Los números señalan');
+		expect(v.lista!.aviso).toContain('No son pisos disponibles');
+		expect(v.vacia).toBeNull();
+	});
+
+	it('sin zonas que cumplan: caja con el precio por m² y sin lista', () => {
+		const v = construirTuZona(entrada(5000, 'c'));
+		expect(v.modo).toBe('vacia');
+		expect(v.lista).toBeNull();
+		expect(v.vacia!.titulo).toBe('Zonas cercanas donde la referencia llega a este precio: ninguna');
+		expect(v.vacia!.texto).toBe('Este precio (71,4\u00A0€/m²) supera la referencia de todas las zonas a 1,5\u00A0km o menos.');
+		expect(v.intro).not.toContain('Los números señalan');
+	});
+
+	it('nivel a: solo contexto, sin lista ni caja vacía', () => {
+		const v = construirTuZona(entrada(refDe('A').inf, 'a'));
+		expect(v.modo).toBe('contexto');
+		expect(v.lista).toBeNull();
+		expect(v.vacia).toBeNull();
+		expect(v.contexto).toContain('solo tienes el contexto');
+	});
+
+	it('la leyenda tiene 6 muestras y la muesca cae en el tramo del precio por m²', () => {
+		const v = construirTuZona(entrada(24.4 * 70, 'c'));
+		expect(v.leyenda.map((l) => l.etiqueta)).toEqual(['<\u00A015', '15–18', '18–21', '21–24', '≥\u00A024', 'Sin dato']);
+		expect(v.leyenda.at(-1)!.tono).toBeNull();
+		expect(v.precioM2).toBe('24,4\u00A0€/m²');
+		// Quinto tramo: entre 4/6,15 y 5/6,15 del ancho
+		expect(v.muesca.x).toBeGreaterThan((4 / 6.15) * 100);
+		expect(v.muesca.x).toBeLessThan((5 / 6.15) * 100);
+		expect(v.muesca.alineada).toBe('derecha');
+		expect(construirTuZona(entrada(10 * 70, 'a')).muesca.alineada).toBe('izquierda');
+		expect(construirTuZona(entrada(19.5 * 70, 'a')).muesca.alineada).toBe('centro');
+	});
+
+	it('la evolución sale de la zona del usuario', () => {
+		expect(construirTuZona(entrada(100, 'a')).evolucion!.tendencia).toBe('sube');
 	});
 });
 
 // ——— Evolución ———
 
 describe('evolución', () => {
-	it('una sección: de 2015 a 2024 con la variación', () => {
+	it('una zona: sube un X % entre 2015 y 2024, sin descontar la inflación', () => {
 		const e = evolucion(DATOS, ['A'])!;
 		expect(e.variacionMin).toBeCloseTo(0.5);
-		expect(e.texto).toContain('10,00\u00A0€/m² en 2015');
-		expect(e.texto).toContain('15,00\u00A0€/m² en 2024');
-		expect(e.texto).toContain('+50\u00A0%');
+		expect(e.tendencia).toBe('sube');
+		expect(e.texto).toBe('La renta registrada en esta zona ha subido un 50\u00A0% entre 2015 y 2024, sin descontar la inflación.');
+		expect(e.partes.filter((p) => p.fuerte).map((p) => p.texto)).toEqual(['50\u00A0%']);
+	});
+
+	it('si baja, «ha bajado» y la cifra sin signo', () => {
+		const datos = { ...DATOS, secciones: { ...DATOS.secciones, A: sec(12, 20, 100, { med2015: 20, med2024: 19.2 }) } };
+		const e = evolucion(datos, ['A'])!;
+		expect(e.tendencia).toBe('baja');
+		expect(e.texto).toContain('ha bajado un 4\u00A0%');
 	});
 
 	it('si falta el dato de 2015 se omite', () => {
@@ -347,13 +430,18 @@ describe('evolución', () => {
 		expect(evolucion(DATOS, ['NO_EXISTE'])).toBeNull();
 	});
 
-	it('horquilla: intervalo, sin contar las secciones sin 2015', () => {
+	it('horquilla: intervalo, sin contar las zonas sin 2015', () => {
 		const datos = { ...DATOS, secciones: { ...DATOS.secciones, B: sec(10, 16, 80, { med2015: 12, med2024: 15 }) } };
 		const e = evolucion(datos, ['A', 'B', 'C'])!;
 		expect(e.puntos.map((p) => p.cusec)).toEqual(['A', 'B']);
 		expect(e.variacionMin).toBeCloseTo(0.25);
 		expect(e.variacionMax).toBeCloseTo(0.5);
-		expect(e.texto).toContain('entre +25\u00A0% y +50\u00A0%');
+		expect(e.texto).toContain('ha subido entre un 25\u00A0% y un 50\u00A0%');
+	});
+
+	it('si unas zonas suben y otras bajan, «ha cambiado entre» con signo', () => {
+		const datos = { ...DATOS, secciones: { ...DATOS.secciones, B: sec(10, 16, 80, { med2015: 20, med2024: 19 }) } };
+		expect(evolucion(datos, ['A', 'B'])!.texto).toContain('ha cambiado entre −5\u00A0% y +50\u00A0%');
 	});
 });
 

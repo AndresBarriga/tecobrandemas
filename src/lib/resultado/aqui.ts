@@ -1,13 +1,12 @@
 /**
- * «Aquí estarías dentro»: hasta 5 secciones cercanas (≤ 1,5 km) y elegibles donde el
- * precio introducido quedaría dentro de la referencia, es decir precio ≤ R_sup con la
- * misma superficie. Se calcula en el navegador. No son pisos disponibles.
+ * «Este precio entra en la referencia de…»: hasta 5 zonas cercanas (≤ 1,5 km), una por barrio y por
+ * distancia, donde el precio introducido quedaría dentro de la referencia (precio ≤ R_sup con la misma
+ * superficie). Solo con elegibles. Se calcula en el navegador. No son pisos disponibles ni sugieren mudarse.
  */
-import { type Anuncio, motivoSeccion, referencia, tieneDato } from '../motor';
+import { type Anuncio, type Posicion, clasificar, motivoSeccion, referencia, tieneDato } from '../motor';
 import type { Punto } from '../ubicacion/geocodificar';
 import { type BarrioDeSeccion, type DatosMadrid, barrioDe, datosSeccion } from './datos';
 import { RADIO_ZONA_M, distanciaM } from './geo';
-import { NO_SON_PISOS_DISPONIBLES } from './textos';
 
 export const MAX_OPCIONES = 5;
 
@@ -15,24 +14,21 @@ export interface OpcionDentro {
 	cusec: string;
 	barrio: BarrioDeSeccion | null;
 	distanciaM: number;
-	/** R_sup en €/mes para la superficie del usuario */
+	/** R_inf y R_sup en €/mes para la superficie del usuario */
+	refInf: number;
 	refSup: number;
+	/** Dónde caería el precio entre las dos */
+	posicion: Posicion;
 }
 
 export interface AquiEstariasDentro {
 	opciones: OpcionDentro[];
-	/** Siempre presente: «no son pisos disponibles» */
-	aviso: string;
-	/** Solo si la lista está vacía */
-	mensajeVacio: string | null;
 }
-
-export const MENSAJE_VACIO = 'Con este precio, no hay secciones a menos de 1,5\u00A0km donde quedara dentro de la referencia.';
 
 export function aquiEstariasDentro(
 	anuncio: Anuncio, origen: Punto, excluir: string[], datos: DatosMadrid, centros: Map<string, Punto>
 ): AquiEstariasDentro {
-	const opciones: OpcionDentro[] = [];
+	const candidatas: OpcionDentro[] = [];
 	for (const [cusec, centro] of centros) {
 		if (excluir.includes(cusec)) continue;
 		const d = distanciaM(origen, centro);
@@ -40,14 +36,21 @@ export function aquiEstariasDentro(
 		const s = datosSeccion(datos, cusec);
 		if (motivoSeccion(s) !== null || !tieneDato(s)) continue;
 		const ref = referencia(anuncio.superficie, s, datos.ipc.factor);
-		if (anuncio.precio > ref.sup) continue;
-		opciones.push({ cusec, barrio: barrioDe(datos, cusec), distanciaM: d, refSup: ref.sup });
+		const nivel = clasificar(anuncio.precio, ref);
+		if (nivel.nivel !== 'dentro') continue;
+		candidatas.push({ cusec, barrio: barrioDe(datos, cusec), distanciaM: d, refInf: ref.inf, refSup: ref.sup, posicion: nivel.posicion });
 	}
-	opciones.sort((a, b) => a.distanciaM - b.distanciaM);
-	const elegidas = opciones.slice(0, MAX_OPCIONES);
-	return {
-		opciones: elegidas,
-		aviso: NO_SON_PISOS_DISPONIBLES,
-		mensajeVacio: elegidas.length === 0 ? MENSAJE_VACIO : null
-	};
+	candidatas.sort((a, b) => a.distanciaM - b.distanciaM || a.cusec.localeCompare(b.cusec));
+
+	// Una por barrio: la más cercana de cada uno
+	const vistos = new Set<string>();
+	const opciones: OpcionDentro[] = [];
+	for (const o of candidatas) {
+		const clave = o.barrio?.codigo ?? o.cusec;
+		if (vistos.has(clave)) continue;
+		vistos.add(clave);
+		opciones.push(o);
+		if (opciones.length === MAX_OPCIONES) break;
+	}
+	return { opciones };
 }

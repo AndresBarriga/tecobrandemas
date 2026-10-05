@@ -9,6 +9,8 @@
 	import Resultado from '#lib/componentes/Resultado.svelte';
 	import SinConexion from '#lib/componentes/SinConexion.svelte';
 	import SinDato from '#lib/componentes/SinDato.svelte';
+	import TuZona from '#lib/componentes/TuZona.svelte';
+	import { type TuZonaCargada, cargarTuZona } from '#lib/cliente/zona';
 	import {
 		DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO,
 		construirTarjeta, contadorBarrio, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
@@ -36,6 +38,23 @@
 	let historial = $state<Entrada[]>([]);
 	let activa = $state<number | null>(null);
 	let ficha: HTMLElement | undefined = $state();
+	// «Tu zona»: se calcula en el navegador cuando hay resultado, sin bloquear el resultado
+	let tuZona = $state<{ estado: 'cargando' | 'listo' | 'fallo'; datos: TuZonaCargada | null }>({ estado: 'cargando', datos: null });
+	let turnoZona = 0;
+	$effect(() => {
+		const parametros = resultado?.zona;
+		const mio = ++turnoZona;
+		tuZona = { estado: 'cargando', datos: null };
+		if (!parametros) return;
+		cargarTuZona(parametros)
+			.then((datos) => {
+				if (mio === turnoZona) tuZona = datos ? { estado: 'listo', datos } : { estado: 'fallo', datos: null };
+			})
+			.catch(() => {
+				if (mio === turnoZona) tuZona = { estado: 'fallo', datos: null };
+			});
+	});
+
 	// Consentimiento del registro anónimo: desmarcado por defecto, por resultado
 	let registro = $state<'no' | 'enviando' | 'sumado'>('no');
 
@@ -315,6 +334,9 @@
 						<canvas bind:this={canvasTarjeta} class="tarjeta-canvas" aria-label="Vista previa de la tarjeta para compartir"></canvas>
 					{/snippet}
 				</Resultado>
+				{#if resultado?.zona}
+					<TuZona estado={tuZona.estado} vista={tuZona.datos?.vista} geom={tuZona.datos?.geom} />
+				{/if}
 			{:else if pantalla?.tipo === 'sin_dato'}
 				<SinDato {pantalla} alOtro={otroPiso} />
 			{/if}
@@ -402,7 +424,8 @@
 	}
 	.rejilla.hay-resultado .principal {
 		display: flex;
-		justify-content: center;
+		flex-direction: column;
+		align-items: center;
 	}
 
 	/* —— Escritorio: formulario fijo a la izquierda (440 px) y resultado o título a la derecha —— */
@@ -533,6 +556,8 @@
 		}
 		.rejilla.hay-resultado .principal {
 			display: flex;
+			flex-direction: column;
+			align-items: center;
 		}
 	}
 	.cabecera-caja {

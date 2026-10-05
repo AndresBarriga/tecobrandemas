@@ -183,3 +183,10 @@ Nombre del producto: **A su precio**. Diseño en `docs/design` (README del hando
 - CI (`.github/workflows/ci.yml`): check, tests y build en cada PR; despliegue al fusionar en `main`. Sin `geocoder.sqlite` (no está en git) se saltan 7 tests. Los e2e quedan en local.
 - IPC (`.github/workflows/ipc-mensual.yml`): el día 18 de cada mes descarga la serie del INE y abre un PR si cambia el dato.
 - Pendiente: secretos del repo (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`), vista previa en WhatsApp y X, dominio propio, PMTiles.
+
+## Tu zona y Cómo calculamos (diseño actualizado)
+- Diseño nuevo en `docs/design/` (handoff `design_handoff_a_su_precio`): reemplaza al anterior. Trae «Tu zona» (6a-6f) y «Cómo calculamos» (7a-7c).
+- **Tu zona** (`TuZona.svelte`, `cliente/zona.ts`, `cliente/zona-mapa.ts`): mapa SVG con las zonas reales a ≤ 1,5 km coloreadas por la parte alta de su referencia en €/m² (cortes fijos 15, 18, 21 y 24 para toda la ciudad), líneas gruesas entre barrios (aristas compartidas de la topología), nombres de barrio solo si caben, marcadores numerados, leyenda con muesca, lista de hasta 5 zonas (una por barrio) con la posición del precio y la evolución 2015-2024. Se calcula en el navegador; ni el punto ni el precio salen del dispositivo.
+- **Cómo calculamos**: índice fijo en escritorio y selector en móvil; el ejemplo de cuatro pasos sale del motor con la sección de Fuente del Berro (2200 €, 90 m²) y cambia solo con el IPC; los siete límites enlazan a `/?motivo=…`.
+- Desviaciones del diseño, a propósito: «Tus datos» y las atribuciones (la del INE, literal, de CLAUDE.md) son más completos; el logotipo lleva el lema; la casilla del registro mantiene el texto pedido («Suma este piso a las estadísticas de tu barrio (anónimo)») y no el del diseño; las marcas NUEVO, BORRADOR, EJEMPLO y PENDIENTE no se publican; la lista de zonas con datos reales suele tener menos de 5 filas.
+- En `vite dev` el geocodificador no se limita y se usan siempre SQLite y memoria, no los D1 y R2 simulados de wrangler.

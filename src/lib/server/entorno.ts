@@ -36,6 +36,8 @@ export interface EntornoWorker {
  */
 export async function entornoDe(platform: { env?: EntornoWorker } | undefined): Promise<EntornoWorker | undefined> {
 	if (platform?.env) return platform.env;
+	// En `vite dev` se usan siempre las alternativas locales (SQLite y memoria), no los D1 y R2 simulados de wrangler
+	if (import.meta.env.DEV) return undefined;
 	try {
 		const { env } = await import('cloudflare:workers');
 		return env as unknown as EntornoWorker;

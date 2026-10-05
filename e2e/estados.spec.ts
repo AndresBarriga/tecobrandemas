@@ -174,14 +174,14 @@ test.describe('otras pantallas', () => {
 		test.skip(!info.project.name.startsWith('escritorio'), 'solo en escritorio');
 		await abrir(page);
 		await comprobar(page, { precio: '1700', superficie: '90' });
-		await expect(page.getByText('Dentro de la referencia')).toBeVisible();
+		await expect(page.getByText('Dentro de la referencia', { exact: true })).toBeVisible();
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		await expect(page.getByText('Por encima del techo')).toBeVisible();
 		const filas = page.getByRole('button', { name: /Goya/ });
 		await expect(filas).toHaveCount(2);
 		await captura(page, '21-historial');
 		await filas.nth(1).click();
-		await expect(page.getByText('Dentro de la referencia')).toBeVisible();
+		await expect(page.getByText('Dentro de la referencia', { exact: true })).toBeVisible();
 		await expect(page.locator('#precio')).toHaveValue('1.700');
 		// Se guarda en sessionStorage, no en localStorage
 		expect(await page.evaluate(() => localStorage.length)).toBe(0);
