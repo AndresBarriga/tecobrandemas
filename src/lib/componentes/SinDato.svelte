@@ -20,7 +20,7 @@
 		{ETIQUETA_SIN_REFERENCIA}
 	</p>
 
-	<h2 class="titular">{pantalla.titular}</h2>
+	<svelte:element this={pantalla.lugar ? 'h2' : 'h1'} class="titular">{pantalla.titular}</svelte:element>
 	<p class="frase">{pantalla.frase}</p>
 	<p class="extra">{pantalla.extra}</p>
 
