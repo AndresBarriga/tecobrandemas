@@ -1,0 +1,14 @@
+[project]
+name = "tiene-sentido-datos"
+version = "0.1.0"
+description = "ETL de datos para «¿Tiene sentido este precio?»: data/raw/ → data/processed/"
+requires-python = ">=3.12"
+dependencies = [
+    "geopandas>=1.0",
+    "pyogrio>=0.9",
+    "shapely>=2.0",
+    "pyproj>=3.6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]

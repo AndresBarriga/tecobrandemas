@@ -1,0 +1,9 @@
+# Datos originales grandes: se quedan en local
+data/raw/
+node_modules/
+.env
+.DS_Store
+.venv/
+__pycache__/
+data/processed/geocoder.sqlite
+*.egg-info/
