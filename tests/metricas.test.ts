@@ -30,6 +30,14 @@ describe('métricas internas', () => {
 		expect(por.segundo!.cumple).toBeNull(); // «medir»: sin objetivo
 	});
 
+	it('comparten cuenta cualquier canal y el desglose los separa', async () => {
+		const m = await calcularMetricas(
+			con({ eventos: [...ev('completa', 10), ['comparte', 'a'], ['comparte_whatsapp', 'b'], ['comparte_x', 'c'], ['comparte_copiar', 'd'], ['comparte_descarga', 'e'], ['comparte_whatsapp', 'b']] })
+		);
+		expect(m.embudo.comparten).toBe(5);
+		expect(m.canales).toEqual({ nativo: 1, whatsapp: 1, x: 1, copiar: 1, descarga: 1 });
+	});
+
 	it('sin datos, los ratios son null y no cumplen ni fallan', async () => {
 		const m = await calcularMetricas(con({}));
 		expect(m.objetivos.every((o) => o.valor === null && o.cumple === null)).toBe(true);

@@ -1,11 +1,12 @@
 /**
- * POST /api/tarjeta (multipart: `tarjeta` JSON + `og` JPG) → { id }.
+ * POST /api/tarjeta (multipart: `tarjeta` JSON + `og` JPG + `id` opcional) → { id }.
  * Solo se guarda lo que pasa validarTarjeta (sin precio, m² ni dirección). El límite diario por
  * IP con HMAC rotado y el registro de eventos llegan en el Hito 5.
  */
 import { json, error } from '@sveltejs/kit';
 import { validarTarjeta } from '#lib/resultado';
 import { almacenTarjetas, entornoDe } from '#lib/server/entorno';
+import { ID_VALIDO } from '#lib/server/tarjetas';
 
 export const prerender = false;
 
@@ -41,6 +42,10 @@ export async function POST({ request, platform }) {
 		og = bytes;
 	}
 
-	const id = await almacen.crear(datos, og);
+	// El navegador genera el id antes de subir (para que el enlace exista ya al pulsar compartir)
+	const propuesto = form.get('id');
+	if (propuesto !== null && !(typeof propuesto === 'string' && ID_VALIDO.test(propuesto))) error(400, 'Id no válido');
+
+	const id = await almacen.crear(datos, og, (propuesto as string | null) ?? undefined);
 	return json({ id }, { status: 201, headers: { 'cache-control': 'no-store' } });
 }

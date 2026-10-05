@@ -9,6 +9,7 @@ export * from './evolucion';
 export * from './ubicacion';
 export * from './resultado';
 export * from './tarjeta';
+export * from './compartir';
 export * from './formulario';
 export * from './aportacion';
 export * from './vista';

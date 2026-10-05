@@ -245,6 +245,9 @@ export const TARJETA = {
 	compartirTitulo: 'Mira mi resultado',
 	descargada: 'Tarjeta descargada.',
 	enlaceCopiado: 'Enlace copiado.',
+	canales: { whatsapp: 'WhatsApp', x: 'X', copiar: 'Copiar enlace', descarga: 'Descargar imagen' },
+	canalesAviso: 'Al elegir WhatsApp, X o copiar el enlace se guarda la tarjeta (sin precio ni dirección) para que el enlace funcione.',
+	descargaHecha: 'Imagen descargada. No se ha guardado nada.',
 	error: 'No hemos podido preparar la tarjeta. Inténtalo de nuevo.'
 } as const;
 

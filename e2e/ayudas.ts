@@ -38,3 +38,23 @@ export async function comprobar(page: Page, p: Piso) {
 
 /** Espera a que el punto de la barra termine de deslizarse */
 export const esperarAnimacion = (page: Page) => page.waitForTimeout(1300);
+
+/** Fuerza el modo de escritorio (cuatro canales): sin hoja nativa de compartir, aunque el navegador la tenga */
+export const sinCompartirNativo = (page: Page) =>
+	page.addInitScript(() => Object.defineProperty(navigator, 'canShare', { value: undefined, configurable: true }));
+
+/** Simula la hoja nativa de un móvil y guarda lo que se le pasa en `window.__compartido` */
+export const conCompartirNativo = (page: Page) =>
+	page.addInitScript(() => {
+		Object.defineProperty(navigator, 'canShare', { value: () => true, configurable: true });
+		Object.defineProperty(navigator, 'share', {
+			configurable: true,
+			value: async (datos: { files?: File[]; url?: string; title?: string; text?: string }) => {
+				(window as unknown as { __compartido: unknown }).__compartido = {
+					ficheros: (datos.files ?? []).map((f) => ({ nombre: f.name, tipo: f.type, bytes: f.size })),
+					url: datos.url ?? null,
+					texto: datos.text ?? null
+				};
+			}
+		});
+	});

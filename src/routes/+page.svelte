@@ -13,7 +13,7 @@
 	import { type TuZonaCargada, cargarTuZona } from '#lib/cliente/zona';
 	import {
 		DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO,
-		construirTarjeta, contadorBarrio, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
+		construirTarjeta, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
 		type Pantalla, type PantallaResultado, type Ubicacion
 	} from '#lib/resultado';
 	import { type ErroresCampos, comprobar, validarCampo } from '#lib/cliente/analisis';
@@ -21,7 +21,9 @@
 	import { type EstadoFormulario, type ModoUbicacion, estadoInicial } from '#lib/cliente/estado';
 	import { type Entrada, guardarHistorial, leerHistorial } from '#lib/cliente/historial';
 	import { registrarAnalisis } from '#lib/cliente/registro';
-	import { compartirTarjeta } from '#lib/cliente/compartir';
+	import {
+		compartirNativo, copiarEnlace, descargarImagen, puedeCompartirNativo, subirTarjeta, urlDeTarjeta
+	} from '#lib/cliente/compartir';
 	import { contarCompletado, evento, leerOrigenDeLaUrl, recuentos, tarjetaOrigen } from '#lib/cliente/eventos';
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
 	import { TARJETA } from '#lib/resultado';
@@ -79,6 +81,7 @@
 	let listo = $state(false);
 	onMount(() => {
 		listo = true;
+		nativo = puedeCompartirNativo();
 		leerOrigenDeLaUrl();
 		// Enlaces de «Cómo calculamos»: /?motivo=obra_nueva abre esa pantalla «sin dato» (no cuenta como comprobación)
 		const motivo = pantallaSinDatoDeClave(new URLSearchParams(location.search).get('motivo') ?? '');
@@ -100,19 +103,44 @@
 		}
 	});
 
+	// Cada resultado tiene su id de tarjeta desde el principio (así los enlaces ya existen), pero la
+	// tarjeta solo se sube al servidor cuando la persona elige WhatsApp, X, copiar o la hoja del móvil.
+	let idTarjeta = $state<string | null>(null);
+	let nativo = $state(false);
+	const enlaces = $derived(idTarjeta ? enlacesCompartir(urlDeTarjeta(idTarjeta)) : null);
+
 	async function compartir() {
-		if (!resultado || !canvasTarjeta) return;
+		if (!resultado || !canvasTarjeta || !idTarjeta) return;
 		compartiendo = true;
 		mensajeTarjeta = null;
 		try {
-			const r = await compartirTarjeta(construirTarjeta(resultado), canvasTarjeta);
-			if (r.via !== 'cancelada') evento('comparte', { tarjeta: r.url?.split('/').pop() ?? null });
-			mensajeTarjeta =
-				r.via === 'descargada' ? (r.enlaceCopiado ? `${TARJETA.descargada} ${TARJETA.enlaceCopiado}` : TARJETA.descargada) : null;
+			const via = await compartirNativo(construirTarjeta(resultado), canvasTarjeta, idTarjeta);
+			if (via !== 'cancelada') evento('comparte', { tarjeta: idTarjeta });
+			mensajeTarjeta = via === 'descargada' ? TARJETA.descargada : null;
 		} catch {
 			mensajeTarjeta = TARJETA.error;
 		} finally {
 			compartiendo = false;
+		}
+	}
+
+	async function compartirPor(canal: Canal) {
+		if (!resultado || !idTarjeta) return;
+		const id = idTarjeta;
+		mensajeTarjeta = null;
+		try {
+			if (canal === 'descarga') {
+				// Solo la imagen: no se guarda nada en el servidor
+				evento('comparte_descarga');
+				if (canvasTarjeta) await descargarImagen(canvasTarjeta);
+				mensajeTarjeta = TARJETA.descargaHecha;
+				return;
+			}
+			evento(`comparte_${canal}`, { tarjeta: id });
+			void subirTarjeta(construirTarjeta(resultado), id);
+			if (canal === 'copiar') mensajeTarjeta = (await copiarEnlace(id)) ? TARJETA.enlaceCopiado : urlDeTarjeta(id);
+		} catch {
+			mensajeTarjeta = TARJETA.error;
 		}
 	}
 
@@ -121,6 +149,7 @@
 
 	function mostrar(p: Pantalla, u: Ubicacion | null, alHistorial = true) {
 		pantalla = p;
+		idTarjeta = p.tipo === 'resultado' ? idDeTarjeta() : null;
 		registro = 'no';
 		ubicacion = u;
 		problema = null;
@@ -237,6 +266,7 @@
 		if (!e) return;
 		turno++;
 		pantalla = e.pantalla;
+		idTarjeta = e.pantalla.tipo === 'resultado' ? idDeTarjeta() : null;
 		registro = 'no';
 		f = { ...estadoInicial(), ...(e.formulario as Partial<EstadoFormulario>) };
 		fase = 'resultado';
@@ -326,6 +356,9 @@
 					}}
 					alAñadirNumero={puedeAñadirNumero ? añadirNumero : undefined}
 					alCompartir={compartir}
+					{nativo}
+					{enlaces}
+					alCompartirPor={compartirPor}
 					{registro}
 					alRegistrar={registrar}
 					alServido={(si) => evento(si ? 'servido_si' : 'servido_no')}

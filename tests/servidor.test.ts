@@ -64,6 +64,13 @@ describe('almacén de tarjetas', () => {
 		for (const id of ids) expect(id).toMatch(ID_VALIDO);
 	});
 
+	it('memoria: con id propuesto es idempotente', async () => {
+		const a = almacenMemoria();
+		expect(await a.crear(tarjeta(), JPEG, 'abcde12345')).toBe('abcde12345');
+		expect(await a.crear({ ...tarjeta(), barrio: 'Otro' }, null, 'abcde12345')).toBe('abcde12345');
+		expect((await a.leer('abcde12345'))?.datos.barrio).toBe('Almagro');
+	});
+
 	it('memoria: guarda y lee', async () => {
 		const a = almacenMemoria();
 		const id = await a.crear(tarjeta(), JPEG);
@@ -112,6 +119,33 @@ describe('POST /api/tarjeta', () => {
 		const { id } = (await r.json()) as { id: string };
 		const fila = db.prepare('SELECT datos FROM tarjetas WHERE id = ?').get(id) as { datos: string };
 		expect(fila.datos).not.toMatch(/2500|2\.500|"precio"|direccion|Calle X/);
+	});
+
+	it('usa el id que propone el navegador y no reescribe una tarjeta que ya existe', async () => {
+		const { db, d1 } = d1Memoria();
+		const env = { DB: d1, TARJETAS: r2Falso() };
+		const f1 = formulario(tarjeta());
+		f1.append('id', 'abcde12345');
+		const r1 = await llamar(f1, env);
+		expect(r1.status).toBe(201);
+		expect(((await r1.json()) as { id: string }).id).toBe('abcde12345');
+
+		// Otro canal sube lo mismo, o alguien intenta pisar la tarjeta con otra: no cambia nada
+		const f2 = formulario({ ...tarjeta(), barrio: 'Otro barrio' });
+		f2.append('id', 'abcde12345');
+		expect(((await (await llamar(f2, env)).json()) as { id: string }).id).toBe('abcde12345');
+		const fila = db.prepare('SELECT barrio FROM tarjetas WHERE id = ?').get('abcde12345') as { barrio: string };
+		expect(fila.barrio).toBe('Almagro');
+		expect((db.prepare('SELECT COUNT(*) AS n FROM tarjetas').get() as { n: number }).n).toBe(1);
+	});
+
+	it('rechaza un id con formato no válido', async () => {
+		const env = { DB: d1Memoria().d1, TARJETAS: r2Falso() };
+		for (const malo of ['corto', 'ABCDE12345', 'abcde1234!', '../../etc/p']) {
+			const f = formulario(tarjeta());
+			f.append('id', malo);
+			await expect(llamar(f, env)).rejects.toMatchObject({ status: 400 });
+		}
 	});
 
 	it('rechaza tarjetas mal formadas y imágenes que no son JPEG', async () => {

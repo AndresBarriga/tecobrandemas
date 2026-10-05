@@ -1,14 +1,15 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { abrir, comprobar, esperarAnimacion } from './ayudas';
+import { abrir, comprobar, esperarAnimacion, sinCompartirNativo } from './ayudas';
 
 const carpeta = () => `e2e/capturas/${test.info().project.name}`;
 
 test.describe('tarjeta y /t/:id', () => {
 	test('22-tarjeta: se genera en menos de 3 s, sin precio, y el enlace /t/:id la muestra', async ({ page, request, baseURL }) => {
+		await sinCompartirNativo(page);
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByRole('button', { name: 'Compartir el resultado' })).toBeVisible();
+		await expect(page.getByRole('group', { name: 'Compartir el resultado' })).toBeVisible();
 		await esperarAnimacion(page);
 
 		// El canvas es de 1080×1350
@@ -19,18 +20,23 @@ test.describe('tarjeta y /t/:id', () => {
 		page.on('request', (r) => r.method() === 'POST' && posts.push({ ruta: new URL(r.url()).pathname, cuerpo: r.postData() ?? '' }));
 		const respuesta = page.waitForResponse((r) => r.url().endsWith('/api/tarjeta'));
 
-		const t0 = Date.now();
+		// Descargar la imagen no sube nada
 		const descarga = page.waitForEvent('download');
-		await page.getByRole('button', { name: 'Compartir el resultado' }).click();
+		await page.getByRole('button', { name: 'Descargar imagen' }).click();
 		const d = await descarga;
-		expect(Date.now() - t0).toBeLessThan(3000);
 		const ruta = `${carpeta()}/22-tarjeta.jpg`;
 		await d.saveAs(ruta);
 		const jpg = readFileSync(ruta);
 		expect([jpg[0], jpg[1]]).toEqual([0xff, 0xd8]);
+		expect(posts.filter((p) => p.ruta === '/api/tarjeta')).toHaveLength(0);
+
+		// Copiar el enlace sí la sube, en menos de 3 s
+		const t0 = Date.now();
+		await page.getByRole('button', { name: 'Copiar enlace' }).click();
 
 		// Lo que sube la tarjeta no lleva precio, m² ni dirección
 		const subida = await respuesta;
+		expect(Date.now() - t0).toBeLessThan(3000);
 		expect(subida.status()).toBe(201);
 		const { id } = await subida.json();
 		const envio = posts.find((p) => p.ruta === '/api/tarjeta')!;

@@ -37,6 +37,8 @@ export interface FilaAportaciones {
 export interface Metricas {
 	desde: string | null;
 	embudo: { llegadas: number; empiezan: number; completan: number; comparten: number; desdeTarjeta: number; segundo: number; aportan: number; habitacion: number; servidoSi: number; servidoNo: number };
+	/** Visitas que usaron cada canal de compartir (nativo = hoja del móvil) */
+	canales: Record<string, number>;
 	tarjetasCreadas: number;
 	analisisTotales: number;
 	objetivos: Objetivo[];
@@ -56,10 +58,18 @@ function objetivo(id: string, nombre: string, numerador: number, denominador: nu
 	return { id, nombre, valor, objetivo: meta, numerador, denominador, cumple: valor === null || meta === null ? null : valor >= meta };
 }
 
+/** Canales de compartir con evento propio; la hoja nativa del móvil sigue siendo `comparte` */
+export const CANALES = ['whatsapp', 'x', 'copiar', 'descarga'] as const;
+
 export async function calcularMetricas(db: D1Registro, desde: Date | null = null): Promise<Metricas> {
 	const ts = desde ? desde.getTime() : 0;
 	const visitas = async (tipo: string) =>
 		(await db.prepare('SELECT COUNT(DISTINCT visita) AS n FROM eventos WHERE tipo = ? AND ts >= ?').bind(tipo, ts).first<{ n: number }>())?.n ?? 0;
+	const visitasDe = async (tipos: string[]) =>
+		(await db
+			.prepare(`SELECT COUNT(DISTINCT visita) AS n FROM eventos WHERE tipo IN (${tipos.map(() => '?').join(',')}) AND ts >= ?`)
+			.bind(...tipos, ts)
+			.first<{ n: number }>())?.n ?? 0;
 	const eventos = async (tipo: string) =>
 		(await db.prepare('SELECT COUNT(*) AS n FROM eventos WHERE tipo = ? AND ts >= ?').bind(tipo, ts).first<{ n: number }>())?.n ?? 0;
 
@@ -67,7 +77,7 @@ export async function calcularMetricas(db: D1Registro, desde: Date | null = null
 		llegadas: await visitas('llegada'),
 		empiezan: await visitas('empieza'),
 		completan: await visitas('completa'),
-		comparten: await visitas('comparte'),
+		comparten: await visitasDe(['comparte', ...CANALES.map((c) => `comparte_${c}`)]),
 		desdeTarjeta: await visitas('desde_tarjeta'),
 		segundo: await visitas('segundo'),
 		aportan: await visitas('aporta'),
@@ -75,6 +85,8 @@ export async function calcularMetricas(db: D1Registro, desde: Date | null = null
 		servidoSi: await eventos('servido_si'),
 		servidoNo: await eventos('servido_no')
 	};
+	const canales: Record<string, number> = { nativo: await visitas('comparte') };
+	for (const c of CANALES) canales[c] = await visitas(`comparte_${c}`);
 	const analisisTotales = await eventos('completa');
 	const tarjetasCreadas = (await db.prepare('SELECT COUNT(*) AS n FROM tarjetas').first<{ n: number }>())?.n ?? 0;
 
@@ -108,7 +120,7 @@ export async function calcularMetricas(db: D1Registro, desde: Date | null = null
 		aportaciones.push({ barrio, n: filas.length, medianaPrecio: mediana(filas.map((f) => f.precio)), medianaEurosM2: mediana(filas.map((f) => f.precio / f.m2)) });
 	}
 
-	return { desde: desde ? desde.toISOString().slice(0, 10) : null, embudo, tarjetasCreadas, analisisTotales, objetivos, barrios, aportaciones };
+	return { desde: desde ? desde.toISOString().slice(0, 10) : null, embudo, canales, tarjetasCreadas, analisisTotales, objetivos, barrios, aportaciones };
 }
 
 const celda = (x: unknown) => {
