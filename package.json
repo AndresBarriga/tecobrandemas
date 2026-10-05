@@ -6,7 +6,7 @@
   "scripts": {
     "datos": "node scripts/copiar_datos.mjs",
     "dev": "npm run datos && vite dev",
-    "build": "npm run datos && vite build",
+    "build": "npm run datos && vite build && node scripts/cabeceras.mjs",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",

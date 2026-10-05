@@ -86,7 +86,6 @@
 
 <svelte:head>
 	<title>{APORTACION.titulo} · A su precio</title>
-	<meta name="robots" content="noindex" />
 </svelte:head>
 
 <div class="pagina" data-listo={listo}>
