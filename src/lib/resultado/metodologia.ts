@@ -13,7 +13,11 @@ export interface SeccionTexto {
 	parrafos: string[];
 	/** Lista con viñetas, tras los párrafos */
 	puntos?: string[];
+	/** Línea final con un enlace de correo */
+	contacto?: { texto: string; correo: string };
 }
+
+export const CORREO = 'andresbarrigaru@gmail.com';
 
 export interface Metodologia {
 	titulo: string;
@@ -33,7 +37,8 @@ export const QUIENES_SOMOS: SeccionTexto = {
 		`${NOMBRE} pone ese precio en contexto utilizando datos públicos y una metodología basada en los datos y criterios publicados por el Ministerio de Vivienda y Agenda Urbana.`,
 		'No somos una inmobiliaria, un portal de anuncios ni una administración pública. Tampoco determinamos cuál debería ser el precio de una vivienda. Nuestro objetivo es ofrecer una referencia independiente que ayude a cada persona a tomar sus propias decisiones.',
 		'La herramienta es independiente de los propietarios, agencias inmobiliarias y portales de vivienda.'
-	]
+	],
+	contacto: { texto: 'Escríbenos a', correo: CORREO }
 };
 
 export const FINANCIACION: SeccionTexto = {
@@ -110,21 +115,24 @@ export function construirMetodologia(ipc: IpcJson): Metodologia {
 				parrafos: [
 					'Origen de los datos: Ministerio de Vivienda y Agenda Urbana (SERPAVI, datos de 2024 por sección censal).',
 					`IPC del alquiler de vivienda: INE, subclase 04.1.1.0, serie IPC291807, hasta ${hasta}.`,
-					'Secciones censales y direcciones: INE (Censo 2021) y CartoCiudad (IGN).'
+					'Secciones censales y direcciones: INE (Censo 2021) y CartoCiudad (IGN). Barrios: Ayuntamiento de Madrid. Mapa base: © OpenStreetMap contributors, servido desde esta web.'
 				]
 			},
 			{
-				id: 'datos-propios',
+				id: 'tus-datos',
 				titulo: 'Tus datos',
 				parrafos: [
-					'Los datos del anuncio los escribes tú; no leemos páginas de portales. Solo guardamos un análisis si lo aceptas, y nunca la dirección exacta ni tu IP: únicamente el barrio y el mes.',
-					'Los datos oficiales, los anuncios analizados y las aportaciones de residentes no se mezclan nunca: cada uno se muestra por separado.'
+					'Los datos del anuncio los escribes tú; no leemos páginas de portales. Nunca guardamos la dirección ni tu IP, y la web no usa cookies.',
+					'Solo guardamos un análisis si marcas la casilla «Suma este piso a las estadísticas de tu barrio». Entonces guardamos el barrio, el mes, el precio, los metros y el nivel del resultado. En «¿Cuánto pagas tú?» guardamos el barrio, el mes, el precio, los metros, el año en que empezó el contrato y lo que incluye, también solo si aceptas. Los análisis y las aportaciones se guardan por separado y no se mezclan con los datos oficiales.',
+					'Para no contar dos veces el mismo piso guardamos durante 30 días un código hecho con el precio, los metros y el barrio. Para limitar abusos usamos un código derivado de tu conexión que caduca a las 24 horas. Ninguno de los dos permite saber quién eres.',
+					'Contamos pasos de uso (entrar, comprobar un piso, compartir) sin precio ni lugar, con un identificador aleatorio que se queda en tu navegador mientras dura la sesión. Si compartes una tarjeta, se guarda el barrio, el mes, el nivel y las proporciones de la barra, nunca el precio.',
+					'La web se sirve desde Cloudflare, que, como cualquier alojamiento, ve la conexión. La lista de pisos comprobados en esta sesión se queda solo en tu navegador y se borra al cerrarlo.'
 				]
 			},
 			QUIENES_SOMOS,
 			FINANCIACION
 		],
-		atribuciones: ATRIBUCIONES.filter((a) => !a.includes('OpenStreetMap')),
+		atribuciones: ATRIBUCIONES,
 		aviso: AVISO_INDEPENDIENTE,
 		enlaceOficial: ENLACE_OFICIAL
 	};

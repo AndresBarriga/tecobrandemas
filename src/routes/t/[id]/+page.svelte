@@ -17,7 +17,6 @@
 <svelte:head>
 	<title>{enlace.titulo}</title>
 	<meta name="description" content={enlace.descripcion} />
-	<meta name="robots" content="noindex" />
 	<meta property="og:site_name" content={NOMBRE} />
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content={enlace.titulo} />

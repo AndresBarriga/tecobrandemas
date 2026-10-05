@@ -6,7 +6,7 @@
   "scripts": {
     "datos": "node scripts/copiar_datos.mjs",
     "dev": "npm run datos && vite dev",
-    "build": "npm run datos && vite build",
+    "build": "npm run datos && vite build && node scripts/cabeceras.mjs",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
@@ -33,6 +33,9 @@
     "wrangler": "^4.147.0"
   },
   "dependencies": {
+    "@mapbox/vector-tile": "^3.0.0",
+    "pbf": "^5.1.2",
+    "pmtiles": "^4.5.0",
     "topojson-client": "^3.1.0"
   },
   "imports": {
