@@ -20,7 +20,7 @@ El PRD (04/10/2026) define un comparador. El usuario teclea un anuncio de Madrid
   | Testigos | `BI_ALVHEPCO_TVC_24` |
 
   Los valores de A01, A05, A15 y A50 coinciden con el CSV.
-- **§5.3 del PRD.** Reproduce `R_inf_inicial` y `R_sup_inicial` de las 44 filas con rango inicial con un error máximo de 0,50 céntimos.
+- **§5.3 del PRD.** Reproduce `R_inf_inicial` y `R_sup_inicial` de las 45 filas con rango inicial con un error máximo de 0,50 céntimos.
 - **§5.4** (de la investigación previa):
   ```
   x        = (P − 18,115) / 100,885
@@ -80,7 +80,7 @@ La sección nunca se guarda: se usa para calcular y se descarta.
 | `03_callejero.py` | GeoPackage de CartoCiudad (provincia 28) | `geocoder.sqlite` → D1: `viales` (~10k) y `portales` (~190k) con el `cusec` precalculado y un índice `(vial_id, numero)` | ~20 MB (~6 MB gz). No va a git |
 | | | `viales_autocompletar.json` | ~250 KB (~70 KB gz) |
 | `04_ipc.py` | API del INE, tabla 76128 | `ipc_alquiler.json`: `{media_2024, ultimo_mes, valor, factor, fuente, fecha_extraccion}` | ~1 KB |
-| `05_verificar.py` | Todas las salidas | Informe: cobertura de polígonos (100%), secciones con dato y más de 20 testigos, portales sin sección, cruce con los 44 cusec del CSV y secciones sin `med2015` | Texto, ejecutado en CI |
+| `05_verificar.py` | Todas las salidas | Informe: cobertura de polígonos (100%), secciones con dato y más de 20 testigos, portales sin sección, cruce con los 53 casos del CSV y secciones sin `med2015` | Texto, ejecutado en CI |
 
 ## 3. Hitos
 
@@ -95,7 +95,7 @@ La sección nunca se guarda: se usa para calcular y se descarta.
 - **Aceptación:**
   - `05_verificar.py` sin errores;
   - las 2.442 secciones tienen polígono 2021;
-  - los 44 cusec del CSV existen con los mismos Smed, P25 y P75 (a 4 decimales) y testigos;
+  - los 53 casos del CSV existen con los mismos Smed, P25 y P75 (a 4 decimales) y testigos;
   - ≥98% de los portales tienen sección;
   - factor IPC = 1,054.
 
@@ -109,7 +109,7 @@ La sección nunca se guarda: se usa para calcular y se descarta.
 - **Requisitos:** R3, R4 y R5 (la lógica), R2 (la horquilla).
 - **Aceptación:**
   - los 30 casos `validacion_app` reproducen `app_*` con un error ≤1 céntimo;
-  - los 44 cálculos de §5.3 dan `R_*_inicial` con un error ≤1 céntimo;
+  - las 45 filas con rango inicial (§5.3) dan `R_*_inicial` con un error ≤1 céntimo;
   - los 8 casos sin dato devuelven `motivo_esperado`;
   - el agregado da 9/4/29 y 6/3/33, con medianas de +19% y +26%;
   - en los pares C el nivel no cambia;
@@ -236,7 +236,7 @@ La sección nunca se guarda: se usa para calcular y se descarta.
 - La evolución omite el dato si falta 2015 y da un intervalo si hay horquilla.
 - Los textos dicen «cuánto más te piden» e incluyen la línea «Qué puedes hacer».
 
-**Datos:** los 44 cusec del CSV coinciden y no hay ninguno sin polígono.
+**Datos:** los 53 casos del CSV coinciden y no hay ninguno sin polígono.
 
 **Ubicación** (`direcciones_100.csv`):
 - **Composición:** 50 direcciones del gate (las 9 exactas con la sección de la app; las 3 en que la app eligió la vecina, documentadas) y 50 portales aleatorios con variantes («C/», «Avda.», sin tildes, errores, sin número, número inexistente).

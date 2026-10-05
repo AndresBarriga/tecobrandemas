@@ -7,12 +7,41 @@ Qué está hecho, con qué cifras y qué se desvió del plan. El plan está en `
 | Hito | Estado | Fecha |
 |---|---|---|
 | 1. Datos | ✅ Hecho | 05/10/2026 |
-| 2. Motor | Siguiente | |
-| 3. Ubicación | Pendiente | |
+| 2. Motor | ✅ Hecho | 05/10/2026 |
+| 3. Ubicación | Siguiente | |
 | 4. Interfaz mínima | Pendiente | |
 | 5. Registro, aportaciones y eventos | Pendiente | |
 | 6. Metodología | Pendiente (antes: nombre, dominio, quiénes somos, financiación) | |
 | 7. Despliegue | Pendiente | |
+
+## Hito 2 — Motor (05/10/2026)
+
+**Código** en `src/lib/motor/` (TypeScript puro, sin dependencias):
+
+| Fichero | Contenido |
+|---|---|
+| `rango.ts` | §5.3: k, V_inf/V_sup en €/m², R_inf/R_sup en €/mes × f |
+| `correccion.ts` | §5.4: x desde la puntuación, corrección general y `referencia()` con R_max (x = 1) |
+| `niveles.ts` | Dentro (baja, media o alta por tercios), explicable, por encima; brecha sobre R_sup; orden de prudencia |
+| `elegibilidad.ts` | Motivos sin dato y su precedencia: unifamiliar > temporal > obra nueva > superficie > sección sin dato > testigos |
+| `analizar.ts` | Punto de entrada: anuncio + secciones candidatas → resultado (con horquilla) o motivo |
+
+**Tests** (`tests/motor.test.ts`, 106; `npm run coverage`):
+- Los 30 casos `validacion_app` reproducen la app oficial con un error máximo de **0,62 céntimos**.
+- Las 45 filas con rango inicial (§5.3) dan un error de ≤0,5 céntimos.
+- Los 8 casos sin dato dan su motivo esperado.
+- Agregado del gate: 9/4/29 con IPC (mediana +19%) y 6/3/33 sin IPC (+26%).
+- En los 3 pares C, la referencia cambia un 4-8% y el nivel no cambia.
+- Propiedades: R_max, linealidad del factor IPC, límites de k, de los niveles, de los tercios y de la superficie (30 y 150 m² entran).
+- Horquilla: nivel más prudente, intervalo de %, exclusiones.
+- Cobertura del 100% en statements, ramas, funciones y líneas (umbral en `vitest.config.ts`).
+
+**Decisiones de implementación (revisables):**
+- **k se limita a [0, 1].** Solo afecta a la sección 2807905002 (Smed 151 m²), que daría 1,005. Si el argumento del logaritmo es ≤1 (Smed < 30), k = 0.
+- **Por debajo de R_inf** el resultado es «dentro, parte baja».
+- **Brecha:** se calcula siempre que el precio supera R_sup, también en el nivel «explicable». La interfaz decide si la muestra.
+- **Horquilla, sección prudente:** el nivel manda sobre el %. Puede ser prudente una sección con más % si su R_max es más holgado; a igual nivel, gana la de menor %.
+- **Tipo de vivienda en el CSV:** no hay columna; A50 se trata como casa (es la «casa adosada» del gate).
 
 ## Hito 1 — Datos (05/10/2026)
 
