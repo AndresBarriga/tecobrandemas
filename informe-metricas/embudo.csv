@@ -1,0 +1,8 @@
+id,metrica,numerador,denominador,valor,objetivo,cumple
+H1,Utilidad: empiezan / llegadas,0,0,,0.25,
+H2,Completado: completan / empiezan,0,0,,0.7,
+H3,Compartible: comparten / completan,0,0,,0.1,
+H4,Conversión desde tarjeta: visitas con análisis desde una tarjeta / tarjetas creadas,0,0,,0.3,
+util,Utilidad percibida: «sí» / respuestas,0,0,,0.6,
+segundo,Uso repetido: hacen un segundo análisis / completan,0,0,,,
+aporta,Aportación: aportan / completan,0,0,,,

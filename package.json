@@ -13,9 +13,11 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "informe:lanzamiento": "node scripts/informe_lanzamiento.mjs"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@cloudflare/workers-types": "^5.20261005.1",
     "@playwright/test": "^1.63.0",
     "@sveltejs/adapter-cloudflare": "^8.0.0",
@@ -25,6 +27,8 @@
     "@types/node": "^26.6.4",
     "@types/topojson-client": "^3.1.5",
     "@vitest/coverage-v8": "^5.0.3",
+    "chrome-launcher": "^1.2.2",
+    "lighthouse": "^13.5.0",
     "svelte": "^5.57.1",
     "svelte-check": "^4.7.6",
     "typescript": "^6.0.3",

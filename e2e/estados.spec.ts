@@ -66,7 +66,8 @@ test.describe('sin dato', () => {
 			await abrir(page);
 			await comprobar(page, piso);
 			await expect(page.getByText('Sin referencia para este caso')).toBeVisible();
-			await expect(page.getByRole('heading', { level: 2 }).filter({ hasText: titular })).toBeVisible();
+			// Sin lugar, el titular es el h1 de la pantalla
+			await expect(page.getByRole('heading').filter({ hasText: titular })).toBeVisible();
 			const cuerpo = await page.locator('main').innerText();
 			expect(cuerpo).not.toMatch(/\d\s?%/); // nunca lleva porcentaje
 			await expect(page.getByRole('link', { name: /Consultar el sistema oficial/ })).toHaveAttribute('href', 'https://serpavi.mivau.gob.es');
