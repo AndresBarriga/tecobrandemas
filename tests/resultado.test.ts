@@ -435,8 +435,8 @@ describe('aportación', () => {
 
 	it('válida: payload con barrio, sin sección ni dirección', () => {
 		const r = validarAportacion(base, barrios, 2026);
-		expect(r).toEqual({ ok: true, payload: { barrio: '071', precio: 700, m2: 50, anioContrato: 2018 } });
-		expect(Object.keys((r as { payload: object }).payload).sort()).toEqual(['anioContrato', 'barrio', 'm2', 'precio']);
+		expect(r).toEqual({ ok: true, payload: { barrio: '071', precio: 700, m2: 50, anioContrato: 2018, incluye: [] } });
+		expect(Object.keys((r as { payload: object }).payload).sort()).toEqual(['anioContrato', 'barrio', 'incluye', 'm2', 'precio']);
 	});
 
 	it('sin consentimiento no hay payload', () => {

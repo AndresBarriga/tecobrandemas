@@ -15,3 +15,4 @@ export * from './vista';
 export * from './contadores';
 export * from './negociar';
 export * from './historial';
+export * from './metodologia';

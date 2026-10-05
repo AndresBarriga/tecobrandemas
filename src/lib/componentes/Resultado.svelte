@@ -100,7 +100,7 @@
 			</div>
 		{/if}
 
-		<p class="fuente">{v.fuente}</p>
+		<p class="fuente">{v.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
 
 		<div class="acciones">
 			<h2>Qué puedes hacer</h2>

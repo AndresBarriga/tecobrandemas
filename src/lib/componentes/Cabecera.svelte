@@ -15,7 +15,7 @@
 	{:else if derecha === 'madrid'}
 		<span class="madrid">{NAVEGACION.madrid}</span>
 	{/if}
-	<nav class="nav"><a href="/cuanto-pagas">¿Cuánto pagas tú?</a></nav>
+	<nav class="nav"><a href="/como-calculamos">Cómo calculamos</a><a href="/cuanto-pagas">¿Cuánto pagas tú?</a></nav>
 </header>
 
 <style>
@@ -53,6 +53,7 @@
 	@media (min-width: 1024px) {
 		.nav {
 			display: flex;
+			gap: 24px;
 		}
 		.nav a {
 			display: flex;

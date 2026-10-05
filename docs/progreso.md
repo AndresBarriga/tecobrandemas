@@ -168,3 +168,9 @@ Nombre del producto: **A su precio**. Diseño en `docs/design` (README del hando
 **Notas:**
 - La sección 2807910157 tiene polígono pero no fila SERPAVI: saldrá como «sin dato».
 - 17 secciones están repartidas entre dos barrios: se asignan al de mayor área.
+
+## Hito 6 — Metodología (R8)
+- `/como-calculamos` (prerenderizada): referencia, ajuste IPC (factor y mes leídos de `ipc_alquiler.json`), tres niveles, precio pedido frente a firmado, límites, fuentes, datos propios, quiénes somos y financiación (textos del usuario, con «A su precio»).
+- Texto en `src/lib/resultado/metodologia.ts`; test en `tests/metodologia.test.ts`; e2e en `e2e/metodologia.spec.ts`.
+- Enlazada desde la cabecera (escritorio), el pie y la línea de fuente del resultado. Las atribuciones salen del pie.
+- Pendiente: la explicación de «Tu zona», «Aquí estarías dentro» y la evolución, cuando existan esos componentes.
