@@ -40,7 +40,7 @@ test.describe('Tu zona', () => {
 		await zona.screenshot({ path: `${carpeta()}/31-tu-zona-c.png` });
 
 		// Todo se calcula en el navegador: nada de «Tu zona» sale en peticiones
-		expect(posts.filter((p) => p !== '/api/geocode' && p !== '/api/evento')).toEqual([]);
+		expect(posts.filter((p) => p !== '/api/geocode')).toEqual([]);
 	});
 
 	test('nivel a: solo el mapa de contexto, sin lista', async ({ page }) => {

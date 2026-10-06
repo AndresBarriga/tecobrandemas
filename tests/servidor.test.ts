@@ -223,11 +223,10 @@ describe.skipIf(!hayCallejero)('POST /api/geocode', () => {
 	});
 });
 
-// ——— Registro, aportaciones, eventos y contadores ———
+// ——— Registro, aportaciones y contadores ———
 import { GET as getContadores } from '../src/routes/api/contadores/+server';
 import { POST as postAnalisis } from '../src/routes/api/analisis/+server';
 import { POST as postAportacion } from '../src/routes/api/aportacion/+server';
-import { POST as postEvento } from '../src/routes/api/evento/+server';
 import { d1Registro } from './d1';
 
 describe('endpoints de registro', () => {
@@ -252,26 +251,21 @@ describe('endpoints de registro', () => {
 		await expect(peticion(postAnalisis, env, analisis(2000), '7.7.7.7')).rejects.toMatchObject({ status: 429 });
 	});
 
-	it('aportación y evento', async () => {
+	it('aportación', async () => {
 		const env = entorno();
 		const ok = { barrio, precio: 1150, m2: 68, anioContrato: 2023, incluye: ['garaje'] };
 		expect((await peticion(postAportacion, env, ok)).status).toBe(201);
 		await expect(peticion(postAportacion, env, { ...ok, anioContrato: 1800 })).rejects.toMatchObject({ status: 400 });
-		const visita = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
-		expect((await peticion(postEvento, env, { tipo: 'llegada', visita })).status).toBe(204);
-		await expect(peticion(postEvento, env, { tipo: 'precio', visita })).rejects.toMatchObject({ status: 400 });
 	});
 
-	it('contadores: total real y barrio oculto por debajo de 10', async () => {
+	it('contadores: el barrio queda oculto por debajo de 10', async () => {
 		const env = entorno();
-		const visita = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
-		await peticion(postEvento, env, { tipo: 'completa', visita });
 		const r = await getContadores({ url: new URL(`http://x/api/contadores?barrio=${barrio}`), platform: { env } } as never);
-		expect(await r.json()).toEqual({ total: 1, barrio: null, aportacionesBarrio: null });
+		expect(await r.json()).toEqual({ barrio: null, aportacionesBarrio: null });
 	});
 
 	it('sin base de datos en producción da 503, no se guarda en memoria', async () => {
 		// En pruebas import.meta.env.DEV es true; sin DB cae a la base local, que sí responde
-		expect((await peticion(postEvento, {}, { tipo: 'llegada', visita: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d' })).status).toBe(204);
+		expect((await peticion(postAportacion, {}, { barrio, precio: 1150, m2: 68, anioContrato: 2023, incluye: ['garaje'] })).status).toBe(201);
 	});
 });

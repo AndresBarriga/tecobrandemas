@@ -11,11 +11,14 @@ import {
 	type APPS, type BRECHAS, type CANALES, type MODOS, type MOTIVOS_SIN_DATO, type RESPUESTAS_QUE_HARAS, type RESULTADOS,
 	filtrarEvento, navegadorApp
 } from './analitica-filtro';
+import { leerOrigenDeLaUrl, tarjetaOrigen } from './origen';
 
 type Modo = (typeof MODOS)[number];
 type Resultado = (typeof RESULTADOS)[number];
 
-export const analiticaActiva = () => PUBLIC_POSTHOG_ENABLED && PUBLIC_POSTHOG_KEY !== '';
+// Solo en `vite dev`, `?ph_prueba=1` la activa con una clave de mentira (para e2e/analitica.spec.ts); en producción no existe
+const deLaPrueba = () => import.meta.env.DEV && new URLSearchParams(location.search).has('ph_prueba');
+export const analiticaActiva = () => (PUBLIC_POSTHOG_ENABLED && PUBLIC_POSTHOG_KEY !== '') || deLaPrueba();
 
 /** Ruta del proxy en el propio dominio (src/routes/r7k) */
 export const RUTA_PROXY = '/r7k';
@@ -31,13 +34,12 @@ let inicioMs: number | null = null;
 
 /** Propiedades que acompañan a todos los eventos */
 function propiedadesGlobales(): { v: 1; navegador_app: (typeof APPS)[number]; tarjeta_origen: string | null; interno: boolean } {
-	const q = new URLSearchParams(location.search);
-	const t = q.get('t');
+	leerOrigenDeLaUrl();
 	return {
 		v: 1,
 		navegador_app: navegadorApp(navigator.userAgent),
-		tarjeta_origen: t && /^[0-9a-z]{10}$/.test(t) ? t : null,
-		interno: q.get('internal') === '1'
+		tarjeta_origen: tarjetaOrigen(),
+		interno: new URLSearchParams(location.search).get('internal') === '1'
 	};
 }
 
@@ -47,7 +49,7 @@ export async function iniciarAnalitica(): Promise<void> {
 	try {
 		// La variante sin dependencias externas y sin extensiones: no carga ningún script remoto
 		const { default: posthog } = await import('posthog-js/dist/module.slim.no-external');
-		posthog.init(PUBLIC_POSTHOG_KEY, {
+		posthog.init(PUBLIC_POSTHOG_KEY || 'phc_prueba_local', {
 			api_host: RUTA_PROXY,
 			ui_host: 'https://eu.posthog.com',
 			cookieless_mode: 'always',
@@ -143,7 +145,9 @@ export function completa(d: DatosCompleta): void {
 	enviar('completa', { ...d, segundos_hasta_resultado: segundos, indice_analisis: indiceAnalisis });
 }
 
-export function sinDato(modo: Modo, motivo: (typeof MOTIVOS_SIN_DATO)[number]): void {
+export type MotivoSinDato = (typeof MOTIVOS_SIN_DATO)[number];
+
+export function sinDato(modo: Modo, motivo: MotivoSinDato): void {
 	enviar('sin_dato', { modo, motivo });
 }
 

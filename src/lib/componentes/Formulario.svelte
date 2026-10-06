@@ -141,7 +141,11 @@
 <form
 	class="formulario"
 	novalidate
-	oninput={() => alEmpezar?.()}
+	oninput={(e) => {
+		// Elegir una opción (modo, tipo…) no es empezar: el evento sale al escribir, ya con el modo elegido
+		const tipo = (e.target as HTMLInputElement).type;
+		if (tipo !== 'radio' && tipo !== 'checkbox') alEmpezar?.();
+	}}
 	onsubmit={(e) => {
 		e.preventDefault();
 		if (!buscando) alEnviar();

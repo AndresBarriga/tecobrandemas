@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Anuncio } from '../src/lib/motor';
 import {
-	type DatosMadrid, construirPantalla, construirTarjeta, contadorBarrio, contadorInicio, filaHistorial,
+	type DatosMadrid, construirPantalla, construirTarjeta, contadorBarrio, filaHistorial,
 	mesesEquivalentes, rangoEuros, textoNegociar, textosEnlace, validarTarjeta
 } from '../src/lib/resultado';
 
@@ -124,20 +124,9 @@ describe('vista del resultado', () => {
 
 describe('contadores', () => {
 	it('sin dato del servidor no se muestra nada', () => {
-		expect(contadorInicio(null)).toBeNull();
-		expect(contadorInicio(undefined)).toBeNull();
 		expect(contadorBarrio(null)).toBeNull();
-		expect(contadorInicio(-3)).toBeNull();
-	});
-
-	it('inicio: tres estados', () => {
-		expect(contadorInicio(0)).toEqual({ numero: null, texto: 'Sé de los primeros en comprobar un piso en Madrid' });
-		expect(contadorInicio(37)).toEqual({ numero: '37', texto: 'pisos comprobados. Esto acaba de empezar y el tuyo cuenta.' });
-		expect(contadorInicio(12480)).toEqual({
-			numero: '12.480', texto: 'pisos comprobados en Madrid. No eres el único que se lo pregunta.'
-		});
-		expect(contadorInicio(99)!.texto).toContain('Esto acaba de empezar');
-		expect(contadorInicio(100)!.texto).toContain('No eres el único');
+		expect(contadorBarrio(undefined)).toBeNull();
+		expect(contadorBarrio(-3)).toBeNull();
 	});
 
 	it('barrio: oculto por debajo de 10', () => {

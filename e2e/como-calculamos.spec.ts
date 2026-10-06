@@ -37,14 +37,11 @@ test.describe('Cómo calculamos', () => {
 	});
 
 	test('«Ver por qué» abre la pantalla sin dato correspondiente, sin contarla como comprobación', async ({ page }) => {
-		const eventos: string[] = [];
-		page.on('request', (r) => r.url().includes('/api/evento') && eventos.push(r.postData() ?? ''));
 		await page.goto('/como-calculamos');
 		await page.locator('#lim').getByRole('link', { name: /Obra nueva/ }).click();
 		await page.locator('[data-listo=true]').waitFor();
 		await expect(page.getByRole('heading', { name: 'Obra nueva' })).toBeVisible();
 		await expect(page.getByRole('link', { name: /Consultar el sistema oficial/ })).toBeVisible();
-		expect(eventos.some((e) => e.includes('completa'))).toBe(false);
 		await abrir(page, '/?motivo=no_existe');
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 	});

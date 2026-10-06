@@ -1,7 +1,7 @@
 /**
  * Prueba de humo contra un despliegue real:
  *   BASE_URL=https://a-su-precio.tiene-sentido.workers.dev npx playwright test e2e/humo.spec.ts --project=movil-390
- * No ensucia las métricas: se bloquea /api/evento y no se registra ningún análisis ni aportación.
+ * No ensucia las métricas: se bloquea la analítica (/r7k, PostHog) y no se registra ningún análisis ni aportación.
  * Es de solo lectura: no escribe nada. La tarjeta de la tercera prueba es una fija (`pruebahumo`),
  * creada una vez a mano, marcada como de prueba y excluida de las métricas.
  * Las cifras exactas cambian con el IPC: se comprueba el nivel y la forma, no los números.
@@ -9,7 +9,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { abrir, comprobar } from './ayudas';
 
-const bloquearEventos = (page: Page) => page.route('**/api/evento', (r) => r.fulfill({ status: 204 }));
+const bloquearEventos = (page: Page) => page.route('**/r7k/**', (r) => r.fulfill({ status: 204 }));
 
 test.describe('humo', () => {
 	test('1. calcular: Fuente del Berro da un resultado de nivel c con la barra y sin pedir nada a terceros', async ({ page, baseURL }) => {
@@ -48,7 +48,7 @@ test.describe('humo', () => {
 
 		const contadores = await request.get('/api/contadores');
 		expect(contadores.status()).toBe(200);
-		expect(await contadores.json()).toHaveProperty('total');
+		expect(await contadores.json()).toHaveProperty('barrio');
 
 		const mapa = await request.get('/mapa/madrid.pmtiles', { headers: { range: 'bytes=0-15' } });
 		expect(mapa.status()).toBe(206);
@@ -60,6 +60,7 @@ test.describe('humo', () => {
 	});
 
 	test('3. tarjeta de prueba fija: /t/:id la enseña con vista previa y la imagen OG sale', async ({ page, request, baseURL }) => {
+		await bloquearEventos(page);
 		// Solo lectura: la tarjeta se creó una vez a mano en producción (ver docs/operacion.md); en local no existe
 		test.skip(!process.env.BASE_URL, 'Solo contra un despliegue: la tarjeta pruebahumo vive en producción');
 		const id = 'pruebahumo';

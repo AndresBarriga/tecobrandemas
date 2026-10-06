@@ -1,5 +1,5 @@
-// Informe interno de métricas (no es una página pública): embudo H1-H4, análisis por barrio con 10 o más
-// observaciones y exportación a CSV de los agregados. Lee D1 con wrangler (hace falta `wrangler login`).
+// Informe interno de métricas (no es una página pública): análisis y aportaciones por barrio con 10 o más
+// observaciones y exportación a CSV de los agregados. El embudo de uso se mira en PostHog. Lee D1 con wrangler (hace falta `wrangler login`).
 //   node scripts/metricas.ts [--local] [--desde=2026-10-20] [--salida=informe-metricas]
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -35,13 +35,7 @@ const m = await calcularMetricas({ prepare: (sql: string) => sentencia(sql) }, d
 
 const pct = (x: number | null) => (x === null ? 'sin datos' : `${(x * 100).toFixed(1).replace('.', ',')} %`);
 console.log(`Métricas ${local ? '(D1 local)' : '(D1 en producción)'}${m.desde ? ` desde ${m.desde}` : ''}\n`);
-console.log(`Visitas: ${m.embudo.llegadas} · empiezan ${m.embudo.empiezan} · completan ${m.embudo.completan} · comparten ${m.embudo.comparten} · análisis totales ${m.analisisTotales} · tarjetas creadas ${m.tarjetasCreadas}`);
-console.log(`«Ya vivo aquí» (visitas): empiezan ${m.vivo.empiezan} · completan ${m.vivo.completan} · aportan ${m.vivo.aportan} · comparten ${m.vivo.comparten}`);
-console.log(`Canales de compartir (visitas): ${Object.entries(m.canales).map(([c, n]) => `${c} ${n}`).join(' · ')}\n`);
-for (const o of m.objetivos) {
-	const estado = o.cumple === null ? (o.objetivo === null ? 'medir' : 'sin datos') : o.cumple ? 'cumple' : 'NO cumple';
-	console.log(`${o.id.padEnd(8)} ${pct(o.valor).padStart(10)}  (${o.numerador}/${o.denominador})  objetivo ${o.objetivo === null ? '—' : pct(o.objetivo)}  ${estado}  ${o.nombre}`);
-}
+console.log(`Tarjetas creadas: ${m.tarjetasCreadas}`);
 console.log(`\nBarrios con 10 o más análisis: ${m.barrios.length}`);
 for (const b of m.barrios) console.log(`  ${barrios[b.barrio]?.nombre ?? b.barrio}: ${b.n} análisis, mediana ${Math.round(b.medianaEurosM2 * 10) / 10} €/m², ${pct(b.porEncima)} por encima del techo`);
 console.log(`Barrios con 10 o más aportaciones de residentes (aparte): ${m.aportaciones.length}`);
@@ -49,4 +43,4 @@ console.log(`Barrios con 10 o más aportaciones de residentes (aparte): ${m.apor
 const csv = aCsv(m, (c) => barrios[c]?.nombre ?? c);
 mkdirSync(salida, { recursive: true });
 for (const [nombre, texto] of Object.entries(csv)) writeFileSync(`${salida}/${nombre}.csv`, texto);
-console.log(`\nCSV en ${salida}/ (embudo, barrios, aportaciones)`);
+console.log(`\nCSV en ${salida}/ (barrios, aportaciones)`);

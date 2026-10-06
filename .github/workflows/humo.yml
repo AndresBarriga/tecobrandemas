@@ -1,7 +1,8 @@
 name: Prueba de humo
 
 # Cada hora comprueba la web desplegada y abre un issue si algo falla. Es de solo lectura: no escribe nada
-# (la tarjeta de prueba `pruebahumo` es fija, creada una vez a mano).
+# (la tarjeta de prueba `pruebahumo` es fija, creada una vez a mano). Bloquea la analítica (/r7k, PostHog) en el
+# navegador: la prueba no cuenta como visita real.
 on:
   schedule:
     - cron: '7 * * * *'

@@ -444,7 +444,28 @@ export const AFINAR = {
 	fallo: 'No hemos podido afinar el resultado. Inténtalo de nuevo.'
 } as const;
 
-export const SERVIDO = { pregunta: '¿Te ha servido?', si: 'Sí', no: 'No', gracias: 'Gracias por contestar.' } as const;
+/** «¿Qué vas a hacer con este resultado?»: sustituye a «¿Te ha servido?». Los valores son las categorías de analítica. */
+export type RespuestaQueHaras = 'negociar' | 'descartar' | 'seguir' | 'curiosidad' | 'hablar_casero' | 'asesoramiento' | 'nada';
+export const QUE_HARAS = {
+	pregunta: '¿Qué vas a hacer con este resultado?',
+	opcional: 'Opcional',
+	gracias: 'Gracias por contestar.',
+	mirando: [
+		{ valor: 'negociar', etiqueta: 'Intentar negociar el precio' },
+		{ valor: 'descartar', etiqueta: 'Descartar este piso' },
+		{ valor: 'seguir', etiqueta: 'Seguir adelante igual' },
+		{ valor: 'curiosidad', etiqueta: 'Nada, solo tenía curiosidad' }
+	],
+	vivo: [
+		{ valor: 'hablar_casero', etiqueta: 'Hablar con mi casero' },
+		{ valor: 'asesoramiento', etiqueta: 'Pedir asesoramiento a un profesional o a una organización' },
+		{ valor: 'nada', etiqueta: 'Nada por ahora' },
+		{ valor: 'curiosidad', etiqueta: 'Nada, solo tenía curiosidad' }
+	]
+} as const satisfies Record<string, unknown>;
+
+/** Enlace junto al resultado: solo un mailto, sin evento ni datos del anuncio */
+export const ALGO_NO_CUADRA = { texto: '¿Algo no cuadra? Escríbenos', correo: 'hola@asuprecio.com' } as const;
 
 export const EQUIVALENCIA = { alMes: 'Al mes', alAño: 'Al año', bloques: '12 meses de alquiler' } as const;
 
@@ -552,10 +573,6 @@ export const PAGINA_TARJETA = {
 
 /** Contadores de uso: reales o no se muestran; por barrio, solo desde 10 */
 export const UMBRAL_CONTADOR_BARRIO = 10;
-export const UMBRAL_CONTADOR_GRANDE = 100;
-export const CONTADOR_CERO = 'Sé de los primeros en comprobar un piso en Madrid';
-export const CONTADOR_POCOS = 'pisos comprobados. Esto acaba de empezar y el tuyo cuenta.';
-export const CONTADOR_MUCHOS = 'pisos comprobados en Madrid. No eres el único que se lo pregunta.';
 export const CONTADOR_BARRIO = 'personas han comprobado pisos en este barrio.';
 
 export const NAVEGACION = { inicio: 'Inicio', otroPiso: 'Otro piso', madrid: 'Madrid', mapa: 'Mapa' } as const;

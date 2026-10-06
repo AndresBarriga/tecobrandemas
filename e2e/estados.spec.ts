@@ -136,7 +136,7 @@ test.describe('otras pantallas', () => {
 		await context.grantPermissions(['clipboard-read', 'clipboard-write']);
 		await abrir(page);
 		const posts: string[] = [];
-		page.on('request', (r) => r.method() === 'POST' && !r.url().endsWith('/api/evento') && posts.push(new URL(r.url()).pathname));
+		page.on('request', (r) => r.method() === 'POST' && posts.push(new URL(r.url()).pathname));
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		await page.getByRole('button', { name: /Negociar con el dato/ }).click();
 		await expect(page.getByRole('heading', { level: 1, name: /Negociar con el dato/i })).toBeVisible();
@@ -154,7 +154,7 @@ test.describe('otras pantallas', () => {
 	test('20-en el mapa: marca un punto y comprueba sin geocodificar', async ({ page }) => {
 		await abrir(page);
 		const posts: string[] = [];
-		page.on('request', (r) => r.method() === 'POST' && !r.url().endsWith('/api/evento') && posts.push(new URL(r.url()).pathname));
+		page.on('request', (r) => r.method() === 'POST' && posts.push(new URL(r.url()).pathname));
 		await page.getByRole('radio', { name: 'En el mapa' }).check();
 		const mapa = page.getByLabel(/Mapa de Madrid/);
 		await expect(mapa).toBeVisible();

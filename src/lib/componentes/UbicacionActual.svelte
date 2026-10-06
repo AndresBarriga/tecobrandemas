@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { UBICACION_ACTUAL as T } from '#lib/resultado';
+	import { usarUbicacion } from '#lib/cliente/analitica';
 	import { type LecturaGps, ubicarme } from '#lib/cliente/ubicacion-actual';
 
 	type Lista = Extract<LecturaGps, { estado: 'lista' }>;
@@ -41,6 +42,8 @@
 	async function pedir() {
 		estado = 'pidiendo';
 		const l = await ubicarme();
+		// Solo el resultado, nunca el sitio (tiempo agotado y sin GPS cuentan como «denegada»: no se pudo usar)
+		usarUbicacion(l.estado === 'lista' ? (l.baja ? 'imprecisa' : 'ok') : l.estado === 'fuera' ? 'fuera' : 'denegada');
 		if (l.estado !== 'lista') {
 			estado = l.estado;
 			alEscribir();

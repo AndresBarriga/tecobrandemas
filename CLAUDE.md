@@ -36,6 +36,7 @@ supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado
   lectura, con la tarjeta fija `pruebahumo`). Qué falta: `docs/abierto.md`; ideas sin empezar: `docs/ideas.md`.
 - Arquitectura: los componentes y las rutas no importan `src/lib/motor` ni `src/lib/ubicacion`
   (un test lo comprueba). Alias de importación: `#lib/...` (SvelteKit 3 no tiene `$lib`).
+- Analítica de uso: PostHog (UE) sin cookies, vía el proxy `/r7k`, con lista blanca en `before_send` (`src/lib/cliente/analitica*.ts`); solo se activa en el despliegue a producción. Los eventos ya no se guardan en D1. Detalle y verificación: `docs/operacion.md`.
 - Lo que se guarda: barrio y mes, nunca la sección, la dirección, la IP ni la fecha exacta del análisis. Las
   tarjetas compartidas guardan su imagen y los textos que se ven; no caducan automáticamente.
 

@@ -3,8 +3,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
-	type AnalisisEntrada, type Contexto, LIMITE_REGISTROS_DIA, claveLimite, leerAnalisis, leerAportacion, leerEvento,
-	LIMITE_GEOCODIFICACIONES_DIA, plausible, puedeGeocodificar, recuentos, registrarAnalisis, registrarAportacion, registrarEvento, salDelDia
+	type AnalisisEntrada, type Contexto, LIMITE_REGISTROS_DIA, claveLimite, leerAnalisis, leerAportacion,
+	LIMITE_GEOCODIFICACIONES_DIA, plausible, puedeGeocodificar, recuentos, registrarAnalisis, registrarAportacion, salDelDia
 } from '../src/lib/server/registro';
 import { d1Registro } from './d1';
 
@@ -31,8 +31,9 @@ describe('esquema', () => {
 			const cols = (db.prepare(`PRAGMA table_info(${tabla})`).all() as { name: string }[]).map((c) => c.name);
 			for (const p of prohibidas) expect(cols, `${tabla}.${p}`).not.toContain(p);
 		}
-		const eventos = (db.prepare('PRAGMA table_info(eventos)').all() as { name: string }[]).map((c) => c.name);
-		expect(eventos).toEqual(['tipo', 'ts', 'visita', 'tarjeta']);
+		// Los eventos de uso ya no se guardan en D1 (van a PostHog): la migración 0004 borra la tabla
+		const tablas = (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as { name: string }[]).map((t) => t.name);
+		expect(tablas).not.toContain('eventos');
 	});
 
 	it('ninguna consulta cruza analisis con aportaciones', () => {
@@ -174,41 +175,24 @@ describe('entradas', () => {
 		expect(leerAportacion({ ...ok, incluye: ['piscina'] }, BARRIOS, 2026)).toBeNull();
 		expect(leerAportacion({ ...ok, barrio: 'x' }, BARRIOS, 2026)).toBeNull();
 	});
-
-	it('evento: tipo conocido, visita aleatoria, tarjeta opcional', () => {
-		const visita = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
-		expect(leerEvento({ tipo: 'completa', visita })).toEqual({ tipo: 'completa', visita, tarjeta: null });
-		expect(leerEvento({ tipo: 'desde_tarjeta', visita, tarjeta: 'abcdefghij' })?.tarjeta).toBe('abcdefghij');
-		expect(leerEvento({ tipo: 'precio', visita })).toBeNull();
-		expect(leerEvento({ tipo: 'completa', visita: 'corta' })).toBeNull();
-	});
 });
 
-describe('eventos y recuentos', () => {
+describe('atribución y recuentos', () => {
 	it('un análisis iniciado desde /t/:id queda atribuido a la tarjeta', async () => {
 		const { db, c } = contexto();
-		const visita = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
-		await registrarEvento(c, '1.1.1.1', { tipo: 'desde_tarjeta', visita, tarjeta: 'abcdefghij' });
-		expect(db.prepare('SELECT tipo, visita, tarjeta FROM eventos').get()).toEqual({ tipo: 'desde_tarjeta', visita, tarjeta: 'abcdefghij' });
+		await registrarAnalisis(c, '1.1.1.1', a({ tarjetaOrigen: 'abcdefghij' }));
+		expect(db.prepare('SELECT tarjeta_origen FROM analisis').get()).toEqual({ tarjeta_origen: 'abcdefghij' });
 	});
 
 	it('los recuentos de barrio solo salen desde 10 y nunca antes', async () => {
 		const { d1, c } = contexto();
-		expect(await recuentos(d1, '071')).toEqual({ total: 0, barrio: null, aportacionesBarrio: null });
+		expect(await recuentos(d1, '071')).toEqual({ barrio: null, aportacionesBarrio: null });
 		for (let i = 0; i < 9; i++) await registrarAnalisis(c, `ip${i}`, a({ precio: 1000 + i * 10 }));
 		expect((await recuentos(d1, '071')).barrio).toBeNull();
 		await registrarAnalisis(c, 'ip10', a({ precio: 1500 }));
 		expect((await recuentos(d1, '071')).barrio).toBe(10);
 		expect((await recuentos(d1, '072')).barrio).toBeNull();
 		expect((await recuentos(d1, null)).barrio).toBeNull();
-	});
-
-	it('el total cuenta solo los eventos «completa»', async () => {
-		const { d1, c } = contexto();
-		const visita = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
-		await registrarEvento(c, 'x', { tipo: 'llegada', visita, tarjeta: null });
-		await registrarEvento(c, 'x', { tipo: 'completa', visita, tarjeta: null });
-		expect((await recuentos(d1, null)).total).toBe(1);
 	});
 });
 
