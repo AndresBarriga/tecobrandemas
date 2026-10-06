@@ -181,9 +181,9 @@
 					<rect width={6 * mpp} height={6 * mpp} fill="#DAD5CA" />
 					<line x1="0" y1="0" x2="0" y2={6 * mpp} stroke="#857F74" stroke-width={1.5 * mpp} />
 				</pattern>
-				<pattern id="mp-debajo" width={9 * mpp} height={9 * mpp} patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
-					<rect width={9 * mpp} height={9 * mpp} fill="#F6F4EE" />
-					<line x1="0" y1="0" x2="0" y2={9 * mpp} stroke="#1C1B19" stroke-width={1.2 * mpp} />
+				<pattern id="mp-debajo" width={7 * mpp} height={7 * mpp} patternUnits="userSpaceOnUse">
+					<rect width={7 * mpp} height={7 * mpp} fill="#F6F4EE" />
+					<circle cx={3.5 * mpp} cy={3.5 * mpp} r={1.5 * mpp} fill="#1C1B19" />
 				</pattern>
 			</defs>
 			<rect x={vx} y={vy} width={w * mpp} height={h * mpp} fill="#ECEAE5" />

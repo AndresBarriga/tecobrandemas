@@ -8,12 +8,13 @@
 	import Segmentado from '#lib/componentes/Segmentado.svelte';
 	import {
 		MAPA_REFERENCIA as T, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, TONOS_MAPA, capaEvolucion, capaPresupuesto, capaReferencia,
-		hojaDeZona, numeroDelCampo, superficieValida, zonasDelMapa, type CapaMapa, type SugerenciaVia, type SugerenciaZona
+		distanciaCorta, hojaDeZona, numero, numeroDelCampo, superficieValida, zonasCercanas, zonasDelMapa, type CapaMapa, type SugerenciaVia, type SugerenciaZona
 	} from '#lib/resultado';
 	import { type Caja, type MadridCargado, cargarMadrid, unirCajas } from '#lib/cliente/mapa-madrid';
 	import { metrosAPunto } from '#lib/cliente/mapa';
 	import { dejarPrellenado } from '#lib/cliente/prellenado';
 	import { ubicarme } from '#lib/cliente/ubicacion-actual';
+	import { zonasDeVia } from '#lib/cliente/vias';
 
 	let estado = $state<'cargando' | 'listo' | 'fallo'>('cargando');
 	let madrid = $state<MadridCargado | null>(null);
@@ -30,6 +31,8 @@
 	let vez = 0;
 	let mensajeBusqueda = $state<string | null>(null);
 	let ubicacion = $state<'off' | 'pidiendo' | 'denegada' | 'fuera'>('off');
+	/** Desde dónde se cuentan las zonas más cercanas donde llega el presupuesto: tu ubicación o lo buscado */
+	let origen = $state<{ centro: [number, number]; donde: string } | null>(null);
 	let hojaEl: HTMLElement | undefined = $state();
 
 	function cargar() {
@@ -58,6 +61,15 @@
 	const calculada = $derived(capa === 'evolucion' ? capaEvolucion(zonas) : capa === 'presupuesto' ? deMiPresupuesto : capaReferencia(zonas, superficie));
 	const tonos = $derived(calculada?.tonos ?? new Map<string, number | null>());
 	const resumen = $derived(deMiPresupuesto?.resumen ?? null);
+	const centros = $derived(new Map((madrid?.celdas ?? []).map((c) => [c.cusec, c.centro] as const)));
+	const cercanas = $derived(
+		madrid && origen && presupuesto !== null && resumen && resumen.llega > 0
+			? zonasCercanas(zonas, presupuesto, origen.centro, centros).map((c) => ({
+				...c,
+				nombre: T.presupuesto.cercanas.zona(madrid!.datos.barrios[madrid!.datos.secciones[c.cusec]?.barrio ?? '']?.nombre ?? 'Madrid')
+			}))
+			: []
+	);
 
 	const intro = $derived(capa === 'presupuesto' ? T.introPresupuesto : capa === 'evolucion' ? T.introEvolucion : T.intro);
 	const tituloLeyenda = $derived(capa === 'presupuesto' ? T.leyendaPresupuesto : capa === 'evolucion' ? T.leyendaEvolucion : T.leyenda);
@@ -78,28 +90,57 @@
 		if (caja) enfoque = { caja, vez: ++vez };
 	}
 
+	const centroDe = (cusecs: string[]): [number, number] | null => {
+		const cs = cusecs.flatMap((c) => (madrid?.porCusec.get(c) ? [madrid.porCusec.get(c)!.centro] : []));
+		return cs.length ? [cs.reduce((a, c) => a + c[0], 0) / cs.length, cs.reduce((a, c) => a + c[1], 0) / cs.length] : null;
+	};
+
 	function buscarZona(z: SugerenciaZona) {
 		if (!madrid) return;
 		seleccion = null;
 		resaltadas = new Set();
 		if (z.clase === 'barrio') {
-			llevarA(madrid.barrios.get(z.codigo)?.caja ?? null);
-			mensajeBusqueda = T.buscador.barrio(z.nombre);
+			const b = madrid.barrios.get(z.codigo);
+			llevarA(b?.caja ?? null);
+			origen = b ? { centro: b.centro, donde: T.presupuesto.cercanas.a(z.nombre) } : null;
 		} else {
-			const delDistrito = [...madrid.barrios.entries()].filter(([c]) => madrid!.datos.barrios[c]?.cod_distrito === z.codigo).map(([, b]) => b.caja);
-			llevarA(unirCajas(delDistrito));
-			mensajeBusqueda = T.buscador.barrio(z.nombre);
+			const delDistrito = [...madrid.barrios.entries()].filter(([c]) => madrid!.datos.barrios[c]?.cod_distrito === z.codigo).map(([, b]) => b);
+			const caja = unirCajas(delDistrito.map((b) => b.caja));
+			llevarA(caja);
+			origen = caja ? { centro: [(caja[0] + caja[2]) / 2, (caja[1] + caja[3]) / 2], donde: T.presupuesto.cercanas.a(z.nombre) } : null;
 		}
+		mensajeBusqueda = T.buscador.barrio(z.nombre);
 		ubicacion = 'off';
 	}
 
-	function buscarVia(v: SugerenciaVia) {
+	// Una calle que cruza varias zonas las resalta todas; sin ese dato, lleva al barrio donde tiene más
+	async function buscarVia(v: SugerenciaVia) {
 		if (!madrid) return;
 		seleccion = null;
 		resaltadas = new Set();
-		llevarA(madrid.barrios.get(v.barrio)?.caja ?? null);
-		mensajeBusqueda = T.buscador.calleEn(v.nombre, madrid.datos.barrios[v.barrio]?.nombre ?? 'Madrid');
 		ubicacion = 'off';
+		const barrio = madrid.barrios.get(v.barrio);
+		const nombreBarrio = madrid.datos.barrios[v.barrio]?.nombre ?? 'Madrid';
+		llevarA(barrio?.caja ?? null);
+		mensajeBusqueda = T.buscador.calleEn(v.nombre, nombreBarrio);
+		origen = barrio ? { centro: barrio.centro, donde: T.presupuesto.cercanas.a(v.nombre) } : null;
+		let cusecs: string[] = [];
+		try {
+			cusecs = (await zonasDeVia(v.nombre)).filter((c) => madrid!.porCusec.has(c));
+		} catch {
+			return;
+		}
+		if (!cusecs.length || mensajeBusqueda !== T.buscador.calleEn(v.nombre, nombreBarrio)) return; // otra búsqueda se ha cruzado
+		resaltadas = new Set(cusecs);
+		llevarA(unirCajas(cusecs.map((c) => madrid!.porCusec.get(c)!.caja)));
+		origen = { centro: centroDe(cusecs) ?? origen?.centro ?? [0, 0], donde: T.presupuesto.cercanas.a(v.nombre) };
+		if (cusecs.length > 1) mensajeBusqueda = T.buscador.calleVarias(v.nombre, numero(cusecs.length));
+	}
+
+	function vaciarBusqueda() {
+		mensajeBusqueda = null;
+		resaltadas = new Set();
+		origen = null;
 	}
 
 	// «Mi ubicación»: se resuelve en el navegador y solo queda la zona; las coordenadas no se envían ni se guardan
@@ -117,6 +158,8 @@
 		resaltadas = new Set(cusecs);
 		seleccion = cusecs.length === 1 ? cusecs[0]! : null;
 		llevarA(unirCajas(cusecs.flatMap((c) => (madrid!.porCusec.get(c) ? [madrid!.porCusec.get(c)!.caja] : []))));
+		const centro = centroDe(cusecs);
+		origen = centro ? { centro, donde: T.presupuesto.cercanas.aTuUbicacion } : null;
 		if (seleccion) void elegirZona(seleccion);
 	}
 
@@ -131,7 +174,15 @@
 
 	const cambiarCapa = () => {
 		seleccion = null;
+		mensajeBusqueda = null;
 	};
+
+	/** Al elegir una zona de la lista, se abre su ficha y la vista va a ella */
+	function irAZona(cusec: string) {
+		const c = madrid?.porCusec.get(cusec);
+		if (c) llevarA(c.caja);
+		void elegirZona(cusec);
+	}
 </script>
 
 <svelte:head>
@@ -175,11 +226,11 @@
 					<div class="campos">
 						<div class="campo-grupo">
 							<label for="presupuesto">{T.presupuesto.campoPresupuesto}</label>
-							<input id="presupuesto" inputmode="numeric" autocomplete="off" bind:value={presupuestoTexto} placeholder="1.200" />
+							<input id="presupuesto" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" autocomplete="off" bind:value={presupuestoTexto} placeholder="1.200" />
 						</div>
 						<div class="campo-grupo">
 							<label for="metros">{T.presupuesto.campoMetros}</label>
-							<input id="metros" inputmode="numeric" autocomplete="off" bind:value={metrosTexto} placeholder="60" aria-invalid={!!errorMetros} aria-describedby={errorMetros ? 'metros-error' : undefined} />
+							<input id="metros" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" autocomplete="off" bind:value={metrosTexto} placeholder="60" aria-invalid={!!errorMetros} aria-describedby={errorMetros ? 'metros-error' : undefined} />
 						</div>
 					</div>
 					{#if errorMetros}<p class="error" id="metros-error">{errorMetros}</p>{/if}
@@ -193,16 +244,32 @@
 						<strong>{T.presupuesto.ninguna.titulo}</strong>
 						<span>{T.presupuesto.ninguna.texto}</span>
 					{:else if resumen}
-						<strong>{T.presupuesto.resumen(String(resumen.porcentaje))}</strong>
+						<strong>{T.presupuesto.resumen(String(resumen.porcentaje), numero(resumen.llega), numero(resumen.conDato))}</strong>
+						<span class="nota">{T.presupuesto.notaPoblacion}</span>
 					{:else}
 						<span>{T.presupuesto.pideDatos}</span>
 					{/if}
 				</div>
+				{#if cercanas.length && origen}
+					<div class="cercanas">
+						<h2 class="cercanas-titulo">{T.presupuesto.cercanas.titulo(origen.donde)}</h2>
+						<ul>
+							{#each cercanas as c (c.cusec)}
+								<li>
+									<button type="button" onclick={() => irAZona(c.cusec)} aria-current={seleccion === c.cusec}>
+										<span>{c.nombre}</span>
+										<span class="distancia">{distanciaCorta(c.metros)}</span>
+									</button>
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{/if}
 			{/if}
 		</section>
 
 		<section class="busqueda" aria-label="Buscar en el mapa">
-			<BuscadorMapa alElegirZona={buscarZona} alElegirVia={buscarVia} mensaje={mensajeBusqueda} />
+			<BuscadorMapa alElegirZona={buscarZona} alElegirVia={buscarVia} alVaciar={vaciarBusqueda} mensaje={mensajeBusqueda} />
 
 			<div class="ubicacion">
 				<button type="button" class="boton-paja" onclick={miUbicacion} disabled={estado !== 'listo' || ubicacion === 'pidiendo'}>
@@ -217,6 +284,12 @@
 		<section class="mapa" aria-label={T.mapa} aria-busy={estado === 'cargando'}>
 			{#if estado === 'listo' && madrid}
 				<MapaMadrid {madrid} {tonos} {capa} {seleccion} {resaltadas} {enfoque} alElegir={elegirZona} />
+				{#if errorMetros}
+					<div class="mapa-aviso" role="status">
+						<p>{errorMetros}</p>
+						<p class="nota">{T.presupuesto.metrosFueraMapa}</p>
+					</div>
+				{/if}
 			{:else if estado === 'fallo'}
 				<div class="mensaje-mapa">
 					<p>{T.fallo}</p>
@@ -241,7 +314,7 @@
 				{#if hoja.procedencia}<p class="nota">{hoja.procedencia}</p>{/if}
 				<button type="button" class="boton-paja grande" onclick={comprobarAqui}>{T.hoja.comprobar}</button>
 			{:else}
-				<p class="nota">Toca una zona para ver su referencia.</p>
+				<p class="nota">{T.hoja.vacia}</p>
 			{/if}
 		</section>
 
@@ -265,6 +338,7 @@
 					</div>
 				</div>
 				<span class="nota">{calculada.nota} {T.notaSinDato}</span>
+				{#if capa === 'evolucion'}<span class="nota">{T.avisoEvolucion}</span>{/if}
 			{/if}
 		</section>
 	</main>
@@ -507,6 +581,60 @@
 		font: 500 15px/1.45 var(--f-texto);
 	}
 
+	/* Zonas más cercanas donde llega */
+	.cercanas {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+	.cercanas-titulo {
+		font: 700 15px/1.3 var(--f-texto);
+	}
+	.cercanas ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	.cercanas button {
+		width: 100%;
+		min-height: 44px;
+		padding: 0 14px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		border: 1.5px solid var(--tinta);
+		border-radius: var(--radio);
+		background: transparent;
+		color: var(--tinta);
+		font: 600 15px/1.2 var(--f-texto);
+		text-align: left;
+	}
+	.cercanas button[aria-current='true'] {
+		background: var(--paja);
+	}
+	.distancia {
+		flex: none;
+		font-weight: 500;
+		color: var(--grafito);
+	}
+	.mapa {
+		position: relative;
+	}
+	.mapa-aviso {
+		position: absolute;
+		inset: 12px 12px auto;
+		padding: 12px 14px;
+		border-radius: var(--radio);
+		background: var(--blanco);
+		border: 1.5px solid var(--tinta);
+		font: 600 15px/1.4 var(--f-texto);
+		pointer-events: none;
+	}
+
 	/* Leyenda */
 	.leyenda-titulo {
 		font: 600 13px/1.3 var(--f-texto);
@@ -530,7 +658,7 @@
 		background: repeating-linear-gradient(45deg, #dad5ca 0 3px, #857f74 3px 4.5px);
 	}
 	.color.trama {
-		background: repeating-linear-gradient(-45deg, #f6f4ee 0 4px, #1c1b19 4px 5.2px);
+		background: radial-gradient(circle at 50% 50%, #1c1b19 0 1.5px, transparent 1.6px) 0 0 / 7px 7px, #f6f4ee;
 	}
 	.etiqueta-l {
 		font: 600 12px/1.2 var(--f-semi);

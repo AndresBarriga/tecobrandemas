@@ -27,3 +27,19 @@ export function cargarSugeridor(): Promise<Sugeridor> {
 	});
 	return cargado;
 }
+
+let zonasDeVias: Promise<Record<string, string[]>> | null = null;
+
+/** Zonas (cusec) por las que pasa una vía; el fichero se descarga al elegir la primera calle */
+export async function zonasDeVia(nombre: string): Promise<string[]> {
+	zonasDeVias ??= fetch('/data/viales_zonas.json')
+		.then((r) => {
+			if (!r.ok) throw new Error(`viales_zonas: ${r.status}`);
+			return r.json() as Promise<Record<string, string[]>>;
+		})
+		.catch((e) => {
+			zonasDeVias = null;
+			throw e;
+		});
+	return (await zonasDeVias)[nombre] ?? [];
+}

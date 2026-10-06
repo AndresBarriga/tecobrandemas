@@ -176,6 +176,34 @@ export function capaPresupuesto(zonas: ZonaMapa[], presupuesto: number): CapaCal
 	};
 }
 
+export interface ZonaCercana {
+	cusec: string;
+	/** Distancia en metros entre el origen y el centro de la zona */
+	metros: number;
+}
+
+/**
+ * Las `n` zonas más cercanas al origen donde el presupuesto llega a la referencia (dentro o con margen).
+ * `centros` son los centros de las zonas en metros (el mismo sistema que el origen).
+ */
+export function zonasCercanas(
+	zonas: readonly ZonaMapa[], presupuesto: number, origen: readonly [number, number], centros: ReadonlyMap<string, readonly [number, number]>, n = 5
+): ZonaCercana[] {
+	const llega: ZonaCercana[] = [];
+	for (const z of zonas) {
+		const p = posicionPresupuesto(presupuesto, z);
+		const c = centros.get(z.cusec);
+		if (p === null || p === 'debajo' || !c) continue;
+		llega.push({ cusec: z.cusec, metros: Math.hypot(c[0] - origen[0], c[1] - origen[1]) });
+	}
+	return llega.sort((a, b) => a.metros - b.metros || (a.cusec < b.cusec ? -1 : 1)).slice(0, n);
+}
+
+/** 640 → «640 m»; 1.234 → «1,2 km» (por debajo de 1 km, a 10 m) */
+export function distanciaCorta(metros: number): string {
+	return metros < 1000 ? T.presupuesto.cercanas.metros(numero(Math.max(10, Math.round(metros / 10) * 10))) : T.presupuesto.cercanas.km(numero(metros / 1000, 1));
+}
+
 export interface HojaZona {
 	titulo: string;
 	/** «Referencia para 70 m²: de 1.080 a 1.540 € al mes» */

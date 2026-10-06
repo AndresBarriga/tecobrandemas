@@ -687,6 +687,7 @@ export const MAPA_REFERENCIA = {
 	leyendaEvolucion: 'Subida de la mediana registrada 2015-2024',
 	leyendaPresupuesto: 'Tu presupuesto frente a la referencia',
 	notaCortes: (m2: string) => `Cortes calculados para ${m2}\u00A0m²; iguales para toda la ciudad. Las líneas gruesas separan barrios.`,
+	avisoEvolucion: 'Cada zona tiene pocos alquileres: las diferencias entre zonas vecinas pueden ser ruido.',
 	notaEvolucion: 'Sin descontar la inflación. Cortes iguales para toda la ciudad. Las líneas gruesas separan barrios.',
 	sinDato: 'Sin dato',
 	notaSinDato: 'Sin dato: zonas con 20 alquileres registrados o menos, o superficie fuera de 30-150\u00A0m².',
@@ -696,8 +697,9 @@ export const MAPA_REFERENCIA = {
 		lista: 'Sugerencias de barrios y calles',
 		sinResultados: 'No encontramos ese barrio ni esa calle.',
 		sinResultadosTexto: 'Prueba con otro nombre o toca el mapa.',
-		calleEn: (calle: string, barrio: string) => `${calle} está en ${barrio}. Toca una zona para ver su referencia.`,
-		barrio: (barrio: string) => `${barrio}. Toca una zona para ver su referencia.`
+		calleEn: (calle: string, barrio: string) => `${calle} está en ${barrio}.`,
+		calleVarias: (calle: string, n: string) => `${calle} pasa por ${n}\u00A0zonas, marcadas en el mapa.`,
+		barrio: (nombre: string) => `Mostrando ${nombre}.`
 	},
 	ubicacion: {
 		boton: 'Mi ubicación',
@@ -715,9 +717,20 @@ export const MAPA_REFERENCIA = {
 		margen: 'Con margen',
 		nota: 'Por debajo: menos que el mínimo de la referencia. Dentro: entre el mínimo y el máximo. Con margen: más que el máximo.',
 		aviso: 'No son pisos disponibles. La referencia son contratos registrados; lo que se pide hoy puede ser más alto, así que «dentro» es orientativo.',
-		resumen: (porcentaje: string) => `En el ${porcentaje}\u00A0% de las zonas tu presupuesto llega a la referencia.`,
+		resumen: (porcentaje: string, llega: string, conDato: string) =>
+			`En el ${porcentaje}\u00A0% de las zonas con dato (${llega} de ${conDato}) tu presupuesto llega a la referencia.`,
+		notaPoblacion: 'Cada zona tiene una población parecida; por eso el mapa, donde las zonas rurales son enormes, puede parecer distinto al porcentaje.',
+		cercanas: {
+			titulo: (donde: string) => `Las 5 zonas más cercanas ${donde} donde llega tu presupuesto`,
+			aTuUbicacion: 'a tu ubicación',
+			a: (nombre: string) => `a ${nombre}`,
+			zona: (barrio: string) => `Una zona de ${barrio}`,
+			metros: (m: string) => `${m}\u00A0m`,
+			km: (km: string) => `${km}\u00A0km`
+		},
 		pideDatos: 'Escribe lo que puedes pagar al mes y los metros para verlo en el mapa.',
 		metrosFuera: 'Los metros tienen que estar entre 30 y 150.',
+		metrosFueraMapa: 'Con otros metros, el mapa no tiene referencia: la calculamos entre 30 y 150\u00A0m².',
 		ninguna: {
 			titulo: 'Tu presupuesto no llega a la referencia de ninguna zona.',
 			texto: 'Con estos metros, la referencia de todas las zonas es mayor. Prueba con menos metros o con otro presupuesto.'
@@ -740,6 +753,7 @@ export const MAPA_REFERENCIA = {
 		sinDatoZona: 'Esta zona no tiene dato de referencia.',
 		sinDatoTestigos: (n: string) => `Esta zona tiene ${n} alquileres registrados, pocos para dar una referencia.`,
 		sinDatoSuperficie: 'La referencia solo se calcula entre 30 y 150\u00A0m².',
+		vacia: 'Toca una zona para ver su referencia.',
 		comprobar: 'Comprueba un piso aquí'
 	},
 	enlaceTuZona: 'Ver el mapa de Madrid',

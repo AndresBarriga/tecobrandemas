@@ -6,9 +6,11 @@
 	 * Buscador de barrio o calle del mapa. Todo en el navegador: lo que se escribe no se envía. Una calle
 	 * lleva al barrio donde tiene más zonas; un barrio, con sus nombres populares («Malasaña»), a él.
 	 */
-	let { alElegirZona, alElegirVia, mensaje = null }: {
+	let { alElegirZona, alElegirVia, alVaciar, mensaje = null }: {
 		alElegirZona: (z: SugerenciaZona) => void;
 		alElegirVia: (v: SugerenciaVia) => void;
+		/** El campo se ha vaciado: ya no hay búsqueda a la que acompañar */
+		alVaciar: () => void;
 		/** Lo último que se eligió, bajo el campo */
 		mensaje?: string | null;
 	} = $props();
@@ -104,6 +106,7 @@
 			oninput={() => {
 				abierto = true;
 				activo = -1;
+				if (valor.trim() === '') alVaciar();
 			}}
 			onkeydown={alTeclear}
 		/>
