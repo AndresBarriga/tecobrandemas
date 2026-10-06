@@ -14,7 +14,7 @@ Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisi
 ## Para ti (desarrollo)
 En este orden, un PR por punto:
 1. **(Hecho en el PR de `autocompletado`, pendiente de fusionar; falta ampliar los alias) Autocompletado de direcciones y «Moscardó».** «Moscardó» no es una vía de CartoCiudad: es un barrio oficial de Usera. Sin calles que coincidan, buscar también en barrios y distritos (con alias) y ofrecer «Moscardó (barrio · Usera): elige una calle o toca el mapa», que centra el mapa. Normalización, coincidencia por palabras, orden, máximo 8, alias de barrios populares (propongo la lista antes de cargarla) y combobox accesible.
-2. **A5:** migración de `aportaciones` (`firma_mes`, `renta_firma`) y, si el formulario lo pide, su campo; export de la tabla antes de migrar en producción.
+2. **A5 (hecho; PR `aportaciones-firma`):** migración `0002` aplicada en producción (`firma_mes` AAAA-MM y `renta_firma`, nulas) tras exportar la tabla (vacía; copia en `data/raw/backups/`). El servidor y la validación ya aceptan ambos campos (opcionales); **el formulario «¿Cuánto pagas tú?» todavía no los pide**: decidir si se piden (ver `docs/ideas.md`, puntos 1 y 4). `casero_tipo` no se crea hasta que el formulario lo pida.
 3. **Mapa, parte 1:** servir los PMTiles como activo estático para que las peticiones Range no gasten invocaciones del Worker. Hay que bajar de 25 MiB (zoom máximo 14 o una caja más ajustada; quitar capas que no usamos: edificios, puntos de interés). Si no cabe, avisar antes de cambiar de enfoque.
 4. **Mapa, parte 2:** «Ampliar», pin fijo, hoja inferior en vivo, estilo apagado y «Usar mi ubicación» en los tres modos (todo en el navegador).
 5. **Estado de R7 y del resto de la lista anterior** (se entrega como informe).
