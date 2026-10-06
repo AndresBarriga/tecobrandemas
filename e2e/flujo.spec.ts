@@ -22,7 +22,8 @@ test.describe('flujo', () => {
 		await page.locator('#precio').focus();
 		await expect(page.getByText(/Escribe los m².*entre 10 y 500/)).toBeVisible();
 		await page.getByRole('button', { name: 'Comprobar el precio' }).click();
-		await expect(page.getByText(/Escribe la calle y el número/)).toBeVisible();
+		// «Estoy mirando un piso» empieza por «Solo calle»
+		await expect(page.getByText(/Escribe el nombre de la calle/)).toBeVisible();
 	});
 
 	test('solo se piden recursos del propio dominio y no sale ningún precio', async ({ page }) => {

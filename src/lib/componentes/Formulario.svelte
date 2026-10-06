@@ -100,6 +100,9 @@
 			: vivo ? (comprobado ? FORMULARIO_VIVO.comprobarOtro : FORMULARIO_VIVO.comprobar) : comprobado ? FORMULARIO.comprobarOtro : FORMULARIO.comprobar
 	);
 
+	// Cada tecla en la dirección sube este contador: la ubicación quita sus avisos viejos
+	let tecleo = $state(0);
+
 	// Piso compartido con un solo contrato (solo en pantalla)
 	let compartidoAbierto = $state(false);
 	const somos = $derived(interpretarSomos(f.somos));
@@ -162,6 +165,7 @@
 				alQuitar={() => alQuitarUbicacion?.()}
 				alEscribir={() => alEscribirDireccion?.()}
 				alMapa={(c) => alMapaEnBarrio?.(c)}
+				reinicio={tecleo}
 			/>
 		{/if}
 		{#if !f.ubicacionActual}
@@ -182,6 +186,7 @@
 			alElegirVia={() => {}}
 			{alElegirZona}
 			{alCambiarModo}
+			alTeclear={() => tecleo++}
 		/>
 	{:else if mapa}
 		{@render mapa()}
@@ -195,6 +200,7 @@
 			alQuitar={() => alQuitarUbicacion?.()}
 			alEscribir={() => alEscribirDireccion?.()}
 			alMapa={(c) => alMapaEnBarrio?.(c)}
+			reinicio={tecleo}
 		/>
 	{/if}
 

@@ -1,9 +1,10 @@
 <script lang="ts">
+	import AfinarNumero from './AfinarNumero.svelte';
 	import Barra from './Barra.svelte';
 	import Equivalencia from './Equivalencia.svelte';
 	import Icono from './Icono.svelte';
 	import {
-		AVISO_APROXIMADA_TITULO, BOTON_AÑADIR_NUMERO, BOTON_COMPARTIR, BOTON_OTRO_PISO, ENLACE_OFICIAL, REGISTRO, SERVIDO, TARJETA, heroEnVeces,
+		AVISO_APROXIMADA_TITULO, BOTON_COMPARTIR, BOTON_OTRO_PISO, ENLACE_OFICIAL, REGISTRO, SERVIDO, TARJETA, heroEnVeces,
 		type Canal, type Contador, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
@@ -15,7 +16,7 @@
 		mensajeTarjeta = null,
 		alOtro,
 		alNegociar,
-		alAñadirNumero,
+		alAfinar,
 		alCompartir,
 		nativo = false,
 		enlaces = null,
@@ -37,7 +38,7 @@
 		alOtro: () => void;
 		alNegociar: () => void;
 		/** Solo cuando la ubicación es una calle sin número */
-		alAñadirNumero?: () => void;
+		alAfinar?: (numero: string) => Promise<string | null>;
 		alCompartir: () => void;
 		/** Móvil con hoja de compartir: un solo botón. Si no, los canales (escritorio) */
 		nativo?: boolean;
@@ -93,9 +94,7 @@
 					</svg>
 					<p><strong>{AVISO_APROXIMADA_TITULO}</strong> {v.aviso}</p>
 				</div>
-				{#if alAñadirNumero}
-					<button type="button" class="boton boton-contorno" onclick={alAñadirNumero}>{BOTON_AÑADIR_NUMERO}</button>
-				{/if}
+				{#if alAfinar}<AfinarNumero {alAfinar} />{/if}
 			</div>
 		{/if}
 	</div>

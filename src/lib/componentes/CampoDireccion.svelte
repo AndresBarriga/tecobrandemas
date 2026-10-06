@@ -12,7 +12,8 @@
 		ocultarAyuda = false,
 		alElegirVia,
 		alElegirZona,
-		alCambiarModo
+		alCambiarModo,
+		alTeclear: alTecleo
 	}: {
 		valor: string;
 		modo: Modo;
@@ -23,6 +24,8 @@
 		alElegirVia: (texto: string) => void;
 		alElegirZona: (zona: SugerenciaZona) => void;
 		alCambiarModo: (modo: Modo) => void;
+		/** Se ha escrito en el campo (para quitar avisos de la ubicación anterior) */
+		alTeclear?: () => void;
 	} = $props();
 
 	const etiqueta = $derived(modo === 'calle' ? FORMULARIO.etiquetaDireccion.calle : FORMULARIO.etiquetaDireccion.direccion);
@@ -67,6 +70,7 @@
 	}
 
 	function alEscribir() {
+		alTecleo?.();
 		abierto = true;
 		activo = -1;
 	}

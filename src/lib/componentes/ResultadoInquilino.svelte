@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Barra from './Barra.svelte';
 	import type { Snippet } from 'svelte';
+	import AfinarNumero from './AfinarNumero.svelte';
 	import Compartir from './Compartir.svelte';
 	import Icono from './Icono.svelte';
 	import { unaLinea } from '#lib/cliente/ajustar';
@@ -17,6 +18,7 @@
 		alAportar,
 		alMirando,
 		alServido,
+		alAfinar,
 		tarjeta,
 		textos = [],
 		textoElegido = 0,
@@ -36,6 +38,8 @@
 		/** «Comprobar un piso que estás mirando» */
 		alMirando: () => void;
 		alServido?: (si: boolean) => void;
+		/** Calle sin número: añadir el número recalcula el resultado en esta pantalla */
+		alAfinar?: (numero: string) => Promise<string | null>;
 		/** Miniatura de la tarjeta (canvas) que dibuja la página */
 		tarjeta?: Snippet;
 		/** Los tres textos de la tarjeta, de los que la persona elige uno */
@@ -82,7 +86,10 @@
 					<circle cx="10" cy="10" r="8.5" stroke="var(--tinta)" stroke-width="1.5" fill="none" />
 					<path d="M10 9v5M10 6v.5" stroke="var(--tinta)" stroke-width="2" />
 				</svg>
-				<p>{v.aviso}</p>
+				<div class="aviso-cuerpo">
+					<p>{v.aviso}</p>
+					{#if alAfinar}<AfinarNumero {alAfinar} />{/if}
+				</div>
 			</div>
 		{/if}
 	</div>
@@ -256,6 +263,12 @@
 		gap: 10px;
 		align-items: flex-start;
 		font: 400 15px/1.45 var(--f-texto);
+	}
+	.aviso-cuerpo {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
 	}
 	.barra-caja {
 		padding: 32px var(--margen) 0;

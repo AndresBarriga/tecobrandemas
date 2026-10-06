@@ -16,7 +16,7 @@
 	import TuZona from '#lib/componentes/TuZona.svelte';
 	import { type TuZonaCargada, cargarTuZona } from '#lib/cliente/zona';
 	import {
-		DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
+		AFINAR, DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
 		construirTarjeta, construirTarjetaInquilino, textosInquilino, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
 		parecePrecioErroneo,
 		type Pantalla, type PantallaResultado, type SugerenciaZona, type Ubicacion
@@ -68,6 +68,7 @@
 	let aporte = $state<EstadoAporte>('no');
 	let aportadosBarrio = $state<number | null>(null);
 	const esVivo = $derived(f.situacion === 'vivo');
+	const modoPorDefecto = (s: 'mirando' | 'vivo') => (s === 'vivo' ? ('direccion' as const) : ('calle' as const));
 
 	// Habitación: comparación con las aportadas en el barrio (el recuento y, desde 10, la mediana)
 	const habitacionPantalla = $derived(pantalla?.tipo === 'habitacion' ? pantalla : null);
@@ -141,7 +142,12 @@
 		nativo = puedeCompartirNativo();
 		leerOrigenDeLaUrl();
 		// /cuanto-pagas redirige aquí con el selector en «Ya vivo aquí»
-		if (new URLSearchParams(location.search).get('modo') === 'vivo') f.situacion = 'vivo';
+		// /?modo=vivo y /?modo=mirando preseleccionan la modalidad (y su modo de ubicación por defecto)
+		const modalidad = new URLSearchParams(location.search).get('modo');
+		if (modalidad === 'vivo' || modalidad === 'mirando') {
+			f.situacion = modalidad;
+			f.modo = modoPorDefecto(modalidad);
+		}
 		// Enlaces de «Cómo calculamos»: /?motivo=obra_nueva abre esa pantalla «sin dato» (no cuenta como comprobación)
 		const motivo = pantallaSinDatoDeClave(new URLSearchParams(location.search).get('motivo') ?? '');
 		if (motivo) mostrar(motivo, null, false);
@@ -387,13 +393,41 @@
 		errores = { ...errores, mapa: undefined };
 	}
 
-	async function añadirNumero() {
-		f.modo = 'direccion';
-		fase = 'inicio';
-		await tick();
-		const campo = document.getElementById('direccion') as HTMLInputElement | null;
-		campo?.focus();
-		campo?.setSelectionRange(campo.value.length, campo.value.length);
+	/** Sustituye el resultado en pantalla (sin volver al formulario): lo mismo con el portal ya escrito */
+	function reemplazar(p: Pantalla, u: Ubicacion | null) {
+		pantalla = p;
+		ubicacion = u;
+		idTarjeta = p.tipo === 'resultado' ? idDeTarjeta() : null;
+		textoTarjeta = 0;
+		mensajeTarjeta = null;
+		registro = 'no';
+		aporte = 'no';
+		if (activa !== null && historial[activa]) {
+			historial[activa] = { ...historial[activa]!, pantalla: p, formulario: { ...f } };
+			guardarHistorial(historial);
+		}
+	}
+
+	/** «Añade el número para afinar»: calle + número, y se recalcula en la misma pantalla. Devuelve el error, si lo hay. */
+	async function afinar(texto: string): Promise<string | null> {
+		const via = ubicacion?.via;
+		const numero = texto.trim();
+		if (!via) return AFINAR.fallo;
+		if (!/^\d{1,4}\s?[a-zA-Z]?$/.test(numero)) return AFINAR.invalido;
+		const afinada = { ...f, direccion: `${via} ${numero}`, modo: 'direccion' as const };
+		try {
+			const r = await comprobar(afinada, null);
+			if (r.tipo === 'pantalla' && r.pantalla.tipo === 'resultado') {
+				f = afinada;
+				reemplazar(r.pantalla, r.ubicacion);
+				return null;
+			}
+			if (r.tipo === 'no_encontrada' || r.tipo === 'pedir_numero') return AFINAR.noEncontrado(numero, via);
+			if (r.tipo === 'demasiadas') return AFINAR.demasiadas;
+			return AFINAR.fallo;
+		} catch {
+			return AFINAR.fallo;
+		}
 	}
 
 	function elegirHistorial(i: number) {
@@ -411,7 +445,7 @@
 	}
 
 	const filas = $derived(historial.map((e) => filaHistorial(e.pantalla)));
-	const puedeAñadirNumero = $derived(ubicacion?.motivo === 'calle');
+	const puedeAfinar = $derived(ubicacion?.motivo === 'calle' && !!ubicacion.via);
 	const cabecera = $derived(fase === 'negociar' ? 'volver' : hayResultado ? (resultado?.inquilino || habitacionPantalla ? 'editar' : 'otro') : 'madrid');
 </script>
 
@@ -463,9 +497,11 @@
 				buscando={fase === 'buscando'}
 				comprobado={hayResultado}
 				alEmpezar={() => evento(esVivo ? 'vivo_empieza' : 'empieza', { unaVez: true })}
-				alCambiarSituacion={() => {
+				alCambiarSituacion={(s) => {
 					errores = {};
 					problema = null;
+					// Modo por defecto de cada situación (salvo que ya se esté usando el mapa)
+					if (f.modo !== 'mapa') f.modo = modoPorDefecto(s);
 				}}
 				alEnviar={enviar}
 				alSalirDe={salirDe}
@@ -495,8 +531,10 @@
 					contador={aportadosBarrio !== null && aportadosBarrio >= 10 ? aportadosBarrio : null}
 					{aporte}
 					alAportar={aportar}
+					alAfinar={puedeAfinar ? afinar : undefined}
 					alMirando={() => {
 						f.situacion = 'mirando';
+						f.modo = modoPorDefecto('mirando');
 						otroPiso();
 					}}
 					alServido={(si) => evento(si ? 'servido_si' : 'servido_no')}
@@ -525,7 +563,7 @@
 						fase = 'negociar';
 						scrollTo({ top: 0 });
 					}}
-					alAñadirNumero={puedeAñadirNumero ? añadirNumero : undefined}
+					alAfinar={puedeAfinar ? afinar : undefined}
 					alCompartir={compartir}
 					{nativo}
 					{enlaces}

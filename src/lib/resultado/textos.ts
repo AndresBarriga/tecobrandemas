@@ -402,7 +402,16 @@ export const ERRORES = {
 } as const;
 
 export const AVISO_APROXIMADA_TITULO = 'Ubicación aproximada.';
-export const BOTON_AÑADIR_NUMERO = 'Añadir el número del portal';
+export const AFINAR = {
+	etiqueta: 'Añade el número para afinar',
+	placeholder: 'Número del portal',
+	boton: 'Afinar',
+	afinando: 'Afinando…',
+	invalido: 'Escribe solo el número del portal, por ejemplo 14.',
+	noEncontrado: (numero: string, via: string) => `No encontramos el número ${numero} en ${via}. Prueba con otro.`,
+	demasiadas: 'Demasiadas búsquedas. Espera un momento.',
+	fallo: 'No hemos podido afinar el resultado. Inténtalo de nuevo.'
+} as const;
 
 export const SERVIDO = { pregunta: '¿Te ha servido?', si: 'Sí', no: 'No', gracias: 'Gracias por contestar.' } as const;
 
