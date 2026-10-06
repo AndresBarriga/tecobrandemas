@@ -47,6 +47,8 @@ export interface VistaTuZona {
 	lista: { titulo: string; subtitulo: string; aviso: string; filas: FilaZona[]; pie: string } | null;
 	vacia: { titulo: string; texto: string } | null;
 	contexto: string | null;
+	/** Con horquilla: «Tu calle cruza 2 zonas» (todas las zonas afectadas van con contorno grueso) */
+	cruce: string | null;
 	evolucion: Evolucion | null;
 }
 
@@ -56,13 +58,17 @@ export interface EntradaTuZona {
 	origen: Punto;
 	/** Zonas de la ubicación (la tuya) */
 	cusecs: string[];
+	/** Por qué la ubicación es aproximada, si lo es */
+	motivo?: string | null;
+	/** Resultado del inquilino: solo contexto, sin la lista de zonas */
+	inquilino?: boolean;
 	datos: DatosMadrid;
 	centros: Map<string, Punto>;
 }
 
 const km = (m: number) => `${(m / 1000).toFixed(1).replace('.', ',')}${NB}km`;
 
-export function construirTuZona({ anuncio, clase, origen, cusecs, datos, centros }: EntradaTuZona): VistaTuZona {
+export function construirTuZona({ anuncio, clase, origen, cusecs, motivo = null, inquilino = false, datos, centros }: EntradaTuZona): VistaTuZona {
 	const z = zona(anuncio.superficie, origen, cusecs, datos, centros);
 	const pm2 = anuncio.precio / anuncio.superficie;
 	const precioM2 = `${numero(pm2, 1)}${NB}€/m²`;
@@ -116,7 +122,8 @@ export function construirTuZona({ anuncio, clase, origen, cusecs, datos, centros
 		muesca: { x, alineada: x > 62 ? 'derecha' : x < 20 ? 'izquierda' : 'centro' },
 		lista,
 		vacia,
-		contexto: modo === 'contexto' ? TU_ZONA.contexto : null,
+		contexto: modo === 'contexto' ? (inquilino ? TU_ZONA.contextoInquilino : TU_ZONA.contexto) : null,
+		cruce: cusecs.length > 1 ? (motivo === 'calle' ? TU_ZONA.cruce.calle : motivo === 'pin' ? TU_ZONA.cruce.pin : TU_ZONA.cruce.otro)(cusecs.length) : null,
 		evolucion: evolucion(datos, cusecs)
 	};
 }

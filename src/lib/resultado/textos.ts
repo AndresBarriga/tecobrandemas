@@ -615,6 +615,13 @@ export const TU_ZONA = {
 	cargando: 'Cargando el mapa de la zona…',
 	circulo: 'círculo: 1,5 km',
 	tuZona: 'tu zona',
+	tusZonas: 'tus zonas',
+	/** Con horquilla: cuántas zonas afecta y por qué */
+	cruce: {
+		calle: (n: number) => `Tu calle cruza ${n} zonas`,
+		pin: (n: number) => `Tu ubicación toca ${n} zonas`,
+		otro: (n: number) => `Tu dirección puede estar en ${n} zonas`
+	},
 	leyenda: 'Parte alta de la referencia, en €/m² al mes',
 	notaLeyenda: 'Sin dato: zonas con pocos alquileres registrados. Cortes iguales para toda la ciudad. Las líneas gruesas separan barrios.',
 	sinDato: 'Sin dato',
@@ -629,5 +636,6 @@ export const TU_ZONA = {
 		texto: (precioM2: string) => `Este precio (${precioM2}) supera la referencia de todas las zonas a 1,5\u00A0km o menos.`
 	},
 	contexto: 'Tu precio ya está dentro de la referencia, así que aquí solo tienes el contexto: cómo es la referencia en las zonas que te rodean.',
+	contextoInquilino: 'Así es la referencia en las zonas que te rodean. Las zonas con contorno grueso son las que puede ocupar tu vivienda.',
 	fallo: 'No hemos podido cargar el mapa de la zona.'
 } as const;

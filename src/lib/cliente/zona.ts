@@ -50,7 +50,7 @@ export async function cargarTuZona(p: ParametrosZona): Promise<TuZonaCargada | n
 
 	const vista = construirTuZona({
 		anuncio: { precio: p.precio, superficie: p.superficie, obraNueva: false, tipo: 'piso', largaDuracion: true },
-		clase: p.clase, origen, cusecs: p.cusecs, datos, centros
+		clase: p.clase, origen, cusecs: p.cusecs, motivo: p.motivo, inquilino: p.inquilino, datos, centros
 	});
 
 	// Ventana visible, con un margen para que los bordes no se vean cortados

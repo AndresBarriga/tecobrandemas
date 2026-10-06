@@ -552,6 +552,9 @@
 						<canvas bind:this={canvasTarjeta} class="tarjeta-canvas" aria-label="Vista previa de la tarjeta para compartir"></canvas>
 					{/snippet}
 				</ResultadoInquilino>
+				{#if resultado?.zona}
+					<TuZona estado={tuZona.estado} vista={tuZona.datos?.vista} geom={tuZona.datos?.geom} />
+				{/if}
 			{:else if pantalla?.tipo === 'resultado'}
 				<Resultado
 					pantalla={pantalla}
