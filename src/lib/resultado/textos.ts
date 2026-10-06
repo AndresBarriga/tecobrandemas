@@ -214,6 +214,30 @@ export const FORMULARIO_VIVO = {
 	errorRentaFirma: 'Escribe lo que pagabas al mes, o déjalo vacío.'
 } as const;
 
+export const UBICACION_ACTUAL = {
+	mirando: 'Estoy en el piso ahora',
+	vivo: 'Estoy en casa: usar mi ubicación',
+	o: 'O escribe la dirección',
+	privacidad: 'Tu ubicación se usa solo en tu navegador; no se envía ni se guarda.',
+	pidiendo: 'Pidiendo tu ubicación…',
+	activa: (barrio: string, m: number) => `Mi ubicación · ${barrio} (±${m}\u00A0m)`,
+	quitar: 'Quitar mi ubicación',
+	denegado: 'No tenemos permiso para usar tu ubicación. Puedes escribir la dirección o marcarla en el mapa.',
+	tiempo: 'No hemos podido obtener tu ubicación a tiempo. Puedes escribir la dirección o marcarla en el mapa.',
+	sinGps: 'Este navegador no puede darnos tu ubicación. Puedes escribir la dirección o marcarla en el mapa.',
+	fuera: 'Tu ubicación queda fuera del municipio de Madrid. Escribe la dirección o márcala en el mapa.',
+	baja: (m: number) => `La ubicación es poco precisa (±${m}\u00A0m).`,
+	bajaEscribir: 'Escribir la dirección',
+	bajaMapa: 'Colocar en el mapa',
+	bajaIgualmente: 'Usarla igualmente: te daremos una horquilla'
+} as const;
+
+export const MUESTRA = {
+	titulo: 'Así se ve un resultado',
+	ejemplo: 'Ejemplo',
+	nota: 'Es un ejemplo con datos de una zona real. Al comprobar, tu resultado sustituye a este.'
+} as const;
+
 export const TIPO_VIVIENDA = {
 	etiqueta: 'Tipo de vivienda',
 	piso: 'Piso',
@@ -412,11 +436,53 @@ export const TARJETA = {
 	error: 'No hemos podido preparar la tarjeta. Inténtalo de nuevo.'
 } as const;
 
+/** Tarjeta del inquilino (F1e): tres textos por posición; la persona elige uno. Nunca lleva la renta. */
+export const TARJETA_INQUILINO = {
+	textos: {
+		debajo: [
+			'Pago menos que la referencia de mi barrio. Con este mercado, casi es noticia.',
+			'Mi alquiler queda por debajo de lo que registran los contratos de mi zona.',
+			'Por debajo de la referencia. ¿Y el tuyo, dónde queda?'
+		],
+		dentro: ['Lo normal en mi barrio. Lo normal ya es mucho.', 'Pago lo que se paga aquí. Ni más ni menos.', 'Dentro de la referencia de mi zona. ¿Y el tuyo?'],
+		encimab: [
+			'Por encima de la parte alta, por debajo del techo. Depende de cómo sea el piso.',
+			'El techo existe. El mercado ya lo roza.',
+			'Cerca del techo de mi zona. ¿Y el tuyo?'
+		],
+		encima: ['El mercado va más rápido que los datos oficiales.', null, 'No es solo mi caso. Compruébalo con el tuyo.']
+	},
+	/** Segundo texto de «por encima»: lleva el % (o las veces) sobre la parte alta */
+	encimaCifra: (pct: string) => `Pago un ${pct} más que la parte alta de la referencia de mi zona.`,
+	encimaVeces: (veces: string) => `Pago ${veces} la parte alta de la referencia de mi zona.`,
+	/** Línea bajo la cifra */
+	nota: {
+		debajo: 'de la referencia de alquileres de mi zona',
+		dentro: 'de la referencia de alquileres de mi zona',
+		encimab: 'por encima de la parte alta de la referencia de mi zona',
+		encima: 'sobre la parte alta de la referencia de mi zona'
+	},
+	/** Vista previa del enlace: en tercera persona */
+	notaOg: {
+		debajo: (barrio: string) => `de la referencia de su zona en ${barrio}`,
+		dentro: (barrio: string) => `de la referencia de su zona en ${barrio}`,
+		encimab: (barrio: string) => `por encima de la parte alta de la referencia de su zona en ${barrio}`,
+		encima: (barrio: string) => `sobre la parte alta de la referencia de su zona en ${barrio}`
+	},
+	miAlquilerEn: (barrio: string) => `Mi alquiler en ${barrio}`,
+	cta: 'Comprueba tu alquiler',
+	titulo: 'Tu tarjeta para compartir',
+	detalle: 'Sin tu renta ni tu dirección. Solo la posición y el barrio.',
+	elige: 'Elige el texto de la tarjeta'
+} as const;
+
 export const PAGINA_TARJETA = {
 	intro: (barrio: string | null) =>
 		barrio
 			? `Alguien ha comprobado un piso en ${barrio} y te ha enviado su resultado.`
 			: 'Alguien ha comprobado un piso en Madrid y te ha enviado su resultado.',
+	introInquilino: (barrio: string | null) =>
+		`Alguien ha comprobado su alquiler en ${barrio ?? 'Madrid'} y te ha enviado su resultado.`,
 	titular: '¿Y el tuyo?',
 	explicacion:
 		'Esta herramienta compara el precio de un anuncio de alquiler en Madrid con la referencia de alquileres registrados en su zona: datos del Ministerio de Vivienda (SERPAVI 2024) ajustados por el IPC del alquiler.',

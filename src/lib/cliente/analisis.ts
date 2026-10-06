@@ -39,7 +39,7 @@ type Resuelta = { ok: true; ubicacion: Ubicacion } | { ok: false; salida: Compro
 
 /** Dónde está: el punto del mapa o la dirección (geocodificada en nuestro Worker) */
 async function resolver(f: EstadoFormulario, pin: Ubicacion | null | 'fuera'): Promise<Resuelta> {
-	if (f.modo === 'mapa') {
+	if (f.modo === 'mapa' || f.ubicacionActual) {
 		if (pin === 'fuera') return { ok: false, salida: { tipo: 'pantalla', pantalla: pantallaSinDato('fuera_de_madrid'), ubicacion: null } };
 		return { ok: true, ubicacion: pin! };
 	}
@@ -56,6 +56,7 @@ async function resolver(f: EstadoFormulario, pin: Ubicacion | null | 'fuera'): P
 }
 
 function erroresDeUbicacion(f: EstadoFormulario, pin: Ubicacion | null | 'fuera', errores: ErroresCampos): void {
+	if (f.ubicacionActual) return;
 	if (f.modo === 'mapa') {
 		if (pin === null) errores.mapa = 'Marca en el mapa el punto donde está el piso.';
 	} else if (!f.direccion.trim()) {

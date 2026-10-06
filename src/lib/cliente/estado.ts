@@ -26,6 +26,8 @@ export interface EstadoFormulario {
 	habitaciones: number;
 	tamano: TamanoPiso | '';
 	gastos: boolean;
+	/** «Usar mi ubicación»: barrio y precisión (±m, redondeada a 10) de la lectura activa; las coordenadas no se guardan aquí */
+	ubicacionActual: { barrio: string; precisionM: number } | null;
 }
 
 export const estadoInicial = (): EstadoFormulario => ({
@@ -44,5 +46,6 @@ export const estadoInicial = (): EstadoFormulario => ({
 	rentaFirma: '',
 	habitaciones: 3,
 	tamano: '',
-	gastos: true
+	gastos: true,
+	ubicacionActual: null
 });

@@ -136,5 +136,7 @@ export function aInquilino(p: PantallaResultado, a: Anuncio, extra: ExtraInquili
 	};
 
 	// El inquilino no registra el anuncio (R7) ni ve «Tu zona»: aporta con su propio botón
-	return { ...p, registro: null, zona: null, inquilino: info };
+	// Por debajo de la referencia no hay «tercio» al que señalar en la banda
+	const vista = pos === 'debajo' ? { ...p.vista, barra: { ...p.vista.barra, tercio: null } } : p.vista;
+	return { ...p, vista, registro: null, zona: null, inquilino: info };
 }

@@ -1,12 +1,14 @@
 <script lang="ts">
 	import CampoDireccion from './CampoDireccion.svelte';
+	import UbicacionActual from './UbicacionActual.svelte';
 	import type { Snippet } from 'svelte';
 	import Segmentado from './Segmentado.svelte';
 	import {
-		COMPARTIDO, ERRORES, FORMULARIO, FORMULARIO_VIVO, MESES, RESUMEN_FORMULARIO, SITUACION, TIPO_VIVIENDA,
+		COMPARTIDO, ERRORES, FORMULARIO, FORMULARIO_VIVO, MESES, RESUMEN_FORMULARIO, SITUACION, TIPO_VIVIENDA, UBICACION_ACTUAL,
 		interpretarSomos, type ErroresFormulario, type SugerenciaZona
 	} from '#lib/resultado';
 	import type { EstadoFormulario, ModoUbicacion, Situacion, TamanoPiso, TipoVivienda } from '#lib/cliente/estado';
+	import type { LecturaGps } from '#lib/cliente/ubicacion-actual';
 
 	export type Problema =
 		| { tipo: 'no_encontrada'; sugerencias: string[] }
@@ -26,7 +28,11 @@
 		alElegirSugerencia,
 		alElegirZona,
 		alCambiarModo,
-		alCambiarSituacion
+		alCambiarSituacion,
+		alUbicacion,
+		alQuitarUbicacion,
+		alEscribirDireccion,
+		alMapaEnBarrio
 	}: {
 		f: EstadoFormulario;
 		errores: ErroresFormulario & { direccion?: string; mapa?: string; firma?: string; rentaFirma?: string; habitacion?: string };
@@ -45,6 +51,13 @@
 		alElegirZona: (zona: SugerenciaZona) => void;
 		alCambiarModo: (modo: ModoUbicacion) => void;
 		alCambiarSituacion?: (s: Situacion) => void;
+		/** «Usar mi ubicación»: la lectura activa (todo en el navegador) */
+		alUbicacion?: (l: Extract<LecturaGps, { estado: 'lista' }>) => void;
+		alQuitarUbicacion?: () => void;
+		/** Denegado, sin tiempo, fuera de Madrid o «Escribir la dirección»: foco en la dirección */
+		alEscribirDireccion?: () => void;
+		/** «Colocar en el mapa» con precisión baja: modo mapa centrado en el barrio */
+		alMapaEnBarrio?: (codigoBarrio: string) => void;
 	} = $props();
 
 	const NB = ' ';
@@ -141,10 +154,25 @@
 
 	<fieldset class="donde">
 		<legend>{etiquetaDonde}</legend>
-		<Segmentado opciones={modos} valor={f.modo} onchange={alCambiarModo} nombre="modo" etiqueta={etiquetaDonde} />
+		{#if vivo || f.ubicacionActual}
+			<UbicacionActual
+				protagonista={vivo}
+				activa={f.ubicacionActual}
+				alActivar={(l) => alUbicacion?.(l)}
+				alQuitar={() => alQuitarUbicacion?.()}
+				alEscribir={() => alEscribirDireccion?.()}
+				alMapa={(c) => alMapaEnBarrio?.(c)}
+			/>
+		{/if}
+		{#if !f.ubicacionActual}
+			{#if vivo}<p class="o-escribe">{UBICACION_ACTUAL.o}</p>{/if}
+			<Segmentado opciones={modos} valor={f.modo} onchange={alCambiarModo} nombre="modo" etiqueta={etiquetaDonde} />
+		{/if}
 	</fieldset>
 
-	{#if f.modo !== 'mapa'}
+	{#if f.ubicacionActual}
+		<!-- La ubicación activa sustituye a la dirección y al mapa -->
+	{:else if f.modo !== 'mapa'}
 		<CampoDireccion
 			bind:valor={f.direccion}
 			modo={f.modo}
@@ -158,6 +186,16 @@
 	{:else if mapa}
 		{@render mapa()}
 		{#if errores.mapa}<p class="mensaje-error" role="alert">{errores.mapa}</p>{/if}
+	{/if}
+
+	{#if !vivo && !f.ubicacionActual && f.modo !== 'mapa'}
+		<UbicacionActual
+			activa={null}
+			alActivar={(l) => alUbicacion?.(l)}
+			alQuitar={() => alQuitarUbicacion?.()}
+			alEscribir={() => alEscribirDireccion?.()}
+			alMapa={(c) => alMapaEnBarrio?.(c)}
+		/>
 	{/if}
 
 	{#if problema}
@@ -500,6 +538,10 @@
 	}
 	.grupo {
 		gap: 8px;
+	}
+	.o-escribe {
+		font: 400 15px/1.3 var(--f-texto);
+		color: var(--grafito);
 	}
 	.grupo legend {
 		font: 600 14px/1.3 var(--f-texto);

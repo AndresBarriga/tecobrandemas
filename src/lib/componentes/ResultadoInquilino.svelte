@@ -1,7 +1,11 @@
 <script lang="ts">
 	import Barra from './Barra.svelte';
+	import type { Snippet } from 'svelte';
+	import Compartir from './Compartir.svelte';
 	import Icono from './Icono.svelte';
-	import { ENLACE_OFICIAL, INQUILINO, SERVIDO, heroEnVeces, type PantallaResultado } from '#lib/resultado';
+	import {
+		ENLACE_OFICIAL, INQUILINO, SERVIDO, TARJETA_INQUILINO, heroEnVeces, type Canal, type EnlacesCompartir, type PantallaResultado
+	} from '#lib/resultado';
 
 	export type EstadoAporte = 'no' | 'enviando' | 'hecho' | 'error' | 'limite';
 
@@ -11,7 +15,17 @@
 		aporte = 'no',
 		alAportar,
 		alMirando,
-		alServido
+		alServido,
+		tarjeta,
+		textos = [],
+		textoElegido = 0,
+		alElegirTexto,
+		compartiendo = false,
+		nativo = false,
+		enlaces = null,
+		mensajeTarjeta = null,
+		alCompartir,
+		alCompartirPor
 	}: {
 		pantalla: PantallaResultado;
 		/** Alquileres aportados en el barrio: solo llega si es real y de 10 o más */
@@ -21,6 +35,18 @@
 		/** «Comprobar un piso que estás mirando» */
 		alMirando: () => void;
 		alServido?: (si: boolean) => void;
+		/** Miniatura de la tarjeta (canvas) que dibuja la página */
+		tarjeta?: Snippet;
+		/** Los tres textos de la tarjeta, de los que la persona elige uno */
+		textos?: string[];
+		textoElegido?: number;
+		alElegirTexto?: (i: number) => void;
+		compartiendo?: boolean;
+		nativo?: boolean;
+		enlaces?: EnlacesCompartir | null;
+		mensajeTarjeta?: string | null;
+		alCompartir?: () => void;
+		alCompartirPor?: (canal: Canal) => void;
 	} = $props();
 
 	const v = $derived(pantalla.vista);
@@ -116,6 +142,26 @@
 					{aporte === 'error' ? INQUILINO.aportar.error : aporte === 'limite' ? INQUILINO.aportar.limite : INQUILINO.aportar.nota}
 				</p>
 			</section>
+		{/if}
+
+		{#if tarjeta && alCompartir && alCompartirPor}
+			<Compartir
+				{tarjeta}
+				titulo={TARJETA_INQUILINO.titulo}
+				detalle={TARJETA_INQUILINO.detalle}
+				boton={INQUILINO.compartir}
+				principal={aporte === 'hecho'}
+				{compartiendo}
+				{nativo}
+				{enlaces}
+				mensaje={mensajeTarjeta}
+				{textos}
+				elegido={textoElegido}
+				etiquetaTextos={TARJETA_INQUILINO.elige}
+				{alElegirTexto}
+				{alCompartir}
+				{alCompartirPor}
+			/>
 		{/if}
 
 		<div class="acciones">

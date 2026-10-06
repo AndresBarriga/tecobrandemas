@@ -55,8 +55,16 @@ describe('página «Cómo calculamos»', () => {
 		const d = m.datos.parrafos.join(' ');
 		expect(d).toMatch(/barrio, el mes, el precio, los metros/);
 		expect(d).toMatch(/nunca la dirección ni tu IP/);
-		expect(m.datos.guardamos).toEqual(['El barrio', 'El mes', 'El precio', 'Los metros', 'El nivel del resultado']);
+		expect(m.datos.guardamos).toEqual([
+			'El barrio', 'El mes', 'El precio o la renta', 'Los metros', 'El nivel del resultado',
+			'El mes y año de firma, si aportas tu alquiler', 'Habitaciones del piso, tramo de tamaño y gastos, si aportas una habitación'
+		]);
 		expect(m.datos.noGuardamos).toContain('Tu IP');
+		// Aportaciones de inquilinos y habitaciones: qué se guarda, y lo que no
+		expect(d).toMatch(/Aportar mi alquiler/);
+		expect(d).toMatch(/Aportar mi habitación/);
+		expect(d).toMatch(/nunca los metros exactos/);
+		expect(d).toMatch(/las coordenadas no se envían ni se guardan/);
 	});
 
 	it('Lo que no calculamos enlaza a las siete pantallas sin dato', () => {

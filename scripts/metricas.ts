@@ -36,6 +36,7 @@ const m = await calcularMetricas({ prepare: (sql: string) => sentencia(sql) }, d
 const pct = (x: number | null) => (x === null ? 'sin datos' : `${(x * 100).toFixed(1).replace('.', ',')} %`);
 console.log(`Métricas ${local ? '(D1 local)' : '(D1 en producción)'}${m.desde ? ` desde ${m.desde}` : ''}\n`);
 console.log(`Visitas: ${m.embudo.llegadas} · empiezan ${m.embudo.empiezan} · completan ${m.embudo.completan} · comparten ${m.embudo.comparten} · análisis totales ${m.analisisTotales} · tarjetas creadas ${m.tarjetasCreadas}`);
+console.log(`«Ya vivo aquí» (visitas): empiezan ${m.vivo.empiezan} · completan ${m.vivo.completan} · aportan ${m.vivo.aportan} · comparten ${m.vivo.comparten}`);
 console.log(`Canales de compartir (visitas): ${Object.entries(m.canales).map(([c, n]) => `${c} ${n}`).join(' · ')}\n`);
 for (const o of m.objetivos) {
 	const estado = o.cumple === null ? (o.objetivo === null ? 'medir' : 'sin datos') : o.cumple ? 'cumple' : 'NO cumple';

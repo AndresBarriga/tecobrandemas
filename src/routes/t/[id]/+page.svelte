@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import Cabecera from '#lib/componentes/Cabecera.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
-	import { NOMBRE, PAGINA_TARJETA, textosEnlace } from '#lib/resultado';
+	import { NOMBRE, PAGINA_TARJETA, TARJETA_INQUILINO, textosEnlace } from '#lib/resultado';
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
 
 	let { data } = $props();
@@ -38,10 +38,10 @@
 			<canvas bind:this={canvas} width="1080" height="1350" aria-label="Tarjeta compartida: {enlace.descripcion}"></canvas>
 		</div>
 		<div class="texto">
-			<p class="intro">{PAGINA_TARJETA.intro(data.tarjeta.barrio)}</p>
+			<p class="intro">{data.tarjeta.inquilino ? PAGINA_TARJETA.introInquilino(data.tarjeta.barrio) : PAGINA_TARJETA.intro(data.tarjeta.barrio)}</p>
 			<h1>{PAGINA_TARJETA.titular}</h1>
 			<p class="explicacion">{PAGINA_TARJETA.explicacion}</p>
-			<a class="boton" href="/?t={data.id}">{PAGINA_TARJETA.boton}</a>
+			<a class="boton" href={data.tarjeta.inquilino ? `/?t=${data.id}&modo=vivo` : `/?t=${data.id}`}>{data.tarjeta.inquilino ? TARJETA_INQUILINO.cta : PAGINA_TARJETA.boton}</a>
 			<p class="nota">{PAGINA_TARJETA.nota}</p>
 		</div>
 	</main>

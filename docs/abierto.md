@@ -1,6 +1,6 @@
 # Lo que está abierto
 
-Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisión: 06/10/2026 (tras fusionar el PR #10).
+Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisión: 06/10/2026 (F1 implementada, PR pendiente).
 
 ## Decisiones vigentes (06/10/2026)
 1. **Plan:** Cloudflare sigue en el plan gratuito por ahora. Sin dominio propio y con `noindex` hasta el lanzamiento. No se activan URLs de vista previa por rama: se verifica en local y con la prueba de humo tras el despliegue.
@@ -12,12 +12,12 @@ Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisi
 7. **Tarjetas y «Tus datos»:** se dice la verdad de hoy: se guarda la imagen y los textos; no caducan automáticamente; se borran a petición por correo. La caducidad a 12 meses está en `docs/ideas.md`.
 
 ## Para ti (desarrollo)
-En este orden, un PR por punto:
-1. **(Hecho en el PR de `autocompletado`, pendiente de fusionar; falta ampliar los alias) Autocompletado de direcciones y «Moscardó».** «Moscardó» no es una vía de CartoCiudad: es un barrio oficial de Usera. Sin calles que coincidan, buscar también en barrios y distritos (con alias) y ofrecer «Moscardó (barrio · Usera): elige una calle o toca el mapa», que centra el mapa. Normalización, coincidencia por palabras, orden, máximo 8, alias de barrios populares (propongo la lista antes de cargarla) y combobox accesible.
-2. **A5 (hecho; PR `aportaciones-firma`):** migración `0002` aplicada en producción (`firma_mes` AAAA-MM y `renta_firma`, nulas) tras exportar la tabla (vacía; copia en `data/raw/backups/`). El servidor y la validación ya aceptan ambos campos (opcionales); **el formulario «¿Cuánto pagas tú?» todavía no los pide**: decidir si se piden (ver `docs/ideas.md`, puntos 1 y 4). `casero_tipo` no se crea hasta que el formulario lo pida.
-3. **Mapa, parte 1:** servir los PMTiles como activo estático para que las peticiones Range no gasten invocaciones del Worker. Hay que bajar de 25 MiB (zoom máximo 14 o una caja más ajustada; quitar capas que no usamos: edificios, puntos de interés). Si no cabe, avisar antes de cambiar de enfoque.
-4. **Mapa, parte 2:** «Ampliar», pin fijo, hoja inferior en vivo, estilo apagado y «Usar mi ubicación» en los tres modos (todo en el navegador).
-5. **Estado de R7 y del resto de la lista anterior** (se entrega como informe).
+En curso: **Fase 1, «Ya vivo aquí» y habitaciones** (rama `f1-formulario`, PR abierto; ver `docs/progreso.md`). Pendiente antes de fusionar: aplicar la migración `0003_habitaciones` en producción (necesita el visto bueno del usuario) y fusionar antes el PR de A5.
+
+Cola siguiente, en este orden:
+1. **Mapa, parte 1:** servir los PMTiles como activo estático para que las peticiones Range no gasten invocaciones del Worker. Hay que bajar de 25 MiB (zoom máximo 14 o una caja más ajustada; quitar capas que no usamos: edificios, puntos de interés). Si no cabe, avisar antes de cambiar de enfoque.
+2. **Mapa, parte 2:** «Ampliar», pin fijo, hoja inferior en vivo, estilo apagado y zoom. («Usar mi ubicación» ya está hecho en F1, en los tres modos.)
+3. **Estado de R7 y del resto de la lista anterior** (se entrega como informe).
 
 Deuda y detalles:
 - Guardar en la tarjeta el tipo de cifra (% o «veces») en vez de deducirlo del texto (`heroEnVeces`).
@@ -25,6 +25,9 @@ Deuda y detalles:
 - El estado «cargando» de «Tu zona» no tiene prueba propia.
 - El mensaje del 429 dice «espera un momento», pero el límite es diario (200 búsquedas por IP y día); y «Solo la calle» también usa el geocodificador. Solo el mapa sirve como salida real mientras dure el límite.
 - R2 `a-su-precio-tarjetas` sigue marcando 10 objetos (671 kB) tras borrar las 7 imágenes de prueba y quedar 1 tarjeta (`pruebahumo`): puede ser retraso del contador o imágenes sueltas; wrangler no lista objetos.
+- «Cómo calculamos»: la fila de la muestra usa «Fuente del Berro (Salamanca)» fijo, pero los datos dan «Goya» para esa sección (la muestra de la portada ya usa el barrio real). Unificar.
+- «Cómo calculamos» del paquete F1 difiere de `docs/design` (fila del INE con «Serie: [SERIE]» y línea de validación BORRADOR): no aplicado, a la espera del usuario.
+- F1, diferencias con el diseño a revisar: en «Habitación» no se piden fecha de firma ni renta al firmar (la tabla de habitaciones guarda solo el mes del registro); «Aportar» con menos de 10 no enseña el número que falta (solo la tarjeta de habitación enseña el recuento, como pidió el usuario); la portada no enseña el contador de ejemplo «12.480».
 
 ### Alias de barrios
 Cargados (06/10): los 3 pedidos más los «seguros» y los «ambiguos» de la lista propuesta (El Rastro, Conde Duque, Tribunal, Huertas, Barrio de las Letras, Ópera, Bernabéu, Las Tablas, Sanchinarro, Valdebebas, La Latina, Vallecas, Barrio de Salamanca). Sin cargar, por dudosos: Montecarmelo, Nuevos Ministerios, Plaza de Castilla, Tirso de Molina y Gran Vía (confirmar a qué barrio oficial pertenecen). Se editan en `src/lib/resultado/alias.ts`.
@@ -37,11 +40,13 @@ Cargados (06/10): los 3 pedidos más los «seguros» y los «ambiguos» de la li
 - **Previews por rama de Cloudflare:** decidido no activarlas por ahora.
 - **`noindex: false`** cuando decidas lanzar (`config/indexacion.json`).
 - **R2:** mirar en el panel (bucket `a-su-precio-tarjetas`) si hay imágenes sueltas; debería haber una (`og/pruebahumo.jpg`).
+- **Aplicar la migración `0003_habitaciones` en producción** (tabla nueva; hay que aprobarlo) antes de fusionar F1.
+- **Probar en un móvil real:** «Usar mi ubicación» (permiso, precisión, fuera de Madrid), la hoja de compartir con la tarjeta del inquilino y los nuevos formularios a 360 px.
 - **Ideas en discusión:** `docs/ideas.md` (necesitan tus decisiones y diseño).
 
 ## Antes del lanzamiento
 - `noindex: false` y purga de los datos de prueba (`docs/operacion.md`).
-- Probar a mano la ruta de escritura (compartir una tarjeta de verdad, `POST /api/tarjeta`, registro de análisis y aportaciones), porque la prueba de humo es de solo lectura.
+- Probar a mano la ruta de escritura (compartir una tarjeta de verdad, `POST /api/tarjeta`, registro de análisis, «Aportar mi alquiler» y «Aportar mi habitación»), porque la prueba de humo es de solo lectura.
 - **Las peticiones Range del mapa cuentan contra las 100.000 peticiones al día del Worker** (se resuelve con el punto 3 de «Para ti» si los PMTiles pasan a activo estático; comprobarlo).
 - **Reimportar el callejero agota las escrituras de D1** (100.000 filas al día en el plan gratuito): hacerlo en tandas o con plan de pago.
 - Valorar el plan de pago de Workers.
