@@ -12,7 +12,7 @@
 		/** Con enlace en lugar de botón: «Volver» a otra página */
 		volverHref?: string;
 		/** Página actual, para marcarla en la navegación de escritorio */
-		actual?: 'comprobar' | 'como';
+		actual?: 'comprobar' | 'mapa' | 'como';
 	} = $props();
 </script>
 
@@ -29,6 +29,7 @@
 	{/if}
 	<nav class="nav" class:en-movil={derecha === 'madrid' && !volverHref}>
 		<a href="/" aria-current={actual === 'comprobar' ? 'page' : undefined}>Comprobar</a>
+		<a href="/mapa" aria-current={actual === 'mapa' ? 'page' : undefined}>{NAVEGACION.mapa}</a>
 		<a href="/como-calculamos" aria-current={actual === 'como' ? 'page' : undefined}>Cómo calculamos</a>
 	</nav>
 </header>
@@ -78,6 +79,17 @@
 		text-decoration-color: var(--paja);
 		text-decoration-thickness: 3px;
 		text-underline-offset: 6px;
+	}
+	/* Con tres enlaces no caben junto al logotipo en un móvil estrecho: el menú pasa a una segunda fila */
+	@media (max-width: 479px) {
+		header {
+			flex-wrap: wrap;
+			padding-bottom: 0;
+		}
+		.nav.en-movil {
+			width: 100%;
+			gap: 20px;
+		}
 	}
 	@media (min-width: 1024px) {
 		.nav {

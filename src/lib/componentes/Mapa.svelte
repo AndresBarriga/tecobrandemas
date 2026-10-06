@@ -2,11 +2,16 @@
 	import { onMount } from 'svelte';
 	import { MAPA, type Ubicacion } from '#lib/resultado';
 	import type { BaseMapa } from '#lib/cliente/mapa-base';
-	import { type DatosMapa, cargarMapa, metrosAPunto, ubicacionDelPunto } from '#lib/cliente/mapa';
+	import { type DatosMapa, type Punto, cargarMapa, metrosAPunto, puntoAMetros, ubicacionDelPunto } from '#lib/cliente/mapa';
 	import { cargarDatos } from '#lib/cliente/datos';
 
 	/** Recibe la ubicación del punto marcado, o null si cae fuera de Madrid */
-	let { alMarcar, enfocar = null }: { alMarcar: (u: Ubicacion | null) => void; enfocar?: Enfoque | null } = $props();
+	let { alMarcar, enfocar = null, puntoInicial = null }: {
+		alMarcar: (u: Ubicacion | null) => void;
+		enfocar?: Enfoque | null;
+		/** Punto ya elegido en otra página (/mapa → «Comprueba un piso aquí»): se marca al cargar */
+		puntoInicial?: Punto | null;
+	} = $props();
 
 	/** Barrio o distrito (elegido en el autocompletado) sobre el que se centra el mapa */
 	interface Enfoque {
@@ -133,6 +138,20 @@
 	$effect(() => {
 		const e = enfocar;
 		if (listo && e) void centrarEn(e);
+	});
+
+	let inicialColocado = false;
+	$effect(() => {
+		const p = puntoInicial;
+		if (!listo || !p || inicialColocado || !datos) return;
+		inicialColocado = true;
+		const [x, y] = puntoAMetros(p);
+		const u = ubicacionDelPunto(datos, p);
+		punto = [x, y];
+		fuera = u === null;
+		hayPunto = u !== null;
+		alMarcar(u);
+		pedirDibujo();
 	});
 
 	function zoom(factor: number, px = ancho() / 2, py = alto() / 2) {

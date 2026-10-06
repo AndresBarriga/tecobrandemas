@@ -22,7 +22,7 @@ export interface TuZonaCargada {
 let lineas: Promise<[number, number][][]> | null = null;
 
 /** Líneas entre barrios: las aristas que separan dos zonas de barrios distintos (una sola vez por visita) */
-function lineasEntreBarrios(mapa: DatosMapa, datos: DatosMadrid): Promise<[number, number][][]> {
+export function lineasEntreBarrios(mapa: DatosMapa, datos: DatosMadrid): Promise<[number, number][][]> {
 	lineas ??= Promise.resolve().then(() => {
 		const barrio = (g: GeometryObject) => datos.secciones[(g.properties as { cusec: string } | undefined)?.cusec ?? '']?.barrio;
 		const capa = mapa.topo.objects.secciones as GeometryCollection;

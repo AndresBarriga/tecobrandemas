@@ -23,6 +23,8 @@
 	} from '#lib/resultado';
 	import { type ErroresCampos, comprobar, validarCampo } from '#lib/cliente/analisis';
 	import { precargarDatos } from '#lib/cliente/datos';
+	import type { Punto } from '#lib/cliente/mapa';
+	import { tomarPrellenado } from '#lib/cliente/prellenado';
 	import { type EstadoFormulario, type ModoUbicacion, estadoInicial } from '#lib/cliente/estado';
 	import { type Entrada, guardarHistorial, leerHistorial } from '#lib/cliente/historial';
 	import { enviarAportacion, enviarHabitacion, pedirComparacion } from '#lib/cliente/aportacion';
@@ -32,7 +34,7 @@
 	} from '#lib/cliente/compartir';
 	import { contarCompletado, evento, leerOrigenDeLaUrl, recuentos, tarjetaOrigen } from '#lib/cliente/eventos';
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
-	import { TARJETA } from '#lib/resultado';
+	import { MAPA_REFERENCIA, TARJETA } from '#lib/resultado';
 
 	type Fase = 'inicio' | 'buscando' | 'confirmar' | 'resultado' | 'negociar' | 'sin_conexion';
 
@@ -149,6 +151,13 @@
 			f.modo = modoPorDefecto(modalidad);
 		}
 		// Enlaces de «Cómo calculamos»: /?motivo=obra_nueva abre esa pantalla «sin dato» (no cuenta como comprobación)
+		// /mapa → «Comprueba un piso aquí»: el mapa de la portada, centrado en el barrio y con la zona marcada
+		const prellenado = tomarPrellenado();
+		if (prellenado) {
+			f.modo = 'mapa';
+			enfoqueMapa = { clase: 'barrio', codigo: prellenado.barrio, vez: ++vezMapa };
+			puntoInicial = prellenado.punto;
+		}
 		const motivo = pantallaSinDatoDeClave(new URLSearchParams(location.search).get('motivo') ?? '');
 		if (motivo) mostrar(motivo, null, false);
 		evento('llegada', { unaVez: true });
@@ -357,6 +366,7 @@
 	// Barrio o distrito elegido en el autocompletado: se pasa al modo mapa, centrado en él
 	let enfoqueMapa = $state<{ clase: 'barrio' | 'distrito'; codigo: string; vez: number } | null>(null);
 	let vezMapa = 0;
+	let puntoInicial = $state<Punto | null>(null);
 	// «Usar mi ubicación»: el punto (zonas) vive solo aquí, en memoria; nunca sale del navegador
 	let pinGps = $state<Ubicacion | null>(null);
 	function usarUbicacion(l: { ubicacion: Ubicacion; barrio: { nombre: string }; precisionM: number }) {
@@ -469,6 +479,7 @@
 				<span class="subrayado">{TITULAR_INICIO[1]}</span>
 			</h1>
 			<p class="subtitular">{SUBTITULAR_INICIO}</p>
+			{#if !hayResultado}<a class="enlace enlace-mapa" href="/mapa">{MAPA_REFERENCIA.enlacePortada}</a>{/if}
 			{#if contadorHome}
 				<p class="contador">
 					{#if contadorHome.numero}<span class="contador-num">{contadorHome.numero}</span>{/if}
@@ -513,7 +524,7 @@
 				alMapaEnBarrio={colocarEnElMapa}
 				alCambiarModo={cambiarModo}
 			>
-				{#snippet mapa()}<Mapa alMarcar={marcarPunto} enfocar={enfoqueMapa} />{/snippet}
+				{#snippet mapa()}<Mapa alMarcar={marcarPunto} enfocar={enfoqueMapa} {puntoInicial} />{/snippet}
 			</Formulario>
 			<div class="historial"><HistorialSesion {filas} {activa} alElegir={elegirHistorial} /></div>
 		</aside>
@@ -645,6 +656,9 @@
 	.subtitular {
 		font: 400 17px/1.5 var(--f-texto);
 		text-wrap: pretty;
+	}
+	.enlace-mapa {
+		align-self: flex-start;
 	}
 	.contador {
 		display: flex;

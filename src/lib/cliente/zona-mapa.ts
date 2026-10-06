@@ -77,10 +77,12 @@ export interface EntradaNombres {
 	/** Cuerpo del texto en px (11,5 en móvil, 13 en escritorio; nunca menos de 11) */
 	cuerpo: number;
 	medir: (texto: string) => number;
+	/** Con false, un nombre que no cabe en su sitio se omite en lugar de moverse (mapa de toda la ciudad) */
+	desplazar?: boolean;
 }
 
 /** Cada nombre, en el centro de su barrio y solo si cabe; si no, desplazado en vertical; y si aun así no, se omite */
-export function colocarNombres({ candidatos, obstaculos, w, h, cuerpo, medir }: EntradaNombres) {
+export function colocarNombres({ candidatos, obstaculos, w, h, cuerpo, medir, desplazar = true }: EntradaNombres) {
 	const salida: { texto: string; x: number; y: number; cuerpo: number }[] = [];
 	const ocupado = [...obstaculos];
 	const alto = cuerpo + 6;
@@ -88,7 +90,7 @@ export function colocarNombres({ candidatos, obstaculos, w, h, cuerpo, medir }: 
 		const ancho = medir(c.texto) + 6;
 		const x = Math.min(Math.max(c.x, ancho / 2 + 4), w - ancho / 2 - 4);
 		const y = Math.min(Math.max(c.y, alto / 2 + 4), h - alto / 2 - 4);
-		for (const dy of [0, -alto, alto, -2 * alto, 2 * alto]) {
+		for (const dy of desplazar ? [0, -alto, alto, -2 * alto, 2 * alto] : [0]) {
 			const caja: Caja = [x - ancho / 2, y + dy - alto / 2, x + ancho / 2, y + dy + alto / 2];
 			if (caja[1] < 4 || caja[3] > h - 4 || ocupado.some((o) => choca(o, caja))) continue;
 			ocupado.push(caja);

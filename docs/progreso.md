@@ -242,3 +242,16 @@ Diseño en `docs/design/design-f1/` (README sección F1, `F1 Ya vivo aqui.dc.htm
 - **B, formulario (#15):** «Solo calle» por defecto al mirar y «Dirección» al vivir; el aviso «fuera del municipio» desaparece al escribir (era el estado de error de «Usar mi ubicación», que no se limpiaba); `?modo=vivo` y `?modo=mirando`; «Añade el número para afinar» recalcula en la misma pantalla.
 - **C, «Tu zona» (#16):** con horquilla se dibujan todas las zonas afectadas con contorno grueso y «Tu calle cruza N zonas» (en anuncios ya se dibujaban sin decir cuántas; en el inquilino no salía el mapa).
 - **D, habitaciones (#17):** «La habitación» al mirar con la oferta «¿Vives en una habitación? Aporta la tuya»; texto oficial de habitaciones en «Lo que no calculamos» y «Ver por qué» («no damos cifra oficial»); «Suma las habitaciones del piso» (en el navegador, sin guardar nada); decisión en `docs/ideas.md` de no invertir más en la comparación entre habitaciones ni en la estimación por medianas.
+
+## A2 · Página `/mapa` (07/10/2026, rama `a2-mapa`)
+- **Qué es:** Madrid entera por zonas, siempre disponible y sin rellenar nada. Menú «Comprobar · Mapa · Cómo calculamos», enlaces desde la portada y desde «Tu zona». Mismo lenguaje visual que «Tu zona» (Paja, gris rayado, filetes gruesos entre barrios, nombres en Tinta con halo, 11 px); sin mapa base, solo las zonas. Móvil: mapa a todo el ancho y la hoja debajo; escritorio: mapa y panel a la derecha.
+- **Capas** (`src/lib/resultado/mapa.ts`, puro; todo se calcula en el navegador con el motor y el factor IPC):
+  - **Referencia:** parte alta en €/m² para 40, 55, 70 (por defecto), 90 o 110 m². Cinco quintiles de las zonas con dato para esa superficie, iguales para toda la ciudad y recalculados al cambiar; la leyenda muestra los valores. Sin dato: 20 testigos o menos, sin datos de la zona o superficie fuera de 30-150 m².
+  - **Mi presupuesto:** compara con el **rango completo** de la superficie elegida: por debajo (< R_inf), dentro (R_inf a R_sup) y con margen (> R_sup); «llega a la referencia» = dentro o con margen. Escala en grises (trama, Piedra, Tinta). Aviso fijo de que no son pisos disponibles; nunca «encaja».
+  - **Evolución 2015-2024:** subida de la mediana registrada, con la regla de testigos de «Tu zona» y «Sin descontar la inflación». Escala Acero provisional, pendiente de visto bueno.
+- **Hoja de zona:** «Una zona de [barrio]», referencia para la superficie (de X a Y € al mes), parte alta, procedencia (N alquileres · IRPF 2024… · ajustado por el IPC hasta [mes]) y «Comprueba un piso aquí».
+- **«Comprueba un piso aquí»:** la zona viaja en memoria (`cliente/prellenado.ts`), no en la URL: la portada abre «En el mapa», centrada en el barrio y con el punto de la zona marcado.
+- **Buscador y ubicación:** barrio, distrito o calle con los alias de barrios (todo en el navegador; la calle lleva a su barrio). «Mi ubicación» reutiliza `ubicarme()`: se resuelve en el navegador y no se envían ni guardan las coordenadas.
+- **Cabecera:** con tres enlaces, en móvil de menos de 480 px el menú pasa a una segunda fila (en una sola no cabía en 360 px).
+- **«Cómo calculamos»:** sección nueva «El mapa» (qué muestra y qué no).
+- Sin tests nuevos ni capturas, según las decisiones vigentes; se ajustó el test de formato (espacio duro antes de «m²») en los textos nuevos.

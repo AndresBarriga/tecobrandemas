@@ -555,7 +555,7 @@ export const CONTADOR_POCOS = 'pisos comprobados. Esto acaba de empezar y el tuy
 export const CONTADOR_MUCHOS = 'pisos comprobados en Madrid. No eres el único que se lo pregunta.';
 export const CONTADOR_BARRIO = 'personas han comprobado pisos en este barrio.';
 
-export const NAVEGACION = { inicio: 'Inicio', otroPiso: 'Otro piso', madrid: 'Madrid' } as const;
+export const NAVEGACION = { inicio: 'Inicio', otroPiso: 'Otro piso', madrid: 'Madrid', mapa: 'Mapa' } as const;
 
 /** Frases de la tarjeta compartible (más cortas que las de la pantalla) */
 export const FRASE_TARJETA = {
@@ -669,4 +669,79 @@ export const TU_ZONA = {
 	contexto: 'Tu precio ya está dentro de la referencia, así que aquí solo tienes el contexto: cómo es la referencia en las zonas que te rodean.',
 	contextoInquilino: 'Así es la referencia en las zonas que te rodean. Las zonas con contorno grueso son las que puede ocupar tu vivienda.',
 	fallo: 'No hemos podido cargar el mapa de la zona.'
+} as const;
+
+/** Página /mapa: Madrid entera por zonas. Tono neutral: nada ordena barrios en mejores o peores */
+export const MAPA_REFERENCIA = {
+	titulo: 'Mapa',
+	intro: 'Madrid por zonas, coloreada por la parte alta de la referencia en €/m² al mes.',
+	introPresupuesto: 'Madrid por zonas, según cómo queda tu presupuesto frente a la referencia de cada una.',
+	introEvolucion: 'Madrid por zonas, según lo que ha subido la renta registrada entre 2015 y 2024.',
+	mapa: 'Mapa de Madrid por zonas',
+	cargando: 'Cargando el mapa de Madrid…',
+	fallo: 'No hemos podido cargar el mapa. Prueba de nuevo en un momento.',
+	reintentar: 'Reintentar',
+	capas: { etiqueta: 'Qué mostrar', referencia: 'Referencia', presupuesto: 'Mi presupuesto', evolucion: 'Evolución 2015-2024' },
+	superficie: { etiqueta: 'Superficie', unidad: 'm²' },
+	leyenda: 'Parte alta de la referencia, en €/m² al mes',
+	leyendaEvolucion: 'Subida de la mediana registrada 2015-2024',
+	leyendaPresupuesto: 'Tu presupuesto frente a la referencia',
+	notaCortes: (m2: string) => `Cortes calculados para ${m2}\u00A0m²; iguales para toda la ciudad. Las líneas gruesas separan barrios.`,
+	notaEvolucion: 'Sin descontar la inflación. Cortes iguales para toda la ciudad. Las líneas gruesas separan barrios.',
+	sinDato: 'Sin dato',
+	notaSinDato: 'Sin dato: zonas con 20 alquileres registrados o menos, o superficie fuera de 30-150\u00A0m².',
+	buscador: {
+		etiqueta: 'Barrio o calle',
+		placeholder: 'Barrio o calle (por ejemplo, Malasaña)',
+		lista: 'Sugerencias de barrios y calles',
+		sinResultados: 'No encontramos ese barrio ni esa calle.',
+		sinResultadosTexto: 'Prueba con otro nombre o toca el mapa.',
+		calleEn: (calle: string, barrio: string) => `${calle} está en ${barrio}. Toca una zona para ver su referencia.`,
+		barrio: (barrio: string) => `${barrio}. Toca una zona para ver su referencia.`
+	},
+	ubicacion: {
+		boton: 'Mi ubicación',
+		buscando: 'Buscando tu ubicación…',
+		nota: 'Se usa en tu navegador; no enviamos tus coordenadas.',
+		denegada: 'No hemos podido usar tu ubicación. Puedes buscar un barrio o una calle.',
+		fuera: 'Tu ubicación está fuera de Madrid.'
+	},
+	presupuesto: {
+		titulo: 'Mi presupuesto',
+		campoPresupuesto: 'Lo que puedes pagar al mes (€)',
+		campoMetros: 'Metros (m²)',
+		debajo: 'Por debajo',
+		dentro: 'Dentro',
+		margen: 'Con margen',
+		nota: 'Por debajo: menos que el mínimo de la referencia. Dentro: entre el mínimo y el máximo. Con margen: más que el máximo.',
+		aviso: 'No son pisos disponibles. La referencia son contratos registrados; lo que se pide hoy puede ser más alto, así que «dentro» es orientativo.',
+		resumen: (porcentaje: string) => `En el ${porcentaje}\u00A0% de las zonas tu presupuesto llega a la referencia.`,
+		pideDatos: 'Escribe lo que puedes pagar al mes y los metros para verlo en el mapa.',
+		metrosFuera: 'Los metros tienen que estar entre 30 y 150.',
+		ninguna: {
+			titulo: 'Tu presupuesto no llega a la referencia de ninguna zona.',
+			texto: 'Con estos metros, la referencia de todas las zonas es mayor. Prueba con menos metros o con otro presupuesto.'
+		}
+	},
+	hoja: {
+		cerrar: 'Cerrar',
+		zonaDe: 'Una zona de',
+		referencia: (m2: string, inf: string, sup: string) => `Referencia para ${m2}: de ${inf} a ${sup} al mes`,
+		parteAlta: (m2: string) => `Parte alta: ${m2}\u00A0€/m² al mes`,
+		procedencia: (n: string, mes: string) =>
+			`${n} alquileres registrados · IRPF 2024, propietarios personas físicas, contratos vigentes de distintas fechas · ajustado por el IPC hasta ${mes}`,
+		presupuesto: {
+			debajo: (e: string) => `Tu presupuesto (${e} al mes) queda por debajo del mínimo de la referencia.`,
+			dentro: (e: string) => `Tu presupuesto (${e} al mes) queda dentro de la referencia.`,
+			margen: (e: string) => `Tu presupuesto (${e} al mes) queda por encima del máximo de la referencia.`
+		},
+		evolucion: (antes: string, despues: string, variacion: string) =>
+			`Mediana registrada: de ${antes}\u00A0€/m² en 2015 a ${despues}\u00A0€/m² en 2024 (${variacion}). Sin descontar la inflación.`,
+		sinDatoZona: 'Esta zona no tiene dato de referencia.',
+		sinDatoTestigos: (n: string) => `Esta zona tiene ${n} alquileres registrados, pocos para dar una referencia.`,
+		sinDatoSuperficie: 'La referencia solo se calcula entre 30 y 150\u00A0m².',
+		comprobar: 'Comprueba un piso aquí'
+	},
+	enlaceTuZona: 'Ver el mapa de Madrid',
+	enlacePortada: 'Mapa de Madrid'
 } as const;

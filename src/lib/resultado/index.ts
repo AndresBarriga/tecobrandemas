@@ -22,6 +22,7 @@ export * from './suma-habitaciones';
 export * from './ratio';
 export * from './vista';
 export * from './tuzona';
+export * from './mapa';
 export * from './contadores';
 export * from './negociar';
 export * from './historial';
