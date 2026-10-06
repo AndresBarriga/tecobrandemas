@@ -261,3 +261,9 @@ Diseño en `docs/design/design-f1/` (README sección F1, `F1 Ya vivo aqui.dc.htm
   - *Rendimiento:* se probó el mapa en canvas y era peor que el SVG (cambiar la superficie con la CPU limitada ×6: 1,2 s frente a 0,19 s), así que sigue en SVG. Medido en Chromium de escritorio con la CPU limitada, no en un Android real.
 - **«Cómo calculamos»:** sección nueva «El mapa» (qué muestra y qué no).
 - Sin tests nuevos ni capturas, según las decisiones vigentes; se ajustó el test de formato (espacio duro antes de «m²») en los textos nuevos.
+
+## A2 · Tarjeta ampliable (07/10/2026, rama `a2-tarjeta-ampliable`)
+- **Qué es:** «Ver en grande» (y la propia miniatura) abre la tarjeta para compartir en un `<dialog>` modal (`TarjetaAmpliable.svelte`), en la tarjeta de los anuncios y en la del inquilino. Foco dentro, Esc o «Cerrar» o clic fuera cierran, el foco vuelve al botón, la página queda inerte y sin scroll. Es la imagen del mismo canvas que se comparte; su descripción (el `aria-label` del canvas) lleva el titular y el texto de la tarjeta, sin precio ni dirección.
+- **Textos quitados** de la tarjeta del inquilino «por encima»: «El mercado va más rápido que los datos oficiales.» y «No es solo mi caso. Compruébalo con el tuyo.». Quedan dos opciones (la cifra y «¿Y tú?…»); un índice de texto que no exista cae en el primero. Las tarjetas ya compartidas conservan su texto guardado.
+- Sin tests ni capturas nuevos (decisiones vigentes); comprobado a mano con teclado, Esc, clic fuera, foco de vuelta y axe, a 360, 390 y 1280 px.
+

@@ -468,6 +468,9 @@ export const NEGOCIAR = {
 
 export const TARJETA = {
 	titulo: 'Tu tarjeta para compartir',
+	ampliar: 'Ver en grande',
+	ampliadaTitulo: 'Tu tarjeta, en grande',
+	cerrar: 'Cerrar',
 	detalle: 'Sin dirección ni precio exacto. Solo el barrio, la cifra y la fuente.',
 	pie: 'Estimación independiente. Origen de los datos: Ministerio de Vivienda y Agenda Urbana. Elaboración propia con datos extraídos del sitio web del INE: www.ine.es',
 	generando: 'Preparando la tarjeta…',
@@ -480,7 +483,7 @@ export const TARJETA = {
 	error: 'No hemos podido preparar la tarjeta. Inténtalo de nuevo.'
 } as const;
 
-/** Tarjeta del inquilino (F1e): tres textos por posición; la persona elige uno. Nunca lleva la renta. */
+/** Tarjeta del inquilino (F1e): tres o cuatro textos por posición (dos en «por encima»); la persona elige uno. Nunca lleva la renta. */
 export const TARJETA_INQUILINO = {
 	// El primero de cada posición es el factual y el que sale elegido por defecto; el último, el mismo en todas
 	textos: {
@@ -503,7 +506,7 @@ export const TARJETA_INQUILINO = {
 			'¿Y tú? Compruébalo con el tuyo.'
 		],
 		// El primero (null) se escribe con el % o las veces sobre la parte alta
-		encima: [null, 'El mercado va más rápido que los datos oficiales.', 'No es solo mi caso. Compruébalo con el tuyo.', '¿Y tú? Compruébalo con el tuyo.']
+		encima: [null, '¿Y tú? Compruébalo con el tuyo.']
 	},
 	/** Texto factual de «por encima»: el % o las veces sobre la parte alta; con horquilla, «al menos» (el ratio menor) */
 	encimaCifra: (pct: string, alMenos = false) => `Pago ${alMenos ? 'al menos ' : ''}un ${pct} más que la parte alta de la referencia de mi zona.`,

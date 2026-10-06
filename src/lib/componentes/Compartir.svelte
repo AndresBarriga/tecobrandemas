@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import TarjetaAmpliable from './TarjetaAmpliable.svelte';
 	import { TARJETA, type Canal, type EnlacesCompartir } from '#lib/resultado';
 
 	let {
@@ -56,13 +57,7 @@
 		</fieldset>
 	{/if}
 
-	<div class="tarjeta">
-		<div class="miniatura">{@render tarjeta()}</div>
-		<div class="tarjeta-texto">
-			<span class="tarjeta-titulo">{titulo}</span>
-			<span class="tarjeta-detalle">{detalle}</span>
-		</div>
-	</div>
+	<TarjetaAmpliable {tarjeta} {titulo} {detalle} />
 
 	{#if nativo}
 		<button type="button" class={clase} onclick={alCompartir} disabled={compartiendo}>{compartiendo ? TARJETA.generando : boton}</button>
@@ -122,35 +117,6 @@
 	.texto:focus-within {
 		outline: 2px solid var(--tinta);
 		outline-offset: 3px;
-	}
-	.tarjeta {
-		display: flex;
-		gap: 14px;
-		align-items: center;
-	}
-	.miniatura {
-		width: 96px;
-		height: 120px;
-		flex: none;
-		border-radius: 6px;
-		overflow: hidden;
-	}
-	.miniatura :global(canvas) {
-		width: 100%;
-		height: 100%;
-		display: block;
-	}
-	.tarjeta-texto {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
-	.tarjeta-titulo {
-		font: 700 16px/1.3 var(--f-texto);
-	}
-	.tarjeta-detalle {
-		font: 400 13px/1.4 var(--f-texto);
-		color: var(--grafito);
 	}
 	.canales {
 		display: grid;

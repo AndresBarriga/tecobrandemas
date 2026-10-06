@@ -17,7 +17,7 @@
 	import { type TuZonaCargada, cargarTuZona } from '#lib/cliente/zona';
 	import {
 		AFINAR, DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
-		construirTarjeta, construirTarjetaInquilino, textosInquilino, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
+		construirTarjeta, construirTarjetaInquilino, textosEnlace, textosInquilino, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
 		parecePrecioErroneo,
 		type Pantalla, type PantallaResultado, type SugerenciaZona, type Ubicacion
 	} from '#lib/resultado';
@@ -52,6 +52,13 @@
 	// «Tu zona»: se calcula en el navegador cuando hay resultado, sin bloquear el resultado
 	let tuZona = $state<{ estado: 'cargando' | 'listo' | 'fallo'; datos: TuZonaCargada | null }>({ estado: 'cargando', datos: null });
 	let turnoZona = 0;
+	/** Lo que dice la tarjeta, para quien no la ve (y para el pie de la tarjeta ampliada) */
+	const descripcionTarjeta = $derived.by(() => {
+		if (!tarjetaActual) return 'Vista previa de la tarjeta para compartir';
+		const e = textosEnlace(tarjetaActual);
+		return `Vista previa de la tarjeta para compartir. ${e.titulo}. ${e.descripcion}`;
+	});
+
 	$effect(() => {
 		const parametros = resultado?.zona;
 		const mio = ++turnoZona;
@@ -560,7 +567,7 @@
 					alCompartirPor={compartirPor}
 				>
 					{#snippet tarjeta()}
-						<canvas bind:this={canvasTarjeta} class="tarjeta-canvas" aria-label="Vista previa de la tarjeta para compartir"></canvas>
+						<canvas bind:this={canvasTarjeta} class="tarjeta-canvas" aria-label={descripcionTarjeta}></canvas>
 					{/snippet}
 				</ResultadoInquilino>
 				{#if resultado?.zona}
@@ -587,7 +594,7 @@
 					alServido={(si) => evento(si ? 'servido_si' : 'servido_no')}
 				>
 					{#snippet tarjeta()}
-						<canvas bind:this={canvasTarjeta} class="tarjeta-canvas" aria-label="Vista previa de la tarjeta para compartir"></canvas>
+						<canvas bind:this={canvasTarjeta} class="tarjeta-canvas" aria-label={descripcionTarjeta}></canvas>
 					{/snippet}
 				</Resultado>
 				{#if resultado?.zona}
