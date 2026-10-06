@@ -1,6 +1,6 @@
 # Lo que está abierto
 
-Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisión: 06/10/2026.
+Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisión: 06/10/2026 (tras fusionar el PR #10).
 
 ## Decisiones vigentes (06/10/2026)
 1. **Plan:** Cloudflare sigue en el plan gratuito por ahora. Sin dominio propio y con `noindex` hasta el lanzamiento. No se activan URLs de vista previa por rama: se verifica en local y con la prueba de humo tras el despliegue.
@@ -13,7 +13,7 @@ Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisi
 
 ## Para ti (desarrollo)
 En este orden, un PR por punto:
-1. **Autocompletado de direcciones y «Moscardó».** «Moscardó» no es una vía de CartoCiudad: es un barrio oficial de Usera. Sin calles que coincidan, buscar también en barrios y distritos (con alias) y ofrecer «Moscardó (barrio · Usera): elige una calle o toca el mapa», que centra el mapa. Normalización, coincidencia por palabras, orden, máximo 8, alias de barrios populares (propongo la lista antes de cargarla) y combobox accesible.
+1. **(En curso, rama `autocompletado`) Autocompletado de direcciones y «Moscardó».** «Moscardó» no es una vía de CartoCiudad: es un barrio oficial de Usera. Sin calles que coincidan, buscar también en barrios y distritos (con alias) y ofrecer «Moscardó (barrio · Usera): elige una calle o toca el mapa», que centra el mapa. Normalización, coincidencia por palabras, orden, máximo 8, alias de barrios populares (propongo la lista antes de cargarla) y combobox accesible.
 2. **A5:** migración de `aportaciones` (`firma_mes`, `renta_firma`) y, si el formulario lo pide, su campo; export de la tabla antes de migrar en producción.
 3. **Mapa, parte 1:** servir los PMTiles como activo estático para que las peticiones Range no gasten invocaciones del Worker. Hay que bajar de 25 MiB (zoom máximo 14 o una caja más ajustada; quitar capas que no usamos: edificios, puntos de interés). Si no cabe, avisar antes de cambiar de enfoque.
 4. **Mapa, parte 2:** «Ampliar», pin fijo, hoja inferior en vivo, estilo apagado y «Usar mi ubicación» en los tres modos (todo en el navegador).
@@ -24,7 +24,7 @@ Deuda y detalles:
 - Barra: la línea vertical del techo puede cruzar el texto de «parte alta» cuando este pasa a la derecha de su marca (sin medir).
 - El estado «cargando» de «Tu zona» no tiene prueba propia.
 - El mensaje del 429 dice «espera un momento», pero el límite es diario (200 búsquedas por IP y día); y «Solo la calle» también usa el geocodificador. Solo el mapa sirve como salida real mientras dure el límite.
-- Restos de pruebas en producción (ver «Para el usuario»): pendiente de tu «ok».
+- R2 `a-su-precio-tarjetas` sigue marcando 10 objetos (671 kB) tras borrar las 7 imágenes de prueba y quedar 1 tarjeta (`pruebahumo`): puede ser retraso del contador o imágenes sueltas; wrangler no lista objetos.
 
 ## Para el usuario
 - **Dominio propio:** no hay. Al tenerlo, cambiar la variable `URL_PRODUCCION` del repositorio y revisar la CSP y los enlaces.
@@ -33,7 +33,7 @@ Deuda y detalles:
 - **Pruebas en un móvil real:** hoja nativa de compartir, «Tu zona» con 150-200 zonas, y el mapa ampliable cuando esté.
 - **Previews por rama de Cloudflare:** decidido no activarlas por ahora.
 - **`noindex: false`** cuando decidas lanzar (`config/indexacion.json`).
-- **Borrado de restos de pruebas en producción:** necesito tu «ok» tras ver el recuento (se te muestra aparte).
+- **R2:** mirar en el panel (bucket `a-su-precio-tarjetas`) si hay imágenes sueltas; debería haber una (`og/pruebahumo.jpg`).
 - **Ideas en discusión:** `docs/ideas.md` (necesitan tus decisiones y diseño).
 
 ## Antes del lanzamiento

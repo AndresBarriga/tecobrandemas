@@ -211,3 +211,4 @@ Nombre del producto: **A su precio**. Diseño en `docs/design` (README del hando
 - **429 del geocodificador:** ya no se presenta como «sin conexión»: «Demasiadas búsquedas. Espera un momento…», con las salidas «Solo la calle» y «En el mapa».
 - **«Tus datos»:** añadida la frase sobre las tarjetas compartidas (qué se guarda y que no caducan automáticamente).
 - **Ideas anotadas** en `docs/ideas.md`.
+- **Producción limpiada (06/10):** borrados 5 eventos y 7 tarjetas de prueba con sus 7 imágenes; contador global a 0. Creada la tarjeta fija `pruebahumo` (`POST /api/tarjeta` con `id=pruebahumo`; hizo falta el encabezado `Origin` por la protección contra POST de otro origen). PR #10 fusionado: CI de `main` con `pruebas`, `desplegar` y `humo` en verde. Ramas fusionadas borradas.
