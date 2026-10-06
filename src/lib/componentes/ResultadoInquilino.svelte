@@ -3,6 +3,7 @@
 	import type { Snippet } from 'svelte';
 	import Compartir from './Compartir.svelte';
 	import Icono from './Icono.svelte';
+	import { unaLinea } from '#lib/cliente/ajustar';
 	import {
 		ENLACE_OFICIAL, INQUILINO, SERVIDO, TARJETA_INQUILINO, heroEnVeces, type Canal, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
@@ -66,7 +67,7 @@
 
 		<div class="principal">
 			{#if i.cifra}
-				<p class="cifra" class:veces={heroEnVeces(i.cifra)} aria-label="{i.cifra} {i.nota}">{i.cifra}</p>
+				<p class="cifra" class:veces={heroEnVeces(i.cifra)} use:unaLinea={i.cifra} aria-label="{i.cifra} {i.nota}">{i.cifra}</p>
 			{:else}
 				<p class="titular">{i.titular}</p>
 			{/if}
@@ -133,8 +134,8 @@
 			<section class="aportar" aria-labelledby="aportar-titulo">
 				<h2 id="aportar-titulo">{INQUILINO.aportar.titulo}</h2>
 				<p>{INQUILINO.aportar.texto(barrio)}</p>
-				<p><strong>Se guarda:</strong> {INQUILINO.aportar.seGuarda}</p>
-				<p><strong>No se guarda:</strong> {INQUILINO.aportar.noSeGuarda}</p>
+				<p><strong>Se guarda:</strong> {INQUILINO.aportar.seGuarda(!!i.aporte.firmaMes, i.aporte.rentaFirma != null)}</p>
+				<p><strong>No se guarda:</strong> {INQUILINO.aportar.noSeGuarda} <a class="enlace-datos" href="/como-calculamos#tus-datos">{INQUILINO.aportar.tusDatos}</a></p>
 				<button type="button" class="boton" onclick={alAportar} disabled={aporte === 'enviando'} aria-busy={aporte === 'enviando'}>
 					{aporte === 'enviando' ? INQUILINO.aportar.enviando : INQUILINO.aportar.boton}
 				</button>
@@ -332,6 +333,11 @@
 	.aportar h2 {
 		font: 800 24px/1.2 var(--f-texto);
 		text-wrap: balance;
+	}
+	.enlace-datos {
+		font-weight: 700;
+		white-space: nowrap;
+		text-underline-offset: 3px;
 	}
 	.nota-aportar {
 		font: 400 14px/1.4 var(--f-texto);

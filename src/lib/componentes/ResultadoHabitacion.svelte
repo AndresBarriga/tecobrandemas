@@ -76,7 +76,7 @@
 				<section class="aportar" aria-labelledby="aportar-hab">
 					<h2 id="aportar-hab">{HABITACION.aportar.titulo}</h2>
 					<p><strong>Se guarda:</strong> {HABITACION.aportar.seGuarda}</p>
-					<p><strong>No se guarda:</strong> {HABITACION.aportar.noSeGuarda}</p>
+					<p><strong>No se guarda:</strong> {HABITACION.aportar.noSeGuarda} <a class="enlace-datos" href="/como-calculamos#tus-datos">Tus datos</a></p>
 					<button type="button" class="boton" onclick={alAportar} disabled={aporte === 'enviando'} aria-busy={aporte === 'enviando'}>
 						{HABITACION.aportar.boton}
 					</button>
@@ -205,6 +205,11 @@
 		color: var(--acento);
 		border-radius: var(--radio);
 		font: 700 14px/1.25 var(--f-texto);
+	}
+	.enlace-datos {
+		font-weight: 700;
+		white-space: nowrap;
+		text-underline-offset: 3px;
 	}
 	.gracias {
 		font: 700 24px/1.2 var(--f-texto);

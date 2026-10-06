@@ -192,7 +192,7 @@ function desdeAnalisis(
 		brechaEuros,
 		textoMaximo:
 			nivel.nivel === 'explicable'
-				? `Un piso con las mejores características posibles podría llegar a ${euros(r.referencia.max)} al mes en esta zona.`
+				? `Un piso con las mejores características posibles podría llegar a ${euros(r.referencia.max)} al mes en ${an.horquilla ? 'estas zonas' : 'esta zona'}.`
 				: null,
 		rango: `Referencia: ${numero(r.referencia.inf)} – ${euros(r.referencia.sup)} al mes`,
 		base: `Basado en ${numero(r.seccion.n)} alquileres registrados en la zona · referencia 2024 ajustada por el IPC del alquiler (hasta ${mesAnio(datos.ipc.ultimo_mes)})`,

@@ -99,27 +99,27 @@ const posicionDeTarjeta = (pos: 'debajo' | 'baja' | 'media' | 'alta' | 'encimab'
 	pos === 'baja' || pos === 'media' || pos === 'alta' ? 'dentro' : pos;
 
 /** Los tres textos de una posición; el de «por encima» con el % o las veces sobre la parte alta */
-export function textosInquilino(pos: PosicionTarjeta, ratio: number): string[] {
+export function textosInquilino(pos: PosicionTarjeta, ratio: number, horquilla = false): string[] {
 	const t = TARJETA_INQUILINO.textos[pos];
 	if (pos !== 'encima') return [...t] as string[];
 	const p = partesRatio(ratio);
 	const dinamico = p.enVeces
-		? TARJETA_INQUILINO.encimaVeces(`${numero(ratio, 1)}\u00A0veces`)
-		: TARJETA_INQUILINO.encimaCifra(porcentaje(ratio - 1).replace(/^−/, ''));
-	return [t[0]!, dinamico, t[2]!];
+		? TARJETA_INQUILINO.encimaVeces(`${numero(ratio, 1)}\u00A0veces`, horquilla)
+		: TARJETA_INQUILINO.encimaCifra(porcentaje(ratio - 1).replace(/^−/, ''), horquilla);
+	return [dinamico, ...(t.slice(1) as string[])];
 }
 
 /** ¿Es una de las frases de las tarjetas del inquilino? (el servidor solo guarda esas) */
 function fraseInquilinoValida(pos: PosicionTarjeta, frase: string): boolean {
 	if ((TARJETA_INQUILINO.textos[pos] as readonly (string | null)[]).includes(frase)) return true;
-	return pos === 'encima' && /^Pago (un \d{1,4}(,\d)?\u00A0% más que|\d{1,3},\d\u00A0veces) la parte alta de la referencia de mi zona\.$/.test(frase);
+	return pos === 'encima' && /^Pago (al menos )?(un \d{1,4}(,\d)?\u00A0% más que|\d{1,3},\d\u00A0veces) la parte alta de la referencia de mi zona\.$/.test(frase);
 }
 
 /**
  * Tarjeta del inquilino: la posición y el barrio, con el texto que la persona elige (0-2).
  * Sin renta, sin dirección y sin fecha: la barra va en fracciones, como en la de los anuncios.
  */
-export function construirTarjetaInquilino(p: PantallaResultado, texto: 0 | 1 | 2): TarjetaDatos {
+export function construirTarjetaInquilino(p: PantallaResultado, texto: 0 | 1 | 2 | 3): TarjetaDatos {
 	const i = p.inquilino!;
 	const base = construirTarjeta(p);
 	const posicion = posicionDeTarjeta(i.pos);
@@ -131,7 +131,7 @@ export function construirTarjetaInquilino(p: PantallaResultado, texto: 0 | 1 | 2
 		etiqueta: INQUILINO.etiqueta[posicion === 'dentro' ? 'dentro' : posicion],
 		hero,
 		nota: TARJETA_INQUILINO.nota[posicion],
-		frase: textosInquilino(posicion, p.ratioMin)[texto]!
+		frase: textosInquilino(posicion, p.ratioMin, p.horquilla)[texto]!
 	};
 }
 

@@ -162,16 +162,18 @@
 		{/if}
 
 		{#if pantalla.registro && alRegistrar}
-			<label class="consentimiento">
-				<input type="checkbox" checked={registro !== 'no'} disabled={registro !== 'no'} onchange={alRegistrar} />
-				<span class="casilla" aria-hidden="true">
-					{#if registro !== 'no'}
-						<svg width="16" height="16" viewBox="0 0 20 20"><path d="M4.5 10.5l3.5 3.5 7.5-8" stroke="var(--paja)" stroke-width="2.5" fill="none" /></svg>
-					{/if}
-				</span>
-				<span class="texto-consentimiento">{REGISTRO.casilla}</span>
-			</label>
-			<a class="enlace-datos" href="/como-calculamos#tus-datos">{REGISTRO.enlace}</a>
+			<div class="consentimiento-fila">
+				<label class="consentimiento">
+					<input type="checkbox" checked={registro !== 'no'} disabled={registro !== 'no'} onchange={alRegistrar} />
+					<span class="casilla" aria-hidden="true">
+						{#if registro !== 'no'}
+							<svg width="16" height="16" viewBox="0 0 20 20"><path d="M4.5 10.5l3.5 3.5 7.5-8" stroke="var(--paja)" stroke-width="2.5" fill="none" /></svg>
+						{/if}
+					</span>
+					<span class="texto-consentimiento">{REGISTRO.casilla}</span>
+				</label>
+				<a class="enlace-datos" href="/como-calculamos#tus-datos">{REGISTRO.enlace}</a>
+			</div>
 			<p class="mensaje" role="status">{registro === 'sumado' ? REGISTRO.sumado : ''}</p>
 		{/if}
 
@@ -235,12 +237,19 @@
 	.texto-consentimiento {
 		font: 600 15px/1.4 var(--f-texto);
 	}
+	.consentimiento-fila {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+	}
+	.consentimiento-fila .consentimiento {
+		flex: 1;
+	}
 	.enlace-datos {
-		align-self: flex-start;
+		flex: none;
 		display: inline-flex;
 		align-items: center;
 		min-height: 44px;
-		margin: -8px 0 0 38px;
 		font: 700 14px/1 var(--f-texto);
 		text-underline-offset: 3px;
 	}

@@ -157,12 +157,13 @@
 	let mensajeTarjeta = $state<string | null>(null);
 
 	// Tarjeta del inquilino: la persona elige uno de los tres textos de su posición
-	let textoTarjeta = $state<0 | 1 | 2>(0);
+	let textoTarjeta = $state<0 | 1 | 2 | 3>(0);
 	const textosInquilinoActuales = $derived(
 		resultado?.inquilino
 			? textosInquilino(
 					resultado.inquilino.pos === 'baja' || resultado.inquilino.pos === 'media' || resultado.inquilino.pos === 'alta' ? 'dentro' : resultado.inquilino.pos,
-					resultado.ratioMin
+					resultado.ratioMin,
+					resultado.horquilla
 				)
 			: []
 	);
@@ -501,7 +502,7 @@
 					alServido={(si) => evento(si ? 'servido_si' : 'servido_no')}
 					textos={textosInquilinoActuales}
 					textoElegido={textoTarjeta}
-					alElegirTexto={(i) => (textoTarjeta = i as 0 | 1 | 2)}
+					alElegirTexto={(i) => (textoTarjeta = i as 0 | 1 | 2 | 3)}
 					{compartiendo}
 					{nativo}
 					{enlaces}

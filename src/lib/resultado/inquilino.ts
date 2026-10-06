@@ -89,9 +89,9 @@ export function aInquilino(p: PantallaResultado, a: Anuncio, extra: ExtraInquili
 			nota = INQUILINO.notaEncimab(pct);
 		}
 	} else if (pos === 'debajo') {
-		nota = INQUILINO.notaDebajo(v.m2);
+		nota = INQUILINO.notaDebajo(v.m2, p.horquilla);
 	} else {
-		nota = INQUILINO.notaDentro(numero(p.barra.inf.max), euros(p.barra.sup.min), v.m2);
+		nota = INQUILINO.notaDentro(numero(p.barra.inf.max), euros(p.barra.sup.min), v.m2, p.horquilla);
 	}
 
 	const clase: Clase = pos === 'encima' ? 'c' : pos === 'encimab' ? 'b' : 'a';

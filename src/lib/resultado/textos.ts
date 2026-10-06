@@ -278,8 +278,9 @@ export const INQUILINO = {
 		encima: 'Por encima del techo para un piso excelente'
 	},
 	titular: { debajo: 'Por debajo', baja: 'Parte baja', media: 'Parte media', alta: 'Parte alta', encimab: 'Cerca del techo' },
-	notaDebajo: (m2: string) => `Tu renta queda por debajo de la referencia para ${m2} en esta zona.`,
-	notaDentro: (inf: string, sup: string, m2: string) => `Entre ${inf} y ${sup} al mes para ${m2} en esta zona.`,
+	notaDebajo: (m2: string, varias = false) => `Tu renta queda por debajo de la referencia para ${m2} en ${varias ? 'estas zonas' : 'esta zona'}.`,
+	notaDentro: (inf: string, sup: string, m2: string, varias = false) =>
+		`Entre ${inf} y ${sup} al mes para ${m2} en ${varias ? 'estas zonas' : 'esta zona'}.`,
 	notaEncimab: (pct: string) => `${pct} sobre la parte alta, por debajo del techo para un piso excelente.`,
 	frase: {
 		debajo: 'Pagas menos de lo que registran los contratos de tu zona.',
@@ -294,15 +295,18 @@ export const INQUILINO = {
 	alAno: 'Al año',
 	contrato: {
 		texto: ': la referencia mezcla contratos de distintas fechas.',
-		detalle: 'Los contratos más antiguos suelen tener rentas más bajas. Tu posición se lee mejor junto a la fecha de firma.',
+		detalle: 'Los contratos más antiguos suelen tener rentas más bajas.',
 		cambio: (antes: string, pct: string) => `Al firmar pagabas ${antes}. Desde entonces, ${pct}.`,
 		sinCambio: (antes: string) => `Al firmar pagabas ${antes}. Desde entonces, sin cambios.`
 	},
 	aportar: {
 		titulo: 'Aporta tu alquiler a las estadísticas de tu barrio',
 		texto: (barrio: string) => `Con rentas reales de vecinos se ve mejor lo que se paga hoy en ${barrio}, no solo lo que se registró.`,
-		seGuarda: 'barrio, renta, metros, mes y año de firma.',
+		/** Todo lo que se guarda: la renta al firmar solo si se ha escrito; sin mes si el contrato es de hace menos de un año */
+		seGuarda: (conMes: boolean, conRentaFirma: boolean) =>
+			`barrio, renta, metros, ${conMes ? 'mes y año de firma' : 'año de firma'}${conRentaFirma ? ' y lo que pagabas al firmar' : ''}.`,
 		noSeGuarda: 'dirección, ubicación, nombre, correo ni IP.',
+		tusDatos: 'Tus datos',
 		boton: 'Aportar mi alquiler',
 		enviando: 'Enviando…',
 		nota: 'Es opcional. Si no pulsas, no se envía nada.',
@@ -438,23 +442,32 @@ export const TARJETA = {
 
 /** Tarjeta del inquilino (F1e): tres textos por posición; la persona elige uno. Nunca lleva la renta. */
 export const TARJETA_INQUILINO = {
+	// El primero de cada posición es el factual y el que sale elegido por defecto; el último, el mismo en todas
 	textos: {
 		debajo: [
-			'Pago menos que la referencia de mi barrio. Con este mercado, casi es noticia.',
 			'Mi alquiler queda por debajo de lo que registran los contratos de mi zona.',
-			'Por debajo de la referencia. ¿Y el tuyo, dónde queda?'
+			'Pago menos que la referencia de mi barrio. Con este mercado, casi es noticia.',
+			'Por debajo de la referencia. ¿Y el tuyo, dónde queda?',
+			'¿Y tú? Compruébalo con el tuyo.'
 		],
-		dentro: ['Lo normal en mi barrio. Lo normal ya es mucho.', 'Pago lo que se paga aquí. Ni más ni menos.', 'Dentro de la referencia de mi zona. ¿Y el tuyo?'],
+		dentro: [
+			'Pago lo que se paga aquí. Ni más ni menos.',
+			'Lo normal en mi barrio. Lo normal ya es mucho.',
+			'Dentro de la referencia de mi zona. ¿Y el tuyo?',
+			'¿Y tú? Compruébalo con el tuyo.'
+		],
 		encimab: [
 			'Por encima de la parte alta, por debajo del techo. Depende de cómo sea el piso.',
 			'El techo existe. El mercado ya lo roza.',
-			'Cerca del techo de mi zona. ¿Y el tuyo?'
+			'Cerca del techo de mi zona. ¿Y el tuyo?',
+			'¿Y tú? Compruébalo con el tuyo.'
 		],
-		encima: ['El mercado va más rápido que los datos oficiales.', null, 'No es solo mi caso. Compruébalo con el tuyo.']
+		// El primero (null) se escribe con el % o las veces sobre la parte alta
+		encima: [null, 'El mercado va más rápido que los datos oficiales.', 'No es solo mi caso. Compruébalo con el tuyo.', '¿Y tú? Compruébalo con el tuyo.']
 	},
-	/** Segundo texto de «por encima»: lleva el % (o las veces) sobre la parte alta */
-	encimaCifra: (pct: string) => `Pago un ${pct} más que la parte alta de la referencia de mi zona.`,
-	encimaVeces: (veces: string) => `Pago ${veces} la parte alta de la referencia de mi zona.`,
+	/** Texto factual de «por encima»: el % o las veces sobre la parte alta; con horquilla, «al menos» (el ratio menor) */
+	encimaCifra: (pct: string, alMenos = false) => `Pago ${alMenos ? 'al menos ' : ''}un ${pct} más que la parte alta de la referencia de mi zona.`,
+	encimaVeces: (veces: string, alMenos = false) => `Pago ${alMenos ? 'al menos ' : ''}${veces} la parte alta de la referencia de mi zona.`,
 	/** Línea bajo la cifra */
 	nota: {
 		debajo: 'de la referencia de alquileres de mi zona',
@@ -483,6 +496,9 @@ export const PAGINA_TARJETA = {
 			: 'Alguien ha comprobado un piso en Madrid y te ha enviado su resultado.',
 	introInquilino: (barrio: string | null) =>
 		`Alguien ha comprobado su alquiler en ${barrio ?? 'Madrid'} y te ha enviado su resultado.`,
+	explicacionInquilino:
+		'Esta herramienta compara lo que se paga de alquiler en Madrid con la referencia de alquileres registrados en cada zona: datos del Ministerio de Vivienda (SERPAVI 2024) ajustados por el IPC del alquiler.',
+	notaInquilino: 'La tarjeta no incluye la dirección ni la renta.',
 	titular: '¿Y el tuyo?',
 	explicacion:
 		'Esta herramienta compara el precio de un anuncio de alquiler en Madrid con la referencia de alquileres registrados en su zona: datos del Ministerio de Vivienda (SERPAVI 2024) ajustados por el IPC del alquiler.',

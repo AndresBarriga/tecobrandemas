@@ -90,7 +90,8 @@ const intervalo = (min: number, max: number, f: (x: number) => string) =>
  */
 export function principalPorEncima(ratio: number, ratioMax: number | null, m2: string): Principal {
 	const p = partesRatio(ratio);
-	const nota = `${p.complemento} de la referencia para ${m2} en esta zona`;
+	// Con horquilla (varias zonas posibles) se habla de «estas zonas»
+	const nota = `${p.complemento} de la referencia para ${m2} en ${ratioMax !== null ? 'estas zonas' : 'esta zona'}`;
 	if (ratioMax !== null) {
 		const veces = ratio >= UMBRAL_VECES;
 		const formato = (r: number) => (veces ? partesRatio(r).cifra : porcentaje(r - 1, true));
@@ -157,7 +158,7 @@ export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ip
 		principal = {
 			tipo: 'titular',
 			texto: `Parte ${nivel.posicion}`,
-			nota: `Entre ${numero(barra.inf.max)} y ${euros(barra.sup.min)} al mes para ${m2} en esta zona.`
+			nota: `Entre ${numero(barra.inf.max)} y ${euros(barra.sup.min)} al mes para ${m2} en ${horquilla ? 'estas zonas' : 'esta zona'}.`
 		};
 	}
 
