@@ -219,3 +219,4 @@ Nombre del producto: **A su precio**. Diseño en `docs/design` (README del hando
 - **Datos:** `scripts/03b_sugerencias.py` genera `viales_sugerencias.json` (8.897 vías con su barrio, 264 kB, 75 kB comprimido) que se carga al enfocar la dirección.
 - **Componente:** `CampoDireccion.svelte` es un combobox accesible (flechas, Intro, Esc, `aria-activedescendant` y anuncio al lector de pantalla). Elegir una sugerencia no envía el formulario y conserva el número escrito.
 - **Prueba:** un único test nuevo (`tests/autocompletar.test.ts`): cada vía se encuentra escribiendo su última palabra, con y sin tilde.
+- **Alias cargados:** los 3 iniciales más 13 aprobados (ver `docs/abierto.md`). El test de «cada vía por su última palabra» busca cada palabra una sola vez y tiene un tiempo máximo de 60 s: en el CI (más lento) agotaba los 5 s por defecto.

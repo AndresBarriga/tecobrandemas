@@ -26,12 +26,8 @@ Deuda y detalles:
 - El mensaje del 429 dice «espera un momento», pero el límite es diario (200 búsquedas por IP y día); y «Solo la calle» también usa el geocodificador. Solo el mapa sirve como salida real mientras dure el límite.
 - R2 `a-su-precio-tarjetas` sigue marcando 10 objetos (671 kB) tras borrar las 7 imágenes de prueba y quedar 1 tarjeta (`pruebahumo`): puede ser retraso del contador o imágenes sueltas; wrangler no lista objetos.
 
-### Alias de barrios: lista propuesta (necesita tu visto bueno antes de cargarla)
-Hoy solo están los tres que pediste (Malasaña → Universidad, Lavapiés → Embajadores, Chueca → Justicia). Propongo añadir, todos con un nombre oficial que existe en los datos:
-- **Seguros:** El Rastro → Embajadores · Conde Duque → Universidad · Tribunal → Universidad · Huertas y Barrio de las Letras → Cortes · Ópera → Palacio · Bernabéu → Castilla · Las Tablas → Valverde · Sanchinarro y Valdebebas → Valdefuentes.
-- **Ambiguos (varios barrios):** La Latina → Palacio y Embajadores · Vallecas → los distritos Puente de Vallecas y Villa de Vallecas · Barrio de Salamanca → el distrito Salamanca.
-- **Dudosos, sin añadir hasta confirmarlos:** Montecarmelo, Nuevos Ministerios, Plaza de Castilla, Tirso de Molina, Gran Vía.
-Los alias se editan en `src/lib/resultado/alias.ts`.
+### Alias de barrios
+Cargados (06/10): los 3 pedidos más los «seguros» y los «ambiguos» de la lista propuesta (El Rastro, Conde Duque, Tribunal, Huertas, Barrio de las Letras, Ópera, Bernabéu, Las Tablas, Sanchinarro, Valdebebas, La Latina, Vallecas, Barrio de Salamanca). Sin cargar, por dudosos: Montecarmelo, Nuevos Ministerios, Plaza de Castilla, Tirso de Molina y Gran Vía (confirmar a qué barrio oficial pertenecen). Se editan en `src/lib/resultado/alias.ts`.
 
 ## Para el usuario
 - **Dominio propio:** no hay. Al tenerlo, cambiar la variable `URL_PRODUCCION` del repositorio y revisar la CSP y los enlaces.
