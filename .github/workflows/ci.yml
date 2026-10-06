@@ -44,3 +44,21 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  humo:
+    # Tras desplegar, la prueba de humo de solo lectura contra producción, con reintentos por si
+    # el despliegue tarda en propagarse. No sustituye a la hora a hora (humo.yml): solo avisa en esta ejecución.
+    needs: desplegar
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: ${{ vars.URL_PRODUCCION || 'https://a-su-precio.tiene-sentido.workers.dev' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: sleep 20
+      - run: npx playwright test e2e/humo.spec.ts --project=movil-390 --retries=3 --reporter=list

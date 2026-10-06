@@ -25,6 +25,9 @@ export function nuevoId(): string {
 	return [...bytes].map((b) => (b % 36).toString(36)).join('');
 }
 
+/** Tarjeta fija de la prueba de humo: no cuenta en las métricas */
+export const ID_TARJETA_PRUEBA = 'pruebahumo';
+
 export const ID_VALIDO = /^[0-9a-z]{10}$/;
 
 export function almacenMemoria(): AlmacenTarjetas {

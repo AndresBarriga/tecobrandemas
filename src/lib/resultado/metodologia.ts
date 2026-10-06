@@ -245,7 +245,8 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 		datos: {
 			parrafos: [
 				'Los datos del anuncio los escribes tú; no leemos páginas de portales. Solo guardamos un análisis si marcas la casilla, y guardamos el barrio, el mes, el precio, los metros y el nivel del resultado: nunca la dirección ni tu IP. En «¿Cuánto pagas tú?» guardamos además el año en que empezó el contrato y lo que incluye la renta, también solo si aceptas. Los análisis y las aportaciones se guardan por separado y no se mezclan con los datos oficiales.',
-				'Para limitar abusos usamos un código derivado de tu conexión que caduca a las 24 horas, y para no contar dos veces el mismo piso, otro hecho con el precio, los metros y el barrio que se guarda 30 días. Ninguno permite saber quién eres. La web se sirve desde Cloudflare, que, como cualquier alojamiento, ve la conexión. La lista de pisos comprobados en esta sesión se queda solo en tu navegador y se borra al cerrarlo.'
+				'Para limitar abusos usamos un código derivado de tu conexión que caduca a las 24 horas, y para no contar dos veces el mismo piso, otro hecho con el precio, los metros y el barrio que se guarda 30 días. Ninguno permite saber quién eres. La web se sirve desde Cloudflare, que, como cualquier alojamiento, ve la conexión. La lista de pisos comprobados en esta sesión se queda solo en tu navegador y se borra al cerrarlo.',
+				'Si compartes una tarjeta, guardamos su imagen y los textos que ves (porcentaje, nivel y barrio) para que el enlace siga funcionando. No caducan automáticamente: si quieres que borremos una, escríbenos con su enlace.'
 			],
 			guardamos: ['El barrio', 'El mes', 'El precio', 'Los metros', 'El nivel del resultado'],
 			noGuardamos: ['La dirección', 'Tu IP', 'Nada si no marcas la casilla', 'Tu lista de pisos de esta sesión, que se queda en tu navegador'],

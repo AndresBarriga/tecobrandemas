@@ -7,7 +7,7 @@ import {
 	type ErroresFormulario, type Pantalla, type Ubicacion, construirPantalla, pantallaSinDato, validarFormulario
 } from '#lib/resultado';
 import { cargarDatos } from './datos';
-import { buscarDireccion } from './direccion';
+import { DemasiadasBusquedas, buscarDireccion } from './direccion';
 import type { EstadoFormulario } from './estado';
 
 export type ErroresCampos = ErroresFormulario & { direccion?: string; mapa?: string };
@@ -16,7 +16,8 @@ export type Comprobacion =
 	| { tipo: 'pantalla'; pantalla: Pantalla; ubicacion: Ubicacion | null }
 	| { tipo: 'errores'; errores: ErroresCampos }
 	| { tipo: 'no_encontrada'; sugerencias: string[] }
-	| { tipo: 'pedir_numero'; calle: string; nSecciones: number };
+	| { tipo: 'pedir_numero'; calle: string; nSecciones: number }
+	| { tipo: 'demasiadas' };
 
 const crudo = (f: EstadoFormulario) => ({
 	precio: f.precio,
@@ -56,7 +57,13 @@ export async function comprobar(f: EstadoFormulario, pin: Ubicacion | null | 'fu
 		if (pin === 'fuera') return { tipo: 'pantalla', pantalla: pantallaSinDato('fuera_de_madrid'), ubicacion: null };
 		ubicacion = pin!;
 	} else {
-		const r = await buscarDireccion(f.direccion);
+		let r;
+		try {
+			r = await buscarDireccion(f.direccion);
+		} catch (e) {
+			if (e instanceof DemasiadasBusquedas) return { tipo: 'demasiadas' };
+			throw e;
+		}
 		if (r.tipo === 'no_encontrada') return { tipo: 'no_encontrada', sugerencias: r.sugerencias };
 		if (r.tipo === 'pedir_numero_o_mapa') return { tipo: 'pedir_numero', calle: r.calle, nSecciones: r.nSecciones };
 		ubicacion = r.ubicacion;

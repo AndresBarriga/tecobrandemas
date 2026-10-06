@@ -2,11 +2,12 @@
  * Prueba de humo contra un despliegue real:
  *   BASE_URL=https://a-su-precio.tiene-sentido.workers.dev npx playwright test e2e/humo.spec.ts --project=movil-390
  * No ensucia las métricas: se bloquea /api/evento y no se registra ningún análisis ni aportación.
- * Solo la tercera prueba escribe (una tarjeta en R2 y D1); sale con HUMO_ESCRIBE=1.
+ * Es de solo lectura: no escribe nada. La tarjeta de la tercera prueba es una fija (`pruebahumo`),
+ * creada una vez a mano, marcada como de prueba y excluida de las métricas.
  * Las cifras exactas cambian con el IPC: se comprueba el nivel y la forma, no los números.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { abrir, comprobar, sinCompartirNativo } from './ayudas';
+import { abrir, comprobar } from './ayudas';
 
 const bloquearEventos = (page: Page) => page.route('**/api/evento', (r) => r.fulfill({ status: 204 }));
 
@@ -58,16 +59,9 @@ test.describe('humo', () => {
 		expect((await request.get('/t/zzzzzzzzzz')).status()).toBe(404);
 	});
 
-	test('3. tarjeta: se crea, /t/:id la enseña con vista previa y la imagen OG sale', async ({ page, request, baseURL }) => {
-		test.skip(!process.env.HUMO_ESCRIBE, 'Escribe una tarjeta en producción: solo con HUMO_ESCRIBE=1');
-		await bloquearEventos(page);
-		await sinCompartirNativo(page);
-		await abrir(page);
-		await comprobar(page, { precio: '2500', superficie: '90' });
-		const respuesta = page.waitForResponse((r) => r.url().endsWith('/api/tarjeta'));
-		await page.getByRole('button', { name: 'Copiar enlace' }).click();
-		const { id } = await (await respuesta).json();
-
+	test('3. tarjeta de prueba fija: /t/:id la enseña con vista previa y la imagen OG sale', async ({ page, request, baseURL }) => {
+		// Solo lectura: la tarjeta se creó una vez a mano con este id (ver docs/operacion.md)
+		const id = 'pruebahumo';
 		await page.goto(`/t/${id}`);
 		await expect(page.getByText(/Alguien ha comprobado un piso en/)).toBeVisible();
 		expect(await page.locator('meta[property="og:image"]').getAttribute('content')).toBe(`${baseURL}/t/${id}/og.jpg`);

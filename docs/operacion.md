@@ -27,6 +27,13 @@ Los límites cambian: confirmarlos en la documentación de Cloudflare antes de f
 
 `POST /api/geocode` admite 200 búsquedas por IP y día (`LIMITE_GEOCODIFICACIONES_DIA`). Pasado el límite responde 429. La IP no se guarda: la clave es un HMAC con una sal que cambia cada día, y se borra con la primera búsqueda del día siguiente. Cubierto por `tests/registro.test.ts`.
 
+## Prueba de humo
+
+De solo lectura (`e2e/humo.spec.ts`): geocodifica, abre la portada, `/como-calculamos` y `/cuanto-pagas`, pide el mapa con Range y lee la tarjeta fija `pruebahumo` (`/t/pruebahumo` y su `og.jpg`). Corre cada hora (`humo.yml`, abre un issue si falla) y tras cada despliegue (job `humo` de `ci.yml`, con 3 reintentos). No tiene endpoint de borrado ni escribe nada.
+
+- **La tarjeta `pruebahumo` se creó una vez a mano** (`POST /api/tarjeta` con `id=pruebahumo`). Si se borra por error, hay que volver a crearla; sin ella la tercera prueba falla.
+- **La ruta de escritura no la cubre el humo:** antes del lanzamiento, probarla a mano (compartir una tarjeta de verdad, marcar la casilla del registro y enviar una aportación) y borrar después esos restos.
+
 ## Métricas del producto
 
 ```sh
@@ -37,7 +44,7 @@ npm run metricas -- --desde=2026-10-20 # solo desde una fecha (la evaluación es
 Escribe en `informe-metricas/`: `embudo.csv` (H1-H4, utilidad, segundo análisis y aportación, con su objetivo), `barrios.csv` (análisis por barrio, solo desde 10) y `aportaciones.csv` (residentes, aparte). Notas para leerlo:
 
 - Cuentan **visitas distintas** (id aleatorio de sesión), no clics.
-- H4 divide las visitas con un análisis desde una tarjeta entre las tarjetas creadas. Desde el PR de compartir, una tarjeta solo se guarda cuando la persona elige WhatsApp, X, copiar el enlace o la hoja del móvil (descargar la imagen no guarda nada), así que «tarjetas creadas» son tarjetas compartidas. La prueba de humo crea una tarjeta al día (`.github/workflows/humo.yml`): restarla al evaluar.
+- H4 divide las visitas con un análisis desde una tarjeta entre las tarjetas creadas. Desde el PR de compartir, una tarjeta solo se guarda cuando la persona elige WhatsApp, X, copiar el enlace o la hoja del móvil (descargar la imagen no guarda nada), así que «tarjetas creadas» son tarjetas compartidas. La tarjeta fija de la prueba de humo (`pruebahumo`) se excluye del recuento.
 - `npm run metricas` imprime también las visitas por canal (`nativo`, `whatsapp`, `x`, `copiar`, `descarga`); H3 cuenta cualquier canal.
 - Los datos de prueba hechos en producción antes del lanzamiento deben borrarse (ver «Antes del lanzamiento»).
 

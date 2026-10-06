@@ -201,3 +201,13 @@ Nombre del producto: **A su precio**. Diseño en `docs/design` (README del hando
 - **Opción A:** el id `/t/ID` se genera en el navegador al abrir el resultado; la tarjeta solo se sube cuando la persona elige un canal que necesita el enlace. `POST /api/tarjeta` acepta ese `id` (formato `[0-9a-z]{10}`) y no reescribe una tarjeta existente.
 - **Móvil con hoja nativa** (`navigator.canShare({files})` y puntero táctil): un botón; imagen y enlace; se sube la tarjeta; evento `comparte`.
 - **Escritorio:** WhatsApp y X como enlaces normales, «Copiar enlace» y «Descargar imagen» (esta última no sube nada). Eventos `comparte_whatsapp`, `comparte_x`, `comparte_copiar` y `comparte_descarga` (tipo y id de tarjeta, sin datos del anuncio). Instagram: sin botón propio. Sin SDK, scripts ni píxeles de terceros.
+
+
+## Limpieza y decisiones (06/10/2026)
+- **Hecho el 05/10 y fusionado:** PR #7 («Tu zona» y «Cómo calculamos»), PR #8 (ratio, etiquetas de la barra, aviso «¿Seguro?») y PR #9 (compartir por canales).
+- **Decisiones registradas** en `docs/abierto.md` y `CLAUDE.md` (plan gratuito, política de pruebas, A5, A4, A1-A3).
+- **Prueba de humo de solo lectura:** `humo.yml` ya no crea tarjetas; la tercera prueba lee la tarjeta fija `pruebahumo` (excluida de las métricas) y el job `humo` del CI la lanza tras desplegar, con `--retries=3`.
+- **`<main>` en la portada:** envuelve el título, el formulario y el resultado, para que haya un landmark principal visible.
+- **429 del geocodificador:** ya no se presenta como «sin conexión»: «Demasiadas búsquedas. Espera un momento…», con las salidas «Solo la calle» y «En el mapa».
+- **«Tus datos»:** añadida la frase sobre las tarjetas compartidas (qué se guarda y que no caducan automáticamente).
+- **Ideas anotadas** en `docs/ideas.md`.

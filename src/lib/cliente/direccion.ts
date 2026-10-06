@@ -7,6 +7,13 @@ export class SinConexion extends Error {
 	}
 }
 
+/** El servidor limita las búsquedas por persona y día (429): no es un fallo de conexión */
+export class DemasiadasBusquedas extends Error {
+	constructor() {
+		super('demasiadas búsquedas');
+	}
+}
+
 export async function buscarDireccion(texto: string): Promise<ResolucionDireccion> {
 	let r: Response;
 	try {
@@ -20,6 +27,7 @@ export async function buscarDireccion(texto: string): Promise<ResolucionDireccio
 	}
 	// 400: texto que el servidor no acepta (vacío o demasiado largo): se trata como no encontrada
 	if (r.status === 400) return { tipo: 'no_encontrada', sugerencias: [] };
+	if (r.status === 429) throw new DemasiadasBusquedas();
 	if (!r.ok) throw new SinConexion();
 	return resolverDireccion(await r.json());
 }

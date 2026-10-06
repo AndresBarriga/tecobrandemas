@@ -6,7 +6,8 @@
 
 	export type Problema =
 		| { tipo: 'no_encontrada'; sugerencias: string[] }
-		| { tipo: 'pedir_numero'; calle: string; nSecciones: number };
+		| { tipo: 'pedir_numero'; calle: string; nSecciones: number }
+		| { tipo: 'demasiadas' };
 
 	let {
 		f = $bindable(),
@@ -104,6 +105,8 @@
 				</svg>
 				{#if problema.tipo === 'no_encontrada'}
 					<p>{ERRORES.noEncontrada.titulo} {ERRORES.noEncontrada.texto}</p>
+				{:else if problema.tipo === 'demasiadas'}
+					<p>{ERRORES.demasiadas.titulo} {ERRORES.demasiadas.texto}</p>
 				{:else}
 					{@const t = ERRORES.pedirNumero(problema.calle, problema.nSecciones)}
 					<p>{t.titulo} {t.texto}</p>
@@ -119,7 +122,7 @@
 			{/if}
 			<span class="otra-forma">{ERRORES.noEncontrada.otraForma}</span>
 			<div class="salidas">
-				{#if f.modo !== 'calle' && problema.tipo === 'no_encontrada'}
+				{#if f.modo !== 'calle' && (problema.tipo === 'no_encontrada' || problema.tipo === 'demasiadas')}
 					<button type="button" class="boton boton-contorno" onclick={() => alCambiarModo('calle')}>{ERRORES.noEncontrada.soloCalle}</button>
 				{:else}
 					<button type="button" class="boton boton-contorno" onclick={() => alCambiarModo('direccion')}>{FORMULARIO.modos.direccion}</button>

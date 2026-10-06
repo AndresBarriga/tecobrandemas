@@ -25,17 +25,33 @@ supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado
   "CartoCiudad CC-BY 4.0 scne.es". Nunca sugerir respaldo oficial.
 - Es una estimación independiente: enlazar siempre a serpavi.mivau.gob.es para el valor legal.
 
-## Estado (05/10/2026)
-- Producto: «A su precio». Hitos 1-7 hechos, incluidas «Tu zona» (mapa por zonas, «Este precio entra en la
-  referencia de…» y evolución 2015-2024) y «Cómo calculamos» según el diseño actualizado (`docs/design`).
-  El cálculo está en `src/lib/resultado` (`zona.ts`, `aqui.ts`, `evolucion.ts`, `tuzona.ts`); la geometría
-  del mapa, en `src/lib/cliente/zona*.ts`. En los textos de «Tu zona» se dice «zona», nunca «sección».
-- Producción en Cloudflare (Worker + D1 + R2) con CI en GitHub. Sin dominio propio todavía.
-- `noindex` en todo el sitio hasta el lanzamiento: `config/indexacion.json`.
-- Se trabaja en ramas con PR; el CI despliega al fusionar en `main`.
+## Estado (06/10/2026)
+- Producto: «A su precio». Hitos 1-7 hechos, incluidas «Tu zona», «Cómo calculamos», compartir la tarjeta por
+  canales (la tarjeta solo se guarda al elegir un canal), el ratio por tramos («+X %» o «X,X veces la parte
+  alta») y el aviso «¿Seguro?» con más de 3 veces la parte alta. El cálculo está en `src/lib/resultado`; la
+  geometría del mapa, en `src/lib/cliente/zona*.ts`. En «Tu zona» se dice «zona», nunca «sección».
+- Producción en Cloudflare (Worker + D1 + R2) con CI en GitHub, en el **plan gratuito**. Sin dominio propio y con
+  `noindex` en todo el sitio hasta el lanzamiento: `config/indexacion.json`.
+- Se trabaja en ramas con PR; el CI despliega al fusionar en `main` y lanza después la prueba de humo (de solo
+  lectura, con la tarjeta fija `pruebahumo`). Qué falta: `docs/abierto.md`; ideas sin empezar: `docs/ideas.md`.
 - Arquitectura: los componentes y las rutas no importan `src/lib/motor` ni `src/lib/ubicacion`
   (un test lo comprueba). Alias de importación: `#lib/...` (SvelteKit 3 no tiene `$lib`).
-- Lo que se guarda: barrio y mes, nunca la sección, la dirección, la IP ni la fecha exacta del análisis.
+- Lo que se guarda: barrio y mes, nunca la sección, la dirección, la IP ni la fecha exacta del análisis. Las
+  tarjetas compartidas guardan su imagen y los textos que se ven; no caducan automáticamente.
+
+## Decisiones del usuario vigentes (06/10/2026)
+- Cloudflare sigue en el plan gratuito. No se activan URLs de vista previa por rama: se verifica en local y con
+  la prueba de humo tras el despliegue.
+- Para el trabajo nuevo, ni capturas ni tests unitarios nuevos: `npm run check`, el flujo a mano en local y la
+  prueba de humo. No se toca el CI ni se borran tests existentes (si un cambio rompe uno, se arregla).
+  Excepciones: el test de autocompletado (cada vía se encuentra por su última palabra, con y sin tilde) y los
+  cambios de `humo.yml` y del job de humo.
+- Datos: dos tablas separadas, análisis de anuncios y aportaciones de inquilinos; nunca una tabla única con
+  `tipo_dato` ni `datos_v2`. Aportaciones: `firma_mes` (AAAA-MM) y `renta_firma` opcional; mes y no fecha
+  exacta; nunca la sección. `casero_tipo` solo cuando el formulario lo pida.
+- Producción: borrados y migraciones solo tras enseñar el recuento o el export y con el «ok» del usuario. La
+  prueba de humo no escribe nada; la ruta de escritura se prueba a mano antes del lanzamiento.
+- Los números de los diseños son ejemplos; los datos reales salen del motor.
 
 ## Forma de trabajar
 - Proponer un plan antes de escribir código.
