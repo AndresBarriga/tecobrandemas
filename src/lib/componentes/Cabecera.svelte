@@ -1,18 +1,18 @@
 <script lang="ts">
 	import Logo from './Logo.svelte';
-	import { NAVEGACION } from '#lib/resultado';
+	import { INQUILINO, NAVEGACION } from '#lib/resultado';
 
 	/** «otro»: enlace «Otro piso» (pantallas de resultado); «madrid»: etiqueta fija; «nada»: solo el logotipo */
 	let {
 		derecha = 'madrid', alOtroPiso, alVolver, volverHref, actual
 	}: {
-		derecha?: 'otro' | 'volver' | 'madrid' | 'nada';
+		derecha?: 'otro' | 'volver' | 'madrid' | 'editar' | 'nada';
 		alOtroPiso?: () => void;
 		alVolver?: () => void;
 		/** Con enlace en lugar de botón: «Volver» a otra página */
 		volverHref?: string;
 		/** Página actual, para marcarla en la navegación de escritorio */
-		actual?: 'como' | 'cuanto';
+		actual?: 'comprobar' | 'como';
 	} = $props();
 </script>
 
@@ -22,14 +22,14 @@
 		<a class="otro" href={volverHref}>Volver</a>
 	{:else if derecha === 'otro'}
 		<button class="otro" type="button" onclick={alOtroPiso}>{NAVEGACION.otroPiso}</button>
+	{:else if derecha === 'editar'}
+		<button class="otro" type="button" onclick={alOtroPiso}>{INQUILINO.editar}</button>
 	{:else if derecha === 'volver'}
 		<button class="otro" type="button" onclick={alVolver}>Volver al resultado</button>
-	{:else if derecha === 'madrid'}
-		<span class="madrid">{NAVEGACION.madrid}</span>
 	{/if}
-	<nav class="nav">
+	<nav class="nav" class:en-movil={derecha === 'madrid' && !volverHref}>
+		<a href="/" aria-current={actual === 'comprobar' ? 'page' : undefined}>Comprobar</a>
 		<a href="/como-calculamos" aria-current={actual === 'como' ? 'page' : undefined}>Cómo calculamos</a>
-		<a href="/cuanto-pagas" aria-current={actual === 'cuanto' ? 'page' : undefined}>¿Cuánto pagas tú?</a>
 	</nav>
 </header>
 
@@ -47,10 +47,6 @@
 		min-height: 44px;
 		text-decoration: none;
 	}
-	.madrid {
-		font: 600 15px/1 var(--f-texto);
-		color: var(--grafito);
-	}
 	.otro {
 		min-height: 44px;
 		border: 0;
@@ -64,6 +60,24 @@
 	}
 	.nav {
 		display: none;
+	}
+	/* En la portada, el menú ocupa el sitio de «Madrid» también en móvil */
+	.nav.en-movil {
+		display: flex;
+		gap: 16px;
+	}
+	.nav.en-movil a {
+		display: flex;
+		align-items: center;
+		min-height: 44px;
+		font: 600 15px/1 var(--f-texto);
+		text-decoration: none;
+	}
+	.nav.en-movil a[aria-current='page'] {
+		text-decoration: underline;
+		text-decoration-color: var(--paja);
+		text-decoration-thickness: 3px;
+		text-underline-offset: 6px;
 	}
 	@media (min-width: 1024px) {
 		.nav {
@@ -90,8 +104,7 @@
 			height: 72px;
 			padding: 0 40px;
 		}
-		.otro,
-		.madrid {
+		.otro {
 			display: none;
 		}
 	}

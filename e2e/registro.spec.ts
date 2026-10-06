@@ -4,58 +4,46 @@ import { abrir, comprobar } from './ayudas';
 const carpeta = () => `e2e/capturas/${test.info().project.name}`;
 
 test.describe('aportaciones y embudo', () => {
-	test('24-cuanto-pagas: sin consentimiento no sale ninguna petición con precio', async ({ page }) => {
+	test('24-aportar: sin pulsar «Aportar mi alquiler» no sale ninguna petición con precio', async ({ page }) => {
 		const posts: { ruta: string; cuerpo: string }[] = [];
 		page.on('request', (r) => r.method() === 'POST' && posts.push({ ruta: new URL(r.url()).pathname, cuerpo: r.postData() ?? '' }));
-		await abrir(page, '/cuanto-pagas');
-		await page.fill('#calle', 'Calle de Arturo Soria');
-		await page.fill('#renta', '1150');
-		await page.fill('#m2', '68');
-		await page.fill('#anio', '2023');
-		const boton = page.getByRole('button', { name: 'Marca la casilla para enviar' });
-		await expect(boton).toBeDisabled();
-		await expect(boton).toHaveAttribute('aria-disabled', 'true');
-		await boton.click({ force: true }).catch(() => {});
-		await page.keyboard.press('Enter');
+		await abrir(page);
+		await comprobar(page, { precio: '1620', superficie: '90', vivo: { mes: 3, ano: 2023, rentaFirma: '1500' } });
+		await expect(page.getByRole('button', { name: 'Aportar mi alquiler' })).toBeVisible();
 		await page.waitForTimeout(500);
-		expect(posts.filter((p) => p.ruta !== '/api/evento')).toEqual([]);
-		await page.screenshot({ path: `${carpeta()}/24-cuanto-pagas.png`, fullPage: true });
+		// Solo la geocodificación y los eventos: nada de aportación, análisis ni tarjeta
+		expect(posts.filter((p) => !['/api/evento', '/api/geocode'].includes(p.ruta))).toEqual([]);
+		await page.screenshot({ path: `${carpeta()}/24-aportar-antes.png`, fullPage: true });
 	});
 
-	test('25-aportacion: con consentimiento se guarda el barrio, no la calle', async ({ page }) => {
+	test('25-aportacion: al pulsar se guarda el barrio, no la calle, con mes de firma y renta al firmar', async ({ page }) => {
 		const posts: { ruta: string; cuerpo: string }[] = [];
 		page.on('request', (r) => r.method() === 'POST' && posts.push({ ruta: new URL(r.url()).pathname, cuerpo: r.postData() ?? '' }));
-		await abrir(page, '/cuanto-pagas');
-		await page.fill('#calle', 'Calle de Fuente del Berro 14');
-		await page.fill('#renta', '1150');
-		await page.fill('#m2', '68');
-		await page.fill('#anio', '2023');
-		await page.getByRole('checkbox', { name: 'Gastos de comunidad' }).check();
-		await page.getByRole('checkbox', { name: /Acepto que mi aportación/ }).check();
-		await page.screenshot({ path: `${carpeta()}/25-aportacion-marcada.png`, fullPage: true });
-		await page.getByRole('button', { name: 'Enviar mi aportación' }).click();
-		await expect(page.getByRole('heading', { name: 'Gracias, ya cuenta' })).toBeVisible();
+		await abrir(page);
+		await comprobar(page, { precio: '1620', superficie: '90', vivo: { mes: 3, ano: 2023, rentaFirma: '1500' } });
+		await page.getByRole('button', { name: 'Aportar mi alquiler' }).click();
+		await expect(page.getByText('Alquiler aportado')).toBeVisible();
 		const envio = posts.find((p) => p.ruta === '/api/aportacion')!;
 		const cuerpo = JSON.parse(envio.cuerpo);
-		expect(Object.keys(cuerpo).sort()).toEqual(['anioContrato', 'barrio', 'incluye', 'm2', 'precio']);
-		expect(cuerpo).toMatchObject({ precio: 1150, m2: 68, anioContrato: 2023, incluye: ['comunidad'] });
+		expect(Object.keys(cuerpo).sort()).toEqual(['anioContrato', 'barrio', 'firmaMes', 'incluye', 'm2', 'precio', 'rentaFirma']);
+		expect(cuerpo).toMatchObject({ precio: 1620, m2: 90, anioContrato: 2023, firmaMes: '2023-03', rentaFirma: 1500, incluye: [] });
 		expect(envio.cuerpo).not.toMatch(/Berro|2807|Calle/);
+		// Los eventos del inquilino van aparte de los de los anuncios
+		const eventos = posts.filter((p) => p.ruta === '/api/evento').map((p) => JSON.parse(p.cuerpo).tipo);
+		expect(eventos).toEqual(expect.arrayContaining(['vivo_empieza', 'vivo_completa', 'vivo_aporta']));
+		expect(eventos).not.toContain('completa');
 		await page.screenshot({ path: `${carpeta()}/26-aportacion-enviada.png`, fullPage: true });
 	});
 
-	test('validación de la aportación y calle desconocida', async ({ page }) => {
-		await abrir(page, '/cuanto-pagas');
-		await page.fill('#calle', 'Calle Zzqxw 3');
-		await page.fill('#renta', '1150');
-		await page.fill('#m2', '68');
-		await page.fill('#anio', '2023');
-		await page.getByRole('checkbox', { name: /Acepto que mi aportación/ }).check();
-		await page.getByRole('button', { name: 'Enviar mi aportación' }).click();
-		await expect(page.getByText(/No encontramos esa calle/)).toBeVisible();
-		await page.fill('#calle', 'Calle de Fuente del Berro 14');
-		await page.fill('#renta', '20');
-		await page.getByRole('button', { name: 'Enviar mi aportación' }).click();
-		await expect(page.getByText(/€\/m²/)).toBeVisible();
+	test('validación de «Ya vivo aquí»: la fecha de firma es obligatoria y la renta al firmar, plausible', async ({ page }) => {
+		await abrir(page);
+		await comprobar(page, { precio: '1620', superficie: '90', vivo: { rentaFirma: '20' } });
+		await expect(page.getByText(/Elige el mes y el año de la firma/)).toBeVisible();
+		await expect(page.getByText(/Escribe lo que pagabas al mes/)).toBeVisible();
+		await page.getByRole('checkbox', { name: 'Hace menos de un año' }).check();
+		await page.fill('#renta-firma', '');
+		await page.locator('form').getByRole('button', { name: 'Comprobar mi alquiler' }).click();
+		await expect(page.getByText('Contrato de hace menos de un año:')).toBeVisible();
 	});
 
 	test('el embudo: «¿Te ha servido?» y el id de tarjeta llegan al servidor sin precio', async ({ page }) => {

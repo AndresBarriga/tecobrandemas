@@ -78,7 +78,7 @@ test.describe('sin dato', () => {
 
 	test('14-sin-dato-habitacion', async ({ page }) => {
 		await abrir(page);
-		await page.getByRole('button', { name: '¿Es una habitación?' }).click();
+		await comprobar(page, { precio: '450', superficie: '', tipo: 'habitacion' });
 		await expect(page.getByRole('heading', { level: 2, name: /Una habitación/i })).toBeVisible();
 		await captura(page, '14-sin-dato-habitacion');
 	});

@@ -8,12 +8,13 @@
 	import Pie from '#lib/componentes/Pie.svelte';
 	import ConfirmarPrecio from '#lib/componentes/ConfirmarPrecio.svelte';
 	import Resultado from '#lib/componentes/Resultado.svelte';
+	import ResultadoInquilino, { type EstadoAporte } from '#lib/componentes/ResultadoInquilino.svelte';
 	import SinConexion from '#lib/componentes/SinConexion.svelte';
 	import SinDato from '#lib/componentes/SinDato.svelte';
 	import TuZona from '#lib/componentes/TuZona.svelte';
 	import { type TuZonaCargada, cargarTuZona } from '#lib/cliente/zona';
 	import {
-		DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO,
+		DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
 		construirTarjeta, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
 		parecePrecioErroneo,
 		type Pantalla, type PantallaResultado, type SugerenciaZona, type Ubicacion
@@ -22,6 +23,7 @@
 	import { precargarDatos } from '#lib/cliente/datos';
 	import { type EstadoFormulario, type ModoUbicacion, estadoInicial } from '#lib/cliente/estado';
 	import { type Entrada, guardarHistorial, leerHistorial } from '#lib/cliente/historial';
+	import { enviarAportacion } from '#lib/cliente/aportacion';
 	import { registrarAnalisis } from '#lib/cliente/registro';
 	import {
 		compartirNativo, copiarEnlace, descargarImagen, puedeCompartirNativo, subirTarjeta, urlDeTarjeta
@@ -60,6 +62,25 @@
 			});
 	});
 
+	// «Ya vivo aquí»: aportar el alquiler (botón explícito) y cuántos hay en el barrio
+	let aporte = $state<EstadoAporte>('no');
+	let aportadosBarrio = $state<number | null>(null);
+	const esVivo = $derived(f.situacion === 'vivo');
+
+	async function aportar() {
+		const datos = resultado?.inquilino?.aporte;
+		if (!datos || aporte === 'enviando' || aporte === 'hecho') return;
+		aporte = 'enviando';
+		const r = await enviarAportacion(datos);
+		if (r === 'guardada' || r === 'no_guardada') {
+			// Si el servidor descarta un duplicado, la persona ve lo mismo: no se le informa de antiabuso
+			evento('vivo_aporta');
+			aporte = 'hecho';
+			const c = await recuentos(resultado?.barrioCodigo);
+			aportadosBarrio = c?.aportacionesBarrio ?? null;
+		} else aporte = r === 'limite' ? 'limite' : 'error';
+	}
+
 	// Consentimiento del registro anónimo: desmarcado por defecto, por resultado
 	let registro = $state<'no' | 'enviando' | 'sumado'>('no');
 
@@ -86,6 +107,8 @@
 		listo = true;
 		nativo = puedeCompartirNativo();
 		leerOrigenDeLaUrl();
+		// /cuanto-pagas redirige aquí con el selector en «Ya vivo aquí»
+		if (new URLSearchParams(location.search).get('modo') === 'vivo') f.situacion = 'vivo';
 		// Enlaces de «Cómo calculamos»: /?motivo=obra_nueva abre esa pantalla «sin dato» (no cuenta como comprobación)
 		const motivo = pantallaSinDatoDeClave(new URLSearchParams(location.search).get('motivo') ?? '');
 		if (motivo) mostrar(motivo, null, false);
@@ -154,6 +177,8 @@
 		pantalla = p;
 		idTarjeta = p.tipo === 'resultado' ? idDeTarjeta() : null;
 		registro = 'no';
+		aporte = 'no';
+		aportadosBarrio = null;
 		ubicacion = u;
 		problema = null;
 		errores = {};
@@ -169,12 +194,12 @@
 		}
 		void irAlResultado();
 		if (alHistorial && p.tipo === 'resultado') {
-			evento('completa');
+			evento(p.inquilino ? 'vivo_completa' : 'completa');
 			const origen = tarjetaOrigen();
 			if (origen) evento('desde_tarjeta', { tarjeta: origen, unaVez: true });
 			if (contarCompletado() === 2) evento('segundo');
 			pisosBarrio = null;
-			void recuentos(p.barrioCodigo).then((r) => (pisosBarrio = r?.barrio ?? null));
+			if (!p.inquilino) void recuentos(p.barrioCodigo).then((r) => (pisosBarrio = r?.barrio ?? null));
 		}
 	}
 
@@ -185,6 +210,11 @@
 	}
 
 	async function enviar() {
+		// Habitación: su propio recorrido (de momento, la pantalla «sin dato» de habitaciones)
+		if (f.tipo === 'habitacion') {
+			habitacion();
+			return;
+		}
 		const miTurno = ++turno;
 		problema = null;
 		fase = 'buscando';
@@ -317,7 +347,7 @@
 
 	const filas = $derived(historial.map((e) => filaHistorial(e.pantalla)));
 	const puedeAñadirNumero = $derived(ubicacion?.motivo === 'calle');
-	const cabecera = $derived(fase === 'negociar' ? 'volver' : hayResultado ? 'otro' : 'madrid');
+	const cabecera = $derived(fase === 'negociar' ? 'volver' : hayResultado ? (resultado?.inquilino ? 'editar' : 'otro') : 'madrid');
 </script>
 
 <svelte:head>
@@ -330,7 +360,7 @@
 
 <div class="pagina" data-fase={fase} data-listo={listo}>
 	<div class="cabecera-caja" class:con-resultado={hayResultado}>
-		<Cabecera derecha={cabecera} alOtroPiso={otroPiso} alVolver={() => (fase = 'resultado')} />
+		<Cabecera derecha={cabecera} actual="comprobar" alOtroPiso={otroPiso} alVolver={() => (fase = 'resultado')} />
 	</div>
 
 	<main class="rejilla" class:hay-resultado={hayResultado}>
@@ -359,17 +389,20 @@
 		</section>
 
 		<aside class="lado">
-			<h2 class="titulo-lado">{FORMULARIO.titulo}</h2>
+			<h2 class="titulo-lado">{esVivo ? FORMULARIO_VIVO.titulo : FORMULARIO.titulo}</h2>
 			<Formulario
 				bind:f
 				{errores}
 				{problema}
 				buscando={fase === 'buscando'}
 				comprobado={hayResultado}
-				alEmpezar={() => evento('empieza', { unaVez: true })}
+				alEmpezar={() => evento(esVivo ? 'vivo_empieza' : 'empieza', { unaVez: true })}
+				alCambiarSituacion={() => {
+					errores = {};
+					problema = null;
+				}}
 				alEnviar={enviar}
 				alSalirDe={salirDe}
-				alHabitacion={habitacion}
 				alElegirSugerencia={elegirSugerencia}
 				alElegirZona={elegirZona}
 				alCambiarModo={cambiarModo}
@@ -386,6 +419,18 @@
 				<ConfirmarPrecio precio={pendiente.pantalla.vista.precio} m2={pendiente.pantalla.vista.m2} alCorregir={corregirPrecio} alConfirmar={confirmarPrecio} />
 			{:else if fase === 'negociar' && resultado}
 				<Negociar pantalla={resultado} alVolver={() => (fase = 'resultado')} />
+			{:else if pantalla?.tipo === 'resultado' && pantalla.inquilino}
+				<ResultadoInquilino
+					{pantalla}
+					contador={aportadosBarrio !== null && aportadosBarrio >= 10 ? aportadosBarrio : null}
+					{aporte}
+					alAportar={aportar}
+					alMirando={() => {
+						f.situacion = 'mirando';
+						otroPiso();
+					}}
+					alServido={(si) => evento(si ? 'servido_si' : 'servido_no')}
+				/>
 			{:else if pantalla?.tipo === 'resultado'}
 				<Resultado
 					pantalla={pantalla}

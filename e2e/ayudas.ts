@@ -9,7 +9,9 @@ export interface Piso {
 	modo?: 'direccion' | 'calle';
 	obraNueva?: boolean;
 	largaDuracion?: boolean;
-	tipo?: 'piso' | 'casa';
+	tipo?: 'piso' | 'habitacion' | 'casa';
+	/** «Ya vivo aquí»: fecha de firma (o «hace menos de un año») y renta al firmar */
+	vivo?: { mes?: number; ano?: number; reciente?: boolean; rentaFirma?: string };
 }
 
 /** Un piso de Madrid con dato en su sección (la referencia sale de data/processed, no está escrita aquí) */
@@ -22,18 +24,31 @@ export async function abrir(page: Page, ruta = '/') {
 }
 
 export async function rellenar(page: Page, p: Piso) {
+	if (p.vivo) await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
 	if (p.modo === 'calle') await page.getByRole('radio', { name: 'Solo calle' }).check();
+	const tipo = page.getByRole('radiogroup', { name: 'Tipo de vivienda' });
+	if (p.tipo === 'casa') await tipo.getByRole('radio', { name: 'Casa' }).check();
+	if (p.tipo === 'habitacion') await tipo.getByRole('radio', { name: 'Habitación' }).check();
 	await page.fill('#direccion', p.direccion ?? BERRO);
 	await page.fill('#precio', p.precio);
-	await page.fill('#superficie', p.superficie);
+	if (p.tipo !== 'habitacion') await page.fill('#superficie', p.superficie);
+	if (p.vivo) {
+		if (p.vivo.reciente) await page.getByRole('checkbox', { name: 'Hace menos de un año' }).check();
+		else if (p.vivo.ano) {
+			await page.selectOption('#firma-mes', String(p.vivo.mes ?? 1));
+			await page.selectOption('#firma-ano', String(p.vivo.ano));
+		}
+		if (p.vivo.rentaFirma) await page.fill('#renta-firma', p.vivo.rentaFirma);
+	}
+	// Obra nueva y larga duración viven en el resumen plegado
+	if (p.obraNueva || p.largaDuracion === false) await page.getByRole('button', { name: 'cambiar', exact: true }).click();
 	if (p.obraNueva) await page.getByRole('radiogroup', { name: /obra nueva/ }).getByRole('radio', { name: 'Sí' }).check();
 	if (p.largaDuracion === false) await page.getByRole('radiogroup', { name: /larga duración/ }).getByRole('radio', { name: 'No' }).check();
-	if (p.tipo === 'casa') await page.getByRole('radiogroup', { name: /piso o casa/i }).getByRole('radio', { name: 'Casa' }).check();
 }
 
 export async function comprobar(page: Page, p: Piso) {
 	await rellenar(page, p);
-	await page.locator('form').getByRole('button', { name: /^Comprobar (el precio|otro piso)$/ }).click();
+	await page.locator('form').getByRole('button', { name: /^(Comprobar (el precio|otro piso|mi alquiler|otro alquiler)|Comparar (mi|la) habitación)$/ }).click();
 }
 
 /** Espera a que el punto de la barra termine de deslizarse */

@@ -4,13 +4,14 @@
  * El cálculo vive en el motor y en resultado/; aquí solo se encadenan los pasos.
  */
 import {
-	type ErroresFormulario, type Pantalla, type Ubicacion, construirPantalla, pantallaSinDato, validarFormulario
+	FORMULARIO_VIVO, type ErroresFormulario, type ExtraInquilino, type Pantalla, type Ubicacion, aInquilino, construirPantalla,
+	interpretarRentaFirma, interpretarSomos, pantallaSinDato, validarFirma, validarFormulario
 } from '#lib/resultado';
 import { cargarDatos } from './datos';
 import { DemasiadasBusquedas, buscarDireccion } from './direccion';
 import type { EstadoFormulario } from './estado';
 
-export type ErroresCampos = ErroresFormulario & { direccion?: string; mapa?: string };
+export type ErroresCampos = ErroresFormulario & { direccion?: string; mapa?: string; firma?: string; rentaFirma?: string };
 
 export type Comprobacion =
 	| { tipo: 'pantalla'; pantalla: Pantalla; ubicacion: Ubicacion | null }
@@ -24,7 +25,8 @@ const crudo = (f: EstadoFormulario) => ({
 	superficie: f.superficie,
 	obraNueva: f.obraNueva,
 	largaDuracion: f.largaDuracion,
-	tipo: f.tipo
+	// La habitación tiene su propio recorrido; aquí solo llegan pisos y casas
+	tipo: f.tipo === 'casa' ? ('casa' as const) : ('piso' as const)
 });
 
 /** Validación al salir de un campo: solo ese campo */
@@ -40,6 +42,17 @@ export function validarCampo(f: EstadoFormulario, campo: 'precio' | 'superficie'
 export async function comprobar(f: EstadoFormulario, pin: Ubicacion | null | 'fuera'): Promise<Comprobacion> {
 	const v = validarFormulario(crudo(f));
 	const errores: ErroresCampos = v.ok ? {} : { ...v.errores };
+
+	// «Ya vivo aquí»: fecha de firma obligatoria y renta al firmar opcional
+	let extra: ExtraInquilino | null = null;
+	if (f.situacion === 'vivo') {
+		const hoy = new Date();
+		const firma = validarFirma({ reciente: f.firmaReciente, mes: f.firmaMes, ano: f.firmaAno }, { ano: hoy.getFullYear(), mes: hoy.getMonth() + 1 });
+		const rentaFirma = interpretarRentaFirma(f.rentaFirma);
+		if (!firma.ok) errores.firma = FORMULARIO_VIVO.errorFirma;
+		if (rentaFirma === 'error') errores.rentaFirma = FORMULARIO_VIVO.errorRentaFirma;
+		if (firma.ok && rentaFirma !== 'error') extra = { firma: firma.firma, rentaFirma, somos: interpretarSomos(f.somos) };
+	}
 
 	if (f.modo === 'mapa') {
 		if (pin === null) errores.mapa = 'Marca en el mapa el punto donde está el piso.';
@@ -68,5 +81,6 @@ export async function comprobar(f: EstadoFormulario, pin: Ubicacion | null | 'fu
 		if (r.tipo === 'pedir_numero_o_mapa') return { tipo: 'pedir_numero', calle: r.calle, nSecciones: r.nSecciones };
 		ubicacion = r.ubicacion;
 	}
-	return { tipo: 'pantalla', pantalla: construirPantalla(v.anuncio, ubicacion, datos), ubicacion };
+	const pantalla = construirPantalla(v.anuncio, ubicacion, datos);
+	return { tipo: 'pantalla', pantalla: extra && pantalla.tipo === 'resultado' ? aInquilino(pantalla, v.anuncio, extra) : pantalla, ubicacion };
 }

@@ -12,7 +12,6 @@
 	<p>{datos}</p>
 	<p>{otras}</p>
 	<a class="enlace-pie" href="/como-calculamos">Cómo calculamos</a>
-	<a class="enlace-pie" href="/cuanto-pagas">¿Cuánto pagas tú?</a>
 </footer>
 
 <style>

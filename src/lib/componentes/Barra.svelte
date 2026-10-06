@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { colocarEtiqueta, type Barra, type Vista } from '#lib/resultado';
 
-	let { barra, vista }: { barra: Barra; vista: Vista } = $props();
+	let { barra, vista, etiquetaPrecio = 'tu anuncio' }: { barra: Barra; vista: Vista; etiquetaPrecio?: string } = $props();
 
 	const NB = ' ';
 	const clase = $derived(vista.clase);
@@ -68,7 +68,7 @@
 	);
 
 	const descripcion = $derived(
-		`Tu anuncio, ${etiquetas.precio}. Parte alta de la referencia, ${etiquetas.parteAlta}. Techo para un piso excelente, ${etiquetas.techo}.`
+		`${etiquetaPrecio.charAt(0).toUpperCase()}${etiquetaPrecio.slice(1)}, ${etiquetas.precio}. Parte alta de la referencia, ${etiquetas.parteAlta}. Techo para un piso excelente, ${etiquetas.techo}.`
 	);
 </script>
 
@@ -83,7 +83,7 @@
 	onclick={repetir}
 >
 	<div class="et anuncio" bind:offsetWidth={wAnuncio} style:left="{anuncioIzq}px">
-		tu anuncio <strong>{etiquetas.precio}</strong>
+		{etiquetaPrecio} <strong>{etiquetas.precio}</strong>
 	</div>
 
 	{#if referenciaFuera}
