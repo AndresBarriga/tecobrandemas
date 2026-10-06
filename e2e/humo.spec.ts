@@ -60,7 +60,8 @@ test.describe('humo', () => {
 	});
 
 	test('3. tarjeta de prueba fija: /t/:id la enseña con vista previa y la imagen OG sale', async ({ page, request, baseURL }) => {
-		// Solo lectura: la tarjeta se creó una vez a mano con este id (ver docs/operacion.md)
+		// Solo lectura: la tarjeta se creó una vez a mano en producción (ver docs/operacion.md); en local no existe
+		test.skip(!process.env.BASE_URL, 'Solo contra un despliegue: la tarjeta pruebahumo vive en producción');
 		const id = 'pruebahumo';
 		await page.goto(`/t/${id}`);
 		await expect(page.getByText(/Alguien ha comprobado un piso en/)).toBeVisible();

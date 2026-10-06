@@ -167,7 +167,7 @@ test.describe('otras pantallas', () => {
 		await page.fill('#precio', '2500');
 		await page.fill('#superficie', '90');
 		await page.getByRole('button', { name: 'Comprobar el precio' }).click();
-		await expect(page.locator('main h1, main h2').first()).toBeVisible();
+		await expect(page.locator('main h1:visible, main h2:visible').first()).toBeVisible();
 		expect(posts).toEqual([]);
 	});
 
