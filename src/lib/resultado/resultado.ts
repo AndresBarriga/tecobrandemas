@@ -17,6 +17,7 @@ import {
 	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, type ClaveSinDato, type MotivoPantalla,
 	PRECIO_PEDIDO, QUE_PUEDES_HACER, SIN_DATO, TEXTO_OFICIAL_SIN_DATO
 } from './textos';
+import type { PantallaHabitacion } from './habitacion';
 import type { InfoInquilino } from './inquilino';
 import type { Punto } from '../ubicacion/geocodificar';
 import type { Ubicacion } from './ubicacion';
@@ -97,7 +98,7 @@ export interface RegistroAnalisis {
 	nivel: 'a' | 'b' | 'c';
 }
 
-export type Pantalla = PantallaSinDato | PantallaResultado;
+export type Pantalla = PantallaSinDato | PantallaResultado | PantallaHabitacion;
 
 /** Qué se sabe del anuncio y de dónde está, para el encabezado de la pantalla sin dato */
 export interface ContextoSinDato {

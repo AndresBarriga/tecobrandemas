@@ -32,6 +32,7 @@ export async function rellenar(page: Page, p: Piso) {
 	await page.fill('#direccion', p.direccion ?? BERRO);
 	await page.fill('#precio', p.precio);
 	if (p.tipo !== 'habitacion') await page.fill('#superficie', p.superficie);
+	else await page.getByRole('radio', { name: 'No lo sé' }).check();
 	if (p.vivo) {
 		if (p.vivo.reciente) await page.getByRole('checkbox', { name: 'Hace menos de un año' }).check();
 		else if (p.vivo.ano) {

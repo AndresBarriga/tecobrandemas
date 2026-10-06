@@ -16,6 +16,7 @@ export * from './alias';
 export * from './formulario';
 export * from './aportacion';
 export * from './inquilino';
+export * from './habitacion';
 export * from './ratio';
 export * from './vista';
 export * from './tuzona';

@@ -8,6 +8,7 @@
 	import Pie from '#lib/componentes/Pie.svelte';
 	import ConfirmarPrecio from '#lib/componentes/ConfirmarPrecio.svelte';
 	import Resultado from '#lib/componentes/Resultado.svelte';
+	import ResultadoHabitacion from '#lib/componentes/ResultadoHabitacion.svelte';
 	import ResultadoInquilino, { type EstadoAporte } from '#lib/componentes/ResultadoInquilino.svelte';
 	import SinConexion from '#lib/componentes/SinConexion.svelte';
 	import SinDato from '#lib/componentes/SinDato.svelte';
@@ -23,7 +24,7 @@
 	import { precargarDatos } from '#lib/cliente/datos';
 	import { type EstadoFormulario, type ModoUbicacion, estadoInicial } from '#lib/cliente/estado';
 	import { type Entrada, guardarHistorial, leerHistorial } from '#lib/cliente/historial';
-	import { enviarAportacion } from '#lib/cliente/aportacion';
+	import { enviarAportacion, enviarHabitacion, pedirComparacion } from '#lib/cliente/aportacion';
 	import { registrarAnalisis } from '#lib/cliente/registro';
 	import {
 		compartirNativo, copiarEnlace, descargarImagen, puedeCompartirNativo, subirTarjeta, urlDeTarjeta
@@ -66,6 +67,34 @@
 	let aporte = $state<EstadoAporte>('no');
 	let aportadosBarrio = $state<number | null>(null);
 	const esVivo = $derived(f.situacion === 'vivo');
+
+	// Habitación: comparación con las aportadas en el barrio (el recuento y, desde 10, la mediana)
+	const habitacionPantalla = $derived(pantalla?.tipo === 'habitacion' ? pantalla : null);
+	let comparacionHab = $state<{ n: number; mediana: number | null } | 'error' | null>(null);
+	let aporteHab = $state<EstadoAporte>('no');
+	let turnoHab = 0;
+	$effect(() => {
+		const h = habitacionPantalla;
+		const mio = ++turnoHab;
+		comparacionHab = null;
+		if (!h) return;
+		void pedirComparacion(h.barrioCodigo, h.gastos).then((c) => {
+			if (mio === turnoHab) comparacionHab = c ?? 'error';
+		});
+	});
+
+	async function aportarHabitacion() {
+		const datos = habitacionPantalla?.aporte;
+		if (!datos || aporteHab === 'enviando' || aporteHab === 'hecho') return;
+		aporteHab = 'enviando';
+		const r = await enviarHabitacion(datos);
+		if (r === 'guardada' || r === 'no_guardada') {
+			evento('vivo_aporta');
+			aporteHab = 'hecho';
+			const c = await pedirComparacion(datos.barrio, datos.gastos);
+			if (c) comparacionHab = c;
+		} else aporteHab = r === 'limite' ? 'limite' : 'error';
+	}
 
 	async function aportar() {
 		const datos = resultado?.inquilino?.aporte;
@@ -178,6 +207,7 @@
 		idTarjeta = p.tipo === 'resultado' ? idDeTarjeta() : null;
 		registro = 'no';
 		aporte = 'no';
+		aporteHab = 'no';
 		aportadosBarrio = null;
 		ubicacion = u;
 		problema = null;
@@ -193,6 +223,10 @@
 			activa = null;
 		}
 		void irAlResultado();
+		if (alHistorial && p.tipo === 'habitacion') {
+			// Una habitación no es un «piso comprobado»: no cuenta en el recuento público
+			evento(p.vivo ? 'vivo_completa' : 'habitacion');
+		}
 		if (alHistorial && p.tipo === 'resultado') {
 			evento(p.inquilino ? 'vivo_completa' : 'completa');
 			const origen = tarjetaOrigen();
@@ -210,11 +244,6 @@
 	}
 
 	async function enviar() {
-		// Habitación: su propio recorrido (de momento, la pantalla «sin dato» de habitaciones)
-		if (f.tipo === 'habitacion') {
-			habitacion();
-			return;
-		}
 		const miTurno = ++turno;
 		problema = null;
 		fase = 'buscando';
@@ -310,12 +339,6 @@
 		enfoqueMapa = { clase: z.clase, codigo: z.codigo, vez: ++vezMapa };
 	}
 
-	function habitacion() {
-		turno++;
-		evento('habitacion');
-		// La pantalla de habitación no cuenta como comprobación del historial
-		mostrar(pantallaSinDato('habitacion'), null, false);
-	}
 
 	function marcarPunto(u: Ubicacion | null) {
 		pin = u ?? 'fuera';
@@ -347,7 +370,7 @@
 
 	const filas = $derived(historial.map((e) => filaHistorial(e.pantalla)));
 	const puedeAñadirNumero = $derived(ubicacion?.motivo === 'calle');
-	const cabecera = $derived(fase === 'negociar' ? 'volver' : hayResultado ? (resultado?.inquilino ? 'editar' : 'otro') : 'madrid');
+	const cabecera = $derived(fase === 'negociar' ? 'volver' : hayResultado ? (resultado?.inquilino || habitacionPantalla ? 'editar' : 'otro') : 'madrid');
 </script>
 
 <svelte:head>
@@ -458,13 +481,24 @@
 				{#if resultado?.zona}
 					<TuZona estado={tuZona.estado} vista={tuZona.datos?.vista} geom={tuZona.datos?.geom} />
 				{/if}
+			{:else if pantalla?.tipo === 'habitacion'}
+				<ResultadoHabitacion
+					{pantalla}
+					comparacion={comparacionHab}
+					aporte={aporteHab}
+					alAportar={aportarHabitacion}
+					alPiso={() => {
+						f.tipo = 'piso';
+						otroPiso();
+					}}
+				/>
 			{:else if pantalla?.tipo === 'sin_dato'}
 				<SinDato {pantalla} alOtro={otroPiso} />
 			{/if}
 		</div>
 	</main>
 
-	<Pie />
+	<Pie habitacion={fase === 'resultado' && !!habitacionPantalla} />
 </div>
 
 <style>

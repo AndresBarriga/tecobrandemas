@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { ATRIBUCIONES, AVISO_INDEPENDIENTE, ENLACE_OFICIAL } from '#lib/resultado';
+	import { ATRIBUCIONES, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, HABITACION } from '#lib/resultado';
+
+	/** En el resultado de una habitación: aviso de que son datos aportados, no una referencia oficial */
+	let { habitacion = false }: { habitacion?: boolean } = $props();
 
 	const atribuciones = ATRIBUCIONES;
 	const datos = atribuciones.slice(0, 2).join('. ') + '.';
@@ -8,6 +11,7 @@
 </script>
 
 <footer>
+	{#if habitacion}<p>{HABITACION.pie}</p>{/if}
 	<p>{antes}<a href={ENLACE_OFICIAL}>serpavi.mivau.gob.es</a>{despues}</p>
 	<p>{datos}</p>
 	<p>{otras}</p>

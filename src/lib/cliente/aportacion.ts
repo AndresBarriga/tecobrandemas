@@ -3,7 +3,7 @@
  * Solo se envía con la casilla de consentimiento marcada; la calle no sale de la geocodificación
  * y no se guarda: del servidor solo se lleva el barrio.
  */
-import { type AportacionPayload, type BarrioDeSeccion, barriosDe } from '#lib/resultado';
+import { type AportacionPayload, type BarrioDeSeccion, type HabitacionPayload, barriosDe } from '#lib/resultado';
 import { cargarDatos } from './datos';
 import { buscarDireccion } from './direccion';
 
@@ -34,5 +34,31 @@ export async function enviarAportacion(p: AportacionPayload): Promise<EnvioAport
 		return ((await r.json()) as { guardado: boolean }).guardado ? 'guardada' : 'no_guardada';
 	} catch {
 		return 'error';
+	}
+}
+
+export async function enviarHabitacion(p: HabitacionPayload): Promise<EnvioAportacion> {
+	try {
+		const r = await fetch('/api/habitacion', {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify(p)
+		});
+		if (r.status === 429) return 'limite';
+		if (!r.ok) return 'error';
+		return ((await r.json()) as { guardado: boolean }).guardado ? 'guardada' : 'no_guardada';
+	} catch {
+		return 'error';
+	}
+}
+
+/** Habitaciones aportadas en el barrio con el mismo «incluye gastos»: el recuento y, desde 10, la mediana */
+export async function pedirComparacion(barrio: string, gastos: boolean): Promise<{ n: number; mediana: number | null } | null> {
+	try {
+		// `t` evita la caché de 60 s: tras aportar, el recuento tiene que incluir la propia
+		const r = await fetch(`/api/habitacion?barrio=${encodeURIComponent(barrio)}&gastos=${gastos ? 1 : 0}&t=${Date.now()}`);
+		return r.ok ? await r.json() : null;
+	} catch {
+		return null;
 	}
 }

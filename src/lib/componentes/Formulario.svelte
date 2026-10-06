@@ -313,7 +313,7 @@
 		{/if}
 	{/if}
 
-	{#if vivo}
+	{#if vivo && !habitacion}
 		<fieldset class="grupo">
 			<legend>{FORMULARIO_VIVO.firma}</legend>
 			<label class="reciente" class:activo={f.firmaReciente}>

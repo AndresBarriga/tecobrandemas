@@ -10,7 +10,9 @@ import barriosJson from '../../../data/processed/seccion_barrio.json';
 import esquema1 from '../../../migrations/0001_registro.sql?raw';
 import esquema2 from '../../../migrations/0002_aportaciones_firma.sql?raw';
 
-const esquema = `${esquema1}\n${esquema2}`;
+import esquema3 from '../../../migrations/0003_habitaciones.sql?raw';
+
+const esquema = `${esquema1}\n${esquema2}\n${esquema3}`;
 
 /** Lo mínimo de R2 que usa la ruta del mapa: lectura con rangos de bytes */
 export interface R2Mapa {

@@ -57,7 +57,7 @@ export async function claveLimite(secreto: string, ip: string, ahora: Date): Pro
 }
 
 /** Clave de deduplicación: HMAC con secreto, separada por tipo para que registros y aportaciones no se mezclen */
-export const claveDedupe = (secreto: string, tipo: 'a' | 'p', precio: number, m2: number, barrio: string) =>
+export const claveDedupe = (secreto: string, tipo: 'a' | 'p' | 'h', precio: number, m2: number, barrio: string) =>
 	hmac(secreto, `dedupe:${tipo}:${precio}:${m2}:${barrio}`);
 
 // ——— Validación ———
@@ -124,6 +124,31 @@ export function leerAportacion(x: unknown, barrios: ReadonlySet<string>, anioAct
 	};
 }
 
+// ——— Habitaciones ———
+
+/** €/mes de una habitación que se acepta (plausible); fuera de este rango se descarta */
+export const HABITACION_MIN = 150;
+export const HABITACION_MAX = 1500;
+export const TRAMOS_PISO = ['hasta60', '60-90', '90-120', 'mas120', 'nose'] as const;
+
+export interface HabitacionEntrada {
+	barrio: string;
+	precio: number;
+	habitaciones: number;
+	tramo: (typeof TRAMOS_PISO)[number];
+	gastos: boolean;
+}
+
+export function leerHabitacion(x: unknown, barrios: ReadonlySet<string>): HabitacionEntrada | null {
+	const o = x as Record<string, unknown> | null;
+	if (!o || typeof o !== 'object') return null;
+	if (typeof o.barrio !== 'string' || !barrios.has(o.barrio)) return null;
+	if (!entero(o.precio) || o.precio < HABITACION_MIN || o.precio > HABITACION_MAX) return null;
+	if (!entero(o.habitaciones) || o.habitaciones < 1 || o.habitaciones > 6) return null;
+	if (!TRAMOS_PISO.includes(o.tramo as never) || typeof o.gastos !== 'boolean') return null;
+	return { barrio: o.barrio, precio: o.precio, habitaciones: o.habitaciones, tramo: o.tramo as HabitacionEntrada['tramo'], gastos: o.gastos };
+}
+
 // ——— Antiabuso ———
 
 async function purgar(db: D1Registro, ahora: number) {
@@ -152,7 +177,7 @@ async function dentroDelLimite(c: Contexto, ip: string, ambito: 'r' | 'e' | 'g',
 export const puedeGeocodificar = (c: Contexto, ip: string) => dentroDelLimite(c, ip, 'g', LIMITE_GEOCODIFICACIONES_DIA);
 
 /** true si es nuevo (y lo anota); false si ya se registró en los últimos 30 días */
-async function esNuevo(c: Contexto, tipo: 'a' | 'p', precio: number, m2: number, barrio: string): Promise<boolean> {
+async function esNuevo(c: Contexto, tipo: 'a' | 'p' | 'h', precio: number, m2: number, barrio: string): Promise<boolean> {
 	const t = c.ahora().getTime();
 	const clave = await claveDedupe(c.secreto, tipo, precio, m2, barrio);
 	const fila = await c.db.prepare('SELECT caduca FROM dedupe WHERE clave = ?').bind(clave).first<{ caduca: number }>();
@@ -185,6 +210,38 @@ export async function registrarAportacion(c: Contexto, ip: string, a: Aportacion
 		.bind(mesDe(c.ahora()), a.barrio, a.precio, a.m2, a.anioContrato, a.incluye.join(','), a.firmaMes ?? null, a.rentaFirma ?? null)
 		.run();
 	return 'guardado';
+}
+
+export async function registrarHabitacion(c: Contexto, ip: string, h: HabitacionEntrada): Promise<Resultado> {
+	if (!(await dentroDelLimite(c, ip, 'r', LIMITE_REGISTROS_DIA))) return 'limite';
+	await purgar(c.db, c.ahora().getTime());
+	// Mismo mes, barrio, renta y habitaciones: se cuenta una sola vez (la clave no se puede revertir)
+	if (!(await esNuevo(c, 'h', h.precio, h.habitaciones, h.barrio))) return 'descartado';
+	await c.db
+		.prepare('INSERT INTO habitaciones (mes, barrio, precio, num_habitaciones, tamano_piso_tramo, gastos_incluidos) VALUES (?, ?, ?, ?, ?, ?)')
+		.bind(mesDe(c.ahora()), h.barrio, h.precio, h.habitaciones, h.tramo, h.gastos ? 1 : 0)
+		.run();
+	return 'guardado';
+}
+
+export interface ComparacionHabitaciones {
+	/** Habitaciones aportadas en el barrio con el mismo «incluye gastos» */
+	n: number;
+	/** Mediana en €/mes; solo desde 10 aportaciones */
+	mediana: number | null;
+}
+
+/** Con menos de 10 solo se da el recuento: la mediana de pocas habitaciones dejaría ver rentas sueltas */
+export async function compararHabitaciones(db: D1Registro, barrio: string, gastos: boolean): Promise<ComparacionHabitaciones> {
+	const filas =
+		(await db
+			.prepare('SELECT precio FROM habitaciones WHERE barrio = ? AND gastos_incluidos = ? ORDER BY precio')
+			.bind(barrio, gastos ? 1 : 0)
+			.all<{ precio: number }>()).results ?? [];
+	const n = filas.length;
+	if (n < MINIMO_PUBLICO) return { n, mediana: null };
+	const m = n >> 1;
+	return { n, mediana: n % 2 ? filas[m]!.precio : Math.round((filas[m - 1]!.precio + filas[m]!.precio) / 2) };
 }
 
 export interface EventoEntrada {

@@ -298,6 +298,42 @@ export const INQUILINO = {
 	servido: '¿Te ha servido?'
 } as const;
 
+/** Habitaciones (F1): sin referencia oficial, sin nivel ni veredicto */
+export const HABITACION = {
+	insignia: 'Habitaciones: datos aportados por vecinos',
+	intro: 'La referencia oficial no cubre habitaciones, así que no te damos nivel ni veredicto. Solo comparamos con lo que aportan otras personas de tu barrio.',
+	tuHabitacion: 'Tu habitación',
+	otras: (barrio: string) => `Otras habitaciones en ${barrio}`,
+	alMes: (gastos: boolean) => `al mes, ${gastos ? 'con' : 'sin'} gastos`,
+	mediana: (n: number) => `mediana, ${n} aportaciones`,
+	mismoGastos: (gastos: boolean) =>
+		`Solo cuentan habitaciones que también ${gastos ? 'incluyen' : 'no incluyen'} gastos. La mediana deja la mitad de las aportaciones por encima y la mitad por debajo.`,
+	pocas: (barrio: string, n: number) => `Aún no hay suficientes habitaciones en ${barrio} (${n} de ${10}). Aporta la tuya y suma.`,
+	pocasMirando: (barrio: string, n: number) => `Aún no hay suficientes habitaciones en ${barrio} (${n} de ${10}) para comparar.`,
+	cargando: 'Buscando habitaciones aportadas en tu barrio…',
+	sinConexion: 'No hemos podido consultar las habitaciones del barrio. Inténtalo de nuevo más tarde.',
+	aportar: {
+		titulo: 'Aporta tu habitación a las estadísticas de tu barrio',
+		seGuarda: 'barrio, renta, habitaciones del piso, tamaño aproximado, si incluye gastos y el mes.',
+		noSeGuarda: 'dirección, ubicación, nombre, correo ni IP.',
+		boton: 'Aportar mi habitación',
+		nota: 'Es opcional. Si no pulsas, no se envía nada.'
+	},
+	aportada: {
+		etiqueta: 'Habitación aportada',
+		faltan: (n: number) => `Gracias. Faltan ${n} para ver tu barrio.`,
+		hay: (n: number, barrio: string) => `Gracias. ${n} aportaciones en ${barrio}.`,
+		detalle: 'Nadie ve las rentas por separado: solo la mediana, y solo desde 10 aportaciones.'
+	},
+	acciones: {
+		titulo: 'Qué puedes hacer',
+		compartis: '¿Compartís piso con un solo contrato?',
+		compartisDetalle: 'Compara el piso entero con la referencia oficial',
+		porQue: 'Por qué no hay referencia para habitaciones'
+	},
+	pie: 'Habitaciones: datos aportados por personas usuarias, sin verificar. No es una referencia oficial.'
+} as const;
+
 /** Autocompletado de la dirección */
 export const AUTOCOMPLETAR = {
 	lista: 'Sugerencias de calles',
