@@ -196,6 +196,10 @@ export const ERRORES = {
 		soloCalle: 'Solo la calle',
 		enMapa: 'En el mapa'
 	},
+	demasiadas: {
+		titulo: 'Demasiadas búsquedas.',
+		texto: 'Espera un momento. Mientras tanto, puedes ubicarlo de otra forma.'
+	},
 	pedirNumero: (calle: string, n: number) => ({
 		titulo: `${calle} cruza ${n} zonas con referencias distintas.`,
 		texto: 'Escribe el número del portal o márcalo en el mapa.'

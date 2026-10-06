@@ -198,6 +198,10 @@
 				problema = { tipo: 'no_encontrada', sugerencias: r.sugerencias };
 				errores = {};
 				fase = 'inicio';
+			} else if (r.tipo === 'demasiadas') {
+				problema = { tipo: 'demasiadas' };
+				errores = {};
+				fase = 'inicio';
 			} else if (r.tipo === 'pedir_numero') {
 				problema = { tipo: 'pedir_numero', calle: r.calle, nSecciones: r.nSecciones };
 				errores = {};
@@ -319,7 +323,7 @@
 		<Cabecera derecha={cabecera} alOtroPiso={otroPiso} alVolver={() => (fase = 'resultado')} />
 	</div>
 
-	<div class="rejilla" class:hay-resultado={hayResultado}>
+	<main class="rejilla" class:hay-resultado={hayResultado}>
 		<section class="hero" aria-label="Qué hace {NOMBRE}">
 			<h1>
 				{TITULAR_INICIO[0]}
@@ -364,7 +368,7 @@
 			<div class="historial"><HistorialSesion {filas} {activa} alElegir={elegirHistorial} /></div>
 		</aside>
 
-		<main class="principal" bind:this={ficha} tabindex="-1">
+		<div class="principal" bind:this={ficha} tabindex="-1">
 			{#if fase === 'sin_conexion'}
 				<SinConexion formulario={f} alReintentar={enviar} alEditar={otroPiso} />
 			{:else if fase === 'confirmar' && pendiente}
@@ -401,8 +405,8 @@
 			{:else if pantalla?.tipo === 'sin_dato'}
 				<SinDato {pantalla} alOtro={otroPiso} />
 			{/if}
-		</main>
-	</div>
+		</div>
+	</main>
 
 	<Pie />
 </div>

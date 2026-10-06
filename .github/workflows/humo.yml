@@ -1,16 +1,11 @@
 name: Prueba de humo
 
-# Cada hora comprueba la web desplegada y abre un issue si algo falla. Una vez al día (06:00 UTC), o a mano,
-# también crea una tarjeta compartida para comprobar R2, D1 y la vista previa.
+# Cada hora comprueba la web desplegada y abre un issue si algo falla. Es de solo lectura: no escribe nada
+# (la tarjeta de prueba `pruebahumo` es fija, creada una vez a mano).
 on:
   schedule:
     - cron: '7 * * * *'
   workflow_dispatch:
-    inputs:
-      escribir:
-        description: 'Crear también una tarjeta de prueba'
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -31,9 +26,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Decidir si se escribe una tarjeta
-        run: |
-          if [ "${{ inputs.escribir }}" = "true" ] || [ "$(date -u +%H)" = "06" ]; then echo "HUMO_ESCRIBE=1" >> "$GITHUB_ENV"; fi
       - name: Prueba de humo
         id: humo
         run: npx playwright test e2e/humo.spec.ts --project=movil-390 --reporter=list

@@ -4,6 +4,7 @@
  * Sin imports de ejecución: lo usa tanto el Worker (si hiciera falta) como scripts/metricas.ts.
  */
 import type { D1Registro } from './db';
+import { ID_TARJETA_PRUEBA } from './tarjetas';
 
 const MINIMO_PUBLICO = 10;
 
@@ -88,7 +89,7 @@ export async function calcularMetricas(db: D1Registro, desde: Date | null = null
 	const canales: Record<string, number> = { nativo: await visitas('comparte') };
 	for (const c of CANALES) canales[c] = await visitas(`comparte_${c}`);
 	const analisisTotales = await eventos('completa');
-	const tarjetasCreadas = (await db.prepare('SELECT COUNT(*) AS n FROM tarjetas').first<{ n: number }>())?.n ?? 0;
+	const tarjetasCreadas = (await db.prepare('SELECT COUNT(*) AS n FROM tarjetas WHERE id <> ?').bind(ID_TARJETA_PRUEBA).first<{ n: number }>())?.n ?? 0;
 
 	const objetivos = [
 		objetivo('H1', 'Utilidad: empiezan / llegadas', embudo.empiezan, embudo.llegadas, 0.25),
