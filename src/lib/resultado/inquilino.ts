@@ -89,9 +89,9 @@ export function aInquilino(p: PantallaResultado, a: Anuncio, extra: ExtraInquili
 			nota = INQUILINO.notaEncimab(pct);
 		}
 	} else if (pos === 'debajo') {
-		nota = INQUILINO.notaDebajo(v.m2);
+		nota = INQUILINO.notaDebajo(v.m2, p.horquilla);
 	} else {
-		nota = INQUILINO.notaDentro(numero(p.barra.inf.max), euros(p.barra.sup.min), v.m2);
+		nota = INQUILINO.notaDentro(numero(p.barra.inf.max), euros(p.barra.sup.min), v.m2, p.horquilla);
 	}
 
 	const clase: Clase = pos === 'encima' ? 'c' : pos === 'encimab' ? 'b' : 'a';
@@ -138,5 +138,7 @@ export function aInquilino(p: PantallaResultado, a: Anuncio, extra: ExtraInquili
 	// El inquilino no registra el anuncio (R7) ni ve «Tu zona»: aporta con su propio botón
 	// Por debajo de la referencia no hay «tercio» al que señalar en la banda
 	const vista = pos === 'debajo' ? { ...p.vista, barra: { ...p.vista.barra, tercio: null } } : p.vista;
-	return { ...p, vista, registro: null, zona: null, inquilino: info };
+	// Con horquilla (calle que cruza varias zonas o radio de precisión) se enseña el mapa con todas las zonas afectadas
+	const zona = p.horquilla && p.zona ? { ...p.zona, clase: 'a' as const, inquilino: true } : null;
+	return { ...p, vista, registro: null, zona, inquilino: info };
 }

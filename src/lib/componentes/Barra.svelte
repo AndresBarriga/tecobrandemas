@@ -55,9 +55,11 @@
 
 	const referenciaDentro = $derived(bandaAncho >= 66 && !esA);
 	const referenciaFuera = $derived(bandaAncho < 66 && !esA);
-	const filaParte = $derived(esA ? 84 : 62);
-	const filaTecho = $derived(esA ? 106 : 84);
-	const alto = $derived(esA ? 124 : 102);
+	// Con horquilla las cifras de rango van en una leyenda bajo la barra: sin etiquetas largas que se pisen
+	const horquilla = $derived(barra.horquilla);
+	const filaParte = $derived(horquilla ? 60 : esA ? 84 : 62);
+	const filaTecho = $derived(horquilla ? 60 : esA ? 106 : 84);
+	const alto = $derived(horquilla ? 84 : esA ? 124 : 102);
 
 	const anuncioIzq = $derived(centrar(precioX, wAnuncio));
 	// La fila de «parte alta» es la del «0 €» (salvo en el nivel a); la del techo queda debajo
@@ -73,8 +75,9 @@
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
+<div class="conjunto nivel-{clase}">
 <div
-	class="barra nivel-{clase}"
+	class="barra"
 	style:height="{alto}px"
 	bind:clientWidth={W}
 	role="img"
@@ -126,9 +129,11 @@
 		style:width="{hayTramoParte ? parteMax - parteMin : 1}px"
 		style:height="{filaParte - 54}px"
 	></div>
+	{#if !horquilla}
 	<div class="et nota" bind:offsetWidth={wParte} style:top="{filaParte}px" style:left="{parteIzq}px">
 		parte alta <strong>{etiquetas.parteAlta}</strong>
 	</div>
+	{/if}
 	<div
 		class="marca"
 		class:tramo={hayTramoTecho}
@@ -136,16 +141,64 @@
 		style:width="{hayTramoTecho ? techoMax - techoMin : 1}px"
 		style:height="{filaTecho - 54}px"
 	></div>
+	{#if !horquilla}
 	<div class="et nota" bind:offsetWidth={wTecho} style:top="{filaTecho}px" style:left="{techoIzq}px">
 		techo para un piso excelente <strong>{etiquetas.techo}</strong>
 	</div>
+	{/if}
 
-	{#if esC && etiquetas.delta}
+	{#if esC && etiquetas.delta && !horquilla}
 		<div class="et delta" bind:offsetWidth={wDelta} style:left="{deltaIzq}px">{etiquetas.delta}</div>
 	{/if}
 </div>
 
+{#if horquilla}
+	<ul class="leyenda">
+		<li><span class="muestra incertidumbre"></span>Parte alta de la referencia: <strong>{etiquetas.parteAlta}</strong></li>
+		<li><span class="muestra techo"></span>Techo para un piso excelente: <strong>{etiquetas.techo}</strong></li>
+		{#if esC && etiquetas.delta}<li><span class="muestra acento"></span>Sobre la parte alta: <strong>{etiquetas.delta}</strong></li>{/if}
+	</ul>
+{/if}
+</div>
+
 <style>
+	.conjunto {
+		width: 100%;
+	}
+	.leyenda {
+		list-style: none;
+		margin: 12px 0 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		font: 500 13px/1.35 var(--f-semi);
+		color: var(--grafito);
+	}
+	.leyenda li {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.leyenda strong {
+		color: var(--tinta);
+		font-weight: 700;
+	}
+	.muestra {
+		flex: none;
+		width: 14px;
+		height: 10px;
+		border-radius: 2px;
+	}
+	.muestra.incertidumbre {
+		background: var(--grafito);
+	}
+	.muestra.techo {
+		background: var(--piedra);
+	}
+	.muestra.acento {
+		background: var(--acento);
+	}
 	.barra {
 		position: relative;
 		width: 100%;

@@ -45,6 +45,11 @@ export interface PantallaHabitacion {
 	precio: string;
 	gastos: boolean;
 	habitaciones: number;
+	/** €/mes que has escrito: para prellenar «Suma las habitaciones del piso» (solo en pantalla) */
+	precioMes: number;
+	tramo: TramoPiso;
+	/** Zonas de la ubicación: la referencia del piso entero que usa «Suma las habitaciones» */
+	cusecs: string[];
 	aporte: HabitacionPayload | null;
 }
 
@@ -74,7 +79,7 @@ export function validarHabitacion(f: { precio: string; habitaciones: number; tam
 }
 
 export function construirPantallaHabitacion(
-	datos: Omit<HabitacionPayload, 'barrio'>, barrioCodigo: string, vivo: boolean, madrid: DatosMadrid
+	datos: Omit<HabitacionPayload, 'barrio'>, barrioCodigo: string, vivo: boolean, madrid: DatosMadrid, cusecs: string[] = []
 ): PantallaHabitacion | null {
 	const barrio = madrid.barrios[barrioCodigo];
 	if (!barrio) return null;
@@ -89,6 +94,9 @@ export function construirPantallaHabitacion(
 		precio: euros(datos.precio),
 		gastos: datos.gastos,
 		habitaciones: datos.habitaciones,
+		precioMes: datos.precio,
+		tramo: datos.tramo,
+		cusecs,
 		aporte: vivo ? { barrio: barrioCodigo, ...datos } : null
 	};
 }

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icono from './Icono.svelte';
+	import SumaHabitaciones from './SumaHabitaciones.svelte';
 	import { HABITACION, MINIMO_COMPARACION, euros, type PantallaHabitacion } from '#lib/resultado';
 	import type { EstadoAporte } from './ResultadoInquilino.svelte';
 
@@ -8,7 +9,8 @@
 		comparacion,
 		aporte = 'no',
 		alAportar,
-		alPiso
+		alPiso,
+		alVivo
 	}: {
 		pantalla: PantallaHabitacion;
 		/** null mientras carga; `error` si falla la consulta */
@@ -17,7 +19,11 @@
 		alAportar?: () => void;
 		/** «¿Compartís piso con un solo contrato?»: vuelve al formulario con el tipo en «Piso» */
 		alPiso: () => void;
+		/** «¿Vives en una habitación? Aporta la tuya»: pasa a «Ya vivo aquí» con los datos prellenados */
+		alVivo?: () => void;
 	} = $props();
+
+	let sumaAbierta = $state(false);
 
 	const hay = $derived(comparacion !== null && comparacion !== 'error' && comparacion.mediana !== null);
 	const n = $derived(comparacion !== null && comparacion !== 'error' ? comparacion.n : 0);
@@ -43,7 +49,7 @@
 			{:else if hay}
 				<div class="dos">
 					<div>
-						<span class="et">{HABITACION.tuHabitacion}</span>
+						<span class="et">{pantalla.vivo ? HABITACION.tuHabitacion : HABITACION.laHabitacion}</span>
 						<span class="cifra">{pantalla.precio}</span>
 						<span class="pie-cifra">{HABITACION.alMes(pantalla.gastos)}</span>
 					</div>
@@ -54,13 +60,16 @@
 					</div>
 				</div>
 			{:else}
-				<span class="et">{HABITACION.tuHabitacion}</span>
+				<span class="et">{pantalla.vivo ? HABITACION.tuHabitacion : HABITACION.laHabitacion}</span>
 				<span class="cifra">{pantalla.precio}</span>
 				<p class="pocas">{(pantalla.vivo ? HABITACION.pocas : HABITACION.pocasMirando)(pantalla.barrio, n)}</p>
 				<div class="bloques" aria-hidden="true">
 					{#each Array.from({ length: MINIMO_COMPARACION }, (_, i) => i) as i (i)}<span class="bloque" class:lleno={i < n}></span>{/each}
 				</div>
 				<p class="et">{n} de {MINIMO_COMPARACION} aportaciones en {pantalla.barrio}</p>
+				{#if !pantalla.vivo && alVivo}
+					<button type="button" class="boton boton-contorno" onclick={alVivo}>{HABITACION.ofrecerVivo}</button>
+				{/if}
 			{/if}
 		</section>
 		{#if hay}<p class="nota">{HABITACION.mismoGastos(pantalla.gastos)}</p>{/if}
@@ -76,7 +85,7 @@
 				<section class="aportar" aria-labelledby="aportar-hab">
 					<h2 id="aportar-hab">{HABITACION.aportar.titulo}</h2>
 					<p><strong>Se guarda:</strong> {HABITACION.aportar.seGuarda}</p>
-					<p><strong>No se guarda:</strong> {HABITACION.aportar.noSeGuarda}</p>
+					<p><strong>No se guarda:</strong> {HABITACION.aportar.noSeGuarda} <a class="enlace-datos" href="/como-calculamos#tus-datos">Tus datos</a></p>
 					<button type="button" class="boton" onclick={alAportar} disabled={aporte === 'enviando'} aria-busy={aporte === 'enviando'}>
 						{HABITACION.aportar.boton}
 					</button>
@@ -93,8 +102,18 @@
 				<span class="accion-titulo">{HABITACION.acciones.compartis}</span>
 				<span class="accion-detalle">{HABITACION.acciones.compartisDetalle}</span>
 			</button>
+			<button type="button" class="accion" aria-expanded={sumaAbierta} aria-controls="suma-panel" onclick={() => (sumaAbierta = !sumaAbierta)}>
+				<span class="accion-titulo">{HABITACION.acciones.suma}</span>
+				<span class="accion-detalle">{HABITACION.acciones.sumaDetalle}</span>
+			</button>
 			<a class="accion" href="/como-calculamos#lim"><span class="accion-titulo">{HABITACION.acciones.porQue}</span></a>
 		</div>
+
+		{#if sumaAbierta}
+			<div id="suma-panel">
+				<SumaHabitaciones precioMes={pantalla.precioMes} habitaciones={pantalla.habitaciones} tramo={pantalla.tramo} cusecs={pantalla.cusecs} />
+			</div>
+		{/if}
 	</div>
 </article>
 
@@ -205,6 +224,11 @@
 		color: var(--acento);
 		border-radius: var(--radio);
 		font: 700 14px/1.25 var(--f-texto);
+	}
+	.enlace-datos {
+		font-weight: 700;
+		white-space: nowrap;
+		text-underline-offset: 3px;
 	}
 	.gracias {
 		font: 700 24px/1.2 var(--f-texto);

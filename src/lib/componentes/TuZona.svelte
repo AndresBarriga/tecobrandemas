@@ -120,7 +120,7 @@
 						</g>
 						<line x1={xUsuario} y1={yUsuario} x2={xUsuario} y2={alto + 8} stroke="#1C1B19" stroke-width="1.5" />
 						<rect x={rotuloX} y={alto + 8} width="72" height="22" rx="4" fill="#1C1B19" />
-						<text x={rotuloX + 36} y={alto + 23.5} text-anchor="middle" font-family="Sofia Sans, sans-serif" font-weight="700" font-size="13" fill="#F6F4EE">{TU_ZONA.tuZona}</text>
+						<text x={rotuloX + 36} y={alto + 23.5} text-anchor="middle" font-family="Sofia Sans, sans-serif" font-weight="700" font-size="13" fill="#F6F4EE">{usuario.length > 1 ? TU_ZONA.tusZonas : TU_ZONA.tuZona}</text>
 						<text x={w} y={alto + 23.5} text-anchor="end" font-family="Sofia Sans Semi Condensed, sans-serif" font-weight="600" font-size="12" fill="#5A5750">{TU_ZONA.circulo}</text>
 					</svg>
 					{#each nombres as n (n.texto)}
@@ -144,6 +144,10 @@
 					<p class="cargando" style:height="{alto}px"><span>{TU_ZONA.cargando}</span></p>
 				{/if}
 			</div>
+
+			{#if estado === 'listo' && vista?.cruce}
+				<p class="cruce" role="status">{vista.cruce}</p>
+			{/if}
 
 			{#if estado === 'listo' && vista}
 				<div class="leyenda">
@@ -218,6 +222,10 @@
 {/if}
 
 <style>
+	.cruce {
+		font: 700 15px/1.3 var(--f-texto);
+		margin: 4px 0 -4px;
+	}
 	.zona {
 		width: 100%;
 		max-width: 600px;

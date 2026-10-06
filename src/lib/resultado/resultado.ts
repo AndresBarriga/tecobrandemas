@@ -88,6 +88,10 @@ export interface ParametrosZona {
 	origen: Punto | null;
 	cusecs: string[];
 	clase: 'a' | 'b' | 'c';
+	/** Por qué la ubicación es aproximada (calle sin número, radio del punto…); null si es exacta */
+	motivo: Ubicacion['motivo'];
+	/** Resultado del inquilino: solo el mapa, sin la lista de zonas donde «entraría este precio» */
+	inquilino?: boolean;
 }
 
 /** Cuerpo de POST /api/analisis: barrio, precio y m² exactos y nivel; sin dirección ni sección */
@@ -192,7 +196,7 @@ function desdeAnalisis(
 		brechaEuros,
 		textoMaximo:
 			nivel.nivel === 'explicable'
-				? `Un piso con las mejores características posibles podría llegar a ${euros(r.referencia.max)} al mes en esta zona.`
+				? `Un piso con las mejores características posibles podría llegar a ${euros(r.referencia.max)} al mes en ${an.horquilla ? 'estas zonas' : 'esta zona'}.`
 				: null,
 		rango: `Referencia: ${numero(r.referencia.inf)} – ${euros(r.referencia.sup)} al mes`,
 		base: `Basado en ${numero(r.seccion.n)} alquileres registrados en la zona · referencia 2024 ajustada por el IPC del alquiler (hasta ${mesAnio(datos.ipc.ultimo_mes)})`,
@@ -208,7 +212,7 @@ function desdeAnalisis(
 		vista,
 		avisoIndependiente: AVISO_INDEPENDIENTE,
 		enlaceOficial: ENLACE_OFICIAL,
-		zona: { precio: a.precio, superficie: a.superficie, origen: u.punto, cusecs: u.cusecs, clase: vista.clase },
+		zona: { precio: a.precio, superficie: a.superficie, origen: u.punto, cusecs: u.cusecs, clase: vista.clase, motivo: u.motivo },
 		registro: barrio ? { barrio: barrio.codigo, precio: Math.round(a.precio), m2: a.superficie, nivel: vista.clase } : null,
 		inquilino: null
 	};

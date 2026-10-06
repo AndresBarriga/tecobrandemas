@@ -10,7 +10,8 @@
 		alActivar,
 		alQuitar,
 		alEscribir,
-		alMapa
+		alMapa,
+		reinicio = 0
 	}: {
 		/** «Ya vivo aquí»: el chip es lo primero que se ofrece; en «mirando», una opción discreta */
 		protagonista?: boolean;
@@ -22,10 +23,20 @@
 		alEscribir: () => void;
 		/** Precisión baja: colocar el punto a mano, con el mapa centrado en el barrio */
 		alMapa: (codigoBarrio: string) => void;
+		/** Cambia cuando se escribe una dirección: los avisos de la lectura anterior sobran */
+		reinicio?: number;
 	} = $props();
 
 	let estado = $state<'off' | 'pidiendo' | 'baja' | 'denegado' | 'tiempo' | 'fuera' | 'sin_gps'>('off');
 	let baja = $state<Lista | null>(null);
+
+	// Al escribir una dirección desaparece el aviso («fuera de Madrid», permiso denegado…)
+	let visto = $state(0);
+	$effect(() => {
+		if (reinicio === visto) return;
+		visto = reinicio;
+		if (estado === 'denegado' || estado === 'tiempo' || estado === 'fuera' || estado === 'sin_gps') estado = 'off';
+	});
 
 	async function pedir() {
 		estado = 'pidiendo';

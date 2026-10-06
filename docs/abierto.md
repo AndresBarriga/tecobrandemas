@@ -1,6 +1,6 @@
 # Lo que está abierto
 
-Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisión: 06/10/2026 (F1 implementada, PR pendiente).
+Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisión: 06/10/2026 (Fase 1 en producción; correcciones en los PR #14-#17).
 
 ## Decisiones vigentes (06/10/2026)
 1. **Plan:** Cloudflare sigue en el plan gratuito por ahora. Sin dominio propio y con `noindex` hasta el lanzamiento. No se activan URLs de vista previa por rama: se verifica en local y con la prueba de humo tras el despliegue.
@@ -12,7 +12,8 @@ Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisi
 7. **Tarjetas y «Tus datos»:** se dice la verdad de hoy: se guarda la imagen y los textos; no caducan automáticamente; se borran a petición por correo. La caducidad a 12 meses está en `docs/ideas.md`.
 
 ## Para ti (desarrollo)
-En curso: **Fase 1, «Ya vivo aquí» y habitaciones** (rama `f1-formulario`, PR abierto; ver `docs/progreso.md`). Pendiente antes de fusionar: aplicar la migración `0003_habitaciones` en producción (necesita el visto bueno del usuario) y fusionar antes el PR de A5.
+**Fase 1 («Ya vivo aquí» y habitaciones): en producción** (PR #13; migraciones 0002 y 0003 aplicadas).
+**Correcciones de la Fase 1: PR #14 (A: resultado y tarjetas), #15 (B: formulario), #16 (C: «Tu zona») y #17 (D: habitaciones), apilados: fusionar en ese orden** (cada uno se basa en el anterior; sin migraciones nuevas).
 
 Cola siguiente, en este orden:
 1. **Mapa, parte 1:** servir los PMTiles como activo estático para que las peticiones Range no gasten invocaciones del Worker. Hay que bajar de 25 MiB (zoom máximo 14 o una caja más ajustada; quitar capas que no usamos: edificios, puntos de interés). Si no cabe, avisar antes de cambiar de enfoque.
@@ -20,6 +21,11 @@ Cola siguiente, en este orden:
 3. **Estado de R7 y del resto de la lista anterior** (se entrega como informe).
 
 Deuda y detalles:
+- Correcciones F1: el titular de rango en una sola línea con tamaño ajustado solo se aplica al resultado del inquilino («+65 % a +76 %»); en el de anuncios sigue el diseño («entre … y …», que puede partirse en dos líneas).
+- Correcciones F1: «¿Y tú? Compruébalo con el tuyo.» se añadió como cuarto texto de la tarjeta del inquilino (no como sufijo de los otros); el texto factual va primero y sale elegido por defecto.
+- Correcciones F1: «Añade el número para afinar» solo aparece con calle sin número; con horquilla por el punto del dispositivo (radio de precisión) se corrige colocando el punto en el mapa.
+- Correcciones F1: «Tu zona» del inquilino solo sale con horquilla (modo contexto); sin horquilla no se enseña.
+- «Suma las habitaciones del piso»: la referencia del piso entero usa las zonas de la ubicación (con varias, el rango que las abarca todas) y los dos extremos del tamaño; no tiene tests propios (regla A2).
 - Guardar en la tarjeta el tipo de cifra (% o «veces») en vez de deducirlo del texto (`heroEnVeces`).
 - Barra: la línea vertical del techo puede cruzar el texto de «parte alta» cuando este pasa a la derecha de su marca (sin medir).
 - El estado «cargando» de «Tu zona» no tiene prueba propia.
@@ -40,7 +46,7 @@ Cargados (06/10): los 3 pedidos más los «seguros» y los «ambiguos» de la li
 - **Previews por rama de Cloudflare:** decidido no activarlas por ahora.
 - **`noindex: false`** cuando decidas lanzar (`config/indexacion.json`).
 - **R2:** mirar en el panel (bucket `a-su-precio-tarjetas`) si hay imágenes sueltas; debería haber una (`og/pruebahumo.jpg`).
-- **Aplicar la migración `0003_habitaciones` en producción** (tabla nueva; hay que aprobarlo) antes de fusionar F1.
+- **Fusionar los PR #14 a #17** en orden (cada uno despliega a producción al fusionarse el último de la pila; conviene fusionarlos uno a uno y esperar al humo).
 - **Probar en un móvil real:** «Usar mi ubicación» (permiso, precisión, fuera de Madrid), la hoja de compartir con la tarjeta del inquilino y los nuevos formularios a 360 px.
 - **Ideas en discusión:** `docs/ideas.md` (necesitan tus decisiones y diseño).
 

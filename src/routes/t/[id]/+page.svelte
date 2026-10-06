@@ -40,9 +40,9 @@
 		<div class="texto">
 			<p class="intro">{data.tarjeta.inquilino ? PAGINA_TARJETA.introInquilino(data.tarjeta.barrio) : PAGINA_TARJETA.intro(data.tarjeta.barrio)}</p>
 			<h1>{PAGINA_TARJETA.titular}</h1>
-			<p class="explicacion">{PAGINA_TARJETA.explicacion}</p>
+			<p class="explicacion">{data.tarjeta.inquilino ? PAGINA_TARJETA.explicacionInquilino : PAGINA_TARJETA.explicacion}</p>
 			<a class="boton" href={data.tarjeta.inquilino ? `/?t=${data.id}&modo=vivo` : `/?t=${data.id}`}>{data.tarjeta.inquilino ? TARJETA_INQUILINO.cta : PAGINA_TARJETA.boton}</a>
-			<p class="nota">{PAGINA_TARJETA.nota}</p>
+			<p class="nota">{data.tarjeta.inquilino ? PAGINA_TARJETA.notaInquilino : PAGINA_TARJETA.nota}</p>
 		</div>
 	</main>
 	<Pie />

@@ -130,7 +130,7 @@ const LIMITES: [ClaveSinDato, string, string][] = [
 	['unifamiliar', 'Casa unifamiliar', 'La referencia está hecha con pisos.'],
 	['temporal', 'Alquiler temporal o de media estancia', 'La referencia solo mide alquileres de larga duración.'],
 	['testigos', 'Pocos datos en la zona', 'No hay suficientes alquileres registrados para dar una referencia fiable.'],
-	['habitacion', 'Habitación', 'Las habitaciones no figuran en los registros.']
+	['habitacion', 'Habitación', 'La referencia oficial no incluye habitaciones. Si compartís con un solo contrato, compara el piso entero; si no, solo podemos comparar con lo que aporten otras personas de tu barrio, cuando haya suficientes.']
 ];
 
 const rango = (inf: number, sup: number) => `${numero(inf)}–${euros(sup)}`;
@@ -258,7 +258,7 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 			]
 		},
 		limites: {
-			intro: 'En estos casos no hay una referencia fiable, así que no damos cifra. Cada uno tiene su pantalla con la explicación.',
+			intro: 'En estos casos no hay una referencia fiable, así que no damos cifra oficial. Cada uno tiene su pantalla con la explicación.',
 			items: LIMITES.map(([clave, titulo, descripcion]) => ({ clave, titulo, descripcion })),
 			cierre: 'Y aunque haya cifra, no vemos el piso: su estado, su luz o su distribución pueden explicar diferencias. Si solo conocemos la calle, damos una horquilla.'
 		},

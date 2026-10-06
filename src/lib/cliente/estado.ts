@@ -32,7 +32,8 @@ export interface EstadoFormulario {
 
 export const estadoInicial = (): EstadoFormulario => ({
 	situacion: 'mirando',
-	modo: 'direccion',
+	// «Estoy mirando un piso» empieza por «Solo calle»; «Ya vivo aquí», por «Dirección»
+	modo: 'calle',
 	direccion: '',
 	precio: '',
 	superficie: '',

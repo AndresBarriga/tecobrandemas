@@ -1,8 +1,10 @@
 <script lang="ts">
 	import Barra from './Barra.svelte';
 	import type { Snippet } from 'svelte';
+	import AfinarNumero from './AfinarNumero.svelte';
 	import Compartir from './Compartir.svelte';
 	import Icono from './Icono.svelte';
+	import { unaLinea } from '#lib/cliente/ajustar';
 	import {
 		ENLACE_OFICIAL, INQUILINO, SERVIDO, TARJETA_INQUILINO, heroEnVeces, type Canal, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
@@ -16,6 +18,7 @@
 		alAportar,
 		alMirando,
 		alServido,
+		alAfinar,
 		tarjeta,
 		textos = [],
 		textoElegido = 0,
@@ -35,6 +38,8 @@
 		/** «Comprobar un piso que estás mirando» */
 		alMirando: () => void;
 		alServido?: (si: boolean) => void;
+		/** Calle sin número: añadir el número recalcula el resultado en esta pantalla */
+		alAfinar?: (numero: string) => Promise<string | null>;
 		/** Miniatura de la tarjeta (canvas) que dibuja la página */
 		tarjeta?: Snippet;
 		/** Los tres textos de la tarjeta, de los que la persona elige uno */
@@ -66,7 +71,7 @@
 
 		<div class="principal">
 			{#if i.cifra}
-				<p class="cifra" class:veces={heroEnVeces(i.cifra)} aria-label="{i.cifra} {i.nota}">{i.cifra}</p>
+				<p class="cifra" class:veces={heroEnVeces(i.cifra)} use:unaLinea={i.cifra} aria-label="{i.cifra} {i.nota}">{i.cifra}</p>
 			{:else}
 				<p class="titular">{i.titular}</p>
 			{/if}
@@ -81,7 +86,10 @@
 					<circle cx="10" cy="10" r="8.5" stroke="var(--tinta)" stroke-width="1.5" fill="none" />
 					<path d="M10 9v5M10 6v.5" stroke="var(--tinta)" stroke-width="2" />
 				</svg>
-				<p>{v.aviso}</p>
+				<div class="aviso-cuerpo">
+					<p>{v.aviso}</p>
+					{#if alAfinar}<AfinarNumero {alAfinar} />{/if}
+				</div>
 			</div>
 		{/if}
 	</div>
@@ -133,8 +141,8 @@
 			<section class="aportar" aria-labelledby="aportar-titulo">
 				<h2 id="aportar-titulo">{INQUILINO.aportar.titulo}</h2>
 				<p>{INQUILINO.aportar.texto(barrio)}</p>
-				<p><strong>Se guarda:</strong> {INQUILINO.aportar.seGuarda}</p>
-				<p><strong>No se guarda:</strong> {INQUILINO.aportar.noSeGuarda}</p>
+				<p><strong>Se guarda:</strong> {INQUILINO.aportar.seGuarda(!!i.aporte.firmaMes, i.aporte.rentaFirma != null)}</p>
+				<p><strong>No se guarda:</strong> {INQUILINO.aportar.noSeGuarda} <a class="enlace-datos" href="/como-calculamos#tus-datos">{INQUILINO.aportar.tusDatos}</a></p>
 				<button type="button" class="boton" onclick={alAportar} disabled={aporte === 'enviando'} aria-busy={aporte === 'enviando'}>
 					{aporte === 'enviando' ? INQUILINO.aportar.enviando : INQUILINO.aportar.boton}
 				</button>
@@ -256,6 +264,12 @@
 		align-items: flex-start;
 		font: 400 15px/1.45 var(--f-texto);
 	}
+	.aviso-cuerpo {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
 	.barra-caja {
 		padding: 32px var(--margen) 0;
 	}
@@ -332,6 +346,11 @@
 	.aportar h2 {
 		font: 800 24px/1.2 var(--f-texto);
 		text-wrap: balance;
+	}
+	.enlace-datos {
+		font-weight: 700;
+		white-space: nowrap;
+		text-underline-offset: 3px;
 	}
 	.nota-aportar {
 		font: 400 14px/1.4 var(--f-texto);

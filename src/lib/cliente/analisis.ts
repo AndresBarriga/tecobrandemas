@@ -77,7 +77,7 @@ async function comprobarHabitacion(f: EstadoFormulario, pin: Ubicacion | null | 
 	const barrios = barriosDe(datos, u.ubicacion.cusecs);
 	// Una calle que cruza varios barrios no da un barrio fiable: se pide el número o el mapa
 	if (barrios.length !== 1) return { tipo: 'pedir_numero', calle: u.ubicacion.via ?? 'Esa calle', nSecciones: Math.max(barrios.length, 2) };
-	const pantalla = construirPantallaHabitacion(v.datos, barrios[0]!.codigo, f.situacion === 'vivo', datos);
+	const pantalla = construirPantallaHabitacion(v.datos, barrios[0]!.codigo, f.situacion === 'vivo', datos, u.ubicacion.cusecs);
 	if (!pantalla) return { tipo: 'pantalla', pantalla: pantallaSinDato('sin_dato_seccion'), ubicacion: u.ubicacion };
 	return { tipo: 'pantalla', pantalla, ubicacion: u.ubicacion };
 }

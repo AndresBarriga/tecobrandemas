@@ -39,7 +39,7 @@ test.describe('niveles', () => {
 		await comprobar(page, { modo: 'calle', direccion: 'Calle Sabadell', precio: '1400', superficie: '58' });
 		await expect(page.getByText('Ubicación aproximada.')).toBeVisible();
 		await expect(page.locator('main')).toContainText(/entre\s*\+\d+/);
-		await expect(page.getByRole('button', { name: 'Añadir el número del portal' })).toBeVisible();
+		await expect(page.getByLabel('Añade el número para afinar')).toBeVisible();
 		await esperarAnimacion(page);
 		await captura(page, '06-horquilla');
 	});
@@ -89,7 +89,7 @@ test.describe('sin dato', () => {
 test.describe('errores', () => {
 	test('15-direccion-no-encontrada con sugerencia y salidas', async ({ page }) => {
 		await abrir(page);
-		await comprobar(page, { direccion: 'Calle del Berro Nuevo 14', precio: '2200', superficie: '90' });
+		await comprobar(page, { modo: 'direccion', direccion: 'Calle del Berro Nuevo 14', precio: '2200', superficie: '90' });
 		await expect(page.getByText('No encontramos esa dirección en Madrid.')).toBeVisible();
 		await expect(page.getByRole('button', { name: 'Calle Fuente del Berro' })).toBeVisible();
 		await expect(page.getByRole('button', { name: 'Solo la calle' })).toBeVisible();

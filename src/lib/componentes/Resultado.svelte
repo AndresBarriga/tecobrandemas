@@ -1,9 +1,10 @@
 <script lang="ts">
+	import AfinarNumero from './AfinarNumero.svelte';
 	import Barra from './Barra.svelte';
 	import Equivalencia from './Equivalencia.svelte';
 	import Icono from './Icono.svelte';
 	import {
-		AVISO_APROXIMADA_TITULO, BOTON_AÑADIR_NUMERO, BOTON_COMPARTIR, BOTON_OTRO_PISO, ENLACE_OFICIAL, REGISTRO, SERVIDO, TARJETA, heroEnVeces,
+		AVISO_APROXIMADA_TITULO, BOTON_COMPARTIR, BOTON_OTRO_PISO, ENLACE_OFICIAL, REGISTRO, SERVIDO, TARJETA, heroEnVeces,
 		type Canal, type Contador, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
@@ -15,7 +16,7 @@
 		mensajeTarjeta = null,
 		alOtro,
 		alNegociar,
-		alAñadirNumero,
+		alAfinar,
 		alCompartir,
 		nativo = false,
 		enlaces = null,
@@ -37,7 +38,7 @@
 		alOtro: () => void;
 		alNegociar: () => void;
 		/** Solo cuando la ubicación es una calle sin número */
-		alAñadirNumero?: () => void;
+		alAfinar?: (numero: string) => Promise<string | null>;
 		alCompartir: () => void;
 		/** Móvil con hoja de compartir: un solo botón. Si no, los canales (escritorio) */
 		nativo?: boolean;
@@ -93,9 +94,7 @@
 					</svg>
 					<p><strong>{AVISO_APROXIMADA_TITULO}</strong> {v.aviso}</p>
 				</div>
-				{#if alAñadirNumero}
-					<button type="button" class="boton boton-contorno" onclick={alAñadirNumero}>{BOTON_AÑADIR_NUMERO}</button>
-				{/if}
+				{#if alAfinar}<AfinarNumero {alAfinar} />{/if}
 			</div>
 		{/if}
 	</div>
@@ -162,16 +161,18 @@
 		{/if}
 
 		{#if pantalla.registro && alRegistrar}
-			<label class="consentimiento">
-				<input type="checkbox" checked={registro !== 'no'} disabled={registro !== 'no'} onchange={alRegistrar} />
-				<span class="casilla" aria-hidden="true">
-					{#if registro !== 'no'}
-						<svg width="16" height="16" viewBox="0 0 20 20"><path d="M4.5 10.5l3.5 3.5 7.5-8" stroke="var(--paja)" stroke-width="2.5" fill="none" /></svg>
-					{/if}
-				</span>
-				<span class="texto-consentimiento">{REGISTRO.casilla}</span>
-			</label>
-			<a class="enlace-datos" href="/como-calculamos#tus-datos">{REGISTRO.enlace}</a>
+			<div class="consentimiento-fila">
+				<label class="consentimiento">
+					<input type="checkbox" checked={registro !== 'no'} disabled={registro !== 'no'} onchange={alRegistrar} />
+					<span class="casilla" aria-hidden="true">
+						{#if registro !== 'no'}
+							<svg width="16" height="16" viewBox="0 0 20 20"><path d="M4.5 10.5l3.5 3.5 7.5-8" stroke="var(--paja)" stroke-width="2.5" fill="none" /></svg>
+						{/if}
+					</span>
+					<span class="texto-consentimiento">{REGISTRO.casilla}</span>
+				</label>
+				<a class="enlace-datos" href="/como-calculamos#tus-datos">{REGISTRO.enlace}</a>
+			</div>
 			<p class="mensaje" role="status">{registro === 'sumado' ? REGISTRO.sumado : ''}</p>
 		{/if}
 
@@ -235,12 +236,19 @@
 	.texto-consentimiento {
 		font: 600 15px/1.4 var(--f-texto);
 	}
+	.consentimiento-fila {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+	}
+	.consentimiento-fila .consentimiento {
+		flex: 1;
+	}
 	.enlace-datos {
-		align-self: flex-start;
+		flex: none;
 		display: inline-flex;
 		align-items: center;
 		min-height: 44px;
-		margin: -8px 0 0 38px;
 		font: 700 14px/1 var(--f-texto);
 		text-underline-offset: 3px;
 	}
