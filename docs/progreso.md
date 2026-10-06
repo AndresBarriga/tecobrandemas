@@ -220,3 +220,8 @@ Nombre del producto: **A su precio**. Diseño en `docs/design` (README del hando
 - **Componente:** `CampoDireccion.svelte` es un combobox accesible (flechas, Intro, Esc, `aria-activedescendant` y anuncio al lector de pantalla). Elegir una sugerencia no envía el formulario y conserva el número escrito.
 - **Prueba:** un único test nuevo (`tests/autocompletar.test.ts`): cada vía se encuentra escribiendo su última palabra, con y sin tilde.
 - **Alias cargados:** los 3 iniciales más 13 aprobados (ver `docs/abierto.md`). El test de «cada vía por su última palabra» busca cada palabra una sola vez y tiene un tiempo máximo de 60 s: en el CI (más lento) agotaba los 5 s por defecto.
+
+## A5: aportaciones con `firma_mes` y `renta_firma` (06/10/2026)
+- **Migración `0002_aportaciones_firma.sql`** aplicada en producción (`wrangler d1 migrations apply --remote`) después de exportar la tabla (estaba vacía; copia en `data/raw/backups/aportaciones-antes-0002.sql`, fuera de git). Dos columnas nulas: el código anterior sigue funcionando antes y después. Dos tablas separadas (anuncios y aportaciones); sin `datos_v2`, sin sección y sin fecha exacta.
+- `POST /api/aportacion` acepta `firmaMes` (AAAA-MM, de ese mismo año del contrato) y `rentaFirma` (entero positivo, máx. 100.000), ambos opcionales; si llegan inválidos, 400. El formulario aún no los envía.
+- Tests: se actualizó el helper de esquema (`tests/d1.ts`, aplica las dos migraciones) y la aserción de la fila de aportaciones; sin tests nuevos.

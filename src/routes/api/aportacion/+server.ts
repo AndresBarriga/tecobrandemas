@@ -1,5 +1,5 @@
 /**
- * POST /api/aportacion { barrio, precio, m2, anioContrato, incluye[] } — «¿Cuánto pagas tú?».
+ * POST /api/aportacion { barrio, precio, m2, anioContrato, incluye[], firmaMes?, rentaFirma? } — «¿Cuánto pagas tú?».
  * Tabla y endpoint aparte del registro de análisis. Solo con consentimiento (lo comprueba el cliente).
  */
 import { error, json } from '@sveltejs/kit';

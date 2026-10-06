@@ -30,6 +30,10 @@ export interface AportacionPayload {
 	m2: number;
 	anioContrato: number;
 	incluye: string[];
+	/** AAAA-MM de la firma (opcional: el formulario aún no lo pide) */
+	firmaMes?: string | null;
+	/** Renta al firmar en €/mes (opcional: el formulario aún no lo pide) */
+	rentaFirma?: number | null;
 }
 
 export type ErroresAportacion = Partial<Record<keyof AportacionCrudo, string>>;

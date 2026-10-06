@@ -87,7 +87,8 @@ describe('guardado', () => {
 		});
 		expect(r).toBe('guardado');
 		expect(db.prepare('SELECT * FROM aportaciones').get()).toEqual({
-			mes: '2026-10', barrio: '072', precio: 1150, m2: 68, anio_contrato: 2023, incluye: 'comunidad,amueblado'
+			mes: '2026-10', barrio: '072', precio: 1150, m2: 68, anio_contrato: 2023, incluye: 'comunidad,amueblado',
+			firma_mes: null, renta_firma: null
 		});
 		expect(cuenta(db, 'analisis')).toBe(0);
 	});

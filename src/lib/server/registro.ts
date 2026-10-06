@@ -97,6 +97,10 @@ export interface AportacionEntrada {
 	m2: number;
 	anioContrato: number;
 	incluye: (typeof INCLUYE)[number][];
+	/** Mes de la firma, AAAA-MM (opcional; nunca la fecha exacta) */
+	firmaMes?: string | null;
+	/** Renta al firmar, en €/mes (opcional) */
+	rentaFirma?: number | null;
 }
 
 export function leerAportacion(x: unknown, barrios: ReadonlySet<string>, anioActual: number): AportacionEntrada | null {
@@ -106,9 +110,16 @@ export function leerAportacion(x: unknown, barrios: ReadonlySet<string>, anioAct
 	if (!entero(o.precio) || !numero(o.m2) || o.precio > 100_000 || o.m2 > 2_000) return null;
 	if (!entero(o.anioContrato) || o.anioContrato < 1990 || o.anioContrato > anioActual) return null;
 	if (!Array.isArray(o.incluye) || o.incluye.some((i) => !INCLUYE.includes(i as never))) return null;
+	// Opcionales: ausentes o null valen «sin dato»; si llegan, tienen que ser válidos
+	const firma = o.firmaMes ?? null;
+	if (firma !== null && !(typeof firma === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(firma) && Number(firma.slice(0, 4)) === o.anioContrato)) return null;
+	const renta = o.rentaFirma ?? null;
+	if (renta !== null && !(entero(renta) && renta > 0 && renta <= 100_000)) return null;
 	return {
 		barrio: o.barrio, precio: o.precio, m2: o.m2, anioContrato: o.anioContrato,
-		incluye: INCLUYE.filter((i) => (o.incluye as string[]).includes(i))
+		incluye: INCLUYE.filter((i) => (o.incluye as string[]).includes(i)),
+		firmaMes: firma,
+		rentaFirma: renta
 	};
 }
 
@@ -169,8 +180,8 @@ export async function registrarAportacion(c: Contexto, ip: string, a: Aportacion
 	await purgar(c.db, c.ahora().getTime());
 	if (!(await esNuevo(c, 'p', a.precio, a.m2, a.barrio))) return 'descartado';
 	await c.db
-		.prepare('INSERT INTO aportaciones (mes, barrio, precio, m2, anio_contrato, incluye) VALUES (?, ?, ?, ?, ?, ?)')
-		.bind(mesDe(c.ahora()), a.barrio, a.precio, a.m2, a.anioContrato, a.incluye.join(','))
+		.prepare('INSERT INTO aportaciones (mes, barrio, precio, m2, anio_contrato, incluye, firma_mes, renta_firma) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+		.bind(mesDe(c.ahora()), a.barrio, a.precio, a.m2, a.anioContrato, a.incluye.join(','), a.firmaMes ?? null, a.rentaFirma ?? null)
 		.run();
 	return 'guardado';
 }
