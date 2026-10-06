@@ -1,7 +1,8 @@
 <script lang="ts">
+	import CampoDireccion from './CampoDireccion.svelte';
 	import type { Snippet } from 'svelte';
 	import Segmentado from './Segmentado.svelte';
-	import { ERRORES, FORMULARIO, type ErroresFormulario } from '#lib/resultado';
+	import { ERRORES, FORMULARIO, type ErroresFormulario, type SugerenciaZona } from '#lib/resultado';
 	import type { EstadoFormulario, ModoUbicacion } from '#lib/cliente/estado';
 
 	export type Problema =
@@ -21,6 +22,7 @@
 		alSalirDe,
 		alHabitacion,
 		alElegirSugerencia,
+		alElegirZona,
 		alCambiarModo
 	}: {
 		f: EstadoFormulario;
@@ -37,6 +39,8 @@
 		alSalirDe: (campo: 'precio' | 'superficie') => void;
 		alHabitacion: () => void;
 		alElegirSugerencia: (texto: string) => void;
+		/** Se eligió un barrio o distrito en el autocompletado: se pasa al mapa centrado en él */
+		alElegirZona: (zona: SugerenciaZona) => void;
 		alCambiarModo: (modo: ModoUbicacion) => void;
 	} = $props();
 
@@ -50,9 +54,6 @@
 		{ valor: true, etiqueta: si },
 		{ valor: false, etiqueta: no }
 	];
-	const etiquetaDireccion = $derived(f.modo === 'calle' ? FORMULARIO.etiquetaDireccion.calle : FORMULARIO.etiquetaDireccion.direccion);
-	const placeholder = $derived(f.modo === 'calle' ? FORMULARIO.placeholderDireccion.calle : FORMULARIO.placeholderDireccion.direccion);
-	const ayuda = $derived(f.modo === 'calle' ? FORMULARIO.ayudaDireccion.calle : FORMULARIO.ayudaDireccion.direccion);
 </script>
 
 <form
@@ -70,27 +71,16 @@
 	</fieldset>
 
 	{#if f.modo !== 'mapa'}
-		<div class="campo-grupo">
-			<label for="direccion">{etiquetaDireccion}</label>
-			<div class="campo" class:error={!!errores.direccion} class:marcado={problema?.tipo === 'no_encontrada'}>
-				<input
-					id="direccion"
-					type="text"
-					bind:value={f.direccion}
-					placeholder={placeholder}
-					autocomplete="off"
-					autocapitalize="sentences"
-					spellcheck="false"
-					aria-invalid={!!errores.direccion}
-					aria-describedby={errores.direccion ? 'direccion-error' : 'direccion-ayuda'}
-				/>
-			</div>
-			{#if errores.direccion}
-				<p class="mensaje-error" id="direccion-error">{errores.direccion}</p>
-			{:else if !problema}
-				<p class="ayuda" id="direccion-ayuda">{ayuda}</p>
-			{/if}
-		</div>
+		<CampoDireccion
+			bind:valor={f.direccion}
+			modo={f.modo}
+			error={errores.direccion}
+			marcado={problema?.tipo === 'no_encontrada'}
+			ocultarAyuda={!!problema}
+			alElegirVia={() => {}}
+			{alElegirZona}
+			{alCambiarModo}
+		/>
 	{:else if mapa}
 		{@render mapa()}
 		{#if errores.mapa}<p class="mensaje-error" role="alert">{errores.mapa}</p>{/if}
@@ -259,9 +249,6 @@
 	.campo.error {
 		border: 2px solid var(--ciruela);
 	}
-	.campo.marcado {
-		border-width: 2px;
-	}
 	.campo input {
 		flex: 1;
 		min-width: 0;
@@ -281,10 +268,6 @@
 	}
 	.sufijo {
 		font: 500 15px/1 var(--f-texto);
-		color: var(--grafito);
-	}
-	.ayuda {
-		font: 400 13px/1.4 var(--f-texto);
 		color: var(--grafito);
 	}
 	.mensaje-error {

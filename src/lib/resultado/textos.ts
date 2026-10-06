@@ -187,6 +187,19 @@ export const MAPA = {
 	atribucion: '© OpenStreetMap contributors'
 } as const;
 
+/** Autocompletado de la dirección */
+export const AUTOCOMPLETAR = {
+	lista: 'Sugerencias de calles',
+	vacio: { titulo: 'No encontramos esa calle.', texto: 'Puedes escribir solo el nombre de la calle o ubicar el piso en el mapa.' },
+	zona: { barrio: 'barrio', distrito: 'distrito', pista: 'elige una calle o toca el mapa' },
+	anuncio: {
+		vias: (n: number) => (n === 1 ? '1 sugerencia' : `${n} sugerencias`),
+		zonas: (n: number) => (n === 1 ? 'Sin calles que coincidan: 1 barrio o distrito' : `Sin calles que coincidan: ${n} barrios o distritos`),
+		nada: 'Sin resultados. Prueba con «Solo la calle» o el mapa.',
+		uso: 'Usa las flechas para moverte y Intro para elegir.'
+	}
+} as const;
+
 export const ERRORES = {
 	noEncontrada: {
 		titulo: 'No encontramos esa dirección en Madrid.',

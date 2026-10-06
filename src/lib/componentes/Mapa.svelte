@@ -3,9 +3,18 @@
 	import { MAPA, type Ubicacion } from '#lib/resultado';
 	import type { BaseMapa } from '#lib/cliente/mapa-base';
 	import { type DatosMapa, cargarMapa, metrosAPunto, ubicacionDelPunto } from '#lib/cliente/mapa';
+	import { cargarDatos } from '#lib/cliente/datos';
 
 	/** Recibe la ubicación del punto marcado, o null si cae fuera de Madrid */
-	let { alMarcar }: { alMarcar: (u: Ubicacion | null) => void } = $props();
+	let { alMarcar, enfocar = null }: { alMarcar: (u: Ubicacion | null) => void; enfocar?: Enfoque | null } = $props();
+
+	/** Barrio o distrito (elegido en el autocompletado) sobre el que se centra el mapa */
+	interface Enfoque {
+		clase: 'barrio' | 'distrito';
+		codigo: string;
+		/** Cambia en cada petición, para volver a centrar en la misma zona */
+		vez: number;
+	}
 
 	let lienzo: HTMLCanvasElement;
 	let datos: DatosMapa | null = null;
@@ -15,6 +24,7 @@
 	let fallo = $state(false);
 	let fuera = $state(false);
 	let hayPunto = $state(false);
+	let listo = $state(false);
 
 	// Vista: centro en metros y metros por píxel
 	let cx = 0;
@@ -98,6 +108,33 @@
 		}
 	}
 
+	/** Centra la vista en la caja que forman las secciones del barrio o distrito */
+	async function centrarEn(e: Enfoque) {
+		if (!datos) return;
+		const d = await cargarDatos();
+		let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+		for (const [cusec, p] of datos.poligonos) {
+			const s = d.secciones[cusec];
+			if (!s) continue;
+			const dentro = e.clase === 'barrio' ? s.barrio === e.codigo : d.barrios[s.barrio]?.cod_distrito === e.codigo;
+			if (!dentro) continue;
+			x0 = Math.min(x0, p.bbox[0]);
+			y0 = Math.min(y0, p.bbox[1]);
+			x1 = Math.max(x1, p.bbox[2]);
+			y1 = Math.max(y1, p.bbox[3]);
+		}
+		if (!Number.isFinite(x0)) return;
+		cx = (x0 + x1) / 2;
+		cy = (y0 + y1) / 2;
+		mpp = Math.min(Math.max(Math.max((x1 - x0) / ancho(), (y1 - y0) / alto()) * 1.25, 1), 400);
+		pedirDibujo();
+	}
+
+	$effect(() => {
+		const e = enfocar;
+		if (listo && e) void centrarEn(e);
+	});
+
 	function zoom(factor: number, px = ancho() / 2, py = alto() / 2) {
 		const [mx, my] = aMapa(px, py);
 		mpp = Math.min(Math.max(mpp / factor, 1), 400);
@@ -175,6 +212,7 @@
 				cargando = false;
 				ajustar();
 				dibujar();
+				listo = true;
 				// El mapa base se carga aparte: si falla, el mapa de secciones sigue funcionando
 				return import('#lib/cliente/mapa-base').then((m) => {
 					base = m.crearBase(pedirDibujo);

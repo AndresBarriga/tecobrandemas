@@ -11,6 +11,8 @@ export * from './ubicacion';
 export * from './resultado';
 export * from './tarjeta';
 export * from './compartir';
+export * from './autocompletar';
+export * from './alias';
 export * from './formulario';
 export * from './aportacion';
 export * from './ratio';

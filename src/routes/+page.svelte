@@ -16,7 +16,7 @@
 		DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO,
 		construirTarjeta, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
 		parecePrecioErroneo,
-		type Pantalla, type PantallaResultado, type Ubicacion
+		type Pantalla, type PantallaResultado, type SugerenciaZona, type Ubicacion
 	} from '#lib/resultado';
 	import { type ErroresCampos, comprobar, validarCampo } from '#lib/cliente/analisis';
 	import { precargarDatos } from '#lib/cliente/datos';
@@ -270,6 +270,16 @@
 		void enviar();
 	}
 
+	// Barrio o distrito elegido en el autocompletado: se pasa al modo mapa, centrado en él
+	let enfoqueMapa = $state<{ clase: 'barrio' | 'distrito'; codigo: string; vez: number } | null>(null);
+	let vezMapa = 0;
+	function elegirZona(z: SugerenciaZona) {
+		f.modo = 'mapa';
+		problema = null;
+		errores = {};
+		enfoqueMapa = { clase: z.clase, codigo: z.codigo, vez: ++vezMapa };
+	}
+
 	function habitacion() {
 		turno++;
 		evento('habitacion');
@@ -361,9 +371,10 @@
 				alSalirDe={salirDe}
 				alHabitacion={habitacion}
 				alElegirSugerencia={elegirSugerencia}
+				alElegirZona={elegirZona}
 				alCambiarModo={cambiarModo}
 			>
-				{#snippet mapa()}<Mapa alMarcar={marcarPunto} />{/snippet}
+				{#snippet mapa()}<Mapa alMarcar={marcarPunto} enfocar={enfoqueMapa} />{/snippet}
 			</Formulario>
 			<div class="historial"><HistorialSesion {filas} {activa} alElegir={elegirHistorial} /></div>
 		</aside>
