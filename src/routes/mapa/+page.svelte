@@ -427,20 +427,22 @@
 		font: 600 14px/1.3 var(--f-texto);
 		margin-bottom: 6px;
 	}
+	/* Cinco chips en una sola fila, a partes iguales (en 360 px cada uno mide unos 58 px) */
 	.chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
+		display: grid;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		gap: 6px;
 	}
 	.chip {
 		min-height: 44px;
-		min-width: 64px;
-		padding: 0 14px;
+		min-width: 0;
+		padding: 0 2px;
+		white-space: nowrap;
 		border: 1.5px solid var(--tinta);
 		border-radius: var(--radio);
 		background: transparent;
 		color: var(--tinta);
-		font: 700 15px/1 var(--f-texto);
+		font: 700 14px/1 var(--f-texto);
 	}
 	.chip.activo {
 		background: var(--paja);

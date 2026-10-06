@@ -681,7 +681,7 @@ export const MAPA_REFERENCIA = {
 	cargando: 'Cargando el mapa de Madrid…',
 	fallo: 'No hemos podido cargar el mapa. Prueba de nuevo en un momento.',
 	reintentar: 'Reintentar',
-	capas: { etiqueta: 'Qué mostrar', referencia: 'Referencia', presupuesto: 'Mi presupuesto', evolucion: 'Evolución 2015-2024' },
+	capas: { etiqueta: 'Qué mostrar', referencia: 'Referencia', presupuesto: 'Mi presupuesto', evolucion: 'Evolución' },
 	superficie: { etiqueta: 'Superficie', unidad: 'm²' },
 	leyenda: 'Parte alta de la referencia, en €/m² al mes',
 	leyendaEvolucion: 'Subida de la mediana registrada 2015-2024',

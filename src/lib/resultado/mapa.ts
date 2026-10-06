@@ -161,7 +161,7 @@ export function resumenPresupuesto(posiciones: Iterable<PosicionPresupuesto | nu
 
 const INDICE_POSICION = { debajo: 0, dentro: 1, margen: 2 } as const;
 
-/** Capa «Mi presupuesto»: tres tramos, escala en grises (trama, Piedra, Tinta) */
+/** Capa «Mi presupuesto»: tres tramos, escala en grises (puntos, gris cálido claro, Grafito) */
 export function capaPresupuesto(zonas: ZonaMapa[], presupuesto: number): CapaCalculada & { resumen: ResumenPresupuesto } {
 	const pos = new Map(zonas.map((z) => [z.cusec, posicionPresupuesto(presupuesto, z)]));
 	return {
@@ -265,11 +265,11 @@ export function numeroDelCampo(texto: string): number | null {
 
 /**
  * Colores de cada capa. «Referencia»: la escala de Paja de «Tu zona». «Evolución»: Acero, otra familia.
- * «Mi presupuesto»: grises (trama diagonal, Piedra, Tinta), distinta de la de Paja.
+ * «Mi presupuesto»: grises (puntos, gris cálido claro, Grafito), distinta de la de Paja.
  * En «presupuesto», el tono 0 es una trama: el componente la pinta con un patrón, no con este color.
  */
 export const TONOS_MAPA: Record<CapaMapa, readonly string[]> = {
 	referencia: ['#F3E4B0', '#E2BE55', '#BF962F', '#8E6B1D', '#5A4413'],
-	evolucion: ['#E3ECF4', '#B5CADD', '#7FA1C2', '#3F6C98', '#1F3F5E'],
-	presupuesto: ['#F6F4EE', '#857F74', '#1C1B19']
+	evolucion: ['#E3ECF4', '#B5CADD', '#86A9C9', '#5384B0', '#2F5B8A'],
+	presupuesto: ['#F6F4EE', '#A8A294', '#5A5750']
 };
