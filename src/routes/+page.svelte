@@ -583,16 +583,23 @@
 					<TuZona estado={tuZona.estado} vista={tuZona.datos?.vista} geom={tuZona.datos?.geom} />
 				{/if}
 			{:else if pantalla?.tipo === 'habitacion'}
+				{#key pantalla}
 				<ResultadoHabitacion
 					{pantalla}
 					comparacion={comparacionHab}
 					aporte={aporteHab}
 					alAportar={aportarHabitacion}
+					alVivo={() => {
+						// Los datos del formulario se conservan: solo cambia la modalidad
+						f.situacion = 'vivo';
+						otroPiso();
+					}}
 					alPiso={() => {
 						f.tipo = 'piso';
 						otroPiso();
 					}}
 				/>
+				{/key}
 			{:else if pantalla?.tipo === 'sin_dato'}
 				<SinDato {pantalla} alOtro={otroPiso} />
 			{/if}

@@ -8,3 +8,5 @@ Solo anotadas, sin empezar: faltan decisiones del usuario y diseño. Última rev
 4. **Tipo de casero** (la «renta al firmar» ya se pide, opcional, en «Ya vivo aquí»; `casero_tipo` solo cuando el formulario lo pida).
 5. **Caducidad de las tarjetas a 12 meses.** Hoy no caducan automáticamente. Hacerlo antes de las tarjetas del inquilino; exigirá una tarea periódica de borrado en D1 y R2 y cambiar la frase de «Tus datos».
 6. **Alias de nombres antiguos de vías renombradas**, si aparece una fuente fiable.
+
+7. **Comparación entre habitaciones y estimación indirecta a partir de medianas: sin más inversión (decisión del 06/10/2026).** La comparación con las habitaciones aportadas del barrio se queda como está (recuento y, desde 10, mediana) y la estimación indirecta del piso entero a partir de las medianas de habitaciones no se desarrolla. Lo que se mantiene es «Suma las habitaciones del piso», que compara con la referencia oficial del piso entero y no usa medianas.

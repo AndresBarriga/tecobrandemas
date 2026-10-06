@@ -18,6 +18,7 @@ export * from './aportacion';
 export * from './inquilino';
 export * from './muestra';
 export * from './habitacion';
+export * from './suma-habitaciones';
 export * from './ratio';
 export * from './vista';
 export * from './tuzona';

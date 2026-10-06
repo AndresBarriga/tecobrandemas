@@ -101,8 +101,8 @@ export const SIN_DATO: Record<ClaveSinDato, TextoSinDato> = {
 	},
 	habitacion: {
 		titular: 'Una habitación',
-		frase: 'La referencia mide viviendas completas. Las habitaciones no figuran en los registros, así que no hay con qué compararlas.',
-		extra: 'Si vas a alquilar el piso entero con otras personas, puedes comprobar el precio total del piso.'
+		frase: 'La referencia oficial no incluye habitaciones.',
+		extra: 'Si compartís con un solo contrato, compara el piso entero; si no, solo podemos comparar con lo que aporten otras personas de tu barrio, cuando haya suficientes.'
 	}
 };
 
@@ -331,6 +331,10 @@ export const HABITACION = {
 	insignia: 'Habitaciones: datos aportados por vecinos',
 	intro: 'La referencia oficial no cubre habitaciones, así que no te damos nivel ni veredicto. Solo comparamos con lo que aportan otras personas de tu barrio.',
 	tuHabitacion: 'Tu habitación',
+	/** «Estoy mirando un piso»: no es tuya */
+	laHabitacion: 'La habitación',
+	/** Estado vacío al mirar: ofrece pasar a «Ya vivo aquí» con los datos prellenados */
+	ofrecerVivo: '¿Vives en una habitación? Aporta la tuya',
 	otras: (barrio: string) => `Otras habitaciones en ${barrio}`,
 	alMes: (gastos: boolean) => `al mes, ${gastos ? 'con' : 'sin'} gastos`,
 	mediana: (n: number) => `mediana, ${n} aportaciones`,
@@ -357,7 +361,34 @@ export const HABITACION = {
 		titulo: 'Qué puedes hacer',
 		compartis: '¿Compartís piso con un solo contrato?',
 		compartisDetalle: 'Compara el piso entero con la referencia oficial',
-		porQue: 'Por qué no hay referencia para habitaciones'
+		porQue: 'Por qué no hay referencia para habitaciones',
+		suma: 'Suma las habitaciones del piso',
+		sumaDetalle: 'Compara la suma con la referencia del piso entero'
+	},
+	suma: {
+		titulo: 'Suma de las habitaciones del piso',
+		intro: 'Escribe lo que cuesta cada habitación (con la tuya prellenada) y el tamaño del piso. Lo comparamos con la referencia del piso entero. Todo se calcula en tu navegador y no se guarda nada.',
+		habitacion: (n: number) => `Habitación ${n}`,
+		metros: 'Metros del piso',
+		metrosAyuda: 'Entre 30 y 150\u00A0m².',
+		tramo: (texto: string, a: number, b: number) => `Tamaño del piso: ${texto}. Calculamos con sus dos extremos: ${a} y ${b}\u00A0m².`,
+		calcular: 'Calcular la suma',
+		errorPrecio: 'Escribe lo que cuesta cada habitación, en €/mes.',
+		errorMetros: 'Escribe los metros del piso, entre 30 y 150.',
+		sinDato: 'No hay referencia suficiente para el piso entero en esta zona, así que no podemos calcular la comparación.',
+		suma: 'Suma de las habitaciones',
+		referencia: (m: number) => `Referencia del piso entero para ${m}\u00A0m²`,
+		rango: (inf: string, sup: string) => `${inf} a ${sup} al mes`,
+		encima: (n: string) => `La suma queda ${n} al mes por encima de la parte alta.`,
+		debajo: (n: string) => `La suma queda ${n} al mes por debajo de la parte baja.`,
+		dentro: 'La suma queda dentro del rango.',
+		aclaracionesTitulo: 'Para leerlo bien',
+		aclaraciones: [
+			'Gastos: la referencia es del alquiler del piso. Si las habitaciones incluyen gastos (luz, agua, internet), la suma incluye algo que la referencia no cuenta.',
+			'Amueblado: la referencia no recoge si el piso está amueblado, y las habitaciones suelen alquilarse con muebles.',
+			'Contratos más recientes: las habitaciones que se alquilan hoy son contratos recientes, y la referencia mezcla contratos de distintas fechas.',
+			'La referencia oficial no cubre habitaciones: esto es una comparación orientativa, no un nivel ni un veredicto.'
+		]
 	},
 	pie: 'Habitaciones: datos aportados por personas usuarias, sin verificar. No es una referencia oficial.'
 } as const;
