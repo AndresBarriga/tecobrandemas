@@ -212,3 +212,10 @@ Nombre del producto: **A su precio**. Diseño en `docs/design` (README del hando
 - **«Tus datos»:** añadida la frase sobre las tarjetas compartidas (qué se guarda y que no caducan automáticamente).
 - **Ideas anotadas** en `docs/ideas.md`.
 - **Producción limpiada (06/10):** borrados 5 eventos y 7 tarjetas de prueba con sus 7 imágenes; contador global a 0. Creada la tarjeta fija `pruebahumo` (`POST /api/tarjeta` con `id=pruebahumo`; hizo falta el encabezado `Origin` por la protección contra POST de otro origen). PR #10 fusionado: CI de `main` con `pruebas`, `desplegar` y `humo` en verde. Ramas fusionadas borradas.
+
+## Autocompletado de direcciones (06/10/2026, rama `autocompletado`)
+- **Moscardó:** no es una vía de CartoCiudad sino un barrio oficial de Usera. «calle moscardo» y «moscardo» ofrecen «Moscardó (barrio · Usera): elige una calle o toca el mapa», que pasa al modo mapa y lo centra en el barrio.
+- **Motor** (`src/lib/resultado/autocompletar.ts`, todo en el navegador): normaliza (minúsculas, sin tildes, `c/`, `cl`, `avda`, `av`, `pº`, `pza`, `gta`, `ctra`; ignora de, del, la, las, los, el; no cuenta el número del portal), coincide por palabras en cualquier posición y ordena por nombre completo > empieza por lo escrito > palabra interior > una errata (solo si no hay otra cosa). Máximo 8, con lo coincidente resaltado (subrayado de Paja). Sin calles, busca barrios y distritos (con alias); sin nada, ofrece «Solo la calle» y el mapa.
+- **Datos:** `scripts/03b_sugerencias.py` genera `viales_sugerencias.json` (8.897 vías con su barrio, 264 kB, 75 kB comprimido) que se carga al enfocar la dirección.
+- **Componente:** `CampoDireccion.svelte` es un combobox accesible (flechas, Intro, Esc, `aria-activedescendant` y anuncio al lector de pantalla). Elegir una sugerencia no envía el formulario y conserva el número escrito.
+- **Prueba:** un único test nuevo (`tests/autocompletar.test.ts`): cada vía se encuentra escribiendo su última palabra, con y sin tilde.

@@ -13,7 +13,7 @@ Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisi
 
 ## Para ti (desarrollo)
 En este orden, un PR por punto:
-1. **(En curso, rama `autocompletado`) Autocompletado de direcciones y «Moscardó».** «Moscardó» no es una vía de CartoCiudad: es un barrio oficial de Usera. Sin calles que coincidan, buscar también en barrios y distritos (con alias) y ofrecer «Moscardó (barrio · Usera): elige una calle o toca el mapa», que centra el mapa. Normalización, coincidencia por palabras, orden, máximo 8, alias de barrios populares (propongo la lista antes de cargarla) y combobox accesible.
+1. **(Hecho en el PR de `autocompletado`, pendiente de fusionar; falta ampliar los alias) Autocompletado de direcciones y «Moscardó».** «Moscardó» no es una vía de CartoCiudad: es un barrio oficial de Usera. Sin calles que coincidan, buscar también en barrios y distritos (con alias) y ofrecer «Moscardó (barrio · Usera): elige una calle o toca el mapa», que centra el mapa. Normalización, coincidencia por palabras, orden, máximo 8, alias de barrios populares (propongo la lista antes de cargarla) y combobox accesible.
 2. **A5:** migración de `aportaciones` (`firma_mes`, `renta_firma`) y, si el formulario lo pide, su campo; export de la tabla antes de migrar en producción.
 3. **Mapa, parte 1:** servir los PMTiles como activo estático para que las peticiones Range no gasten invocaciones del Worker. Hay que bajar de 25 MiB (zoom máximo 14 o una caja más ajustada; quitar capas que no usamos: edificios, puntos de interés). Si no cabe, avisar antes de cambiar de enfoque.
 4. **Mapa, parte 2:** «Ampliar», pin fijo, hoja inferior en vivo, estilo apagado y «Usar mi ubicación» en los tres modos (todo en el navegador).
@@ -25,6 +25,13 @@ Deuda y detalles:
 - El estado «cargando» de «Tu zona» no tiene prueba propia.
 - El mensaje del 429 dice «espera un momento», pero el límite es diario (200 búsquedas por IP y día); y «Solo la calle» también usa el geocodificador. Solo el mapa sirve como salida real mientras dure el límite.
 - R2 `a-su-precio-tarjetas` sigue marcando 10 objetos (671 kB) tras borrar las 7 imágenes de prueba y quedar 1 tarjeta (`pruebahumo`): puede ser retraso del contador o imágenes sueltas; wrangler no lista objetos.
+
+### Alias de barrios: lista propuesta (necesita tu visto bueno antes de cargarla)
+Hoy solo están los tres que pediste (Malasaña → Universidad, Lavapiés → Embajadores, Chueca → Justicia). Propongo añadir, todos con un nombre oficial que existe en los datos:
+- **Seguros:** El Rastro → Embajadores · Conde Duque → Universidad · Tribunal → Universidad · Huertas y Barrio de las Letras → Cortes · Ópera → Palacio · Bernabéu → Castilla · Las Tablas → Valverde · Sanchinarro y Valdebebas → Valdefuentes.
+- **Ambiguos (varios barrios):** La Latina → Palacio y Embajadores · Vallecas → los distritos Puente de Vallecas y Villa de Vallecas · Barrio de Salamanca → el distrito Salamanca.
+- **Dudosos, sin añadir hasta confirmarlos:** Montecarmelo, Nuevos Ministerios, Plaza de Castilla, Tirso de Molina, Gran Vía.
+Los alias se editan en `src/lib/resultado/alias.ts`.
 
 ## Para el usuario
 - **Dominio propio:** no hay. Al tenerlo, cambiar la variable `URL_PRODUCCION` del repositorio y revisar la CSP y los enlaces.
