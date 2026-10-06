@@ -1,15 +1,17 @@
 <script lang="ts">
 	import { MAPA_REFERENCIA as T, TONOS_MAPA, type CapaMapa } from '#lib/resultado';
-	import { type Caja, type CeldaMadrid, type MadridCargado } from '#lib/cliente/mapa-madrid';
+	import { type Caja, type MadridCargado } from '#lib/cliente/mapa-madrid';
 	import { colocarNombres } from '#lib/cliente/zona-mapa';
 
 	/**
 	 * Mapa de Madrid por zonas (SVG con la vista en metros). El color llega ya calculado: este componente
 	 * solo pinta, mueve la vista y avisa de la zona tocada. Visual de «Tu zona»: escala de Paja, rayado gris
-	 * para «sin dato», líneas gruesas entre barrios y nombres de barrio en Tinta con halo claro.
+	 * para «sin dato», puntos para «por debajo», líneas gruesas entre barrios y nombres en Tinta con halo claro.
+	 * A zoom bajo se nombran los distritos y, al acercar, los barrios. (Se probó con canvas: con la CPU
+	 * limitada a una sexta parte, cambiar la superficie tardaba 1,2 s frente a 0,19 s en SVG.)
 	 */
 	let {
-		madrid, tonos, capa, seleccion = null, resaltadas = new Set<string>(), enfoque = null, alElegir
+		madrid, tonos, capa, seleccion = null, resaltadas = new Set<string>(), enfoque = null, margenInferior = 0, margenSuperior = 0, alElegir
 	}: {
 		madrid: MadridCargado;
 		tonos: Map<string, number | null>;
@@ -18,6 +20,9 @@
 		resaltadas?: Set<string>;
 		/** Caja (en metros, y invertida) a la que llevar la vista; `vez` cambia en cada petición */
 		enfoque?: { caja: Caja; vez: number } | null;
+		/** Píxeles del mapa tapados por la hoja (abajo) y por el conmutador (arriba): la vista se centra en lo libre */
+		margenInferior?: number;
+		margenSuperior?: number;
 		alElegir: (cusec: string) => void;
 	} = $props();
 
@@ -31,19 +36,21 @@
 
 	const ext = $derived(madrid.extension);
 	const mppAjuste = $derived(Math.max((ext[2] - ext[0]) / w, (ext[3] - ext[1]) / h) * 1.04);
-	const MPP_MIN = 3;
+	const MPP_MIN = 2;
 
-	function ajustar(caja: Caja = ext, margen = 1.04) {
-		const nuevo = Math.min(Math.max(Math.max((caja[2] - caja[0]) / w, (caja[3] - caja[1]) / h) * margen, MPP_MIN), mppAjuste);
+	/** Lleva la vista a una caja, centrada en la parte del mapa que no tapan la hoja ni el conmutador */
+	function ajustar(caja: Caja, margen = 1.04) {
+		const libre = Math.max(80, h - margenInferior - margenSuperior);
+		const nuevo = Math.min(Math.max(Math.max((caja[2] - caja[0]) / w, (caja[3] - caja[1]) / libre) * margen, MPP_MIN), mppAjuste);
 		mpp = nuevo;
 		vx = (caja[0] + caja[2]) / 2 - (w * nuevo) / 2;
-		vy = (caja[1] + caja[3]) / 2 - (h * nuevo) / 2;
+		vy = (caja[1] + caja[3]) / 2 - (margenSuperior + libre / 2) * nuevo;
 	}
 
 	$effect(() => {
 		if (!ajustado && w > 0 && h > 0) {
 			ajustado = true;
-			ajustar();
+			ajustar(madrid.extensionUrbana);
 		}
 	});
 	let vezVista = 0;
@@ -64,9 +71,44 @@
 		mpp = nuevo;
 	}
 
+	// ——— Colores ———
+	const paleta = $derived(TONOS_MAPA[capa]);
+	const relleno = (t: number | null | undefined) =>
+		t === null || t === undefined ? 'url(#mp-rayado)' : capa === 'presupuesto' && t === 0 ? 'url(#mp-debajo)' : paleta[t]!;
+	const grosor = $derived(mpp > 60 ? 0.35 : mpp > 25 ? 0.6 : 1);
+	const trazadoSel = $derived(seleccion ? (madrid.porCusec.get(seleccion)?.d ?? '') : '');
+	const trazadoRes = $derived([...resaltadas].map((c) => madrid.porCusec.get(c)?.d ?? '').join(''));
+
+	// ——— Toque: la zona bajo el dedo o, si no hay, la más cercana a menos de 14 px ———
+	const TOLERANCIA = 14;
+	let prueba: CanvasRenderingContext2D | null = null;
+	function zonaEn(px: number, py: number): string | undefined {
+		prueba ??= document.createElement('canvas').getContext('2d');
+		if (!prueba) return undefined;
+		const x = vx + px * mpp;
+		const y = vy + py * mpp;
+		const tol = TOLERANCIA * mpp;
+		let dentro: { cusec: string; area: number } | undefined;
+		let cerca: { cusec: string; d: number } | undefined;
+		prueba.lineWidth = 2 * tol;
+		for (const c of madrid.celdas) {
+			const [x0, y0, x1, y1] = c.caja;
+			if (x < x0 - tol || x > x1 + tol || y < y0 - tol || y > y1 + tol) continue;
+			const t = new Path2D(c.d);
+			if (prueba.isPointInPath(t, x, y, 'evenodd')) {
+				const area = (x1 - x0) * (y1 - y0);
+				if (!dentro || area < dentro.area) dentro = { cusec: c.cusec, area };
+			} else if (prueba.isPointInStroke(t, x, y)) {
+				const d = Math.hypot(c.centro[0] - x, c.centro[1] - y);
+				if (!cerca || d < cerca.d) cerca = { cusec: c.cusec, d };
+			}
+		}
+		return dentro?.cusec ?? cerca?.cusec;
+	}
+
 	// Gestos: arrastrar, pellizcar y tocar. Tocar = soltar sin haber movido el dedo.
 	const punteros = new Map<number, { x: number; y: number }>();
-	let salida: { x: number; y: number; cusec: string | undefined } | null = null;
+	let salida: { x: number; y: number } | null = null;
 	let movido = false;
 	let distanciaPinza = 0;
 	let envoltorio: HTMLDivElement | undefined = $state();
@@ -75,14 +117,13 @@
 		const r = envoltorio!.getBoundingClientRect();
 		return { x: e.clientX - r.left, y: e.clientY - r.top };
 	};
-	const cusecDe = (e: Event) => (e.target as SVGElement | null)?.dataset?.cusec;
 
 	function abajo(e: PointerEvent) {
-		if ((e.target as HTMLElement).closest?.('.zoom')) return;
 		const p = relativo(e);
 		punteros.set(e.pointerId, p);
+		(e.currentTarget as Element).setPointerCapture?.(e.pointerId);
 		if (punteros.size === 1) {
-			salida = { ...p, cusec: cusecDe(e) };
+			salida = { ...p };
 			movido = false;
 		} else {
 			movido = true;
@@ -102,10 +143,7 @@
 			distanciaPinza = d;
 			return;
 		}
-		if (!movido && salida && Math.hypot(p.x - salida.x, p.y - salida.y) > 6) {
-			movido = true;
-			(e.currentTarget as Element).setPointerCapture?.(e.pointerId);
-		}
+		if (!movido && salida && Math.hypot(p.x - salida.x, p.y - salida.y) > 8) movido = true;
 		if (movido) {
 			vx -= (p.x - previo.x) * mpp;
 			vy -= (p.y - previo.y) * mpp;
@@ -114,8 +152,12 @@
 	}
 	function arriba(e: PointerEvent) {
 		if (!punteros.has(e.pointerId)) return;
+		const p = relativo(e);
 		punteros.delete(e.pointerId);
-		if (!movido && salida?.cusec && cusecDe(e) === salida.cusec) alElegir(salida.cusec);
+		if (!movido && salida) {
+			const cusec = zonaEn(p.x, p.y);
+			if (cusec) alElegir(cusec);
+		}
 		if (punteros.size === 0) salida = null;
 	}
 	function tecla(e: KeyboardEvent) {
@@ -130,30 +172,26 @@
 		e.preventDefault();
 	}
 
-	// Colores
-	const paleta = $derived(TONOS_MAPA[capa]);
-	const relleno = (t: number | null | undefined) =>
-		t === null || t === undefined ? 'url(#mp-rayado)' : capa === 'presupuesto' && t === 0 ? 'url(#mp-debajo)' : paleta[t]!;
-	const grosor = $derived(mpp > 60 ? 0.35 : mpp > 25 ? 0.6 : 1);
-
-	// Nombres de barrio en Tinta con halo claro (11 px), solo los que caben dentro de su barrio
+	// ——— Nombres: distritos a zoom bajo, barrios al acercar; Tinta con halo claro, 11-12 px ———
 	let lienzo: CanvasRenderingContext2D | null = null;
-	function medir(texto: string): number {
+	function medir(texto: string, cuerpo: number): number {
 		lienzo ??= document.createElement('canvas').getContext('2d');
-		if (!lienzo) return texto.length * 11 * 0.56;
-		lienzo.font = `600 11px "Sofia Sans", sans-serif`;
+		if (!lienzo) return texto.length * cuerpo * 0.56;
+		lienzo.font = `700 ${cuerpo}px "Sofia Sans", sans-serif`;
 		return lienzo.measureText(texto).width;
 	}
+	const UMBRAL_DISTRITOS = 36; // metros por píxel a partir del cual se nombran distritos
 	const nombres = $derived.by(() => {
-		const candidatos = [...madrid.barrios.values()]
+		const distritos = mpp > UMBRAL_DISTRITOS;
+		const cuerpo = distritos ? 12 : 11;
+		const origen = distritos ? madrid.distritos : madrid.barrios;
+		const candidatos = [...origen.values()]
 			.map((b) => ({ texto: b.nombre, x: (b.centro[0] - vx) / mpp, y: (b.centro[1] - vy) / mpp, n: b.n, ancho: (b.caja[2] - b.caja[0]) / mpp }))
-			.filter((b) => b.texto && b.x > 0 && b.y > 0 && b.x < w && b.y < h && b.ancho > medir(b.texto) + 10)
+			// Un distrito se nombra aunque su nombre sea algo más ancho que él; un barrio, solo si cabe
+			.filter((b) => b.texto && b.x > 0 && b.y > 0 && b.x < w && b.y < h && b.ancho > (distritos ? medir(b.texto, cuerpo) * 0.6 : medir(b.texto, cuerpo) + 10))
 			.sort((a, b) => b.n - a.n);
-		return colocarNombres({ candidatos, obstaculos: [], w, h, cuerpo: 11, medir, desplazar: false });
+		return colocarNombres({ candidatos, obstaculos: [], w, h, cuerpo, medir: (t) => medir(t, cuerpo), desplazar: false });
 	});
-
-	const trazadoSel = $derived(seleccion ? (madrid.porCusec.get(seleccion)?.d ?? '') : '');
-	const trazadoRes = $derived([...resaltadas].map((c) => madrid.porCusec.get(c)?.d ?? '').join(''));
 </script>
 
 <div class="marco" bind:this={envoltorio} bind:clientWidth={w} bind:clientHeight={h}>
@@ -188,14 +226,17 @@
 			</defs>
 			<rect x={vx} y={vy} width={w * mpp} height={h * mpp} fill="#ECEAE5" />
 			{#each madrid.celdas as c (c.cusec)}
-				<path d={c.d} data-cusec={c.cusec} fill-rule="evenodd" fill={relleno(tonos.get(c.cusec))} stroke="#857F74" stroke-width={grosor} stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+				<path d={c.d} fill-rule="evenodd" fill={relleno(tonos.get(c.cusec))} stroke="#857F74" stroke-width={grosor} stroke-linejoin="round" vector-effect="non-scaling-stroke" />
 			{/each}
-			<path d={madrid.lineasBarrio} fill="none" stroke="#A39D91" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke" pointer-events="none" />
-			{#if trazadoRes}<path d={trazadoRes} fill="none" stroke="#1C1B19" stroke-width="3.5" stroke-linejoin="round" vector-effect="non-scaling-stroke" pointer-events="none" />{/if}
-			{#if trazadoSel}<path d={trazadoSel} fill="none" stroke="#1C1B19" stroke-width="3" stroke-dasharray="6 3" stroke-linejoin="round" vector-effect="non-scaling-stroke" pointer-events="none" />{/if}
+			<path d={madrid.lineasBarrio} fill="none" stroke="#A39D91" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+			{#if trazadoRes}<path d={trazadoRes} fill="none" stroke="#1C1B19" stroke-width="3.5" stroke-linejoin="round" vector-effect="non-scaling-stroke" />{/if}
+			{#if trazadoSel}
+				<path d={trazadoSel} fill="none" stroke="#F6F4EE" stroke-width="8" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+				<path d={trazadoSel} fill="none" stroke="#1C1B19" stroke-width="4.5" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+			{/if}
 		</svg>
 		{#each nombres as n (n.texto)}
-			<span class="nombre" style:left="{n.x}px" style:top="{n.y}px">{n.texto}</span>
+			<span class="nombre" style:left="{n.x}px" style:top="{n.y}px" style:font-size="{n.cuerpo}px">{n.texto}</span>
 		{/each}
 	</div>
 	<div class="zoom">
@@ -232,26 +273,29 @@
 	}
 	svg {
 		display: block;
-	}
-	path[data-cusec] {
-		cursor: pointer;
+		pointer-events: none;
 	}
 	.nombre {
 		position: absolute;
 		transform: translate(-50%, -50%);
 		white-space: nowrap;
 		pointer-events: none;
-		font: 600 11px/1 var(--f-texto);
+		font-family: var(--f-texto);
+		font-weight: 700;
+		line-height: 1;
 		color: var(--tinta);
-		text-shadow: 0 0 1px #f6f4ee, 0 0 2px #f6f4ee, 0 0 2px #f6f4ee, 0 0 3px #f6f4ee, 0 0 4px #f6f4ee, 0 0 5px #f6f4ee;
+		/* Halo claro alrededor de las letras: el trazo va detrás del relleno */
+		-webkit-text-stroke: 3.5px #f6f4ee;
+		paint-order: stroke fill;
 	}
 	.zoom {
 		position: absolute;
 		right: 10px;
-		bottom: 10px;
+		bottom: calc(var(--hoja-alto, 0px) + 10px);
 		display: flex;
 		flex-direction: column;
 		gap: 6px;
+		z-index: 2;
 	}
 	.zoom button {
 		width: 44px;
@@ -266,5 +310,11 @@
 	.zoom button:focus-visible {
 		outline: 2px solid var(--tinta);
 		outline-offset: 2px;
+	}
+	@media (max-width: 959px) {
+		.marco {
+			border-radius: 0;
+			min-height: 0;
+		}
 	}
 </style>

@@ -28,7 +28,11 @@ export interface MadridCargado {
 	lineasBarrio: string;
 	/** Caja de cada barrio (para centrar la vista) y su nombre */
 	barrios: Map<string, { nombre: string; caja: Caja; n: number; centro: [number, number] }>;
+	/** Distritos: nombre, caja y centro (para los nombres a zoom bajo) */
+	distritos: Map<string, { nombre: string; caja: Caja; n: number; centro: [number, number] }>;
 	extension: Caja;
+	/** Área urbana (sin el monte y el suelo rural del municipio): la vista inicial */
+	extensionUrbana: Caja;
 }
 
 let cargado: Promise<MadridCargado> | null = null;
@@ -63,18 +67,47 @@ export function cargarMadrid(): Promise<MadridCargado> {
 			b.n++;
 		}
 		for (const b of barrios.values()) b.centro = [b.centro[0] / b.n, b.centro[1] / b.n];
+		const distritos: MadridCargado['distritos'] = new Map();
+		for (const [codigo, b] of barrios) {
+			const cod = datos.barrios[codigo]?.cod_distrito;
+			if (!cod) continue;
+			const d = distritos.get(cod);
+			if (!d) {
+				distritos.set(cod, { nombre: datos.barrios[codigo]!.distrito, caja: [...b.caja], n: b.n, centro: [b.centro[0] * b.n, b.centro[1] * b.n] });
+				continue;
+			}
+			d.caja = [Math.min(d.caja[0], b.caja[0]), Math.min(d.caja[1], b.caja[1]), Math.max(d.caja[2], b.caja[2]), Math.max(d.caja[3], b.caja[3])];
+			d.centro = [d.centro[0] + b.centro[0] * b.n, d.centro[1] + b.centro[1] * b.n];
+			d.n += b.n;
+		}
+		for (const d of distritos.values()) d.centro = [d.centro[0] / d.n, d.centro[1] / d.n];
 		const lineas = await lineasEntreBarrios(mapa, datos);
 		const lineasBarrio = lineas.map((l) => 'M' + l.map(([x, y]) => `${r1(x)},${r1(-y)}`).join('L')).join('');
 		const extension: Caja = [
 			Math.min(...celdas.map((c) => c.caja[0])), Math.min(...celdas.map((c) => c.caja[1])),
 			Math.max(...celdas.map((c) => c.caja[2])), Math.max(...celdas.map((c) => c.caja[3]))
 		];
-		return { datos, celdas, porCusec: new Map(celdas.map((c) => [c.cusec, c])), lineasBarrio, barrios, extension };
+		return { datos, celdas, porCusec: new Map(celdas.map((c) => [c.cusec, c])), lineasBarrio, barrios, distritos, extension, extensionUrbana: areaUrbana(celdas, extension) };
 	})().catch((e) => {
 		cargado = null;
 		throw e;
 	});
 	return cargado;
+}
+
+/**
+ * Área urbana: los centros de las zonas pequeñas (las grandes son monte y suelo rural) entre los percentiles
+ * 1 y 99, con un margen del 4 %. Si hay pocas, la extensión entera.
+ */
+export function areaUrbana(celdas: readonly CeldaMadrid[], total: Caja): Caja {
+	const pequenas = celdas.filter((c) => c.caja[2] - c.caja[0] < 2500 && c.caja[3] - c.caja[1] < 2500);
+	if (pequenas.length < 50) return total;
+	const percentil = (v: number[], p: number) => v.sort((a, b) => a - b)[Math.min(v.length - 1, Math.max(0, Math.round((v.length - 1) * p)))]!;
+	const xs = pequenas.map((c) => c.centro[0]);
+	const ys = pequenas.map((c) => c.centro[1]);
+	const x0 = percentil(xs, 0.01), x1 = percentil(xs, 0.99), y0 = percentil(ys, 0.01), y1 = percentil(ys, 0.99);
+	const mx = (x1 - x0) * 0.04, my = (y1 - y0) * 0.04;
+	return [x0 - mx, y0 - my, x1 + mx, y1 + my];
 }
 
 /** Caja que une las de varias zonas */

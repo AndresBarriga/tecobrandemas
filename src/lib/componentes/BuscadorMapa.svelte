@@ -6,16 +6,25 @@
 	 * Buscador de barrio o calle del mapa. Todo en el navegador: lo que se escribe no se envía. Una calle
 	 * lleva al barrio donde tiene más zonas; un barrio, con sus nombres populares («Malasaña»), a él.
 	 */
-	let { alElegirZona, alElegirVia, alVaciar, mensaje = null }: {
+	let { alElegirZona, alElegirVia, alVaciar, mensaje = null, rellenar = null }: {
 		alElegirZona: (z: SugerenciaZona) => void;
 		alElegirVia: (v: SugerenciaVia) => void;
 		/** El campo se ha vaciado: ya no hay búsqueda a la que acompañar */
 		alVaciar: () => void;
 		/** Lo último que se eligió, bajo el campo */
 		mensaje?: string | null;
+		/** Texto que se escribe desde fuera (un enlace con ?barrio=); `vez` cambia en cada petición */
+		rellenar?: { texto: string; vez: number } | null;
 	} = $props();
 
 	let valor = $state('');
+	let vezRelleno = 0;
+	$effect(() => {
+		if (rellenar && rellenar.vez !== vezRelleno) {
+			vezRelleno = rellenar.vez;
+			valor = rellenar.texto;
+		}
+	});
 	let raiz: HTMLDivElement | undefined = $state();
 	let sugeridor = $state<Sugeridor | null>(null);
 	let abierto = $state(false);
