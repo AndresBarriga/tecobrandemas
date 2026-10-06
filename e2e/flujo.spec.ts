@@ -34,6 +34,8 @@ test.describe('flujo', () => {
 		});
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
+		// En escritorio la portada ya enseña un resultado de muestra: se espera al de verdad
+		await expect(page.getByRole('group', { name: 'Compartir el resultado' })).toBeVisible();
 		await expect(page.getByText('Por encima del techo')).toBeVisible();
 		expect(externas).toEqual([]);
 		// Se envía la dirección a nuestro Worker y eventos del embudo; ni precio ni m² en ningún cuerpo
@@ -69,7 +71,7 @@ test.describe('flujo', () => {
 	test('textos con espacio duro: «2.500 €» y «+NN %»', async ({ page }) => {
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Por encima del techo')).toBeVisible();
+		await expect(page.getByRole('group', { name: 'Compartir el resultado' })).toBeVisible();
 		const cuerpo = await page.locator('main').innerText();
 		expect(cuerpo).toContain(`2.500${NB}€`);
 		expect(cuerpo).toMatch(/\+\d+(,\d)? %/);

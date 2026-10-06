@@ -68,3 +68,47 @@ export function validarFormulario(f: FormularioCrudo): ValidacionFormulario {
 		}
 	};
 }
+
+// ——— «Ya vivo aquí»: fecha de firma, renta al firmar y «Somos N» ———
+
+export interface FirmaCruda {
+	reciente: boolean;
+	mes: string;
+	ano: string;
+}
+
+/** Fecha de firma: mes y año, o solo el año actual si «hace menos de un año» (sin mes) */
+export interface Firma {
+	reciente: boolean;
+	mes: number | null;
+	ano: number;
+}
+
+export const ANIO_FIRMA_MIN = 1990;
+
+export type ValidacionFirma = { ok: true; firma: Firma } | { ok: false };
+
+export function validarFirma(c: FirmaCruda, hoy: { ano: number; mes: number }): ValidacionFirma {
+	if (c.reciente) return { ok: true, firma: { reciente: true, mes: null, ano: hoy.ano } };
+	const mes = Number(c.mes);
+	const ano = Number(c.ano);
+	if (!Number.isInteger(mes) || mes < 1 || mes > 12) return { ok: false };
+	if (!Number.isInteger(ano) || ano < ANIO_FIRMA_MIN || ano > hoy.ano) return { ok: false };
+	if (ano === hoy.ano && mes > hoy.mes) return { ok: false };
+	return { ok: true, firma: { reciente: false, mes, ano } };
+}
+
+/** Lo que se pagaba al firmar: vacío = no se sabe (null); un número válido; o 'error' */
+export function interpretarRentaFirma(texto: string): number | null | 'error' {
+	if (!texto.trim()) return null;
+	const n = interpretarNumero(texto);
+	return n !== null && n >= PRECIO_MIN && n <= PRECIO_MAX ? n : 'error';
+}
+
+/** «Somos N»: vacío o fuera de 2-12 = sin dato */
+export function interpretarSomos(texto: string): number | null {
+	const n = Number(texto.trim());
+	return Number.isInteger(n) && n >= 2 && n <= 12 ? n : null;
+}
+
+export const MESES_ES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'] as const;

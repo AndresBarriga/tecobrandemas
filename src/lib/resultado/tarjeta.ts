@@ -4,10 +4,11 @@
  * y la barra en fracciones. Nunca lleva precio, superficie ni dirección: la barra va en
  * fracciones de su propia escala, de modo que no se puede volver al importe.
  */
-import { heroEnVeces } from './ratio';
+import { numero, porcentaje } from './formato';
+import { heroEnVeces, partesRatio } from './ratio';
 import type { PantallaResultado } from './resultado';
 import {
-	ATRIBUCIONES, ETIQUETA_NIVEL, ETIQUETA_OG, FRASE_TARJETA, NOMBRE, NOTA_TARJETA, OG, TARJETA
+	ATRIBUCIONES, ETIQUETA_NIVEL, ETIQUETA_OG, FRASE_TARJETA, INQUILINO, NOMBRE, NOTA_TARJETA, OG, TARJETA, TARJETA_INQUILINO
 } from './textos';
 import type { Clase } from './vista';
 
@@ -26,7 +27,13 @@ export interface Tramo01 {
 	hasta: number;
 }
 
+/** Posición del inquilino en su tarjeta: por debajo, dentro de la referencia, cerca del techo o por encima */
+export type PosicionTarjeta = 'debajo' | 'dentro' | 'encimab' | 'encima';
+const CLASE_DE: Record<PosicionTarjeta, Clase> = { debajo: 'a', dentro: 'a', encimab: 'b', encima: 'c' };
+
 export interface TarjetaDatos {
+	/** Tarjeta del inquilino («Ya vivo aquí»): su posición. Nunca lleva la renta ni la fecha de firma */
+	inquilino?: { posicion: PosicionTarjeta };
 	clase: Clase;
 	etiqueta: string;
 	hero: Hero;
@@ -88,9 +95,58 @@ export function construirTarjeta(p: PantallaResultado): TarjetaDatos {
 	};
 }
 
+const posicionDeTarjeta = (pos: 'debajo' | 'baja' | 'media' | 'alta' | 'encimab' | 'encima'): PosicionTarjeta =>
+	pos === 'baja' || pos === 'media' || pos === 'alta' ? 'dentro' : pos;
+
+/** Los tres textos de una posición; el de «por encima» con el % o las veces sobre la parte alta */
+export function textosInquilino(pos: PosicionTarjeta, ratio: number): string[] {
+	const t = TARJETA_INQUILINO.textos[pos];
+	if (pos !== 'encima') return [...t] as string[];
+	const p = partesRatio(ratio);
+	const dinamico = p.enVeces
+		? TARJETA_INQUILINO.encimaVeces(`${numero(ratio, 1)}\u00A0veces`)
+		: TARJETA_INQUILINO.encimaCifra(porcentaje(ratio - 1).replace(/^−/, ''));
+	return [t[0]!, dinamico, t[2]!];
+}
+
+/** ¿Es una de las frases de las tarjetas del inquilino? (el servidor solo guarda esas) */
+function fraseInquilinoValida(pos: PosicionTarjeta, frase: string): boolean {
+	if ((TARJETA_INQUILINO.textos[pos] as readonly (string | null)[]).includes(frase)) return true;
+	return pos === 'encima' && /^Pago (un \d{1,4}(,\d)?\u00A0% más que|\d{1,3},\d\u00A0veces) la parte alta de la referencia de mi zona\.$/.test(frase);
+}
+
+/**
+ * Tarjeta del inquilino: la posición y el barrio, con el texto que la persona elige (0-2).
+ * Sin renta, sin dirección y sin fecha: la barra va en fracciones, como en la de los anuncios.
+ */
+export function construirTarjetaInquilino(p: PantallaResultado, texto: 0 | 1 | 2): TarjetaDatos {
+	const i = p.inquilino!;
+	const base = construirTarjeta(p);
+	const posicion = posicionDeTarjeta(i.pos);
+	const hero: Hero = posicion === 'encima' ? base.hero : { tipo: 'titular', texto: i.titular };
+	return {
+		...base,
+		inquilino: { posicion },
+		clase: CLASE_DE[posicion],
+		etiqueta: INQUILINO.etiqueta[posicion === 'dentro' ? 'dentro' : posicion],
+		hero,
+		nota: TARJETA_INQUILINO.nota[posicion],
+		frase: textosInquilino(posicion, p.ratioMin)[texto]!
+	};
+}
+
 /** Título, descripción y textos de la vista previa del enlace: sin precio ni dirección */
 export function textosEnlace(t: TarjetaDatos): { titulo: string; descripcion: string; og: { etiqueta: string; titular: string; nota: string; cta: string } } {
 	const lugar = t.barrio ?? 'Madrid';
+	if (t.inquilino) {
+		const pos = t.inquilino.posicion;
+		const titular = t.hero.tipo === 'titular' ? t.hero.texto : t.hero.tipo === 'cifra' ? t.hero.texto : `${t.hero.desde} a ${t.hero.hasta}`;
+		return {
+			titulo: `${titular} en ${lugar} · ${NOMBRE}`,
+			descripcion: `${t.frase} Comprueba tu alquiler.`,
+			og: { etiqueta: t.etiqueta, titular: t.frase, nota: TARJETA_INQUILINO.notaOg[pos](lugar), cta: TARJETA_INQUILINO.cta }
+		};
+	}
 	const cifra = t.hero.tipo === 'cifra' ? t.hero.texto : t.hero.tipo === 'rango' ? `${t.hero.desde} a ${t.hero.hasta}` : t.hero.texto;
 	return {
 		titulo: `${NOMBRE} · Un piso en ${lugar}`,
@@ -124,7 +180,15 @@ export function validarTarjeta(x: unknown): TarjetaDatos | null {
 	const t = x as Record<string, unknown>;
 	const clase = t.clase;
 	if (clase !== 'a' && clase !== 'b' && clase !== 'c') return null;
-	if (t.etiqueta !== ETIQUETA_NIVEL[clase]) return null;
+	// Tarjeta del inquilino: posición válida, etiqueta y clase coherentes y una de las frases conocidas
+	const inq = t.inquilino as { posicion?: unknown } | undefined;
+	let inquilino: TarjetaDatos['inquilino'];
+	if (inq !== undefined) {
+		const pos = inq?.posicion;
+		if (pos !== 'debajo' && pos !== 'dentro' && pos !== 'encimab' && pos !== 'encima') return null;
+		if (CLASE_DE[pos] !== clase || t.etiqueta !== INQUILINO.etiqueta[pos] || typeof t.frase !== 'string' || !fraseInquilinoValida(pos, t.frase)) return null;
+		inquilino = { posicion: pos };
+	} else if (t.etiqueta !== ETIQUETA_NIVEL[clase]) return null;
 	const h = t.hero as Record<string, unknown> | undefined;
 	let hero: Hero;
 	if (h?.tipo === 'cifra' && texto(h.texto, 30)) hero = { tipo: 'cifra', texto: h.texto };
@@ -139,8 +203,9 @@ export function validarTarjeta(x: unknown): TarjetaDatos | null {
 	if (t.barrio !== null && !texto(t.barrio, 80)) return null;
 	if (typeof t.aproximada !== 'boolean') return null;
 	return {
+		...(inquilino ? { inquilino } : {}),
 		clase,
-		etiqueta: ETIQUETA_NIVEL[clase],
+		etiqueta: inquilino ? INQUILINO.etiqueta[inquilino.posicion] : ETIQUETA_NIVEL[clase],
 		hero,
 		nota: t.nota,
 		frase: t.frase,

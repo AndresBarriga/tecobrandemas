@@ -39,7 +39,7 @@ test.describe('humo', () => {
 		await comprobar(page, { direccion: 'Calle del Berro Nuevo 14', precio: '1400', superficie: '58' });
 		await expect(page.getByText(/No encontramos esa dirección/)).toBeVisible();
 
-		for (const ruta of ['/como-calculamos', '/cuanto-pagas']) {
+		for (const ruta of ['/como-calculamos', '/?modo=vivo']) {
 			await page.goto(ruta);
 			await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 		}

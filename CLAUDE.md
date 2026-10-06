@@ -26,7 +26,7 @@ supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado
 - Es una estimación independiente: enlazar siempre a serpavi.mivau.gob.es para el valor legal.
 
 ## Estado (06/10/2026)
-- Producto: «A su precio». Hitos 1-7 hechos, incluidas «Tu zona», «Cómo calculamos», compartir la tarjeta por
+- Producto: «A su precio». Hitos 1-7 y Fase 1 («Ya vivo aquí», habitaciones, ubicación del dispositivo) hechos, incluidas «Tu zona», «Cómo calculamos», compartir la tarjeta por
   canales (la tarjeta solo se guarda al elegir un canal), el ratio por tramos («+X %» o «X,X veces la parte
   alta») y el aviso «¿Seguro?» con más de 3 veces la parte alta. El cálculo está en `src/lib/resultado`; la
   geometría del mapa, en `src/lib/cliente/zona*.ts`. En «Tu zona» se dice «zona», nunca «sección».
@@ -46,7 +46,7 @@ supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado
   prueba de humo. No se toca el CI ni se borran tests existentes (si un cambio rompe uno, se arregla).
   Excepciones: el test de autocompletado (cada vía se encuentra por su última palabra, con y sin tilde) y los
   cambios de `humo.yml` y del job de humo.
-- Datos: dos tablas separadas, análisis de anuncios y aportaciones de inquilinos; nunca una tabla única con
+- Datos: tablas separadas (análisis de anuncios, aportaciones de inquilinos y habitaciones); nunca una tabla única con
   `tipo_dato` ni `datos_v2`. Aportaciones: `firma_mes` (AAAA-MM) y `renta_firma` opcional; mes y no fecha
   exacta; nunca la sección. `casero_tipo` solo cuando el formulario lo pida.
 - Producción: borrados y migraciones solo tras enseñar el recuento o el export y con el «ok» del usuario. La

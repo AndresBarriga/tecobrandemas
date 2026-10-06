@@ -17,6 +17,8 @@ import {
 	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, type ClaveSinDato, type MotivoPantalla,
 	PRECIO_PEDIDO, QUE_PUEDES_HACER, SIN_DATO, TEXTO_OFICIAL_SIN_DATO
 } from './textos';
+import type { PantallaHabitacion } from './habitacion';
+import type { InfoInquilino } from './inquilino';
 import type { Punto } from '../ubicacion/geocodificar';
 import type { Ubicacion } from './ubicacion';
 import { type Vista, construirVista, principalPorEncima } from './vista';
@@ -75,6 +77,8 @@ export interface PantallaResultado {
 	registro: RegistroAnalisis | null;
 	/** Lo que necesita «Tu zona» para calcularse en el navegador; el punto no sale del dispositivo */
 	zona: ParametrosZona | null;
+	/** «Ya vivo aquí»: la lectura del inquilino; null en un anuncio */
+	inquilino: InfoInquilino | null;
 }
 
 /** Entrada de «Tu zona»: el anuncio, la ubicación (el punto, o null si solo hay calle) y las zonas */
@@ -94,7 +98,7 @@ export interface RegistroAnalisis {
 	nivel: 'a' | 'b' | 'c';
 }
 
-export type Pantalla = PantallaSinDato | PantallaResultado;
+export type Pantalla = PantallaSinDato | PantallaResultado | PantallaHabitacion;
 
 /** Qué se sabe del anuncio y de dónde está, para el encabezado de la pantalla sin dato */
 export interface ContextoSinDato {
@@ -205,7 +209,8 @@ function desdeAnalisis(
 		avisoIndependiente: AVISO_INDEPENDIENTE,
 		enlaceOficial: ENLACE_OFICIAL,
 		zona: { precio: a.precio, superficie: a.superficie, origen: u.punto, cusecs: u.cusecs, clase: vista.clase },
-		registro: barrio ? { barrio: barrio.codigo, precio: Math.round(a.precio), m2: a.superficie, nivel: vista.clase } : null
+		registro: barrio ? { barrio: barrio.codigo, precio: Math.round(a.precio), m2: a.superficie, nivel: vista.clase } : null,
+		inquilino: null
 	};
 }
 

@@ -5,9 +5,9 @@
 	let { children } = $props();
 
 	// Una sola etiqueta: todo el sitio mientras no sea el lanzamiento, y siempre las tarjetas
-	// compartidas y la página de aportaciones (el noindex no afecta a la vista previa de WhatsApp o X)
+	// compartidas (el noindex no afecta a la vista previa de WhatsApp o X)
 	const noindex = $derived(
-		indexacion.noindex || page.route.id?.startsWith('/t/') || page.route.id === '/cuanto-pagas'
+		indexacion.noindex || page.route.id?.startsWith('/t/')
 	);
 </script>
 

@@ -47,7 +47,7 @@ test.describe('registro anónimo de análisis (R7)', () => {
 	});
 
 	test('noindex: meta robots en todo el sitio y la vista previa de /t/:id sigue completa', async ({ page, request }) => {
-		for (const ruta of ['/', '/como-calculamos', '/cuanto-pagas']) {
+		for (const ruta of ['/', '/como-calculamos', '/?modo=vivo']) {
 			await page.goto(ruta);
 			expect(await page.locator('meta[name="robots"]').first().getAttribute('content')).toContain('noindex');
 		}

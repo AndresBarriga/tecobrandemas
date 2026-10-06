@@ -8,13 +8,16 @@
 	import Pie from '#lib/componentes/Pie.svelte';
 	import ConfirmarPrecio from '#lib/componentes/ConfirmarPrecio.svelte';
 	import Resultado from '#lib/componentes/Resultado.svelte';
+	import MuestraResultado from '#lib/componentes/MuestraResultado.svelte';
+	import ResultadoHabitacion from '#lib/componentes/ResultadoHabitacion.svelte';
+	import ResultadoInquilino, { type EstadoAporte } from '#lib/componentes/ResultadoInquilino.svelte';
 	import SinConexion from '#lib/componentes/SinConexion.svelte';
 	import SinDato from '#lib/componentes/SinDato.svelte';
 	import TuZona from '#lib/componentes/TuZona.svelte';
 	import { type TuZonaCargada, cargarTuZona } from '#lib/cliente/zona';
 	import {
-		DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO,
-		construirTarjeta, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
+		DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
+		construirTarjeta, construirTarjetaInquilino, textosInquilino, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
 		parecePrecioErroneo,
 		type Pantalla, type PantallaResultado, type SugerenciaZona, type Ubicacion
 	} from '#lib/resultado';
@@ -22,6 +25,7 @@
 	import { precargarDatos } from '#lib/cliente/datos';
 	import { type EstadoFormulario, type ModoUbicacion, estadoInicial } from '#lib/cliente/estado';
 	import { type Entrada, guardarHistorial, leerHistorial } from '#lib/cliente/historial';
+	import { enviarAportacion, enviarHabitacion, pedirComparacion } from '#lib/cliente/aportacion';
 	import { registrarAnalisis } from '#lib/cliente/registro';
 	import {
 		compartirNativo, copiarEnlace, descargarImagen, puedeCompartirNativo, subirTarjeta, urlDeTarjeta
@@ -60,6 +64,53 @@
 			});
 	});
 
+	// «Ya vivo aquí»: aportar el alquiler (botón explícito) y cuántos hay en el barrio
+	let aporte = $state<EstadoAporte>('no');
+	let aportadosBarrio = $state<number | null>(null);
+	const esVivo = $derived(f.situacion === 'vivo');
+
+	// Habitación: comparación con las aportadas en el barrio (el recuento y, desde 10, la mediana)
+	const habitacionPantalla = $derived(pantalla?.tipo === 'habitacion' ? pantalla : null);
+	let comparacionHab = $state<{ n: number; mediana: number | null } | 'error' | null>(null);
+	let aporteHab = $state<EstadoAporte>('no');
+	let turnoHab = 0;
+	$effect(() => {
+		const h = habitacionPantalla;
+		const mio = ++turnoHab;
+		comparacionHab = null;
+		if (!h) return;
+		void pedirComparacion(h.barrioCodigo, h.gastos).then((c) => {
+			if (mio === turnoHab) comparacionHab = c ?? 'error';
+		});
+	});
+
+	async function aportarHabitacion() {
+		const datos = habitacionPantalla?.aporte;
+		if (!datos || aporteHab === 'enviando' || aporteHab === 'hecho') return;
+		aporteHab = 'enviando';
+		const r = await enviarHabitacion(datos);
+		if (r === 'guardada' || r === 'no_guardada') {
+			evento('vivo_aporta');
+			aporteHab = 'hecho';
+			const c = await pedirComparacion(datos.barrio, datos.gastos);
+			if (c) comparacionHab = c;
+		} else aporteHab = r === 'limite' ? 'limite' : 'error';
+	}
+
+	async function aportar() {
+		const datos = resultado?.inquilino?.aporte;
+		if (!datos || aporte === 'enviando' || aporte === 'hecho') return;
+		aporte = 'enviando';
+		const r = await enviarAportacion(datos);
+		if (r === 'guardada' || r === 'no_guardada') {
+			// Si el servidor descarta un duplicado, la persona ve lo mismo: no se le informa de antiabuso
+			evento('vivo_aporta');
+			aporte = 'hecho';
+			const c = await recuentos(resultado?.barrioCodigo);
+			aportadosBarrio = c?.aportacionesBarrio ?? null;
+		} else aporte = r === 'limite' ? 'limite' : 'error';
+	}
+
 	// Consentimiento del registro anónimo: desmarcado por defecto, por resultado
 	let registro = $state<'no' | 'enviando' | 'sumado'>('no');
 
@@ -80,12 +131,17 @@
 	const hayResultado = $derived(fase === 'resultado' || fase === 'negociar' || fase === 'sin_conexion' || fase === 'confirmar');
 	const resultado = $derived<PantallaResultado | null>(pantalla?.tipo === 'resultado' ? pantalla : null);
 
+	// Resultado de muestra de la portada de escritorio: cuando está, el esquema gris sobra
+	let muestraLista = $state(false);
+
 	// Marca que la página ya responde (las pruebas esperan a esto antes de escribir)
 	let listo = $state(false);
 	onMount(() => {
 		listo = true;
 		nativo = puedeCompartirNativo();
 		leerOrigenDeLaUrl();
+		// /cuanto-pagas redirige aquí con el selector en «Ya vivo aquí»
+		if (new URLSearchParams(location.search).get('modo') === 'vivo') f.situacion = 'vivo';
 		// Enlaces de «Cómo calculamos»: /?motivo=obra_nueva abre esa pantalla «sin dato» (no cuenta como comprobación)
 		const motivo = pantallaSinDatoDeClave(new URLSearchParams(location.search).get('motivo') ?? '');
 		if (motivo) mostrar(motivo, null, false);
@@ -100,10 +156,23 @@
 	let compartiendo = $state(false);
 	let mensajeTarjeta = $state<string | null>(null);
 
+	// Tarjeta del inquilino: la persona elige uno de los tres textos de su posición
+	let textoTarjeta = $state<0 | 1 | 2>(0);
+	const textosInquilinoActuales = $derived(
+		resultado?.inquilino
+			? textosInquilino(
+					resultado.inquilino.pos === 'baja' || resultado.inquilino.pos === 'media' || resultado.inquilino.pos === 'alta' ? 'dentro' : resultado.inquilino.pos,
+					resultado.ratioMin
+				)
+			: []
+	);
+	/** Los datos de la tarjeta que se dibuja y se comparte; null si este resultado no tiene tarjeta */
+	const tarjetaActual = $derived(
+		!resultado ? null : resultado.inquilino ? construirTarjetaInquilino(resultado, textoTarjeta) : resultado.vista.clase === 'c' ? construirTarjeta(resultado) : null
+	);
+
 	$effect(() => {
-		if (canvasTarjeta && resultado && resultado.vista.clase === 'c') {
-			void dibujarTarjeta(canvasTarjeta, construirTarjeta(resultado));
-		}
+		if (canvasTarjeta && tarjetaActual) void dibujarTarjeta(canvasTarjeta, tarjetaActual);
 	});
 
 	// Cada resultado tiene su id de tarjeta desde el principio (así los enlaces ya existen), pero la
@@ -113,12 +182,12 @@
 	const enlaces = $derived(idTarjeta ? enlacesCompartir(urlDeTarjeta(idTarjeta)) : null);
 
 	async function compartir() {
-		if (!resultado || !canvasTarjeta || !idTarjeta) return;
+		if (!tarjetaActual || !canvasTarjeta || !idTarjeta) return;
 		compartiendo = true;
 		mensajeTarjeta = null;
 		try {
-			const via = await compartirNativo(construirTarjeta(resultado), canvasTarjeta, idTarjeta);
-			if (via !== 'cancelada') evento('comparte', { tarjeta: idTarjeta });
+			const via = await compartirNativo(tarjetaActual, canvasTarjeta, idTarjeta);
+			if (via !== 'cancelada') evento(resultado?.inquilino ? 'vivo_comparte' : 'comparte', { tarjeta: idTarjeta });
 			mensajeTarjeta = via === 'descargada' ? TARJETA.descargada : null;
 		} catch {
 			mensajeTarjeta = TARJETA.error;
@@ -128,19 +197,19 @@
 	}
 
 	async function compartirPor(canal: Canal) {
-		if (!resultado || !idTarjeta) return;
+		if (!tarjetaActual || !idTarjeta) return;
 		const id = idTarjeta;
 		mensajeTarjeta = null;
 		try {
 			if (canal === 'descarga') {
 				// Solo la imagen: no se guarda nada en el servidor
-				evento('comparte_descarga');
+				evento(resultado?.inquilino ? 'vivo_comparte' : 'comparte_descarga');
 				if (canvasTarjeta) await descargarImagen(canvasTarjeta);
 				mensajeTarjeta = TARJETA.descargaHecha;
 				return;
 			}
-			evento(`comparte_${canal}`, { tarjeta: id });
-			void subirTarjeta(construirTarjeta(resultado), id);
+			evento(resultado?.inquilino ? 'vivo_comparte' : `comparte_${canal}`, { tarjeta: id });
+			void subirTarjeta(tarjetaActual, id);
 			if (canal === 'copiar') mensajeTarjeta = (await copiarEnlace(id)) ? TARJETA.enlaceCopiado : urlDeTarjeta(id);
 		} catch {
 			mensajeTarjeta = TARJETA.error;
@@ -154,6 +223,10 @@
 		pantalla = p;
 		idTarjeta = p.tipo === 'resultado' ? idDeTarjeta() : null;
 		registro = 'no';
+		textoTarjeta = 0;
+		aporte = 'no';
+		aporteHab = 'no';
+		aportadosBarrio = null;
 		ubicacion = u;
 		problema = null;
 		errores = {};
@@ -168,13 +241,17 @@
 			activa = null;
 		}
 		void irAlResultado();
+		if (alHistorial && p.tipo === 'habitacion') {
+			// Una habitación no es un «piso comprobado»: no cuenta en el recuento público
+			evento(p.vivo ? 'vivo_completa' : 'habitacion');
+		}
 		if (alHistorial && p.tipo === 'resultado') {
-			evento('completa');
+			evento(p.inquilino ? 'vivo_completa' : 'completa');
 			const origen = tarjetaOrigen();
 			if (origen) evento('desde_tarjeta', { tarjeta: origen, unaVez: true });
 			if (contarCompletado() === 2) evento('segundo');
 			pisosBarrio = null;
-			void recuentos(p.barrioCodigo).then((r) => (pisosBarrio = r?.barrio ?? null));
+			if (!p.inquilino) void recuentos(p.barrioCodigo).then((r) => (pisosBarrio = r?.barrio ?? null));
 		}
 	}
 
@@ -189,7 +266,7 @@
 		problema = null;
 		fase = 'buscando';
 		try {
-			const r = await comprobar(f, pin);
+			const r = await comprobar(f, f.ubicacionActual ? pinGps : pin);
 			if (miTurno !== turno) return;
 			if (r.tipo === 'errores') {
 				errores = r.errores;
@@ -273,6 +350,29 @@
 	// Barrio o distrito elegido en el autocompletado: se pasa al modo mapa, centrado en él
 	let enfoqueMapa = $state<{ clase: 'barrio' | 'distrito'; codigo: string; vez: number } | null>(null);
 	let vezMapa = 0;
+	// «Usar mi ubicación»: el punto (zonas) vive solo aquí, en memoria; nunca sale del navegador
+	let pinGps = $state<Ubicacion | null>(null);
+	function usarUbicacion(l: { ubicacion: Ubicacion; barrio: { nombre: string }; precisionM: number }) {
+		pinGps = l.ubicacion;
+		f.ubicacionActual = { barrio: l.barrio.nombre, precisionM: l.precisionM };
+		problema = null;
+		errores = {};
+	}
+	function quitarUbicacion() {
+		pinGps = null;
+		f.ubicacionActual = null;
+	}
+	async function irAlCampoDireccion() {
+		quitarUbicacion();
+		if (f.modo === 'mapa') f.modo = 'direccion';
+		await tick();
+		document.getElementById('direccion')?.focus();
+	}
+	function colocarEnElMapa(codigoBarrio: string) {
+		quitarUbicacion();
+		f.modo = 'mapa';
+		enfoqueMapa = { clase: 'barrio', codigo: codigoBarrio, vez: ++vezMapa };
+	}
 	function elegirZona(z: SugerenciaZona) {
 		f.modo = 'mapa';
 		problema = null;
@@ -280,12 +380,6 @@
 		enfoqueMapa = { clase: z.clase, codigo: z.codigo, vez: ++vezMapa };
 	}
 
-	function habitacion() {
-		turno++;
-		evento('habitacion');
-		// La pantalla de habitación no cuenta como comprobación del historial
-		mostrar(pantallaSinDato('habitacion'), null, false);
-	}
 
 	function marcarPunto(u: Ubicacion | null) {
 		pin = u ?? 'fuera';
@@ -317,7 +411,7 @@
 
 	const filas = $derived(historial.map((e) => filaHistorial(e.pantalla)));
 	const puedeAñadirNumero = $derived(ubicacion?.motivo === 'calle');
-	const cabecera = $derived(fase === 'negociar' ? 'volver' : hayResultado ? 'otro' : 'madrid');
+	const cabecera = $derived(fase === 'negociar' ? 'volver' : hayResultado ? (resultado?.inquilino || habitacionPantalla ? 'editar' : 'otro') : 'madrid');
 </script>
 
 <svelte:head>
@@ -330,7 +424,7 @@
 
 <div class="pagina" data-fase={fase} data-listo={listo}>
 	<div class="cabecera-caja" class:con-resultado={hayResultado}>
-		<Cabecera derecha={cabecera} alOtroPiso={otroPiso} alVolver={() => (fase = 'resultado')} />
+		<Cabecera derecha={cabecera} actual="comprobar" alOtroPiso={otroPiso} alVolver={() => (fase = 'resultado')} />
 	</div>
 
 	<main class="rejilla" class:hay-resultado={hayResultado}>
@@ -346,7 +440,8 @@
 					<span>{contadorHome.texto}</span>
 				</p>
 			{/if}
-			<div class="fantasma" aria-hidden="true">
+			{#if !hayResultado}<MuestraResultado alListo={() => (muestraLista = true)} />{/if}
+			<div class="fantasma" class:oculto={muestraLista && !hayResultado} aria-hidden="true">
 				<p>Aquí verás el anuncio frente a la referencia de su zona.</p>
 				<div class="fantasma-barra">
 					<span class="f-anuncio">tu anuncio</span>
@@ -359,19 +454,26 @@
 		</section>
 
 		<aside class="lado">
-			<h2 class="titulo-lado">{FORMULARIO.titulo}</h2>
+			<h2 class="titulo-lado">{esVivo ? FORMULARIO_VIVO.titulo : FORMULARIO.titulo}</h2>
 			<Formulario
 				bind:f
 				{errores}
 				{problema}
 				buscando={fase === 'buscando'}
 				comprobado={hayResultado}
-				alEmpezar={() => evento('empieza', { unaVez: true })}
+				alEmpezar={() => evento(esVivo ? 'vivo_empieza' : 'empieza', { unaVez: true })}
+				alCambiarSituacion={() => {
+					errores = {};
+					problema = null;
+				}}
 				alEnviar={enviar}
 				alSalirDe={salirDe}
-				alHabitacion={habitacion}
 				alElegirSugerencia={elegirSugerencia}
 				alElegirZona={elegirZona}
+				alUbicacion={usarUbicacion}
+				alQuitarUbicacion={quitarUbicacion}
+				alEscribirDireccion={irAlCampoDireccion}
+				alMapaEnBarrio={colocarEnElMapa}
 				alCambiarModo={cambiarModo}
 			>
 				{#snippet mapa()}<Mapa alMarcar={marcarPunto} enfocar={enfoqueMapa} />{/snippet}
@@ -386,6 +488,31 @@
 				<ConfirmarPrecio precio={pendiente.pantalla.vista.precio} m2={pendiente.pantalla.vista.m2} alCorregir={corregirPrecio} alConfirmar={confirmarPrecio} />
 			{:else if fase === 'negociar' && resultado}
 				<Negociar pantalla={resultado} alVolver={() => (fase = 'resultado')} />
+			{:else if pantalla?.tipo === 'resultado' && pantalla.inquilino}
+				<ResultadoInquilino
+					{pantalla}
+					contador={aportadosBarrio !== null && aportadosBarrio >= 10 ? aportadosBarrio : null}
+					{aporte}
+					alAportar={aportar}
+					alMirando={() => {
+						f.situacion = 'mirando';
+						otroPiso();
+					}}
+					alServido={(si) => evento(si ? 'servido_si' : 'servido_no')}
+					textos={textosInquilinoActuales}
+					textoElegido={textoTarjeta}
+					alElegirTexto={(i) => (textoTarjeta = i as 0 | 1 | 2)}
+					{compartiendo}
+					{nativo}
+					{enlaces}
+					{mensajeTarjeta}
+					alCompartir={compartir}
+					alCompartirPor={compartirPor}
+				>
+					{#snippet tarjeta()}
+						<canvas bind:this={canvasTarjeta} class="tarjeta-canvas" aria-label="Vista previa de la tarjeta para compartir"></canvas>
+					{/snippet}
+				</ResultadoInquilino>
 			{:else if pantalla?.tipo === 'resultado'}
 				<Resultado
 					pantalla={pantalla}
@@ -413,13 +540,24 @@
 				{#if resultado?.zona}
 					<TuZona estado={tuZona.estado} vista={tuZona.datos?.vista} geom={tuZona.datos?.geom} />
 				{/if}
+			{:else if pantalla?.tipo === 'habitacion'}
+				<ResultadoHabitacion
+					{pantalla}
+					comparacion={comparacionHab}
+					aporte={aporteHab}
+					alAportar={aportarHabitacion}
+					alPiso={() => {
+						f.tipo = 'piso';
+						otroPiso();
+					}}
+				/>
 			{:else if pantalla?.tipo === 'sin_dato'}
 				<SinDato {pantalla} alOtro={otroPiso} />
 			{/if}
 		</div>
 	</main>
 
-	<Pie />
+	<Pie habitacion={fase === 'resultado' && !!habitacionPantalla} />
 </div>
 
 <style>
@@ -561,6 +699,9 @@
 		}
 		.contador-num {
 			font-size: 40px;
+		}
+		.fantasma.oculto {
+			display: none;
 		}
 		.fantasma {
 			display: flex;

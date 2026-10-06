@@ -78,8 +78,10 @@ test.describe('sin dato', () => {
 
 	test('14-sin-dato-habitacion', async ({ page }) => {
 		await abrir(page);
-		await page.getByRole('button', { name: '¿Es una habitación?' }).click();
-		await expect(page.getByRole('heading', { level: 2, name: /Una habitación/i })).toBeVisible();
+		await comprobar(page, { precio: '450', superficie: '', tipo: 'habitacion' });
+		// Habitación: sin nivel ni veredicto, solo la comparación con las aportadas en el barrio
+		await expect(page.getByText('Habitaciones: datos aportados por vecinos')).toBeVisible();
+		await expect(page.getByText(/La referencia oficial no cubre habitaciones/)).toBeVisible();
 		await captura(page, '14-sin-dato-habitacion');
 	});
 });

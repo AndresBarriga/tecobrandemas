@@ -53,7 +53,7 @@ Escribe en `informe-metricas/`: `embudo.csv` (H1-H4, utilidad, segundo análisis
 1. Quitar el `noindex`: `config/indexacion.json` → `"noindex": false`, y desplegar.
 2. Borrar los datos de prueba de producción:
    ```sh
-   npx wrangler d1 execute a-su-precio-registro --remote --command "DELETE FROM eventos; DELETE FROM tarjetas; DELETE FROM analisis; DELETE FROM aportaciones; DELETE FROM limites; DELETE FROM dedupe;"
+   npx wrangler d1 execute a-su-precio-registro --remote --command "DELETE FROM eventos; DELETE FROM tarjetas; DELETE FROM analisis; DELETE FROM aportaciones; DELETE FROM habitaciones; DELETE FROM limites; DELETE FROM dedupe;"
    ```
    Las imágenes de las tarjetas viejas quedan en R2 sin referencia; se pueden dejar o borrar desde el panel.
 3. Probar la vista previa de `/t/:id` en WhatsApp y X desde un móvil.

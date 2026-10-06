@@ -17,6 +17,7 @@ export function filaHistorial(p: Pantalla): FilaHistorial {
 	if (p.tipo === 'sin_dato') {
 		return { titulo: p.lugar ?? p.titular, detalle: p.contexto ?? '', etiqueta: ETIQUETA_HISTORIAL.sinDato, clase: null };
 	}
+	if (p.tipo === 'habitacion') return { titulo: p.lugar, detalle: `Habitación, ${p.precio}`, etiqueta: 'Habitación', clase: null };
 	const v = p.vista;
 	const etiqueta =
 		v.clase === 'a' ? ETIQUETA_HISTORIAL.a

@@ -4,7 +4,7 @@
  * TarjetaDatos: no hay precio ni dirección que dibujar.
  */
 import {
-	CTA_TARJETA, NOMBRE, colocarEtiqueta, OG_ALTO, OG_ANCHO, PIE_TARJETA, TARJETA_ALTO, TARJETA_ANCHO,
+	CTA_TARJETA, LEMA, NOMBRE, TARJETA_INQUILINO, colocarEtiqueta, OG_ALTO, OG_ANCHO, PIE_TARJETA, TARJETA_ALTO, TARJETA_ANCHO,
 	textosEnlace, type TarjetaDatos
 } from '#lib/resultado';
 
@@ -15,6 +15,7 @@ const COLOR = {
 const ACENTO = { a: '#2E6B52', b: '#2F5F8A', c: '#6A3A8C' } as const;
 const TINTE = { a: '#DCE9E1', b: '#DDE6EF', c: '#E9DFF1' } as const;
 const ICONO = {
+	abajo: 'M6 8l4 4.5 4-4.5',
 	a: 'M5.5 10.2l3 3 6-6.4',
 	b: 'M5 11.5c1.6-2.4 3.4-2.4 5 0s3.4 2.4 5 0',
 	c: 'M6 12l4-4.5 4 4.5'
@@ -129,7 +130,7 @@ function etiqueta(ctx: Ctx, t: TarjetaDatos, texto: string, x: number, y: number
 	ctx.scale(icono / 20, icono / 20);
 	ctx.lineWidth = 2;
 	ctx.strokeStyle = fondo;
-	ctx.stroke(new Path2D(ICONO[t.clase]));
+	ctx.stroke(new Path2D(ICONO[t.inquilino?.posicion === 'debajo' ? 'abajo' : t.clase]));
 	ctx.restore();
 
 	fuente(ctx, 700, tam, 'texto');
@@ -203,8 +204,9 @@ function barraTarjeta(ctx: Ctx, t: TarjetaDatos, x: number, y: number, g: Geom):
 	const dotX = X(b.punto);
 
 	// «tu anuncio» sobre el punto
+	const rotuloPunto = t.inquilino ? 'mi alquiler' : 'tu anuncio';
 	fuente(ctx, 700, 30, 'semi');
-	linea(ctx, 'tu anuncio', x + Math.min(Math.max(dotX, ancho(ctx, 'tu anuncio') / 2), g.W - ancho(ctx, 'tu anuncio') / 2), y, 36, { color: COLOR.tinta, align: 'center' });
+	linea(ctx, rotuloPunto, x + Math.min(Math.max(dotX, ancho(ctx, rotuloPunto) / 2), g.W - ancho(ctx, rotuloPunto) / 2), y, 36, { color: COLOR.tinta, align: 'center' });
 
 	const dentro = bandW >= 150 && t.clase !== 'a';
 	if (!dentro && t.clase !== 'a') {
@@ -267,13 +269,18 @@ export async function dibujarTarjeta(canvas: HTMLCanvasElement, t: TarjetaDatos)
 	const ALTO_UTIL = TARJETA_ALTO - 76 - 72;
 
 	// Medidas de cada bloque, para repartir el espacio libre entre ellos
-	const k = { cifra: 340, titular: 210, rango: 210, lhCifra: 0.78, palabra: 48 };
+	const K0 = { cifra: 340, titular: 210, rango: 210, lhCifra: 0.78, palabra: 48 };
+	let k = K0;
 	const etiquetaH = 30 * 1.2 + 2 * 12;
-	const alturaHero = hero(ctx, t, X0, 0, W, k, false);
+	let alturaHero = hero(ctx, t, X0, 0, W, k, false);
 	fuente(ctx, 600, 34, 'texto');
 	const subLineas = envolver(ctx, t.nota, W);
 	const subH = subLineas.length * 34 * 1.25;
-	const hTop = 44 + 30 + etiquetaH + 30 + alturaHero + 12 + subH;
+	// La tarjeta del inquilino lleva el lema bajo el logotipo y «Mi alquiler en [barrio]» sobre la cifra
+	const inq = !!t.inquilino;
+	const lemaH = inq ? 30 * 1.3 + 6 : 0;
+	const miAlquilerH = inq ? 34 * 1.25 + 14 : 0;
+	let hTop = 44 + lemaH + 30 + etiquetaH + 30 + miAlquilerH + alturaHero + 12 + subH;
 
 	fuente(ctx, 800, 54, 'texto', -0.54);
 	const fraseLineas = envolver(ctx, t.frase, W);
@@ -284,7 +291,16 @@ export async function dibujarTarjeta(canvas: HTMLCanvasElement, t: TarjetaDatos)
 	const botonH = 36 * 1.2 + 40;
 	const hBottom = botonH + 28 + pieLineas.length * 30 * 1.3;
 
-	const libre = Math.max(0, ALTO_UTIL - (hTop + fraseH + 184 + hBottom));
+	// Si el contenido no cabe (titular de dos líneas y frase larga), la cifra o el titular se reducen lo justo
+	const sobra = () => ALTO_UTIL - (hTop + fraseH + 184 + hBottom);
+	for (let escala = 1; sobra() < 60 && escala > 0.6; ) {
+		escala -= 0.05;
+		k = { ...K0, cifra: K0.cifra * escala, titular: K0.titular * escala, rango: K0.rango * escala };
+		const nueva = hero(ctx, t, X0, 0, W, k, false);
+		hTop += nueva - alturaHero;
+		alturaHero = nueva;
+	}
+	const libre = Math.max(0, sobra());
 	const gap = libre / 3;
 
 	// Cabecera
@@ -293,9 +309,20 @@ export async function dibujarTarjeta(canvas: HTMLCanvasElement, t: TarjetaDatos)
 	linea(ctx, NOMBRE.toUpperCase(), X0, y, 44, { color: COLOR.tinta });
 	fuente(ctx, 600, 32, 'texto');
 	linea(ctx, 'Madrid', X0 + W, y + 4, 40, { color: COLOR.tinta, align: 'right' });
-	y += 44 + 30;
+	y += 44;
+	if (inq) {
+		fuente(ctx, 500, 30, 'texto');
+		linea(ctx, LEMA, X0, y + 6, 30 * 1.3, { color: COLOR.tinta });
+		y += lemaH;
+	}
+	y += 30;
 	etiqueta(ctx, t, t.etiqueta, X0, y, 32, COLOR.papel);
 	y += etiquetaH + 30;
+	if (inq) {
+		fuente(ctx, 500, 34, 'texto');
+		linea(ctx, TARJETA_INQUILINO.miAlquilerEn(t.barrio ?? 'Madrid'), X0, y, 34 * 1.25, { color: COLOR.tinta });
+		y += miAlquilerH;
+	}
 	y += hero(ctx, t, X0, y, W, k, true) + 12;
 	fuente(ctx, 600, 34, 'texto');
 	subLineas.forEach((l, i) => linea(ctx, l, X0, y + i * 34 * 1.25, 34 * 1.25, { color: COLOR.tinta }));
@@ -312,9 +339,10 @@ export async function dibujarTarjeta(canvas: HTMLCanvasElement, t: TarjetaDatos)
 	// Botón y pie
 	y += 184 + gap;
 	fuente(ctx, 800, 36, 'texto');
-	const bw = ancho(ctx, CTA_TARJETA) + 60;
+	const cta = inq ? TARJETA_INQUILINO.cta : CTA_TARJETA;
+	const bw = ancho(ctx, cta) + 60;
 	rect(ctx, X0, y, bw, botonH, COLOR.tinta, 8);
-	linea(ctx, CTA_TARJETA, X0 + 30, y + 20, 36 * 1.2, { color: COLOR.paja });
+	linea(ctx, cta, X0 + 30, y + 20, 36 * 1.2, { color: COLOR.paja });
 	y += botonH + 28;
 	fuente(ctx, 500, 30, 'texto');
 	pieLineas.forEach((l, i) => linea(ctx, l, X0, y + i * 30 * 1.3, 30 * 1.3, { color: COLOR.tinta }));
@@ -333,6 +361,10 @@ export async function dibujarOg(canvas: HTMLCanvasElement, t: TarjetaDatos): Pro
 	// Panel izquierdo
 	fuente(ctx, 800, 36, 'extra', 0.36);
 	linea(ctx, NOMBRE.toUpperCase(), 48, 56, 36, { color: COLOR.tinta });
+	if (t.inquilino) {
+		fuente(ctx, 500, 24, 'texto');
+		linea(ctx, LEMA, 48, 98, 30, { color: COLOR.tinta });
+	}
 	const maxL = 500 - 96;
 	const k = { cifra: 200, titular: 110, rango: 110, lhCifra: 0.78, palabra: 30 };
 	fuente(ctx, 600, 32, 'texto');

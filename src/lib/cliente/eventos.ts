@@ -5,7 +5,9 @@
  */
 type Tipo =
 	| 'llegada' | 'empieza' | 'completa' | 'servido_si' | 'servido_no' | 'comparte' | 'desde_tarjeta' | 'segundo' | 'aporta' | 'habitacion' | 'confirma_precio'
-	| 'comparte_whatsapp' | 'comparte_x' | 'comparte_copiar' | 'comparte_descarga';
+	| 'comparte_whatsapp' | 'comparte_x' | 'comparte_copiar' | 'comparte_descarga'
+	// «Ya vivo aquí»: embudo aparte, sin cruzarse con el de los anuncios
+	| 'vivo_empieza' | 'vivo_completa' | 'vivo_aporta' | 'vivo_comparte';
 
 const memoria = new Map<string, string>();
 const leer = (k: string) => {

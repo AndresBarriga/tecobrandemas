@@ -40,6 +40,8 @@ export interface Metricas {
 	embudo: { llegadas: number; empiezan: number; completan: number; comparten: number; desdeTarjeta: number; segundo: number; aportan: number; habitacion: number; servidoSi: number; servidoNo: number };
 	/** Visitas que usaron cada canal de compartir (nativo = hoja del móvil) */
 	canales: Record<string, number>;
+	/** Embudo de «Ya vivo aquí», aparte del de los anuncios: visitas que empiezan, completan, aportan y comparten */
+	vivo: { empiezan: number; completan: number; aportan: number; comparten: number };
 	tarjetasCreadas: number;
 	analisisTotales: number;
 	objetivos: Objetivo[];
@@ -88,6 +90,12 @@ export async function calcularMetricas(db: D1Registro, desde: Date | null = null
 	};
 	const canales: Record<string, number> = { nativo: await visitas('comparte') };
 	for (const c of CANALES) canales[c] = await visitas(`comparte_${c}`);
+	const vivo = {
+		empiezan: await visitas('vivo_empieza'),
+		completan: await visitas('vivo_completa'),
+		aportan: await visitas('vivo_aporta'),
+		comparten: await visitas('vivo_comparte')
+	};
 	const analisisTotales = await eventos('completa');
 	const tarjetasCreadas = (await db.prepare('SELECT COUNT(*) AS n FROM tarjetas WHERE id <> ?').bind(ID_TARJETA_PRUEBA).first<{ n: number }>())?.n ?? 0;
 
@@ -121,7 +129,7 @@ export async function calcularMetricas(db: D1Registro, desde: Date | null = null
 		aportaciones.push({ barrio, n: filas.length, medianaPrecio: mediana(filas.map((f) => f.precio)), medianaEurosM2: mediana(filas.map((f) => f.precio / f.m2)) });
 	}
 
-	return { desde: desde ? desde.toISOString().slice(0, 10) : null, embudo, canales, tarjetasCreadas, analisisTotales, objetivos, barrios, aportaciones };
+	return { desde: desde ? desde.toISOString().slice(0, 10) : null, embudo, canales, vivo, tarjetasCreadas, analisisTotales, objetivos, barrios, aportaciones };
 }
 
 const celda = (x: unknown) => {

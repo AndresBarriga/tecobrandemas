@@ -187,6 +187,177 @@ export const MAPA = {
 	atribucion: '© OpenStreetMap contributors'
 } as const;
 
+/** «Ya vivo aquí»: formulario y resultado del inquilino (Fase 1) */
+export const SITUACION = {
+	etiqueta: 'Tu situación',
+	mirando: 'Estoy mirando un piso',
+	vivo: 'Ya vivo aquí'
+} as const;
+
+export const FORMULARIO_VIVO = {
+	titulo: 'Comprueba tu alquiler',
+	dondeEsta: '¿Dónde vives?',
+	dondeEstaHabitacion: '¿Dónde está tu habitación?',
+	precio: 'Lo que pagas al mes',
+	precioHabitacion: 'Lo que pagas por tu habitación',
+	firma: '¿Cuándo firmaste el contrato?',
+	reciente: 'Hace menos de un año',
+	mes: 'Mes',
+	ano: 'Año',
+	rentaFirma: '¿Cuánto pagabas al firmar?',
+	opcional: '(opcional)',
+	rentaFirmaPlaceholder: 'Si ha cambiado desde entonces',
+	rentaFirmaAyuda: 'Sirve para ver cuánto ha cambiado tu renta. Déjalo vacío si no te acuerdas.',
+	comprobar: 'Comprobar mi alquiler',
+	comprobarOtro: 'Comprobar otro alquiler',
+	errorFirma: 'Elige el mes y el año de la firma, o marca «Hace menos de un año».',
+	errorRentaFirma: 'Escribe lo que pagabas al mes, o déjalo vacío.'
+} as const;
+
+export const UBICACION_ACTUAL = {
+	mirando: 'Estoy en el piso ahora',
+	vivo: 'Estoy en casa: usar mi ubicación',
+	o: 'O escribe la dirección',
+	privacidad: 'Tu ubicación se usa solo en tu navegador; no se envía ni se guarda.',
+	pidiendo: 'Pidiendo tu ubicación…',
+	activa: (barrio: string, m: number) => `Mi ubicación · ${barrio} (±${m}\u00A0m)`,
+	quitar: 'Quitar mi ubicación',
+	denegado: 'No tenemos permiso para usar tu ubicación. Puedes escribir la dirección o marcarla en el mapa.',
+	tiempo: 'No hemos podido obtener tu ubicación a tiempo. Puedes escribir la dirección o marcarla en el mapa.',
+	sinGps: 'Este navegador no puede darnos tu ubicación. Puedes escribir la dirección o marcarla en el mapa.',
+	fuera: 'Tu ubicación queda fuera del municipio de Madrid. Escribe la dirección o márcala en el mapa.',
+	baja: (m: number) => `La ubicación es poco precisa (±${m}\u00A0m).`,
+	bajaEscribir: 'Escribir la dirección',
+	bajaMapa: 'Colocar en el mapa',
+	bajaIgualmente: 'Usarla igualmente: te daremos una horquilla'
+} as const;
+
+export const MUESTRA = {
+	titulo: 'Así se ve un resultado',
+	ejemplo: 'Ejemplo',
+	nota: 'Es un ejemplo con datos de una zona real. Al comprobar, tu resultado sustituye a este.'
+} as const;
+
+export const TIPO_VIVIENDA = {
+	etiqueta: 'Tipo de vivienda',
+	piso: 'Piso',
+	habitacion: 'Habitación',
+	casa: 'Casa'
+} as const;
+
+export const COMPARTIDO = {
+	enlace: '¿Compartís piso con un solo contrato?',
+	ayuda: 'Pon lo que paga el piso entero entre todos y los metros del piso.',
+	somos: 'Somos',
+	opcional: '(opcional)',
+	tuParte: 'Tu parte:',
+	alMes: 'al mes',
+	aviso: 'Solo se muestra en tu pantalla. Comparamos el piso entero; tu parte no se guarda ni se envía.'
+} as const;
+
+export const RESUMEN_FORMULARIO = {
+	largaDuracion: 'Larga duración',
+	temporal: 'No es de larga duración',
+	obraNueva: 'obra nueva',
+	noObraNueva: 'no obra nueva',
+	cambiar: 'cambiar',
+	listo: 'listo'
+} as const;
+
+export const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'] as const;
+
+export const INQUILINO = {
+	editar: 'Editar los datos',
+	pagas: (precio: string, m2: string, contrato: string) => `Lo que pagas: ${precio}/mes · ${m2} · ${contrato}`,
+	contratoDe: (ano: number) => `Contrato de ${ano}`,
+	contratoReciente: 'Contrato de hace menos de un año',
+	etiqueta: {
+		debajo: 'Por debajo de la referencia',
+		dentro: 'Dentro de la referencia',
+		encimab: 'Por encima, explicable si es excelente',
+		encima: 'Por encima del techo para un piso excelente'
+	},
+	titular: { debajo: 'Por debajo', baja: 'Parte baja', media: 'Parte media', alta: 'Parte alta', encimab: 'Cerca del techo' },
+	notaDebajo: (m2: string) => `Tu renta queda por debajo de la referencia para ${m2} en esta zona.`,
+	notaDentro: (inf: string, sup: string, m2: string) => `Entre ${inf} y ${sup} al mes para ${m2} en esta zona.`,
+	notaEncimab: (pct: string) => `${pct} sobre la parte alta, por debajo del techo para un piso excelente.`,
+	frase: {
+		debajo: 'Pagas menos de lo que registran los contratos de tu zona.',
+		baja: 'Pagas como la parte baja de los alquileres registrados en tu zona.',
+		media: 'Pagas lo que se suele pagar en tu zona.',
+		alta: 'Estás en la parte alta de lo que se paga en tu zona, aún dentro de la referencia.',
+		encimab:
+			'Tu alquiler supera la parte alta de la referencia, pero queda por debajo del techo para un piso excelente. Depende de cómo sea el tuyo.',
+		encima: 'Tu renta supera lo que registran los contratos de tu zona, incluso para un piso excelente.'
+	},
+	alMes: 'Al mes, sobre la parte alta',
+	alAno: 'Al año',
+	contrato: {
+		texto: ': la referencia mezcla contratos de distintas fechas.',
+		detalle: 'Los contratos más antiguos suelen tener rentas más bajas. Tu posición se lee mejor junto a la fecha de firma.',
+		cambio: (antes: string, pct: string) => `Al firmar pagabas ${antes}. Desde entonces, ${pct}.`,
+		sinCambio: (antes: string) => `Al firmar pagabas ${antes}. Desde entonces, sin cambios.`
+	},
+	aportar: {
+		titulo: 'Aporta tu alquiler a las estadísticas de tu barrio',
+		texto: (barrio: string) => `Con rentas reales de vecinos se ve mejor lo que se paga hoy en ${barrio}, no solo lo que se registró.`,
+		seGuarda: 'barrio, renta, metros, mes y año de firma.',
+		noSeGuarda: 'dirección, ubicación, nombre, correo ni IP.',
+		boton: 'Aportar mi alquiler',
+		enviando: 'Enviando…',
+		nota: 'Es opcional. Si no pulsas, no se envía nada.',
+		error: 'No hemos podido enviar tu alquiler. Inténtalo de nuevo.',
+		limite: 'Hoy ya se han enviado muchas aportaciones desde esta conexión. Vuelve a intentarlo mañana.'
+	},
+	aportado: {
+		etiqueta: 'Alquiler aportado',
+		gracias: 'Gracias.',
+		muchos: (barrio: string) => `alquileres aportados en ${barrio}`,
+		pocos: (barrio: string) => `Todavía no hay 10 aportaciones en ${barrio} para ver la mediana.`,
+		detalleMuchos: 'Tu renta ya cuenta en la mediana del barrio, sin tu nombre ni tu dirección.',
+		detallePocos: 'Con 10 aportaciones mostraremos la mediana del barrio. Hasta entonces, nadie ve las rentas por separado.'
+	},
+	compartir: 'Compartir mi resultado',
+	acciones: { titulo: 'Qué puedes hacer', oficial: 'Consultar el valor oficial', mirando: 'Comprobar un piso que estás mirando' },
+	servido: '¿Te ha servido?'
+} as const;
+
+/** Habitaciones (F1): sin referencia oficial, sin nivel ni veredicto */
+export const HABITACION = {
+	insignia: 'Habitaciones: datos aportados por vecinos',
+	intro: 'La referencia oficial no cubre habitaciones, así que no te damos nivel ni veredicto. Solo comparamos con lo que aportan otras personas de tu barrio.',
+	tuHabitacion: 'Tu habitación',
+	otras: (barrio: string) => `Otras habitaciones en ${barrio}`,
+	alMes: (gastos: boolean) => `al mes, ${gastos ? 'con' : 'sin'} gastos`,
+	mediana: (n: number) => `mediana, ${n} aportaciones`,
+	mismoGastos: (gastos: boolean) =>
+		`Solo cuentan habitaciones que también ${gastos ? 'incluyen' : 'no incluyen'} gastos. La mediana deja la mitad de las aportaciones por encima y la mitad por debajo.`,
+	pocas: (barrio: string, n: number) => `Aún no hay suficientes habitaciones en ${barrio} (${n} de ${10}). Aporta la tuya y suma.`,
+	pocasMirando: (barrio: string, n: number) => `Aún no hay suficientes habitaciones en ${barrio} (${n} de ${10}) para comparar.`,
+	cargando: 'Buscando habitaciones aportadas en tu barrio…',
+	sinConexion: 'No hemos podido consultar las habitaciones del barrio. Inténtalo de nuevo más tarde.',
+	aportar: {
+		titulo: 'Aporta tu habitación a las estadísticas de tu barrio',
+		seGuarda: 'barrio, renta, habitaciones del piso, tamaño aproximado, si incluye gastos y el mes.',
+		noSeGuarda: 'dirección, ubicación, nombre, correo ni IP.',
+		boton: 'Aportar mi habitación',
+		nota: 'Es opcional. Si no pulsas, no se envía nada.'
+	},
+	aportada: {
+		etiqueta: 'Habitación aportada',
+		faltan: (n: number) => `Gracias. Faltan ${n} para ver tu barrio.`,
+		hay: (n: number, barrio: string) => `Gracias. ${n} aportaciones en ${barrio}.`,
+		detalle: 'Nadie ve las rentas por separado: solo la mediana, y solo desde 10 aportaciones.'
+	},
+	acciones: {
+		titulo: 'Qué puedes hacer',
+		compartis: '¿Compartís piso con un solo contrato?',
+		compartisDetalle: 'Compara el piso entero con la referencia oficial',
+		porQue: 'Por qué no hay referencia para habitaciones'
+	},
+	pie: 'Habitaciones: datos aportados por personas usuarias, sin verificar. No es una referencia oficial.'
+} as const;
+
 /** Autocompletado de la dirección */
 export const AUTOCOMPLETAR = {
 	lista: 'Sugerencias de calles',
@@ -265,11 +436,53 @@ export const TARJETA = {
 	error: 'No hemos podido preparar la tarjeta. Inténtalo de nuevo.'
 } as const;
 
+/** Tarjeta del inquilino (F1e): tres textos por posición; la persona elige uno. Nunca lleva la renta. */
+export const TARJETA_INQUILINO = {
+	textos: {
+		debajo: [
+			'Pago menos que la referencia de mi barrio. Con este mercado, casi es noticia.',
+			'Mi alquiler queda por debajo de lo que registran los contratos de mi zona.',
+			'Por debajo de la referencia. ¿Y el tuyo, dónde queda?'
+		],
+		dentro: ['Lo normal en mi barrio. Lo normal ya es mucho.', 'Pago lo que se paga aquí. Ni más ni menos.', 'Dentro de la referencia de mi zona. ¿Y el tuyo?'],
+		encimab: [
+			'Por encima de la parte alta, por debajo del techo. Depende de cómo sea el piso.',
+			'El techo existe. El mercado ya lo roza.',
+			'Cerca del techo de mi zona. ¿Y el tuyo?'
+		],
+		encima: ['El mercado va más rápido que los datos oficiales.', null, 'No es solo mi caso. Compruébalo con el tuyo.']
+	},
+	/** Segundo texto de «por encima»: lleva el % (o las veces) sobre la parte alta */
+	encimaCifra: (pct: string) => `Pago un ${pct} más que la parte alta de la referencia de mi zona.`,
+	encimaVeces: (veces: string) => `Pago ${veces} la parte alta de la referencia de mi zona.`,
+	/** Línea bajo la cifra */
+	nota: {
+		debajo: 'de la referencia de alquileres de mi zona',
+		dentro: 'de la referencia de alquileres de mi zona',
+		encimab: 'por encima de la parte alta de la referencia de mi zona',
+		encima: 'sobre la parte alta de la referencia de mi zona'
+	},
+	/** Vista previa del enlace: en tercera persona */
+	notaOg: {
+		debajo: (barrio: string) => `de la referencia de su zona en ${barrio}`,
+		dentro: (barrio: string) => `de la referencia de su zona en ${barrio}`,
+		encimab: (barrio: string) => `por encima de la parte alta de la referencia de su zona en ${barrio}`,
+		encima: (barrio: string) => `sobre la parte alta de la referencia de su zona en ${barrio}`
+	},
+	miAlquilerEn: (barrio: string) => `Mi alquiler en ${barrio}`,
+	cta: 'Comprueba tu alquiler',
+	titulo: 'Tu tarjeta para compartir',
+	detalle: 'Sin tu renta ni tu dirección. Solo la posición y el barrio.',
+	elige: 'Elige el texto de la tarjeta'
+} as const;
+
 export const PAGINA_TARJETA = {
 	intro: (barrio: string | null) =>
 		barrio
 			? `Alguien ha comprobado un piso en ${barrio} y te ha enviado su resultado.`
 			: 'Alguien ha comprobado un piso en Madrid y te ha enviado su resultado.',
+	introInquilino: (barrio: string | null) =>
+		`Alguien ha comprobado su alquiler en ${barrio ?? 'Madrid'} y te ha enviado su resultado.`,
 	titular: '¿Y el tuyo?',
 	explicacion:
 		'Esta herramienta compara el precio de un anuncio de alquiler en Madrid con la referencia de alquileres registrados en su zona: datos del Ministerio de Vivienda (SERPAVI 2024) ajustados por el IPC del alquiler.',
