@@ -131,7 +131,8 @@ export function construirTarjetaInquilino(p: PantallaResultado, texto: 0 | 1 | 2
 		etiqueta: INQUILINO.etiqueta[posicion === 'dentro' ? 'dentro' : posicion],
 		hero,
 		nota: TARJETA_INQUILINO.nota[posicion],
-		frase: textosInquilino(posicion, p.ratioMin, p.horquilla)[texto]!
+		// «Por encima» tiene dos textos: un índice que no existe cae en el factual
+		frase: textosInquilino(posicion, p.ratioMin, p.horquilla)[texto] ?? textosInquilino(posicion, p.ratioMin, p.horquilla)[0]!
 	};
 }
 

@@ -3,6 +3,7 @@
 	import Barra from './Barra.svelte';
 	import Equivalencia from './Equivalencia.svelte';
 	import Icono from './Icono.svelte';
+	import TarjetaAmpliable from './TarjetaAmpliable.svelte';
 	import {
 		AVISO_APROXIMADA_TITULO, BOTON_COMPARTIR, BOTON_OTRO_PISO, ENLACE_OFICIAL, REGISTRO, SERVIDO, TARJETA, heroEnVeces,
 		type Canal, type Contador, type EnlacesCompartir, type PantallaResultado
@@ -131,13 +132,7 @@
 		</div>
 
 		{#if v.clase === 'c'}
-			<div class="tarjeta">
-				<div class="miniatura">{@render tarjeta?.()}</div>
-				<div class="tarjeta-texto">
-					<span class="tarjeta-titulo">{TARJETA.titulo}</span>
-					<span class="tarjeta-detalle">{TARJETA.detalle}</span>
-				</div>
-			</div>
+			{#if tarjeta}<TarjetaAmpliable {tarjeta} titulo={TARJETA.titulo} detalle={TARJETA.detalle} />{/if}
 			{#if nativo}
 				<button type="button" class="boton" onclick={alCompartir} disabled={compartiendo}>
 					{compartiendo ? TARJETA.generando : BOTON_COMPARTIR}
@@ -390,30 +385,6 @@
 	}
 	.accion-detalle {
 		font: 400 13px/1.3 var(--f-texto);
-		color: var(--grafito);
-	}
-	.tarjeta {
-		display: flex;
-		gap: 14px;
-		align-items: center;
-	}
-	.miniatura {
-		width: 96px;
-		height: 120px;
-		flex: none;
-		border-radius: 6px;
-		overflow: hidden;
-	}
-	.tarjeta-texto {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
-	.tarjeta-titulo {
-		font: 700 16px/1.3 var(--f-texto);
-	}
-	.tarjeta-detalle {
-		font: 400 13px/1.4 var(--f-texto);
 		color: var(--grafito);
 	}
 	.canales {
