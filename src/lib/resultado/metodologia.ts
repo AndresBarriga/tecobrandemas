@@ -86,6 +86,7 @@ export interface Metodologia {
 	ejemplo: Ejemplo | null;
 	niveles: { intro: string | null; items: NivelMetodologia[]; mini: { banda: TramoEscala; techo: TramoEscala } } | null;
 	precioPedido: { destacado: string; cuerpo: string };
+	mapa: { parrafos: string[]; muestra: string[]; noMuestra: string[] };
 	datos: { parrafos: string[]; guardamos: string[]; noGuardamos: string[]; notas: { titulo: string; texto: string }[] };
 	limites: { intro: string; items: LimiteMetodologia[]; cierre: string };
 	fuentes: { filas: FuenteMetodologia[]; ipc: string; validacion: string; nota: string; enlaceOficial: string };
@@ -101,6 +102,7 @@ export const INDICE = [
 	{ id: 'ej', titulo: 'Un ejemplo' },
 	{ id: 'niv', titulo: 'Los tres niveles' },
 	{ id: 'ped', titulo: 'Precio pedido' },
+	{ id: 'map', titulo: 'El mapa' },
 	{ id: 'dat', titulo: 'Tus datos' },
 	{ id: 'lim', titulo: 'Lo que no calculamos' },
 	{ id: 'fue', titulo: 'Fuentes' },
@@ -241,6 +243,24 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 			destacado:
 				'La referencia sale de alquileres registrados: lo que se firmó. Un anuncio muestra lo que se pide, y lo que se pide no siempre es lo que se acaba firmando.',
 			cuerpo: 'Por eso hablamos de un precio pedido frente a una referencia estadística, y nunca de precios correctos o incorrectos.'
+		},
+		mapa: {
+			parrafos: [
+				'El mapa de Madrid pinta cada zona con la parte alta de su referencia en €/m² al mes, para la superficie que elijas (40, 55, 70, 90 o 110\u00A0m²). Lo calcula tu navegador con el mismo método y el mismo ajuste del IPC que el resultado.',
+				'Los cinco colores reparten las zonas con dato en cinco grupos del mismo tamaño, con cortes iguales para toda la ciudad, y se recalculan al cambiar la superficie. Las zonas con 20 alquileres registrados o menos, y las superficies fuera de 30-150\u00A0m², salen como «sin dato».',
+				'En «Mi presupuesto» comparamos lo que puedes pagar al mes con el rango completo de la referencia de cada zona para tus metros: por debajo del mínimo, dentro del rango o por encima del máximo. En «Evolución 2015-2024» se ve cuánto ha subido la mediana registrada en cada zona, sin descontar la inflación.'
+			],
+			muestra: [
+				'La referencia de contratos registrados (IRPF 2024, propietarios personas físicas, contratos vigentes de distintas fechas) ajustada por el IPC',
+				'Cuánto ha subido la renta registrada entre 2015 y 2024',
+				'Dónde llega tu presupuesto frente a esa referencia'
+			],
+			noMuestra: [
+				'Pisos disponibles: no son anuncios, son contratos registrados',
+				'Lo que se pide hoy, que puede ser más alto',
+				'Una ordenación de barrios: el color describe la referencia de cada zona, no su valor',
+				'Tu ubicación: «Mi ubicación» se resuelve en tu navegador y no enviamos ni guardamos las coordenadas'
+			]
 		},
 		datos: {
 			parrafos: [

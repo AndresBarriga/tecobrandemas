@@ -46,6 +46,7 @@ export function cargarMapa(): Promise<DatosMapa> {
 }
 
 export { metrosAPunto, puntoAMetros };
+export type { Punto };
 
 /** null = el punto cae fuera del municipio de Madrid */
 export function ubicacionDelPunto(datos: DatosMapa, punto: Punto, radio?: number): Ubicacion | null {

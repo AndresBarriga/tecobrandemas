@@ -148,6 +148,30 @@
 				<p class="claro">{p.precioPedido.cuerpo}</p>
 			</section>
 
+			<section id="map">
+				<h2>El mapa</h2>
+				{#each p.mapa.parrafos as t (t)}<p>{t}</p>{/each}
+				<div class="dos">
+					<div class="caja-blanca chica">
+						<h3>Qué muestra</h3>
+						<ul>
+							{#each p.mapa.muestra as t (t)}
+								<li><svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="currentColor" stroke-width="2.5" fill="none" /></svg>{t}</li>
+							{/each}
+						</ul>
+					</div>
+					<div class="caja-blanca chica">
+						<h3>Qué no muestra</h3>
+						<ul>
+							{#each p.mapa.noMuestra as t (t)}
+								<li><svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2.5" /></svg>{t}</li>
+							{/each}
+						</ul>
+					</div>
+				</div>
+				<a class="enlace" href="/mapa">Ver el mapa de Madrid</a>
+			</section>
+
 			<section id="dat">
 				<h2>Tus datos</h2>
 				{#each p.datos.parrafos as t (t)}<p>{t}</p>{/each}

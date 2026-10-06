@@ -49,7 +49,9 @@
 	}
 	label {
 		position: relative;
-		flex: 1;
+		flex: 1 1 0;
+		min-width: 0;
+		padding: 0 4px;
 		display: flex;
 		align-items: center;
 		justify-content: center;

@@ -1,7 +1,7 @@
 // Copia a static/data/ los datos que el navegador carga (generados en data/processed/ por los scripts de ETL).
 import { cpSync, existsSync, mkdirSync } from 'node:fs';
 
-const ficheros = ['secciones_madrid.json', 'seccion_barrio.json', 'ipc_alquiler.json', 'secciones_madrid.topo.json', 'vecinas.json', 'viales_sugerencias.json'];
+const ficheros = ['secciones_madrid.json', 'seccion_barrio.json', 'ipc_alquiler.json', 'secciones_madrid.topo.json', 'vecinas.json', 'viales_sugerencias.json', 'viales_zonas.json'];
 mkdirSync('static/data', { recursive: true });
 for (const f of ficheros) {
 	if (!existsSync(`data/processed/${f}`)) {

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { TONOS_ZONA, TU_ZONA, type VistaTuZona } from '#lib/resultado';
+	import { MAPA_REFERENCIA, TONOS_ZONA, TU_ZONA, type VistaTuZona } from '#lib/resultado';
 	import {
 		type Caja, type GeometriaZona, aPx, cajaDe, colocarNombres, proyeccion, trazado, trazadoLineas
 	} from '#lib/cliente/zona-mapa';
@@ -211,6 +211,10 @@
 				{/if}
 			</div>
 		</div>
+
+		{#if estado === 'listo'}
+			<a class="enlace" href="/mapa">{MAPA_REFERENCIA.enlaceTuZona}</a>
+		{/if}
 
 		{#if estado === 'listo' && vista?.evolucion}
 			<div class="evolucion">
