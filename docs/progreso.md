@@ -273,5 +273,5 @@ Diseño en `docs/design/design-f1/` (README sección F1, `F1 Ya vivo aqui.dc.htm
 - **«¿Qué vas a hacer con este resultado?»** sustituye a «¿Te ha servido?» (una sola elección, opcional, sin bloquear compartir). **«¿Algo no cuadra? Escríbenos»** es un enlace `mailto:` junto al resultado.
 - **Quitado:** el contador de «pisos comprobados» de la portada (salía de los eventos) y `/api/contadores` ya no devuelve `total`; `npm run metricas` pierde el embudo (queda análisis, aportaciones y tarjetas). Migración `0004_quitar_eventos.sql` preparada y **sin aplicar en remoto**.
 - **Tests:** quitados o adaptados solo los de eventos (ver el resumen del PR); `tests/analitica.test.ts`, `tests/proxy.test.ts` y `e2e/analitica.spec.ts` son nuevos.
-- **Pendiente de decisión:** el bundle inicial pasa de 111,6 KB a 161,8 KB gz con PostHog (presupuesto: 150 KB).
+- **Pendiente de decisión:** el bundle que mide el informe de lanzamiento pasa de 111,6 KB a 161,9 KB gz con PostHog (presupuesto: 150 KB); el SDK se carga ya tras la carga de la página, pero antes de que el informe dé la página por terminada.
 

@@ -115,7 +115,8 @@ export function empieza(modo: Modo): void {
 	enviar('empieza', { modo });
 }
 
-export function usarUbicacion(resultado: 'ok' | 'denegada' | 'imprecisa' | 'fuera'): void {
+/** `denegada` solo si la persona rechaza el permiso; `no_disponible`, los fallos técnicos (sin GPS, tiempo agotado, posición no disponible) */
+export function usarUbicacion(resultado: 'ok' | 'denegada' | 'imprecisa' | 'fuera' | 'no_disponible'): void {
 	enviar('usar_ubicacion', { resultado });
 }
 
@@ -148,6 +149,9 @@ export function completa(d: DatosCompleta): void {
 export type MotivoSinDato = (typeof MOTIVOS_SIN_DATO)[number];
 
 export function sinDato(modo: Modo, motivo: MotivoSinDato): void {
+	// Un «sin dato» cierra ese intento: el siguiente análisis vuelve a empezar
+	empezado = false;
+	inicioMs = null;
 	enviar('sin_dato', { modo, motivo });
 }
 

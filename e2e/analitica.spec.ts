@@ -136,6 +136,44 @@ test.describe('analítica sin cookies', () => {
 		expect(JSON.stringify(ev)).not.toMatch(/9000|9\.000/);
 	});
 
+	test('usar_ubicacion: «denegada» si se rechaza el permiso y «no_disponible» si no hay GPS', async ({ page, context }) => {
+		const ev = await escuchar(context);
+		// Sin conceder el permiso de ubicación: el navegador lo rechaza
+		await abrir(page, '/?ph_prueba=1');
+		await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
+		await page.getByRole('button', { name: 'Estoy en casa: usar mi ubicación' }).click();
+		await esperar(ev, 'usar_ubicacion');
+		expect(de(ev, 'usar_ubicacion').map((e) => e.properties.resultado)).toEqual(['denegada']);
+
+		// Sin API de geolocalización (fallo técnico, no una decisión de la persona)
+		await page.addInitScript(() => Object.defineProperty(navigator, 'geolocation', { value: undefined, configurable: true }));
+		await abrir(page, '/?ph_prueba=1');
+		await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
+		await page.getByRole('button', { name: 'Estoy en casa: usar mi ubicación' }).click();
+		await expect.poll(() => de(ev, 'usar_ubicacion').map((e) => e.properties.resultado), { timeout: 12_000 }).toEqual(['denegada', 'no_disponible']);
+	});
+
+	test('empieza se dispara con la primera acción: escribir o «Usar mi ubicación», una sola vez por análisis y con el modo correcto', async ({ page, context }) => {
+		await context.grantPermissions(['geolocation']);
+		await context.setGeolocation({ latitude: 48.8566, longitude: 2.3522, accuracy: 20 }); // fuera de Madrid: el análisis sigue abierto
+		const ev = await escuchar(context);
+		await abrir(page, '/?ph_prueba=1');
+		await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
+		await page.waitForTimeout(800);
+		expect(tipos(ev)).not.toContain('empieza'); // elegir el modo no es empezar
+		await page.getByRole('button', { name: 'Estoy en casa: usar mi ubicación' }).click();
+		await esperar(ev, 'usar_ubicacion');
+		expect(de(ev, 'empieza')).toHaveLength(1);
+		expect(de(ev, 'empieza')[0]!.properties).toMatchObject({ modo: 'vivo' });
+		// Escribir después no vuelve a empezar el mismo análisis
+		await page.fill('#direccion', 'Calle de Fuente del Berro 14');
+		await page.fill('#precio', '1620');
+		await page.waitForTimeout(3500);
+		expect(de(ev, 'empieza')).toHaveLength(1);
+		// El orden: empieza antes que usar_ubicacion
+		expect(tipos(ev).indexOf('empieza')).toBeLessThan(tipos(ev).indexOf('usar_ubicacion'));
+	});
+
 	test('usar_ubicacion lleva solo el resultado, nunca el sitio', async ({ page, context }) => {
 		await context.grantPermissions(['geolocation']);
 		await context.setGeolocation({ latitude: 48.8566, longitude: 2.3522, accuracy: 20 }); // París: fuera de Madrid

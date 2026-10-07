@@ -15,10 +15,15 @@
 		if (n.type !== 'enter' && n.from?.url.pathname !== n.to?.url.pathname) paginaVista();
 	});
 
-	// Analítica sin cookies (solo si PUBLIC_POSTHOG_ENABLED=true); cuando el navegador está libre
+	// Analítica sin cookies (solo si PUBLIC_POSTHOG_ENABLED=true). El SDK se baja con import() dinámico cuando la
+	// página ya ha cargado y el navegador está libre (con un tope de 2 s): no forma parte de lo que hace falta para pintar
 	onMount(() => {
-		if ('requestIdleCallback' in window) requestIdleCallback(() => void iniciarAnalitica());
-		else setTimeout(() => void iniciarAnalitica(), 800);
+		const arrancar = () => {
+			if ('requestIdleCallback' in window) requestIdleCallback(() => void iniciarAnalitica(), { timeout: 2000 });
+			else setTimeout(() => void iniciarAnalitica(), 2000);
+		};
+		if (document.readyState === 'complete') arrancar();
+		else addEventListener('load', arrancar, { once: true });
 	});
 
 	// Una sola etiqueta: todo el sitio mientras no sea el lanzamiento, y siempre las tarjetas

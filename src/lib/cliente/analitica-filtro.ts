@@ -13,6 +13,8 @@
 
 export const MODOS = ['mirando', 'vivo', 'habitacion'] as const;
 export const RESULTADOS = ['dentro', 'nivel2', 'nivel3'] as const;
+/** `usar_ubicacion.resultado`: `denegada` es solo el rechazo del permiso; el resto de fallos técnicos, `no_disponible` */
+export const RESULTADOS_UBICACION = ['ok', 'denegada', 'imprecisa', 'fuera', 'no_disponible'] as const;
 export const POSICIONES = ['baja', 'media', 'alta'] as const;
 export const BRECHAS = ['lt0', '0_10', '10_25', '25_50', '50_100', 'gt100'] as const;
 export const CANALES = ['whatsapp', 'x', 'copiar', 'descargar', 'nativo'] as const;
@@ -35,7 +37,7 @@ type Validador = (v: unknown) => boolean;
 /** Cada propiedad propia, con lo que puede valer (null vale siempre: «sin dato») */
 const VALIDADORES: Record<string, Validador> = {
 	modo: enumerado(MODOS),
-	resultado: (v) => enumerado([...RESULTADOS, 'ok', 'denegada', 'imprecisa', 'fuera'])(v),
+	resultado: (v) => enumerado([...RESULTADOS, ...RESULTADOS_UBICACION])(v),
 	posicion: enumerado(POSICIONES),
 	brecha_tramo: enumerado(BRECHAS),
 	es_horquilla: (v) => typeof v === 'boolean',

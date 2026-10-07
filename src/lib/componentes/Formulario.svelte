@@ -163,6 +163,7 @@
 		<legend>{etiquetaDonde}</legend>
 		{#if vivo || f.ubicacionActual}
 			<UbicacionActual
+				{alEmpezar}
 				protagonista={vivo}
 				activa={f.ubicacionActual}
 				alActivar={(l) => alUbicacion?.(l)}
@@ -199,6 +200,7 @@
 
 	{#if !vivo && !f.ubicacionActual && f.modo !== 'mapa'}
 		<UbicacionActual
+			{alEmpezar}
 			activa={null}
 			alActivar={(l) => alUbicacion?.(l)}
 			alQuitar={() => alQuitarUbicacion?.()}

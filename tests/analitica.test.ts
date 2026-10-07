@@ -39,6 +39,15 @@ describe('analítica: lista blanca (before_send)', () => {
 		expect(filtrarEvento({ event: 'comparte', properties: { ...base, canal: 'x', tarjeta_id: 'abcde12345' } })!.properties).toHaveProperty('tarjeta_id', 'abcde12345');
 	});
 
+	it('usar_ubicacion: «denegada» solo es el rechazo del permiso; los fallos técnicos son «no_disponible»', () => {
+		for (const r of ['ok', 'denegada', 'imprecisa', 'fuera', 'no_disponible']) {
+			expect(filtrarEvento({ event: 'usar_ubicacion', properties: { ...base, resultado: r } })!.properties, r).toHaveProperty('resultado', r);
+		}
+		for (const r of ['tiempo', 'sin_gps', 'denegado', 'error']) {
+			expect(filtrarEvento({ event: 'usar_ubicacion', properties: { ...base, resultado: r } })!.properties, r).not.toHaveProperty('resultado');
+		}
+	});
+
 	it('quita las propiedades $ del SDK que no están en la lista (user agent, idioma, zona horaria…) y $set', () => {
 		const r = filtrarEvento({
 			event: '$pageview',
