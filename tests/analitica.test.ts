@@ -61,6 +61,15 @@ describe('analítica: lista blanca (before_send)', () => {
 		for (const k of Object.keys(r.properties!).filter((k) => k.startsWith('$'))) expect(PROPIEDADES_SDK, k).toContain(k);
 	});
 
+	it('la campaña y el dominio del referrer salen en los eventos propios; nada más', () => {
+		const e = { event: 'completa', properties: { ...base, ...globales, modo: 'mirando', utm_source: 'instagram', utm_medium: 'story', utm_campaign: 'launch', utm_content: 'check', ref_domain: 'instagram.com', utm_extra: 'x', gclid: 'y' } };
+		const r = filtrarEvento(e as never);
+		expect(r!.properties).toMatchObject({ utm_source: 'instagram', utm_medium: 'story', utm_campaign: 'launch', utm_content: 'check', ref_domain: 'instagram.com' });
+		expect(r!.properties).not.toHaveProperty('utm_extra');
+		expect(r!.properties).not.toHaveProperty('gclid');
+		expect(filtrarEvento({ event: 'completa', properties: { ...base, ref_domain: 'https://x.com/ruta?secreto=1' } } as never)!.properties).not.toHaveProperty('ref_domain');
+	});
+
 	it('las URL salen sin query (salvo utm_*), sin hash y con /t/:id; el referrer, solo el dominio', () => {
 		expect(limpiarUrl('https://a-su-precio.workers.dev/?t=abcde12345&utm_source=ig&utm_medium=story&gclid=XYZ&direccion=Calle%20Mayor#x')).toBe(
 			'https://a-su-precio.workers.dev/?utm_source=ig&utm_medium=story'

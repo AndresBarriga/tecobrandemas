@@ -83,6 +83,8 @@ test.describe('analítica sin cookies', () => {
 		expect(de(ev, 'empieza')[0]!.properties).toMatchObject({ modo: 'mirando' });
 		const c = de(ev, 'completa')[0]!.properties;
 		expect(c).toMatchObject({ modo: 'mirando', resultado: 'nivel3', es_horquilla: false, distrito: 'Salamanca', indice_analisis: 1 });
+		// La campaña de la visita viaja en todos los eventos, no solo en el $pageview
+		expect(c).toMatchObject({ utm_source: 'ig', utm_medium: 'story' });
 		expect(c.brecha_tramo).toMatch(/^(0_10|10_25|25_50|50_100|gt100)$/);
 		expect(Number.isInteger(c.segundos_hasta_resultado)).toBe(true);
 		expect(de(ev, 'que_haras')[0]!.properties).toMatchObject({ modo: 'mirando', respuesta: 'negociar', resultado: 'nivel3' });
@@ -94,7 +96,7 @@ test.describe('analítica sin cookies', () => {
 
 		// Ninguna propiedad fuera de la lista, y nada del anuncio en ningún sitio
 		for (const e of ev) {
-			const permitidas = e.event.startsWith('$') ? null : new Set(['token', 'distinct_id', 'v', 'navegador_app', 'tarjeta_origen', 'interno', '$cookieless_mode', '$process_person_profile', ...(await import('../src/lib/cliente/analitica-filtro')).EVENTOS[e.event]!]);
+			const permitidas = e.event.startsWith('$') ? null : new Set(['token', 'distinct_id', 'v', 'navegador_app', 'tarjeta_origen', 'interno', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'ref_domain', '$cookieless_mode', '$process_person_profile', ...(await import('../src/lib/cliente/analitica-filtro')).EVENTOS[e.event]!]);
 			for (const k of Object.keys(e.properties)) {
 				if (k.startsWith('$')) expect((await import('../src/lib/cliente/analitica-filtro')).PROPIEDADES_SDK, `${e.event}.${k}`).toContain(k);
 				else if (permitidas) expect(permitidas.has(k), `${e.event}.${k}`).toBe(true);
