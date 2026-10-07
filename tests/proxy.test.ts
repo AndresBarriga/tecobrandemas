@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { POST, fallback } from '../src/routes/r7k/[...ruta]/+server';
+import { POST, fallback, trailingSlash } from '../src/routes/r7k/[...ruta]/+server';
 
 /** El proxy de la analítica (/r7k): rutas cerradas, nada de cookies, la IP y el user agent del cliente, sin escribir nada */
 describe('proxy de la analítica', () => {
@@ -64,6 +64,10 @@ describe('proxy de la analítica', () => {
 			throw new Error('caído');
 		});
 		expect((await peticion('e/')).status).toBe(204);
+	});
+
+	it('atiende /r7k/e/ y /r7k/e sin redirigir (una redirección 308 duplicaría las peticiones al Worker)', () => {
+		expect(trailingSlash).toBe('ignore');
 	});
 
 	it('en desarrollo no reenvía nada', async () => {

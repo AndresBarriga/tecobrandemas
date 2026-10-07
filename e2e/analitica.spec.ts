@@ -229,6 +229,14 @@ test.describe('analítica sin cookies', () => {
 		expect(de(ev, '$pageview').length).toBe(antes); // ?capa= se actualiza en la URL, pero es la misma página
 	});
 
+	test('el proxy atiende /r7k/e/ y /r7k/e directamente, sin redirigir (en desarrollo no reenvía nada)', async ({ request }) => {
+		for (const ruta of ['/r7k/e/', '/r7k/e']) {
+			const r = await request.post(ruta, { data: 'x', headers: { 'content-type': 'text/plain' }, maxRedirects: 0 });
+			expect(r.status(), ruta).toBe(204);
+		}
+		expect((await request.post('/r7k/otra/', { data: 'x', headers: { 'content-type': 'text/plain' }, maxRedirects: 0 })).status()).toBe(404);
+	});
+
 	test('sin ?ph_prueba (como en producción sin PUBLIC_POSTHOG_ENABLED) no sale nada', async ({ page, context }) => {
 		const ev = await escuchar(context);
 		await abrir(page, '/');

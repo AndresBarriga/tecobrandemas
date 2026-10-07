@@ -8,6 +8,8 @@
 import { error } from '@sveltejs/kit';
 
 export const prerender = false;
+/** El SDK manda a `/r7k/e/` y, al cerrar la página, a `/r7k/e`: las dos se atienden aquí, sin la redirección 308 de SvelteKit (costaría una petición más al Worker por evento) */
+export const trailingSlash = 'ignore';
 
 const ORIGEN = 'https://eu.i.posthog.com';
 /** Rutas de captura que usa posthog-js con esta configuración (comprobado en e2e/analitica.spec.ts) */
