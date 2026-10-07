@@ -6,7 +6,6 @@ export interface Piso {
 	direccion?: string;
 	precio: string;
 	superficie: string;
-	modo?: 'direccion' | 'calle';
 	obraNueva?: boolean;
 	largaDuracion?: boolean;
 	tipo?: 'piso' | 'habitacion' | 'casa';
@@ -25,8 +24,6 @@ export async function abrir(page: Page, ruta = '/') {
 
 export async function rellenar(page: Page, p: Piso) {
 	if (p.vivo) await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
-	if (p.modo === 'calle') await page.getByRole('radio', { name: 'Solo calle' }).check();
-	if (p.modo === 'direccion') await page.getByRole('radio', { name: 'Dirección', exact: true }).check();
 	const tipo = page.getByRole('radiogroup', { name: 'Tipo de vivienda' });
 	if (p.tipo === 'casa') await tipo.getByRole('radio', { name: 'Casa' }).check();
 	if (p.tipo === 'habitacion') await tipo.getByRole('radio', { name: 'Habitación' }).check();

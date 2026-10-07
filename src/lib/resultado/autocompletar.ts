@@ -10,11 +10,17 @@
  *  - Sin calles que coincidan, se buscan barrios y distritos (con alias de nombres populares).
  */
 
-export type ViaEntrada = readonly [nombre: string, barrio: string];
+/** [nombre, código de barrio, código postal más frecuente, otros códigos postales separados por comas] */
+import { separarCodigoPostal } from './calle';
+
+export type ViaEntrada = readonly [nombre: string, barrio: string, cp?: string, otrosCp?: string];
 
 export interface Via {
 	nombre: string;
 	barrio: string;
+	/** Código postal más frecuente de sus portales y los demás */
+	cp: string;
+	otrosCp: string[];
 	/** Palabras normalizadas del nombre completo («calle», «alcala») */
 	palabras: string[];
 }
@@ -31,6 +37,8 @@ export interface SugerenciaVia {
 	tipo: string;
 	/** Barrio donde la vía tiene más secciones */
 	barrio: string;
+	/** Código postal más frecuente de sus portales («» si no se conoce) */
+	cp: string;
 	/** El nombre con lo coincidente marcado */
 	partes: Parte[];
 }
@@ -91,6 +99,8 @@ export function palabras(texto: string): string[] {
 /** Lo que se busca: las palabras de lo escrito, sin el número del portal del final */
 export function palabrasBuscadas(texto: string): string[] {
 	const p = palabras(texto);
+	// «12 bis»: «bis» detrás de un número no es parte del nombre
+	if (p.length > 2 && p[p.length - 1] === 'bis' && /^\d+$/.test(p[p.length - 2]!)) p.length -= 2;
 	while (p.length > 1 && /^\d+[a-z]?$/.test(p[p.length - 1]!)) p.pop();
 	// «nº» y «n» sueltos antes del número
 	while (p.length > 1 && (p[p.length - 1] === 'n' || p[p.length - 1] === 'no')) p.pop();
@@ -98,7 +108,9 @@ export function palabrasBuscadas(texto: string): string[] {
 }
 
 export function construirIndiceVias(filas: readonly ViaEntrada[]): Via[] {
-	return filas.map(([nombre, barrio]) => ({ nombre, barrio, palabras: palabras(nombre) }));
+	return filas.map(([nombre, barrio, cp, otros]) => ({
+		nombre, barrio, cp: cp ?? '', otrosCp: otros ? otros.split(',') : [], palabras: palabras(nombre)
+	}));
 }
 
 const empiezaPor = (palabra: string, q: string) => palabra.startsWith(q);
@@ -200,6 +212,7 @@ const aSugerencia = (v: Via, q: string[]): SugerenciaVia => ({
 	nombre: v.nombre,
 	tipo: tipoDe(v.nombre),
 	barrio: v.barrio,
+	cp: v.cp,
 	partes: resaltar(v.nombre, q)
 });
 
@@ -262,9 +275,18 @@ export function sugerirZonas(zonas: Zonas, texto: string, maximo = MAXIMO_SUGERE
  *  - calles (y, delante, el barrio que corresponde a un nombre popular que se está escribiendo);
  *  - si no hay ninguna calle, barrios o distritos;
  *  - si tampoco, calles con una errata;
- *  - y si no hay nada, `nada` (la pantalla ofrece «Solo la calle» y el mapa). Nunca queda vacío.
+ *  - y si no hay nada, `nada` (la pantalla ofrece el mapa). Nunca queda vacío.
  */
 export function sugerir(indice: readonly Via[], zonas: Zonas, texto: string): Sugerencias {
+	// Un código postal («28038») lista sus calles, de más a menos portales; con parte del nombre, las filtra
+	const postal = separarCodigoPostal(texto);
+	if (postal) {
+		// Primero las calles cuyo código postal más frecuente es ése; se muestra el código buscado
+		const delCp = [...indice.filter((v) => v.cp === postal.cp), ...indice.filter((v) => v.cp !== postal.cp && v.otrosCp.includes(postal.cp))];
+		const q = postal.resto ? palabrasBuscadas(postal.resto) : [];
+		const vias = (q.length ? delCp.filter((v) => grupoDe(q, v.palabras) !== null) : delCp).slice(0, MAXIMO_SUGERENCIAS);
+		return vias.length ? { tipo: 'vias', vias: vias.map((v) => ({ ...aSugerencia(v, q), cp: postal.cp })) } : { tipo: 'nada' };
+	}
 	const vias = sugerirVias(indice, texto);
 	if (vias.length) {
 		const populares = sugerirZonas(zonas, texto).filter((z) => z.alias !== null);

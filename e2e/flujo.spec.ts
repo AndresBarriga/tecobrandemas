@@ -22,7 +22,7 @@ test.describe('flujo', () => {
 		await page.locator('#precio').focus();
 		await expect(page.getByText(/Escribe los m².*entre 10 y 500/)).toBeVisible();
 		await page.getByRole('button', { name: 'Comprobar el precio' }).click();
-		// «Estoy mirando un piso» empieza por «Solo calle»
+		// «Estoy mirando un piso» empieza por «Calle»
 		await expect(page.getByText(/Escribe el nombre de la calle/)).toBeVisible();
 	});
 
@@ -64,7 +64,9 @@ test.describe('flujo', () => {
 		await expect(page.getByText('Por encima del techo')).toBeVisible();
 		await page.getByRole('button', { name: /Comparar con otro piso/ }).click();
 		await expect(page.locator('#direccion')).toBeVisible();
-		await expect(page.locator('#direccion')).toHaveValue(BERRO);
+		// El número escrito al final de la calle pasa al campo «Nº»
+		await expect(page.locator('#direccion')).toHaveValue('Calle de Fuente del Berro');
+		await expect(page.locator('#numero')).toHaveValue('14');
 	});
 
 	test('textos con espacio duro: «2.500 €» y «+NN %»', async ({ page }) => {

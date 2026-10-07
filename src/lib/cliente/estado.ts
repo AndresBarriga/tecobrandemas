@@ -1,5 +1,5 @@
 /** Lo que la persona ha escrito en el formulario; son textos tal cual, sin interpretar */
-export type ModoUbicacion = 'direccion' | 'calle' | 'mapa';
+export type ModoUbicacion = 'calle' | 'mapa';
 /** «Estoy mirando un piso» (un anuncio) o «Ya vivo aquí» (mi alquiler) */
 export type Situacion = 'mirando' | 'vivo';
 export type TipoVivienda = 'piso' | 'habitacion' | 'casa';
@@ -8,7 +8,12 @@ export type TamanoPiso = 'hasta60' | '60-90' | '90-120' | 'mas120' | 'nose';
 export interface EstadoFormulario {
 	situacion: Situacion;
 	modo: ModoUbicacion;
+	/** Lo escrito en «Calle» mientras no se haya elegido una sugerencia */
 	direccion: string;
+	/** Calle elegida de las sugerencias (nombre oficial): sustituye a lo escrito */
+	via: string | null;
+	/** Número del portal (opcional): «12», «12 bis» */
+	numero: string;
 	precio: string;
 	superficie: string;
 	obraNueva: boolean;
@@ -32,9 +37,10 @@ export interface EstadoFormulario {
 
 export const estadoInicial = (): EstadoFormulario => ({
 	situacion: 'mirando',
-	// «Estoy mirando un piso» empieza por «Solo calle»; «Ya vivo aquí», por «Dirección»
 	modo: 'calle',
 	direccion: '',
+	via: null,
+	numero: '',
 	precio: '',
 	superficie: '',
 	obraNueva: false,
@@ -50,3 +56,6 @@ export const estadoInicial = (): EstadoFormulario => ({
 	gastos: true,
 	ubicacionActual: null
 });
+
+/** Un formulario guardado con los modos antiguos («direccion», «Solo calle») pasa a «Calle» */
+export const modoGuardado = (m: unknown): ModoUbicacion => (m === 'mapa' ? 'mapa' : 'calle');

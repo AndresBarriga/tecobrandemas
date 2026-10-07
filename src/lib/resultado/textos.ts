@@ -166,10 +166,25 @@ export const BOTON_COMPARTIR = 'Compartir el resultado';
 export const FORMULARIO = {
 	titulo: 'Comprueba un piso',
 	dondeEsta: '¿Dónde está el piso?',
-	modos: { direccion: 'Dirección', calle: 'Solo calle', mapa: 'En el mapa' },
-	etiquetaDireccion: { direccion: 'Dirección con número', calle: 'Calle (sin número)' },
-	placeholderDireccion: { direccion: 'Calle y número del anuncio', calle: 'Nombre de la calle' },
-	ayudaDireccion: { direccion: 'Si no sabes el número, elige «Solo calle».', calle: 'Con el número sale una sola cifra.' },
+	modos: { calle: 'Calle', mapa: 'En el mapa' },
+	calle: {
+		etiqueta: 'Calle',
+		placeholder: 'Nombre de la calle o código postal',
+		ayuda: 'Con el número sale una sola cifra.',
+		numero: 'Nº',
+		numeroEtiqueta: 'Número del portal (opcional)',
+		numeroPlaceholder: 'Ej. 12',
+		numeroInvalido: 'Escribe solo el número del portal, por ejemplo 12 o 12 bis.',
+		sinCalle: 'Escribe el nombre de la calle.',
+		quitar: (calle: string) => `Quitar ${calle}`,
+		fijada: (calle: string) => `Calle elegida: ${calle}`,
+		/** Línea de confirmación bajo los campos */
+		entera: 'Calle entera: te daremos una horquilla.',
+		portal: (calle: string, n: string, barrio: string, cp: string) => `${calle} ${n} · ${barrio} · ${cp}`,
+		portalAprox: (calle: string, n: string, cercano: string, barrio: string, cp: string) =>
+			`${calle} ${n}: no tiene ese número; usamos el ${cercano} (aproximado) · ${barrio} · ${cp}`,
+		calleBarrio: (calle: string, barrio: string, cp: string) => `${calle} · ${barrio} · ${cp}`
+	},
 	precio: 'Precio al mes',
 	superficie: 'Metros construidos',
 	obraNueva: '¿Es obra nueva, de 2022 o después?',
@@ -216,9 +231,7 @@ export const FORMULARIO_VIVO = {
 } as const;
 
 export const UBICACION_ACTUAL = {
-	mirando: 'Estoy en el piso ahora',
-	vivo: 'Estoy en casa: usar mi ubicación',
-	o: 'O escribe la dirección',
+	boton: 'Usar mi ubicación',
 	privacidad: 'Tu ubicación se usa solo en tu navegador; no se envía ni se guarda.',
 	pidiendo: 'Pidiendo tu ubicación…',
 	activa: (barrio: string, m: number) => `Mi ubicación · ${barrio} (±${m}\u00A0m)`,
@@ -397,12 +410,16 @@ export const HABITACION = {
 /** Autocompletado de la dirección */
 export const AUTOCOMPLETAR = {
 	lista: 'Sugerencias de calles',
-	vacio: { titulo: 'No encontramos esa calle.', texto: 'Puedes escribir solo el nombre de la calle o ubicar el piso en el mapa.' },
+	vacio: { titulo: 'No encontramos esa calle.', texto: 'Prueba con otro nombre o ubica el piso en el mapa.' },
 	zona: { barrio: 'barrio', distrito: 'distrito', pista: 'elige una calle o toca el mapa' },
+	con: {
+		barrioCp: (barrio: string, cp: string) => (barrio && cp ? `${barrio} · ${cp}` : barrio || cp),
+		sinPortal: (n: string, cercano: string) => `sin nº ${n}; el más cercano es el ${cercano} (aproximado)`
+	},
 	anuncio: {
 		vias: (n: number) => (n === 1 ? '1 sugerencia' : `${n} sugerencias`),
 		zonas: (n: number) => (n === 1 ? 'Sin calles que coincidan: 1 barrio o distrito' : `Sin calles que coincidan: ${n} barrios o distritos`),
-		nada: 'Sin resultados. Prueba con «Solo la calle» o el mapa.',
+		nada: 'Sin resultados. Prueba con otro nombre o con el mapa.',
 		uso: 'Usa las flechas para moverte y Intro para elegir.'
 	}
 } as const;
@@ -413,7 +430,6 @@ export const ERRORES = {
 		texto: 'Puede que esté escrita de otra forma.',
 		queriasDecir: '¿Querías decir…?',
 		otraForma: 'O ubícalo de otra forma',
-		soloCalle: 'Solo la calle',
 		enMapa: 'En el mapa'
 	},
 	demasiadas: {
@@ -422,7 +438,8 @@ export const ERRORES = {
 	},
 	pedirNumero: (calle: string, n: number) => ({
 		titulo: `${calle} cruza ${n} zonas con referencias distintas.`,
-		texto: 'Escribe el número del portal o márcalo en el mapa.'
+		texto: 'Escribe el número del portal o márcalo en el mapa.',
+		escribirNumero: 'Escribir el número'
 	}),
 	sinConexion: {
 		titulo: 'Sin conexión',

@@ -4,14 +4,14 @@
  * El cálculo vive en el motor y en resultado/; aquí solo se encadenan los pasos.
  */
 import {
-	FORMULARIO_VIVO, type ErroresFormulario, type ExtraInquilino, type Pantalla, type Ubicacion, aInquilino, barriosDe, construirPantalla,
-	construirPantallaHabitacion, interpretarRentaFirma, interpretarSomos, pantallaSinDato, validarFirma, validarFormulario, validarHabitacion
+	FORMULARIO, FORMULARIO_VIVO, type ErroresFormulario, type ExtraInquilino, type Pantalla, type Ubicacion, aInquilino, barriosDe, construirPantalla,
+	construirPantallaHabitacion, interpretarRentaFirma, interpretarSomos, numeroValido, pantallaSinDato, textoDireccion, validarFirma, validarFormulario, validarHabitacion
 } from '#lib/resultado';
 import { cargarDatos } from './datos';
 import { DemasiadasBusquedas, buscarDireccion } from './direccion';
 import type { EstadoFormulario } from './estado';
 
-export type ErroresCampos = ErroresFormulario & { direccion?: string; mapa?: string; firma?: string; rentaFirma?: string; habitacion?: string };
+export type ErroresCampos = ErroresFormulario & { direccion?: string; numero?: string; mapa?: string; firma?: string; rentaFirma?: string; habitacion?: string };
 
 export type Comprobacion =
 	| { tipo: 'pantalla'; pantalla: Pantalla; ubicacion: Ubicacion | null }
@@ -45,7 +45,7 @@ async function resolver(f: EstadoFormulario, pin: Ubicacion | null | 'fuera'): P
 	}
 	let r;
 	try {
-		r = await buscarDireccion(f.direccion);
+		r = await buscarDireccion(textoDireccion(f));
 	} catch (e) {
 		if (e instanceof DemasiadasBusquedas) return { ok: false, salida: { tipo: 'demasiadas' } };
 		throw e;
@@ -59,8 +59,9 @@ function erroresDeUbicacion(f: EstadoFormulario, pin: Ubicacion | null | 'fuera'
 	if (f.ubicacionActual) return;
 	if (f.modo === 'mapa') {
 		if (pin === null) errores.mapa = 'Marca en el mapa el punto donde está el piso.';
-	} else if (!f.direccion.trim()) {
-		errores.direccion = f.modo === 'calle' ? 'Escribe el nombre de la calle.' : 'Escribe la calle y el número.';
+	} else {
+		if (!f.via && !f.direccion.trim()) errores.direccion = FORMULARIO.calle.sinCalle;
+		if (!numeroValido(f.numero)) errores.numero = FORMULARIO.calle.numeroInvalido;
 	}
 }
 
