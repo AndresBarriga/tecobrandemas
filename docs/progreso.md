@@ -262,6 +262,12 @@ Diseño en `docs/design/design-f1/` (README sección F1, `F1 Ya vivo aqui.dc.htm
 - **«Cómo calculamos»:** sección nueva «El mapa» (qué muestra y qué no).
 - Sin tests nuevos ni capturas, según las decisiones vigentes; se ajustó el test de formato (espacio duro antes de «m²») en los textos nuevos.
 
+## A2 · «Mi presupuesto»: color y lectura (07/10/2026, rama `a2-mapa-presupuesto-color`)
+- **Color:** sin puntos ni rayado. «No llega» #E4DFD3 (plano), «Dentro» #8DBBA2, «Te sobra» #3F7F62; «Sin dato» #EFECE4 plano, con rayado tenue (1 px #CFC9BA cada 8 px) solo con zoom ≥ 12 (≤ 29,1 m/px). Líneas de barrio y contorno del municipio (nuevo, `contornoMunicipio`) más marcados que las de zona. Solo esta capa; Referencia y Evolución no cambian.
+- **Textos:** «No llega», «Dentro», «Te sobra» en leyenda, hoja y nota; la hoja dice «no llega a la referencia», «queda dentro de la referencia» y «te sobra margen respecto a la referencia».
+- **Leyenda en móvil:** una línea de tres chips con color bajo el conmutador (solo en esta capa), además de la de la hoja.
+- **Resumen:** con más del 95 % de las zonas con dato en «Te sobra», o con menos del 5 % pero alguna, añade el aviso de probar con más o menos metros (con 0 zonas sigue el mensaje propio).
+
 ## A2 · Tarjeta ampliable (07/10/2026, rama `a2-tarjeta-ampliable`)
 - **Qué es:** «Ver en grande» (y la propia miniatura) abre la tarjeta para compartir en un `<dialog>` modal (`TarjetaAmpliable.svelte`), en la tarjeta de los anuncios y en la del inquilino. Foco dentro, Esc o «Cerrar» o clic fuera cierran, el foco vuelve al botón, la página queda inerte y sin scroll. Es la imagen del mismo canvas que se comparte; su descripción (el `aria-label` del canvas) lleva el titular y el texto de la tarjeta, sin precio ni dirección.
 - **Textos quitados** de la tarjeta del inquilino «por encima»: «El mercado va más rápido que los datos oficiales.» y «No es solo mi caso. Compruébalo con el tuyo.». Quedan dos opciones (la cifra y «¿Y tú?…»); un índice de texto que no exista cae en el primero. Las tarjetas ya compartidas conservan su texto guardado.

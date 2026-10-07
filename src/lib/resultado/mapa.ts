@@ -4,7 +4,7 @@
  *  - «Referencia»: parte alta (V_sup·f, €/m² al mes) para una superficie elegida, en 5 quintiles de las
  *    zonas con dato para esa superficie (iguales para toda la ciudad, recalculados al cambiar la superficie);
  *  - «Mi presupuesto»: lo que se puede pagar al mes frente al rango completo de la superficie elegida:
- *    por debajo (< R_inf), dentro (R_inf a R_sup) o con margen (> R_sup);
+ *    «No llega» (< R_inf), «Dentro» (R_inf a R_sup) o «Te sobra» (> R_sup);
  *  - «Evolución 2015-2024»: subida de la mediana registrada, sin descontar la inflación.
  * Sin dato: 20 testigos o menos, sin datos de la zona o superficie fuera de 30-150 m². En los textos, «zona».
  */
@@ -142,8 +142,10 @@ export function posicionPresupuesto(presupuesto: number, z: Pick<ZonaMapa, 'refI
 export interface ResumenPresupuesto {
 	/** Zonas con dato para esa superficie */
 	conDato: number;
-	/** Zonas donde llega a la referencia: dentro o con margen */
+	/** Zonas donde llega a la referencia: dentro o te sobra */
 	llega: number;
+	/** Zonas donde te sobra (por encima del máximo) */
+	sobra: number;
 	/** Porcentaje entero de las zonas con dato */
 	porcentaje: number;
 }
@@ -151,17 +153,30 @@ export interface ResumenPresupuesto {
 export function resumenPresupuesto(posiciones: Iterable<PosicionPresupuesto | null>): ResumenPresupuesto {
 	let conDato = 0;
 	let llega = 0;
+	let sobra = 0;
 	for (const p of posiciones) {
 		if (p === null) continue;
 		conDato++;
 		if (p !== 'debajo') llega++;
+		if (p === 'margen') sobra++;
 	}
-	return { conDato, llega, porcentaje: conDato ? Math.round((llega / conDato) * 100) : 0 };
+	return { conDato, llega, sobra, porcentaje: conDato ? Math.round((llega / conDato) * 100) : 0 };
+}
+
+/**
+ * Cuando el presupuesto no discrimina: «sobra» en más del 95 % de las zonas con dato (prueba con más metros)
+ * o llega a menos del 5 % pero a alguna (prueba con menos metros). Sin ninguna, ya hay un mensaje propio.
+ */
+export function extremoPresupuesto(r: ResumenPresupuesto): 'sobra' | 'pocas' | null {
+	if (r.conDato === 0) return null;
+	if (r.sobra / r.conDato > 0.95) return 'sobra';
+	if (r.llega > 0 && r.llega / r.conDato < 0.05) return 'pocas';
+	return null;
 }
 
 const INDICE_POSICION = { debajo: 0, dentro: 1, margen: 2 } as const;
 
-/** Capa «Mi presupuesto»: tres tramos, escala en grises (puntos, gris cálido claro, Grafito) */
+/** Capa «Mi presupuesto»: tres tramos; resalta lo que llega (verdes) y apaga lo que no (gris cálido plano) */
 export function capaPresupuesto(zonas: ZonaMapa[], presupuesto: number): CapaCalculada & { resumen: ResumenPresupuesto } {
 	const pos = new Map(zonas.map((z) => [z.cusec, posicionPresupuesto(presupuesto, z)]));
 	return {
@@ -265,11 +280,14 @@ export function numeroDelCampo(texto: string): number | null {
 
 /**
  * Colores de cada capa. «Referencia»: la escala de Paja de «Tu zona». «Evolución»: Acero, otra familia.
- * «Mi presupuesto»: grises (puntos, gris cálido claro, Grafito), distinta de la de Paja.
- * En «presupuesto», el tono 0 es una trama: el componente la pinta con un patrón, no con este color.
+ * «Mi presupuesto»: No llega (gris cálido claro, plano), Dentro (verde medio), Te sobra (verde oscuro, no negro).
+ * Contrastes de partida 1,6:1 (No llega-Dentro) y 2,2:1 (Dentro-Te sobra); sin dato, #EFECE4 plano (SIN_DATO_PRESUPUESTO).
  */
 export const TONOS_MAPA: Record<CapaMapa, readonly string[]> = {
 	referencia: ['#F3E4B0', '#E2BE55', '#BF962F', '#8E6B1D', '#5A4413'],
 	evolucion: ['#E3ECF4', '#B5CADD', '#86A9C9', '#5384B0', '#2F5B8A'],
-	presupuesto: ['#F6F4EE', '#A8A294', '#5A5750']
+	presupuesto: ['#E4DFD3', '#8DBBA2', '#3F7F62']
 };
+
+/** «Sin dato» en «Mi presupuesto»: relleno plano; el rayado tenue (#CFC9BA, 1 px cada 8 px) solo con zoom ≥ 12 */
+export const SIN_DATO_PRESUPUESTO = { relleno: '#EFECE4', rayado: '#CFC9BA' } as const;
