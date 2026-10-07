@@ -51,11 +51,8 @@ test.describe('compartir la tarjeta (escritorio: cuatro canales)', () => {
 		await page.waitForTimeout(500);
 		expect(peticiones.filter((p) => p.url.endsWith('/api/tarjeta'))).toHaveLength(1);
 
-		// La tarjeta existe en /t/<id>, y los eventos llevan el canal y el id, sin datos del anuncio
+		// La tarjeta existe en /t/<id> (los eventos de compartir se comprueban en e2e/analitica.spec.ts)
 		await expect.poll(async () => (await page.request.get(`/t/${id}`)).status()).toBe(200);
-		const eventos = peticiones.filter((p) => p.url.endsWith('/api/evento')).map((p) => JSON.parse(p.cuerpo));
-		expect(eventos).toContainEqual({ tipo: 'comparte_whatsapp', visita: expect.any(String), tarjeta: id });
-		expect(eventos).toContainEqual({ tipo: 'comparte_x', visita: expect.any(String), tarjeta: id });
 		// Nada de terceros durante toda la prueba
 		const externas = peticiones.filter((p) => !p.url.startsWith(new URL(page.url()).origin) && !/wa\.me|x\.com/.test(p.url));
 		expect(externas).toEqual([]);
@@ -72,7 +69,6 @@ test.describe('compartir la tarjeta (escritorio: cuatro canales)', () => {
 		expect((await descarga).suggestedFilename()).toBe('a-su-precio.jpg');
 		await expect(page.getByText('Imagen descargada. No se ha guardado nada.')).toBeVisible();
 		expect(posts).not.toContain('/api/tarjeta');
-		expect(posts).toContain('/api/evento'); // el evento de descarga, sin datos del anuncio
 	});
 
 	test('con un id distinto por resultado', async ({ page }) => {
@@ -104,7 +100,5 @@ test.describe('compartir la tarjeta (móvil con hoja nativa)', () => {
 			url: expect.stringMatching(/\/t\/[0-9a-z]{10}$/)
 		});
 		expect(posts.filter((p) => p.url.endsWith('/api/tarjeta'))).toHaveLength(1);
-		const ev = posts.filter((p) => p.url.endsWith('/api/evento')).map((p) => JSON.parse(p.cuerpo));
-		expect(ev).toContainEqual({ tipo: 'comparte', visita: expect.any(String), tarjeta: expect.stringMatching(/^[0-9a-z]{10}$/) });
 	});
 });

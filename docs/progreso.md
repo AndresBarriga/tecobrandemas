@@ -267,3 +267,12 @@ Diseño en `docs/design/design-f1/` (README sección F1, `F1 Ya vivo aqui.dc.htm
 - **Textos quitados** de la tarjeta del inquilino «por encima»: «El mercado va más rápido que los datos oficiales.» y «No es solo mi caso. Compruébalo con el tuyo.». Quedan dos opciones (la cifra y «¿Y tú?…»); un índice de texto que no exista cae en el primero. Las tarjetas ya compartidas conservan su texto guardado.
 - Sin tests ni capturas nuevos (decisiones vigentes); comprobado a mano con teclado, Esc, clic fuera, foco de vuelta y axe, a 360, 390 y 1280 px.
 
+## Analítica con PostHog sin cookies (07/10/2026, rama `posthog-sin-cookies`)
+- **Qué cambia:** los eventos de uso salen de D1 (`/api/evento`, tabla `eventos`) y pasan a PostHog (UE) sin cookies, con `posthog-js` (variante slim sin dependencias externas), un proxy en `/r7k` y una lista blanca en `before_send`. Detalle, lista blanca de propiedades, pasos de verificación y umbral de limitación: `docs/operacion.md`, «Analítica».
+- **Taxonomía nueva:** `$pageview`, `$pageleave`, `empieza`, `usar_ubicacion`, `error_geocodificador`, `confirma_precio`, `completa`, `sin_dato`, `que_haras`, `comparte`, `aporta`. Fuera: `llegada`, `segundo` y `desde_tarjeta` (ahora propiedades), `servido_*`, `vivo_*`, `comparte_*`.
+- **«¿Qué vas a hacer con este resultado?»** sustituye a «¿Te ha servido?» (una sola elección, opcional, sin bloquear compartir). **«¿Algo no cuadra? Escríbenos»** es un enlace `mailto:` junto al resultado.
+- **Quitado:** el contador de «pisos comprobados» de la portada (salía de los eventos) y `/api/contadores` ya no devuelve `total`; `npm run metricas` pierde el embudo (queda análisis, aportaciones y tarjetas). Migración `0004_quitar_eventos.sql` preparada y **sin aplicar en remoto**.
+- **Tests:** quitados o adaptados solo los de eventos (ver el resumen del PR); `tests/analitica.test.ts`, `tests/proxy.test.ts` y `e2e/analitica.spec.ts` son nuevos.
+- **Presupuesto del bundle:** el que mide el informe de lanzamiento pasa de 111,6 KB a 161,9 KB gz con PostHog, así que el presupuesto sube de 150 a 165 KB (decisión del 07/10/2026). El SDK se carga ya tras la carga de la página, pero antes de que el informe dé la página por terminada.
+- **Habitaciones:** la mediana pública de `/api/habitacion` sale ahora desde 20 aportaciones (antes 10); el recuento por barrio de análisis y aportaciones sigue en 10.
+

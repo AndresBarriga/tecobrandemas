@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { UBICACION_ACTUAL as T } from '#lib/resultado';
+	import { usarUbicacion } from '#lib/cliente/analitica';
 	import { type LecturaGps, ubicarme } from '#lib/cliente/ubicacion-actual';
 
 	type Lista = Extract<LecturaGps, { estado: 'lista' }>;
@@ -11,7 +12,8 @@
 		alQuitar,
 		alEscribir,
 		alMapa,
-		reinicio = 0
+		reinicio = 0,
+		alEmpezar
 	}: {
 		/** «Ya vivo aquí»: el chip es lo primero que se ofrece; en «mirando», una opción discreta */
 		protagonista?: boolean;
@@ -25,6 +27,8 @@
 		alMapa: (codigoBarrio: string) => void;
 		/** Cambia cuando se escribe una dirección: los avisos de la lectura anterior sobran */
 		reinicio?: number;
+		/** Pulsar «Usar mi ubicación» es empezar el análisis, igual que escribir */
+		alEmpezar?: () => void;
 	} = $props();
 
 	let estado = $state<'off' | 'pidiendo' | 'baja' | 'denegado' | 'tiempo' | 'fuera' | 'sin_gps'>('off');
@@ -39,8 +43,13 @@
 	});
 
 	async function pedir() {
+		alEmpezar?.();
 		estado = 'pidiendo';
 		const l = await ubicarme();
+		// Solo el resultado, nunca el sitio. «denegada» es que la persona rechaza el permiso; sin GPS o tiempo agotado, «no_disponible»
+		usarUbicacion(
+			l.estado === 'lista' ? (l.baja ? 'imprecisa' : 'ok') : l.estado === 'fuera' ? 'fuera' : l.estado === 'denegado' ? 'denegada' : 'no_disponible'
+		);
 		if (l.estado !== 'lista') {
 			estado = l.estado;
 			alEscribir();

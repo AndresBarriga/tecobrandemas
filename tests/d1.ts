@@ -4,7 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import type { D1Registro, D1Sentencia } from '../src/lib/server/db';
 
-export const ESQUEMA = ['0001_registro', '0002_aportaciones_firma', '0003_habitaciones']
+export const ESQUEMA = ['0001_registro', '0002_aportaciones_firma', '0003_habitaciones', '0004_quitar_eventos']
 	.map((m) => readFileSync(fileURLToPath(new URL(`../migrations/${m}.sql`, import.meta.url)), 'utf-8'))
 	.join('\n');
 

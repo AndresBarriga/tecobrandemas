@@ -15,11 +15,11 @@ Lo que depende de un PR sin fusionar lleva su número. Producción: https://a-su
 | R6 | Tarjeta compartible y `/t/:id` | Parcial | `e2e/tarjeta.spec.ts`. Falta comprobar la vista previa en WhatsApp y X desde un móvil (no se puede automatizar) |
 | R7 | Registro anónimo con consentimiento | Hecho con el PR #1 | Casilla desmarcada y POST solo si se marca: `e2e/consentimiento.spec.ts`. Se guarda barrio y mes, no sección ni fecha (desviación del diseño 5q) |
 | R8 | Metodología, fuentes, límites, quiénes somos, financiación | Hecho | `/como-calculamos` según el diseño 7a/7b: `e2e/como-calculamos.spec.ts`, `tests/metodologia.test.ts` (el ejemplo sale del motor y cambia con el IPC) |
-| R9 | Eventos del embudo sin cookies | Hecho | `e2e/registro.spec.ts`; `tests/registro.test.ts`; sin cookies: `npm run informe:lanzamiento` |
+| R9 | Eventos del embudo sin cookies | Hecho (PostHog UE, sin cookies) | `e2e/analitica.spec.ts`; `tests/analitica.test.ts`; `tests/proxy.test.ts`; sin cookies: `npm run informe:lanzamiento` |
 | R10 | «Ya hemos analizado N pisos» (≥ 10) | Hecho | `tests/vista.test.ts` (contadores), `e2e/estados.spec.ts` («el contador del barrio no sale sin dato real») |
 | R11 | «¿Cuánto pagas tú?» | Hecho | `/cuanto-pagas`, `e2e/registro.spec.ts` 24-26 |
 | R12 | Evolución 2015-2024 | Hecho | Línea al pie de «Tu zona» según el diseño: `tests/resultado.test.ts` (evolución), `e2e/tu-zona.spec.ts`. El diseño es una frase con la variación, no un gráfico |
-| R13 | «¿Te ha servido?» | Hecho | `e2e/registro.spec.ts` (el embudo) |
+| R13 | «¿Qué vas a hacer con este resultado?» (sustituye a «¿Te ha servido?») | Hecho | `e2e/analitica.spec.ts` |
 
 ## Pantallas del paquete de diseño
 

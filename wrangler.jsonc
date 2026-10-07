@@ -17,5 +17,7 @@
 		{ "binding": "TARJETAS", "bucket_name": "a-su-precio-tarjetas" },
 		{ "binding": "MAPA", "bucket_name": "a-su-precio-mapa" }
 	],
-	"observability": { "enabled": true }
+	// Sin registros de invocación: guardarían la URL de cada petición (con ?barrio= o el id de /t/…) durante 3-7 días.
+	// Los registros que escriba el código siguen disponibles; hoy el código no escribe ninguno.
+	"observability": { "enabled": true, "logs": { "invocation_logs": false } }
 }

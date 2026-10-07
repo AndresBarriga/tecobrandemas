@@ -1,4 +1,4 @@
-/** GET /api/contadores?barrio=071 — recuentos reales; los de barrio solo salen desde 10 */
+/** GET /api/contadores?barrio=071 — recuentos reales por barrio; solo salen desde 10 */
 import { error, json } from '@sveltejs/kit';
 import { barriosValidos, contextoRegistro, entornoDe } from '#lib/server/entorno';
 import { recuentos } from '#lib/server/registro';

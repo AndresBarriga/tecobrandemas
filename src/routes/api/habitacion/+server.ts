@@ -1,6 +1,6 @@
 /**
  * POST /api/habitacion { barrio, precio, habitaciones, tramo, gastos } — «Aportar mi habitación».
- * GET  /api/habitacion?barrio=071&gastos=1 → { n, mediana }: la mediana solo con 10 o más.
+ * GET  /api/habitacion?barrio=071&gastos=1 → { n, mediana }: la mediana solo con 20 o más.
  * Tabla aparte de pisos y aportaciones. Sin dirección, sección ni IP.
  */
 import { error, json } from '@sveltejs/kit';

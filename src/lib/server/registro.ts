@@ -1,5 +1,6 @@
 /**
- * Registro anónimo (R7), aportaciones de residentes (R11), eventos (R9) y recuentos (R10).
+ * Registro anónimo (R7), aportaciones de residentes (R11), habitaciones y recuentos (R10).
+ * (Los eventos de uso ya no se guardan aquí: van a PostHog sin cookies, ver src/lib/cliente/analitica.ts.)
  *
  * Reglas (CLAUDE.md y plan):
  *  - se guarda el barrio y el mes, nunca la sección, la dirección, la IP ni la fecha exacta;
@@ -8,28 +9,23 @@
  *    existe como HMAC con una sal que rota cada día (la clave caduca a las 24 h);
  *  - los fallos de antiabuso no se notifican como error: el resultado se ve igual y no se guarda.
  */
+import { MINIMO_COMPARACION as MINIMO_HABITACIONES } from '../resultado/habitacion';
 import type { D1Registro } from './db';
 
 export const EUROS_M2_MIN = 5;
 export const EUROS_M2_MAX = 60;
 export const LIMITE_REGISTROS_DIA = 20;
-export const LIMITE_EVENTOS_DIA = 300;
 /** Cada «Comprobar» geocodifica 1-2 veces: con 200 al día cabe un uso normal y no un volcado */
 export const LIMITE_GEOCODIFICACIONES_DIA = 200;
 export const DEDUPE_MS = 30 * 24 * 3600 * 1000;
 export const LIMITE_MS = 24 * 3600 * 1000;
 /** Recuentos públicos solo desde este número de observaciones por barrio */
 export const MINIMO_PUBLICO = 10;
+export { MINIMO_HABITACIONES };
 
 export type Resultado = 'guardado' | 'descartado' | 'limite';
 
 export const NIVELES = ['a', 'b', 'c'] as const;
-export const EVENTOS = [
-	'llegada', 'empieza', 'completa', 'servido_si', 'servido_no', 'comparte', 'desde_tarjeta', 'segundo', 'aporta', 'habitacion', 'confirma_precio',
-	'comparte_whatsapp', 'comparte_x', 'comparte_copiar', 'comparte_descarga',
-	'vivo_empieza', 'vivo_completa', 'vivo_aporta', 'vivo_comparte'
-] as const;
-export type TipoEvento = (typeof EVENTOS)[number];
 export const INCLUYE = ['garaje', 'trastero', 'comunidad', 'amueblado'] as const;
 
 export interface Contexto {
@@ -157,7 +153,7 @@ async function purgar(db: D1Registro, ahora: number) {
 }
 
 /** Cuenta una acción de esta IP hoy; false si ya pasó el máximo */
-async function dentroDelLimite(c: Contexto, ip: string, ambito: 'r' | 'e' | 'g', maximo: number): Promise<boolean> {
+async function dentroDelLimite(c: Contexto, ip: string, ambito: 'r' | 'g', maximo: number): Promise<boolean> {
 	const ahora = c.ahora();
 	const t = ahora.getTime();
 	const clave = `${ambito}:${await claveLimite(c.secreto, ip, ahora)}`;
@@ -227,11 +223,11 @@ export async function registrarHabitacion(c: Contexto, ip: string, h: Habitacion
 export interface ComparacionHabitaciones {
 	/** Habitaciones aportadas en el barrio con el mismo «incluye gastos» */
 	n: number;
-	/** Mediana en €/mes; solo desde 10 aportaciones */
+	/** Mediana en €/mes; solo desde 20 aportaciones */
 	mediana: number | null;
 }
 
-/** Con menos de 10 solo se da el recuento: la mediana de pocas habitaciones dejaría ver rentas sueltas */
+/** Con menos de 20 (MINIMO_HABITACIONES) solo se da el recuento: la mediana de pocas habitaciones dejaría ver rentas sueltas */
 export async function compararHabitaciones(db: D1Registro, barrio: string, gastos: boolean): Promise<ComparacionHabitaciones> {
 	const filas =
 		(await db
@@ -239,54 +235,26 @@ export async function compararHabitaciones(db: D1Registro, barrio: string, gasto
 			.bind(barrio, gastos ? 1 : 0)
 			.all<{ precio: number }>()).results ?? [];
 	const n = filas.length;
-	if (n < MINIMO_PUBLICO) return { n, mediana: null };
+	if (n < MINIMO_HABITACIONES) return { n, mediana: null };
 	const m = n >> 1;
 	return { n, mediana: n % 2 ? filas[m]!.precio : Math.round((filas[m - 1]!.precio + filas[m]!.precio) / 2) };
-}
-
-export interface EventoEntrada {
-	tipo: TipoEvento;
-	visita: string;
-	tarjeta: string | null;
-}
-
-export function leerEvento(x: unknown): EventoEntrada | null {
-	const o = x as Record<string, unknown> | null;
-	if (!o || typeof o !== 'object') return null;
-	if (!EVENTOS.includes(o.tipo as never)) return null;
-	if (typeof o.visita !== 'string' || !/^[0-9a-f-]{16,40}$/i.test(o.visita)) return null;
-	const t = o.tarjeta;
-	if (t !== null && t !== undefined && !(typeof t === 'string' && /^[0-9a-z]{10}$/.test(t))) return null;
-	return { tipo: o.tipo as TipoEvento, visita: o.visita, tarjeta: (t as string | null | undefined) ?? null };
-}
-
-export async function registrarEvento(c: Contexto, ip: string, e: EventoEntrada): Promise<Resultado> {
-	if (!(await dentroDelLimite(c, ip, 'e', LIMITE_EVENTOS_DIA))) return 'limite';
-	await c.db
-		.prepare('INSERT INTO eventos (tipo, ts, visita, tarjeta) VALUES (?, ?, ?, ?)')
-		.bind(e.tipo, c.ahora().getTime(), e.visita, e.tarjeta)
-		.run();
-	return 'guardado';
 }
 
 // ——— Recuentos públicos (R10, R11) ———
 
 export interface Recuentos {
-	/** Pisos comprobados en total; null hasta que haya al menos un registro real */
-	total: number | null;
 	/** Análisis registrados en el barrio; null si hay menos de 10 */
 	barrio: number | null;
 	/** Aportaciones de residentes en el barrio; null si hay menos de 10 */
 	aportacionesBarrio: number | null;
 }
 
-/** Pisos comprobados = eventos «completa»; son recuentos reales de uso, no de registros con consentimiento */
+/** Recuentos públicos por barrio (solo desde 10 observaciones) */
 export async function recuentos(db: D1Registro, barrio: string | null): Promise<Recuentos> {
-	const total = (await db.prepare("SELECT COUNT(*) AS n FROM eventos WHERE tipo = 'completa'").first<{ n: number }>())?.n ?? 0;
 	const deBarrio = async (tabla: 'analisis' | 'aportaciones') => {
 		if (!barrio) return null;
 		const n = (await db.prepare(`SELECT COUNT(*) AS n FROM ${tabla} WHERE barrio = ?`).bind(barrio).first<{ n: number }>())?.n ?? 0;
 		return n >= MINIMO_PUBLICO ? n : null;
 	};
-	return { total, barrio: await deBarrio('analisis'), aportacionesBarrio: await deBarrio('aportaciones') };
+	return { barrio: await deBarrio('analisis'), aportacionesBarrio: await deBarrio('aportaciones') };
 }

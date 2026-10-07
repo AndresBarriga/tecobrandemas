@@ -3,9 +3,10 @@
 	import Barra from './Barra.svelte';
 	import Equivalencia from './Equivalencia.svelte';
 	import Icono from './Icono.svelte';
+	import QueHaras from './QueHaras.svelte';
 	import TarjetaAmpliable from './TarjetaAmpliable.svelte';
 	import {
-		AVISO_APROXIMADA_TITULO, BOTON_COMPARTIR, BOTON_OTRO_PISO, ENLACE_OFICIAL, REGISTRO, SERVIDO, TARJETA, heroEnVeces,
+		AVISO_APROXIMADA_TITULO, BOTON_COMPARTIR, BOTON_OTRO_PISO, ENLACE_OFICIAL, REGISTRO, TARJETA, heroEnVeces, ALGO_NO_CUADRA, type RespuestaQueHaras,
 		type Canal, type Contador, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
@@ -22,7 +23,7 @@
 		nativo = false,
 		enlaces = null,
 		alCompartirPor,
-		alServido,
+		alQueHaras,
 		registro = 'no',
 		alRegistrar
 	}: {
@@ -45,13 +46,12 @@
 		nativo?: boolean;
 		enlaces?: EnlacesCompartir | null;
 		alCompartirPor?: (canal: Canal) => void;
-		/** «¿Te ha servido?»: true = sí */
-		alServido?: (si: boolean) => void;
+		/** «¿Qué vas a hacer con este resultado?»: la categoría elegida */
+		alQueHaras?: (r: RespuestaQueHaras) => void;
 	} = $props();
 
 	const v = $derived(pantalla.vista);
 	const principal = $derived(v.principal);
-	let respuesta = $state<'si' | 'no' | null>(null);
 </script>
 
 <article class="resultado nivel-{v.clase}">
@@ -171,23 +171,9 @@
 			<p class="mensaje" role="status">{registro === 'sumado' ? REGISTRO.sumado : ''}</p>
 		{/if}
 
-		<div class="servido">
-			<span class="servido-pregunta" id="servido">{SERVIDO.pregunta}</span>
-			{#if respuesta}
-				<span class="gracias" role="status">{SERVIDO.gracias}</span>
-			{:else}
-				<div class="servido-botones" role="group" aria-labelledby="servido">
-					<button type="button" class="boton boton-contorno" onclick={() => {
-						respuesta = 'si';
-						alServido?.(true);
-					}}>{SERVIDO.si}</button>
-					<button type="button" class="boton boton-contorno" onclick={() => {
-						respuesta = 'no';
-						alServido?.(false);
-					}}>{SERVIDO.no}</button>
-				</div>
-			{/if}
-		</div>
+		<p class="no-cuadra"><a href="mailto:{ALGO_NO_CUADRA.correo}">{ALGO_NO_CUADRA.texto}</a></p>
+
+		<QueHaras modo="mirando" alElegir={(r) => alQueHaras?.(r)} />
 	</div>
 </article>
 
@@ -405,24 +391,14 @@
 		margin-top: -12px;
 		min-height: 1px;
 	}
-	.servido {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		padding: 8px 0;
+	.no-cuadra {
+		font: 500 14px/1.4 var(--f-texto);
 	}
-	.servido-pregunta {
-		font: 700 17px/1.3 var(--f-texto);
-	}
-	.servido-botones {
-		display: flex;
-		gap: 8px;
-	}
-	.servido-botones :global(.boton) {
-		width: auto;
-		min-width: 64px;
-		font-size: 15px;
+	.no-cuadra a {
+		color: var(--tinta);
+		text-decoration-color: var(--paja);
+		text-decoration-thickness: 2px;
+		text-underline-offset: 4px;
 	}
 	.gracias {
 		font: 500 15px/1.3 var(--f-texto);

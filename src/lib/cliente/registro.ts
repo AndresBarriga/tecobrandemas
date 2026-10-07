@@ -1,5 +1,5 @@
 import type { RegistroAnalisis } from '#lib/resultado';
-import { tarjetaOrigen } from './eventos';
+import { tarjetaOrigen } from './origen';
 
 /**
  * Registro anónimo de un análisis (R7). Solo se llama cuando la persona ha marcado la casilla.

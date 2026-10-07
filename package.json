@@ -41,6 +41,7 @@
     "@mapbox/vector-tile": "^3.0.0",
     "pbf": "^5.1.2",
     "pmtiles": "^4.5.0",
+    "posthog-js": "^1.438.1",
     "topojson-client": "^3.1.0"
   },
   "imports": {
@@ -50,5 +51,8 @@
     "#lib/server/*": "./src/lib/server/*.ts",
     "#lib/ubicacion/*": "./src/lib/ubicacion/*.ts",
     "#lib/componentes/*": "./src/lib/componentes/*"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

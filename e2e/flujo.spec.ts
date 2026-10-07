@@ -39,13 +39,11 @@ test.describe('flujo', () => {
 		await expect(page.getByRole('group', { name: 'Compartir el resultado' })).toBeVisible();
 		await expect(page.getByText('Por encima del techo')).toBeVisible();
 		expect(externas).toEqual([]);
-		// Se envía la dirección a nuestro Worker y eventos del embudo; ni precio ni m² en ningún cuerpo
+		// Solo se envía la dirección a nuestro Worker (para situar el piso); ni precio ni m² en ningún cuerpo
 		const rutas = posts.map((p) => new URL(p.url).pathname);
 		expect(rutas).toContain('/api/geocode');
-		expect(rutas.filter((r) => r !== '/api/geocode' && r !== '/api/evento')).toEqual([]);
+		expect(rutas.filter((r) => r !== '/api/geocode')).toEqual([]);
 		for (const p of posts) expect(p.cuerpo, p.url).not.toMatch(/2500|2\.500|"90"|\b90\b/);
-		const tipos = posts.filter((p) => p.url.endsWith('/api/evento')).map((p) => JSON.parse(p.cuerpo).tipo);
-		expect(tipos).toEqual(expect.arrayContaining(['llegada', 'empieza', 'completa']));
 	});
 
 	test('Sofia Sans sale de /fonts', async ({ page }) => {

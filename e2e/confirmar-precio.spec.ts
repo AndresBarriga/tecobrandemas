@@ -12,8 +12,6 @@ test.describe('aviso de posible error al teclear', () => {
 	test('más de 3 veces la parte alta: pide confirmar y, sin confirmar, no hay resultado ni tarjeta', async ({ page }) => {
 		await sinCompartirNativo(page);
 		const sup = await parteAlta(page);
-		const eventos: string[] = [];
-		page.on('request', (r) => r.url().endsWith('/api/evento') && eventos.push(r.postData() ?? ''));
 
 		await abrir(page);
 		await comprobar(page, { precio: String(Math.round(sup * 3.5)), superficie: '90' });
@@ -28,18 +26,13 @@ test.describe('aviso de posible error al teclear', () => {
 		// Corregir devuelve al formulario con el foco en el precio
 		await page.getByRole('button', { name: 'Corregir' }).click();
 		await expect(page.locator('#precio')).toBeFocused();
-		expect(eventos.filter((e) => e.includes('confirma_precio'))).toHaveLength(0);
 
-		// Confirmar muestra el resultado y registra el evento sin el precio
+		// Confirmar muestra el resultado (el evento confirma_precio se comprueba en e2e/analitica.spec.ts)
 		await page.fill('#precio', String(Math.round(sup * 3.5)));
 		await page.locator('form').getByRole('button', { name: /^Comprobar (el precio|otro piso)$/ }).click();
 		await page.getByRole('button', { name: 'Sí, es correcto' }).click();
 		await expect(page.getByRole('group', { name: 'Compartir el resultado' })).toBeVisible();
 		await esperarAnimacion(page);
-		const ev = eventos.find((e) => e.includes('confirma_precio'));
-		expect(ev).toBeTruthy();
-		
-		expect(JSON.parse(ev!)).toEqual({ tipo: 'confirma_precio', visita: expect.any(String), tarjeta: null });
 	});
 
 	test('3 veces la parte alta o menos: sin aviso (el borde exacto, en los tests unitarios)', async ({ page }) => {

@@ -1,23 +1,13 @@
 /**
- * Métricas internas del producto (PRD: H1-H4). Solo lee agregados y respeta las reglas del registro:
+ * Métricas internas del producto: análisis y aportaciones con consentimiento y tarjetas. Solo lee agregados y respeta las reglas del registro:
  * por barrio solo salen los que tienen 10 o más observaciones y `analisis` y `aportaciones` no se cruzan.
+ * El embudo de uso (llegadas, empieza, completa…) ya no está aquí: se mira en PostHog.
  * Sin imports de ejecución: lo usa tanto el Worker (si hiciera falta) como scripts/metricas.ts.
  */
 import type { D1Registro } from './db';
 import { ID_TARJETA_PRUEBA } from './tarjetas';
 
 const MINIMO_PUBLICO = 10;
-
-export interface Objetivo {
-	id: string;
-	nombre: string;
-	/** Fracción o razón; null si el denominador es 0 */
-	valor: number | null;
-	objetivo: number | null;
-	cumple: boolean | null;
-	numerador: number;
-	denominador: number;
-}
 
 export interface FilaBarrio {
 	barrio: string;
@@ -37,14 +27,7 @@ export interface FilaAportaciones {
 
 export interface Metricas {
 	desde: string | null;
-	embudo: { llegadas: number; empiezan: number; completan: number; comparten: number; desdeTarjeta: number; segundo: number; aportan: number; habitacion: number; servidoSi: number; servidoNo: number };
-	/** Visitas que usaron cada canal de compartir (nativo = hoja del móvil) */
-	canales: Record<string, number>;
-	/** Embudo de «Ya vivo aquí», aparte del de los anuncios: visitas que empiezan, completan, aportan y comparten */
-	vivo: { empiezan: number; completan: number; aportan: number; comparten: number };
 	tarjetasCreadas: number;
-	analisisTotales: number;
-	objetivos: Objetivo[];
 	barrios: FilaBarrio[];
 	aportaciones: FilaAportaciones[];
 }
@@ -56,58 +39,8 @@ export const mediana = (xs: number[]): number => {
 	return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2;
 };
 
-function objetivo(id: string, nombre: string, numerador: number, denominador: number, meta: number | null): Objetivo {
-	const valor = denominador > 0 ? numerador / denominador : null;
-	return { id, nombre, valor, objetivo: meta, numerador, denominador, cumple: valor === null || meta === null ? null : valor >= meta };
-}
-
-/** Canales de compartir con evento propio; la hoja nativa del móvil sigue siendo `comparte` */
-export const CANALES = ['whatsapp', 'x', 'copiar', 'descarga'] as const;
-
 export async function calcularMetricas(db: D1Registro, desde: Date | null = null): Promise<Metricas> {
-	const ts = desde ? desde.getTime() : 0;
-	const visitas = async (tipo: string) =>
-		(await db.prepare('SELECT COUNT(DISTINCT visita) AS n FROM eventos WHERE tipo = ? AND ts >= ?').bind(tipo, ts).first<{ n: number }>())?.n ?? 0;
-	const visitasDe = async (tipos: string[]) =>
-		(await db
-			.prepare(`SELECT COUNT(DISTINCT visita) AS n FROM eventos WHERE tipo IN (${tipos.map(() => '?').join(',')}) AND ts >= ?`)
-			.bind(...tipos, ts)
-			.first<{ n: number }>())?.n ?? 0;
-	const eventos = async (tipo: string) =>
-		(await db.prepare('SELECT COUNT(*) AS n FROM eventos WHERE tipo = ? AND ts >= ?').bind(tipo, ts).first<{ n: number }>())?.n ?? 0;
-
-	const embudo = {
-		llegadas: await visitas('llegada'),
-		empiezan: await visitas('empieza'),
-		completan: await visitas('completa'),
-		comparten: await visitasDe(['comparte', ...CANALES.map((c) => `comparte_${c}`)]),
-		desdeTarjeta: await visitas('desde_tarjeta'),
-		segundo: await visitas('segundo'),
-		aportan: await visitas('aporta'),
-		habitacion: await visitas('habitacion'),
-		servidoSi: await eventos('servido_si'),
-		servidoNo: await eventos('servido_no')
-	};
-	const canales: Record<string, number> = { nativo: await visitas('comparte') };
-	for (const c of CANALES) canales[c] = await visitas(`comparte_${c}`);
-	const vivo = {
-		empiezan: await visitas('vivo_empieza'),
-		completan: await visitas('vivo_completa'),
-		aportan: await visitas('vivo_aporta'),
-		comparten: await visitas('vivo_comparte')
-	};
-	const analisisTotales = await eventos('completa');
 	const tarjetasCreadas = (await db.prepare('SELECT COUNT(*) AS n FROM tarjetas WHERE id <> ?').bind(ID_TARJETA_PRUEBA).first<{ n: number }>())?.n ?? 0;
-
-	const objetivos = [
-		objetivo('H1', 'Utilidad: empiezan / llegadas', embudo.empiezan, embudo.llegadas, 0.25),
-		objetivo('H2', 'Completado: completan / empiezan', embudo.completan, embudo.empiezan, 0.7),
-		objetivo('H3', 'Compartible: comparten / completan', embudo.comparten, embudo.completan, 0.1),
-		objetivo('H4', 'Conversión desde tarjeta: visitas con análisis desde una tarjeta / tarjetas creadas', embudo.desdeTarjeta, tarjetasCreadas, 0.3),
-		objetivo('util', 'Utilidad percibida: «sí» / respuestas', embudo.servidoSi, embudo.servidoSi + embudo.servidoNo, 0.6),
-		objetivo('segundo', 'Uso repetido: hacen un segundo análisis / completan', embudo.segundo, embudo.completan, null),
-		objetivo('aporta', 'Aportación: aportan / completan', embudo.aportan, embudo.completan, null)
-	];
 
 	// Por barrio, solo desde 10 observaciones; cada tabla por separado
 	const barrios: FilaBarrio[] = [];
@@ -129,7 +62,7 @@ export async function calcularMetricas(db: D1Registro, desde: Date | null = null
 		aportaciones.push({ barrio, n: filas.length, medianaPrecio: mediana(filas.map((f) => f.precio)), medianaEurosM2: mediana(filas.map((f) => f.precio / f.m2)) });
 	}
 
-	return { desde: desde ? desde.toISOString().slice(0, 10) : null, embudo, canales, vivo, tarjetasCreadas, analisisTotales, objetivos, barrios, aportaciones };
+	return { desde: desde ? desde.toISOString().slice(0, 10) : null, tarjetasCreadas, barrios, aportaciones };
 }
 
 const celda = (x: unknown) => {
@@ -141,10 +74,6 @@ const csv = (cabecera: string[], filas: unknown[][]) => [cabecera, ...filas].map
 /** CSV de los agregados: nada que identifique a una persona ni a un piso */
 export function aCsv(m: Metricas, nombreBarrio: (codigo: string) => string = (c) => c) {
 	return {
-		embudo: csv(
-			['id', 'metrica', 'numerador', 'denominador', 'valor', 'objetivo', 'cumple'],
-			m.objetivos.map((o) => [o.id, o.nombre, o.numerador, o.denominador, o.valor, o.objetivo, o.cumple === null ? '' : o.cumple ? 'si' : 'no'])
-		),
 		barrios: csv(
 			['barrio', 'nombre', 'analisis', 'mediana_precio', 'mediana_euros_m2', 'fraccion_por_encima_del_techo'],
 			m.barrios.map((b) => [b.barrio, nombreBarrio(b.barrio), b.n, b.medianaPrecio, b.medianaEurosM2, b.porEncima])

@@ -4,9 +4,10 @@
 	import AfinarNumero from './AfinarNumero.svelte';
 	import Compartir from './Compartir.svelte';
 	import Icono from './Icono.svelte';
+	import QueHaras from './QueHaras.svelte';
 	import { unaLinea } from '#lib/cliente/ajustar';
 	import {
-		ENLACE_OFICIAL, INQUILINO, SERVIDO, TARJETA_INQUILINO, heroEnVeces, type Canal, type EnlacesCompartir, type PantallaResultado
+		ENLACE_OFICIAL, INQUILINO, TARJETA_INQUILINO, heroEnVeces, ALGO_NO_CUADRA, type RespuestaQueHaras, type Canal, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
 	export type EstadoAporte = 'no' | 'enviando' | 'hecho' | 'error' | 'limite';
@@ -17,7 +18,7 @@
 		aporte = 'no',
 		alAportar,
 		alMirando,
-		alServido,
+		alQueHaras,
 		alAfinar,
 		tarjeta,
 		textos = [],
@@ -37,7 +38,8 @@
 		alAportar?: () => void;
 		/** «Comprobar un piso que estás mirando» */
 		alMirando: () => void;
-		alServido?: (si: boolean) => void;
+		/** «¿Qué vas a hacer con este resultado?»: la categoría elegida */
+		alQueHaras?: (r: RespuestaQueHaras) => void;
 		/** Calle sin número: añadir el número recalcula el resultado en esta pantalla */
 		alAfinar?: (numero: string) => Promise<string | null>;
 		/** Miniatura de la tarjeta (canvas) que dibuja la página */
@@ -57,7 +59,6 @@
 	const v = $derived(pantalla.vista);
 	const i = $derived(pantalla.inquilino!);
 	const barrio = $derived(pantalla.barrio ?? 'tu barrio');
-	let respuesta = $state<'si' | 'no' | null>(null);
 </script>
 
 <article class="resultado nivel-{i.clase}">
@@ -183,17 +184,9 @@
 			</button>
 		</div>
 
-		<div class="servido">
-			<span class="servido-pregunta" id="servido">{SERVIDO.pregunta}</span>
-			{#if respuesta}
-				<span class="gracias" role="status">{SERVIDO.gracias}</span>
-			{:else}
-				<div class="servido-botones" role="group" aria-labelledby="servido">
-					<button type="button" class="boton boton-contorno" onclick={() => { respuesta = 'si'; alServido?.(true); }}>{SERVIDO.si}</button>
-					<button type="button" class="boton boton-contorno" onclick={() => { respuesta = 'no'; alServido?.(false); }}>{SERVIDO.no}</button>
-				</div>
-			{/if}
-		</div>
+		<p class="no-cuadra"><a href="mailto:{ALGO_NO_CUADRA.correo}">{ALGO_NO_CUADRA.texto}</a></p>
+
+		<QueHaras modo="vivo" alElegir={(r) => alQueHaras?.(r)} />
 	</div>
 </article>
 
@@ -401,24 +394,14 @@
 		font: 400 13px/1.3 var(--f-texto);
 		color: var(--grafito);
 	}
-	.servido {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		padding: 8px 0;
+	.no-cuadra {
+		font: 500 14px/1.4 var(--f-texto);
 	}
-	.servido-pregunta {
-		font: 700 17px/1.3 var(--f-texto);
-	}
-	.servido-botones {
-		display: flex;
-		gap: 8px;
-	}
-	.servido-botones :global(.boton) {
-		width: auto;
-		min-width: 64px;
-		font-size: 15px;
+	.no-cuadra a {
+		color: var(--tinta);
+		text-decoration-color: var(--paja);
+		text-decoration-thickness: 2px;
+		text-underline-offset: 4px;
 	}
 	.gracias {
 		font: 500 15px/1.3 var(--f-texto);

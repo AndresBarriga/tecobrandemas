@@ -11,8 +11,9 @@ import esquema1 from '../../../migrations/0001_registro.sql?raw';
 import esquema2 from '../../../migrations/0002_aportaciones_firma.sql?raw';
 
 import esquema3 from '../../../migrations/0003_habitaciones.sql?raw';
+import esquema4 from '../../../migrations/0004_quitar_eventos.sql?raw';
 
-const esquema = `${esquema1}\n${esquema2}\n${esquema3}`;
+const esquema = `${esquema1}\n${esquema2}\n${esquema3}\n${esquema4}`;
 
 /** Lo mínimo de R2 que usa la ruta del mapa: lectura con rangos de bytes */
 export interface R2Mapa {

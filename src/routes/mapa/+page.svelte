@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto, replaceState } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { onMount, tick } from 'svelte';
 	import BuscadorMapa from '#lib/componentes/BuscadorMapa.svelte';
 	import Cabecera from '#lib/componentes/Cabecera.svelte';
@@ -117,7 +117,7 @@
 		const url = `${location.pathname}?${q}`;
 		if (url !== location.pathname + location.search) {
 			try {
-				replaceState(url, {});
+				void goto(url, { replace: true, shallow: true });
 			} catch {
 				// el enrutador aún no está listo: la URL se actualiza en el siguiente cambio
 			}

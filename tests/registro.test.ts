@@ -3,9 +3,11 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
-	type AnalisisEntrada, type Contexto, LIMITE_REGISTROS_DIA, claveLimite, leerAnalisis, leerAportacion, leerEvento,
-	LIMITE_GEOCODIFICACIONES_DIA, plausible, puedeGeocodificar, recuentos, registrarAnalisis, registrarAportacion, registrarEvento, salDelDia
+	type AnalisisEntrada, type Contexto, LIMITE_REGISTROS_DIA, claveLimite, leerAnalisis, leerAportacion,
+	LIMITE_GEOCODIFICACIONES_DIA, MINIMO_HABITACIONES, compararHabitaciones, plausible, puedeGeocodificar, recuentos, registrarAnalisis, registrarAportacion, salDelDia
 } from '../src/lib/server/registro';
+import { MINIMO_COMPARACION } from '../src/lib/resultado/habitacion';
+import { GET as getHabitacion } from '../src/routes/api/habitacion/+server';
 import { d1Registro } from './d1';
 
 const BARRIOS = new Set(['071', '072']);
@@ -31,8 +33,9 @@ describe('esquema', () => {
 			const cols = (db.prepare(`PRAGMA table_info(${tabla})`).all() as { name: string }[]).map((c) => c.name);
 			for (const p of prohibidas) expect(cols, `${tabla}.${p}`).not.toContain(p);
 		}
-		const eventos = (db.prepare('PRAGMA table_info(eventos)').all() as { name: string }[]).map((c) => c.name);
-		expect(eventos).toEqual(['tipo', 'ts', 'visita', 'tarjeta']);
+		// Los eventos de uso ya no se guardan en D1 (van a PostHog): la migración 0004 borra la tabla
+		const tablas = (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as { name: string }[]).map((t) => t.name);
+		expect(tablas).not.toContain('eventos');
 	});
 
 	it('ninguna consulta cruza analisis con aportaciones', () => {
@@ -174,27 +177,18 @@ describe('entradas', () => {
 		expect(leerAportacion({ ...ok, incluye: ['piscina'] }, BARRIOS, 2026)).toBeNull();
 		expect(leerAportacion({ ...ok, barrio: 'x' }, BARRIOS, 2026)).toBeNull();
 	});
-
-	it('evento: tipo conocido, visita aleatoria, tarjeta opcional', () => {
-		const visita = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
-		expect(leerEvento({ tipo: 'completa', visita })).toEqual({ tipo: 'completa', visita, tarjeta: null });
-		expect(leerEvento({ tipo: 'desde_tarjeta', visita, tarjeta: 'abcdefghij' })?.tarjeta).toBe('abcdefghij');
-		expect(leerEvento({ tipo: 'precio', visita })).toBeNull();
-		expect(leerEvento({ tipo: 'completa', visita: 'corta' })).toBeNull();
-	});
 });
 
-describe('eventos y recuentos', () => {
+describe('atribución y recuentos', () => {
 	it('un análisis iniciado desde /t/:id queda atribuido a la tarjeta', async () => {
 		const { db, c } = contexto();
-		const visita = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
-		await registrarEvento(c, '1.1.1.1', { tipo: 'desde_tarjeta', visita, tarjeta: 'abcdefghij' });
-		expect(db.prepare('SELECT tipo, visita, tarjeta FROM eventos').get()).toEqual({ tipo: 'desde_tarjeta', visita, tarjeta: 'abcdefghij' });
+		await registrarAnalisis(c, '1.1.1.1', a({ tarjetaOrigen: 'abcdefghij' }));
+		expect(db.prepare('SELECT tarjeta_origen FROM analisis').get()).toEqual({ tarjeta_origen: 'abcdefghij' });
 	});
 
 	it('los recuentos de barrio solo salen desde 10 y nunca antes', async () => {
 		const { d1, c } = contexto();
-		expect(await recuentos(d1, '071')).toEqual({ total: 0, barrio: null, aportacionesBarrio: null });
+		expect(await recuentos(d1, '071')).toEqual({ barrio: null, aportacionesBarrio: null });
 		for (let i = 0; i < 9; i++) await registrarAnalisis(c, `ip${i}`, a({ precio: 1000 + i * 10 }));
 		expect((await recuentos(d1, '071')).barrio).toBeNull();
 		await registrarAnalisis(c, 'ip10', a({ precio: 1500 }));
@@ -202,13 +196,44 @@ describe('eventos y recuentos', () => {
 		expect((await recuentos(d1, '072')).barrio).toBeNull();
 		expect((await recuentos(d1, null)).barrio).toBeNull();
 	});
+});
 
-	it('el total cuenta solo los eventos «completa»', async () => {
-		const { d1, c } = contexto();
-		const visita = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
-		await registrarEvento(c, 'x', { tipo: 'llegada', visita, tarjeta: null });
-		await registrarEvento(c, 'x', { tipo: 'completa', visita, tarjeta: null });
-		expect((await recuentos(d1, null)).total).toBe(1);
+describe('habitaciones: la mediana pública', () => {
+	const con = (n: number, gastos = 1) => {
+		const { db, d1 } = d1Registro();
+		for (let i = 0; i < n; i++) db.prepare("INSERT INTO habitaciones (mes, barrio, precio, num_habitaciones, tamano_piso_tramo, gastos_incluidos) VALUES ('2026-10', '071', ?, 3, '60-90', ?)").run(400 + i * 10, gastos);
+		return d1;
+	};
+
+	it('el mínimo es 20, el mismo en el servidor y en el cliente', () => {
+		expect(MINIMO_HABITACIONES).toBe(20);
+		expect(MINIMO_COMPARACION).toBe(MINIMO_HABITACIONES);
+	});
+
+	it('con 19 solo se da el recuento; con 20, la mediana', async () => {
+		expect(await compararHabitaciones(con(19), '071', true)).toEqual({ n: 19, mediana: null });
+		expect(await compararHabitaciones(con(10), '071', true)).toEqual({ n: 10, mediana: null }); // el mínimo anterior ya no basta
+		const r = await compararHabitaciones(con(20), '071', true);
+		expect(r.n).toBe(20);
+		expect(r.mediana).toBe(495); // 400, 410, …, 590: la media de las dos centrales (490 y 500)
+	});
+
+	it('solo cuentan las habitaciones con el mismo «incluye gastos», y otro barrio no suma', async () => {
+		expect(await compararHabitaciones(con(25, 1), '071', false)).toEqual({ n: 0, mediana: null });
+		expect(await compararHabitaciones(con(25, 1), '072', true)).toEqual({ n: 0, mediana: null });
+	});
+
+	it('el endpoint público no da la mediana por debajo del mínimo', async () => {
+		const barrio = Object.keys((JSON.parse(readFileSync(new URL('../data/processed/seccion_barrio.json', import.meta.url), 'utf-8')) as { barrios: object }).barrios)[0]!;
+		const { db, d1 } = d1Registro();
+		const poner = (precio: number) =>
+			db.prepare("INSERT INTO habitaciones (mes, barrio, precio, num_habitaciones, tamano_piso_tramo, gastos_incluidos) VALUES ('2026-10', ?, ?, 3, '60-90', 1)").run(barrio, precio);
+		const get = async () =>
+			(await getHabitacion({ url: new URL(`http://x/api/habitacion?barrio=${barrio}&gastos=1`), platform: { env: { DB: d1, SECRETO: 'prueba' } } } as never)).json();
+		for (let i = 0; i < 19; i++) poner(400 + i * 10);
+		expect(await get()).toEqual({ n: 19, mediana: null });
+		poner(590);
+		expect(await get()).toEqual({ n: 20, mediana: 495 });
 	});
 });
 

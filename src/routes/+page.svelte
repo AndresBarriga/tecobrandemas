@@ -17,7 +17,7 @@
 	import { type TuZonaCargada, cargarTuZona } from '#lib/cliente/zona';
 	import {
 		AFINAR, DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
-		construirTarjeta, construirTarjetaInquilino, textosEnlace, textosInquilino, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, contadorInicio, filaHistorial, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
+		construirTarjeta, construirTarjetaInquilino, textosEnlace, textosInquilino, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, filaHistorial, interpretarNumero, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
 		parecePrecioErroneo,
 		type Pantalla, type PantallaResultado, type SugerenciaZona, type Ubicacion
 	} from '#lib/resultado';
@@ -32,7 +32,10 @@
 	import {
 		compartirNativo, copiarEnlace, descargarImagen, puedeCompartirNativo, subirTarjeta, urlDeTarjeta
 	} from '#lib/cliente/compartir';
-	import { contarCompletado, evento, leerOrigenDeLaUrl, recuentos, tarjetaOrigen } from '#lib/cliente/eventos';
+	import { aporta, completa, comparte, confirmaPrecio, empieza, errorGeocodificador, queHaras, sinDato } from '#lib/cliente/analitica';
+	import { datosCompleta, modoDe, motivoDeSinDato, resultadoDeClase } from '#lib/cliente/analitica-datos';
+	import { recuentos } from '#lib/cliente/contadores';
+	import { leerOrigenDeLaUrl } from '#lib/cliente/origen';
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
 	import { MAPA_REFERENCIA, TARJETA } from '#lib/resultado';
 
@@ -77,9 +80,10 @@
 	let aporte = $state<EstadoAporte>('no');
 	let aportadosBarrio = $state<number | null>(null);
 	const esVivo = $derived(f.situacion === 'vivo');
+	const modoActual = $derived(modoDe(f));
 	const modoPorDefecto = (s: 'mirando' | 'vivo') => (s === 'vivo' ? ('direccion' as const) : ('calle' as const));
 
-	// Habitación: comparación con las aportadas en el barrio (el recuento y, desde 10, la mediana)
+	// Habitación: comparación con las aportadas en el barrio (el recuento y, desde 20, la mediana)
 	const habitacionPantalla = $derived(pantalla?.tipo === 'habitacion' ? pantalla : null);
 	let comparacionHab = $state<{ n: number; mediana: number | null } | 'error' | null>(null);
 	let aporteHab = $state<EstadoAporte>('no');
@@ -100,7 +104,7 @@
 		aporteHab = 'enviando';
 		const r = await enviarHabitacion(datos);
 		if (r === 'guardada' || r === 'no_guardada') {
-			evento('vivo_aporta');
+			aporta('habitacion');
 			aporteHab = 'hecho';
 			const c = await pedirComparacion(datos.barrio, datos.gastos);
 			if (c) comparacionHab = c;
@@ -114,7 +118,7 @@
 		const r = await enviarAportacion(datos);
 		if (r === 'guardada' || r === 'no_guardada') {
 			// Si el servidor descarta un duplicado, la persona ve lo mismo: no se le informa de antiabuso
-			evento('vivo_aporta');
+			aporta('alquiler');
 			aporte = 'hecho';
 			const c = await recuentos(resultado?.barrioCodigo);
 			aportadosBarrio = c?.aportacionesBarrio ?? null;
@@ -132,14 +136,14 @@
 		registro = 'sumado';
 	}
 
-	// Los contadores son reales o no se muestran. Llegarán del servidor (Hito 5); sin dato, ocultos.
-	let totalPisos = $state<number | null>(null);
+	// El contador del barrio es real o no se muestra; sin dato, oculto.
 	let pisosBarrio = $state<number | null>(null);
-	const contadorHome = $derived(contadorInicio(totalPisos));
 	const contadorDelBarrio = $derived(contadorBarrio(pisosBarrio));
 
 	const hayResultado = $derived(fase === 'resultado' || fase === 'negociar' || fase === 'sin_conexion' || fase === 'confirmar');
 	const resultado = $derived<PantallaResultado | null>(pantalla?.tipo === 'resultado' ? pantalla : null);
+	/** Para los eventos de la tarjeta y de «¿Qué vas a hacer?»: el nivel del resultado que se ve */
+	const nivelAnalitica = $derived(resultado ? resultadoDeClase(resultado.vista.clase) : null);
 
 	// Resultado de muestra de la portada de escritorio: cuando está, el esquema gris sobra
 	let muestraLista = $state(false);
@@ -167,8 +171,6 @@
 		}
 		const motivo = pantallaSinDatoDeClave(new URLSearchParams(location.search).get('motivo') ?? '');
 		if (motivo) mostrar(motivo, null, false);
-		evento('llegada', { unaVez: true });
-		void recuentos().then((r) => (totalPisos = r?.total ?? null));
 		precargarDatos();
 		historial = leerHistorial();
 	});
@@ -210,7 +212,7 @@
 		mensajeTarjeta = null;
 		try {
 			const via = await compartirNativo(tarjetaActual, canvasTarjeta, idTarjeta);
-			if (via !== 'cancelada') evento(resultado?.inquilino ? 'vivo_comparte' : 'comparte', { tarjeta: idTarjeta });
+			if (via !== 'cancelada') comparte({ modo: modoActual, canal: 'nativo', tarjeta_id: idTarjeta, resultado: nivelAnalitica });
 			mensajeTarjeta = via === 'descargada' ? TARJETA.descargada : null;
 		} catch {
 			mensajeTarjeta = TARJETA.error;
@@ -226,12 +228,12 @@
 		try {
 			if (canal === 'descarga') {
 				// Solo la imagen: no se guarda nada en el servidor
-				evento(resultado?.inquilino ? 'vivo_comparte' : 'comparte_descarga');
+				comparte({ modo: modoActual, canal: 'descargar', tarjeta_id: null, resultado: nivelAnalitica });
 				if (canvasTarjeta) await descargarImagen(canvasTarjeta);
 				mensajeTarjeta = TARJETA.descargaHecha;
 				return;
 			}
-			evento(resultado?.inquilino ? 'vivo_comparte' : `comparte_${canal}`, { tarjeta: id });
+			comparte({ modo: modoActual, canal, tarjeta_id: id, resultado: nivelAnalitica });
 			void subirTarjeta(tarjetaActual, id);
 			if (canal === 'copiar') mensajeTarjeta = (await copiarEnlace(id)) ? TARJETA.enlaceCopiado : urlDeTarjeta(id);
 		} catch {
@@ -264,15 +266,13 @@
 			activa = null;
 		}
 		void irAlResultado();
-		if (alHistorial && p.tipo === 'habitacion') {
-			// Una habitación no es un «piso comprobado»: no cuenta en el recuento público
-			evento(p.vivo ? 'vivo_completa' : 'habitacion');
+		if (alHistorial && p.tipo === 'habitacion') completa(datosCompleta(p, modoActual));
+		if (alHistorial && p.tipo === 'sin_dato') {
+			const motivo = motivoDeSinDato(p.motivo, interpretarNumero(f.superficie));
+			if (motivo) sinDato(modoActual, motivo);
 		}
 		if (alHistorial && p.tipo === 'resultado') {
-			evento(p.inquilino ? 'vivo_completa' : 'completa');
-			const origen = tarjetaOrigen();
-			if (origen) evento('desde_tarjeta', { tarjeta: origen, unaVez: true });
-			if (contarCompletado() === 2) evento('segundo');
+			completa(datosCompleta(p, modoActual));
 			pisosBarrio = null;
 			if (!p.inquilino) void recuentos(p.barrioCodigo).then((r) => (pisosBarrio = r?.barrio ?? null));
 		}
@@ -295,14 +295,17 @@
 				errores = r.errores;
 				fase = 'inicio';
 			} else if (r.tipo === 'no_encontrada') {
+				errorGeocodificador('no_encontrada');
 				problema = { tipo: 'no_encontrada', sugerencias: r.sugerencias };
 				errores = {};
 				fase = 'inicio';
 			} else if (r.tipo === 'demasiadas') {
+				errorGeocodificador('429');
 				problema = { tipo: 'demasiadas' };
 				errores = {};
 				fase = 'inicio';
 			} else if (r.tipo === 'pedir_numero') {
+				errorGeocodificador('horquilla');
 				problema = { tipo: 'pedir_numero', calle: r.calle, nSecciones: r.nSecciones };
 				errores = {};
 				fase = 'inicio';
@@ -317,6 +320,7 @@
 			}
 		} catch {
 			if (miTurno !== turno) return;
+			errorGeocodificador('otro');
 			// Sin red o sin servidor (o datos que no cargan): se conservan los datos escritos y se ofrece reintentar
 			fase = 'sin_conexion';
 		}
@@ -326,7 +330,7 @@
 		if (!pendiente) return;
 		const { pantalla: p, ubicacion: u } = pendiente;
 		pendiente = null;
-		evento('confirma_precio');
+		confirmaPrecio(modoActual);
 		mostrar(p, u);
 	}
 
@@ -487,12 +491,6 @@
 			</h1>
 			<p class="subtitular">{SUBTITULAR_INICIO}</p>
 			{#if !hayResultado}<a class="enlace enlace-mapa" href="/mapa">{MAPA_REFERENCIA.enlacePortada}</a>{/if}
-			{#if contadorHome}
-				<p class="contador">
-					{#if contadorHome.numero}<span class="contador-num">{contadorHome.numero}</span>{/if}
-					<span>{contadorHome.texto}</span>
-				</p>
-			{/if}
 			{#if !hayResultado}<MuestraResultado alListo={() => (muestraLista = true)} />{/if}
 			<div class="fantasma" class:oculto={muestraLista && !hayResultado} aria-hidden="true">
 				<p>Aquí verás el anuncio frente a la referencia de su zona.</p>
@@ -514,7 +512,7 @@
 				{problema}
 				buscando={fase === 'buscando'}
 				comprobado={hayResultado}
-				alEmpezar={() => evento(esVivo ? 'vivo_empieza' : 'empieza', { unaVez: true })}
+				alEmpezar={() => empieza(modoActual)}
 				alCambiarSituacion={(s) => {
 					errores = {};
 					problema = null;
@@ -555,7 +553,7 @@
 						f.modo = modoPorDefecto('mirando');
 						otroPiso();
 					}}
-					alServido={(si) => evento(si ? 'servido_si' : 'servido_no')}
+					alQueHaras={(r) => queHaras(modoActual, r, nivelAnalitica)}
 					textos={textosInquilinoActuales}
 					textoElegido={textoTarjeta}
 					alElegirTexto={(i) => (textoTarjeta = i as 0 | 1 | 2 | 3)}
@@ -591,7 +589,7 @@
 					alCompartirPor={compartirPor}
 					{registro}
 					alRegistrar={registrar}
-					alServido={(si) => evento(si ? 'servido_si' : 'servido_no')}
+					alQueHaras={(r) => queHaras(modoActual, r, nivelAnalitica)}
 				>
 					{#snippet tarjeta()}
 						<canvas bind:this={canvasTarjeta} class="tarjeta-canvas" aria-label={descripcionTarjeta}></canvas>
@@ -666,15 +664,6 @@
 	}
 	.enlace-mapa {
 		align-self: flex-start;
-	}
-	.contador {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		font: 500 15px/1.35 var(--f-texto);
-	}
-	.contador-num {
-		font: 800 34px/1 var(--f-extra);
 	}
 	.fantasma {
 		display: none;
@@ -763,12 +752,6 @@
 		.subtitular {
 			font-size: 19px;
 			padding-right: 80px;
-		}
-		.contador {
-			font-size: 16px;
-		}
-		.contador-num {
-			font-size: 40px;
 		}
 		.fantasma.oculto {
 			display: none;
