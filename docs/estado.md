@@ -1,7 +1,7 @@
 # Estado del producto
 
 Revisado el 05/10/2026 contra `main` más las ramas abiertas del día (#1 a #4 en GitHub). **Hecho** = existe y tiene prueba que lo demuestra; **parcial** = existe pero le falta algo concreto, que se indica; **falta** = no existe.
-Lo que depende de un PR sin fusionar lleva su número. Producción: https://asuprecio.com (también sigue en https://a-su-precio.tiene-sentido.workers.dev)
+Lo que depende de un PR sin fusionar lleva su número. Producción: https://asuprecio.com (sin URL de workers.dev: `workers_dev: false`)
 
 ## Requisitos del PRD (R1-R13)
 
