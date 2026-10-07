@@ -13,8 +13,8 @@ permissions:
   issues: write
 
 env:
-  # Sin dominio propio todavía: se cambia aquí, o con la variable de repositorio URL_PRODUCCION
-  BASE_URL: ${{ vars.URL_PRODUCCION || 'https://a-su-precio.tiene-sentido.workers.dev' }}
+  # Dominio propio; se puede cambiar con la variable de repositorio URL_PRODUCCION
+  BASE_URL: ${{ vars.URL_PRODUCCION || 'https://asuprecio.com' }}
 
 jobs:
   humo:

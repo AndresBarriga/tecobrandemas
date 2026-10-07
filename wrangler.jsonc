@@ -4,6 +4,8 @@
 	"main": ".svelte-kit/cloudflare/_worker.js",
 	"compatibility_date": "2026-10-01",
 	"compatibility_flags": ["nodejs_compat"],
+	// Dominio propio (se añadió desde el panel): declarado aquí para que un despliegue no lo elimine. Sin www: lo redirige una regla de Cloudflare.
+	"routes": [{ "pattern": "asuprecio.com", "custom_domain": true }],
 	"assets": {
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"

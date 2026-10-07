@@ -41,7 +41,7 @@ Deuda y detalles:
 Cargados (06/10): los 3 pedidos más los «seguros» y los «ambiguos» de la lista propuesta (El Rastro, Conde Duque, Tribunal, Huertas, Barrio de las Letras, Ópera, Bernabéu, Las Tablas, Sanchinarro, Valdebebas, La Latina, Vallecas, Barrio de Salamanca). Sin cargar, por dudosos: Montecarmelo, Nuevos Ministerios, Plaza de Castilla, Tirso de Molina y Gran Vía (confirmar a qué barrio oficial pertenecen). Se editan en `src/lib/resultado/alias.ts`.
 
 ## Para el usuario
-- **Dominio propio:** no hay. Al tenerlo, cambiar la variable `URL_PRODUCCION` del repositorio y revisar la CSP y los enlaces.
+- **Dominio propio:** asuprecio.com, ya conectado. Pendiente: actualizar o borrar la variable `URL_PRODUCCION` del repositorio (los flujos usan https://asuprecio.com si no existe) y revisar la CSP.
 - **Plan de pago de Workers** (unos 5 $ al mes): decidir antes del lanzamiento (ver «Antes del lanzamiento»).
 - **Vista previa de `/t/ID` en WhatsApp y X** desde un móvil real, con una tarjeta compartida de verdad.
 - **Pruebas en un móvil real:** hoja nativa de compartir, «Tu zona» con 150-200 zonas, y el mapa ampliable cuando esté.

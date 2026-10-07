@@ -1,7 +1,7 @@
 # Estado del producto
 
 Revisado el 05/10/2026 contra `main` más las ramas abiertas del día (#1 a #4 en GitHub). **Hecho** = existe y tiene prueba que lo demuestra; **parcial** = existe pero le falta algo concreto, que se indica; **falta** = no existe.
-Lo que depende de un PR sin fusionar lleva su número. Producción: https://a-su-precio.tiene-sentido.workers.dev
+Lo que depende de un PR sin fusionar lleva su número. Producción: https://asuprecio.com (también sigue en https://a-su-precio.tiene-sentido.workers.dev)
 
 ## Requisitos del PRD (R1-R13)
 
@@ -47,7 +47,7 @@ Lo que depende de un PR sin fusionar lleva su número. Producción: https://a-su
 | Pieza | Estado | Nota |
 |---|---|---|
 | Despliegue en Cloudflare (Worker, D1 ×2, R2) | Hecho | CI al fusionar en `main` (`.github/workflows/ci.yml`) |
-| Dominio propio | Falta | Se sirve desde `*.workers.dev` |
+| Dominio propio | Hecho | asuprecio.com (Custom Domain del Worker; `www` redirige por regla de Cloudflare). La URL oficial está en `src/lib/resultado/sitio.ts` (`SITE_URL`) |
 | Mapa base autoalojado | PR #2 | `scripts/09_mapa_base.sh`; el archivo (36 MB) ya está en R2 |
 | `noindex` en todo el sitio | PR #1 | `config/indexacion.json` |
 | Prueba de humo horaria | PR #3 | `.github/workflows/humo.yml` |

@@ -3,7 +3,7 @@
  * los enlaces ya existen; la tarjeta solo se sube al servidor cuando la persona elige un canal
  * que necesita el enlace (WhatsApp, X, copiar o la hoja del móvil). «Descargar imagen» no sube nada.
  */
-import { NOMBRE, TARJETA, type TarjetaDatos } from '#lib/resultado';
+import { NOMBRE, TARJETA, urlAbsoluta, type TarjetaDatos } from '#lib/resultado';
 import { aBlob, dibujarOg } from './tarjeta-canvas';
 
 const subidas = new Map<string, Promise<boolean>>();
@@ -34,7 +34,7 @@ export function subirTarjeta(datos: TarjetaDatos, id: string): Promise<boolean> 
 	return p;
 }
 
-export const urlDeTarjeta = (id: string) => `${location.origin}/t/${id}`;
+export const urlDeTarjeta = (id: string) => urlAbsoluta(`/t/${id}`, location.origin);
 
 /** ¿Hay hoja de compartir con ficheros en un dispositivo táctil? Si no, se muestran los canales */
 export function puedeCompartirNativo(): boolean {
