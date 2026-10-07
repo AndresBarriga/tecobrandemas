@@ -63,11 +63,11 @@ describe('analítica: lista blanca (before_send)', () => {
 
 	it('la campaña y el dominio del referrer salen en los eventos propios; nada más', () => {
 		const e = { event: 'completa', properties: { ...base, ...globales, modo: 'mirando', utm_source: 'instagram', utm_medium: 'story', utm_campaign: 'launch', utm_content: 'check', ref_domain: 'instagram.com', utm_extra: 'x', gclid: 'y' } };
-		const r = filtrarEvento(e as never);
+		const r = filtrarEvento<{ event: string; properties: Record<string, unknown> }>(e);
 		expect(r!.properties).toMatchObject({ utm_source: 'instagram', utm_medium: 'story', utm_campaign: 'launch', utm_content: 'check', ref_domain: 'instagram.com' });
 		expect(r!.properties).not.toHaveProperty('utm_extra');
 		expect(r!.properties).not.toHaveProperty('gclid');
-		expect(filtrarEvento({ event: 'completa', properties: { ...base, ref_domain: 'https://x.com/ruta?secreto=1' } } as never)!.properties).not.toHaveProperty('ref_domain');
+		expect(filtrarEvento({ event: 'completa', properties: { ...base, ref_domain: 'https://x.com/ruta?secreto=1' } })!.properties).not.toHaveProperty('ref_domain');
 	});
 
 	it('las URL salen sin query (salvo utm_*), sin hash y con /t/:id; el referrer, solo el dominio', () => {
