@@ -1,6 +1,6 @@
 # Lo que está abierto
 
-Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisión: 06/10/2026 (Fase 1 en producción; correcciones en los PR #14-#17).
+Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisión: 07/10/2026 (A2 en producción: mapa, tarjeta ampliable, «Mi presupuesto» y ubicación con calle y número).
 
 ## Decisiones vigentes (06/10/2026)
 1. **Plan:** Cloudflare sigue en el plan gratuito por ahora. Sin dominio propio y con `noindex` hasta el lanzamiento. No se activan URLs de vista previa por rama: se verifica en local y con la prueba de humo tras el despliegue.
@@ -15,9 +15,11 @@ Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisi
 **Fase 1 («Ya vivo aquí» y habitaciones): en producción** (PR #13; migraciones 0002 y 0003 aplicadas).
 **Correcciones de la Fase 1: PR #14 (A: resultado y tarjetas), #15 (B: formulario), #16 (C: «Tu zona») y #17 (D: habitaciones), apilados: fusionar en ese orden** (cada uno se basa en el anterior; sin migraciones nuevas).
 
+Hecho y verificado por el usuario el 07/10/2026: colores de «Mi presupuesto», «Calle + Nº» con código postal (ficheros de calles con hash y caché immutable), Node 24 fijado, textos de la tarjeta del inquilino quitados.
+
 Cola siguiente, en este orden:
 1. **Mapa, parte 1:** servir los PMTiles como activo estático para que las peticiones Range no gasten invocaciones del Worker. Hay que bajar de 25 MiB (zoom máximo 14 o una caja más ajustada; quitar capas que no usamos: edificios, puntos de interés). Si no cabe, avisar antes de cambiar de enfoque.
-2. **Mapa, parte 2:** «Ampliar», pin fijo, hoja inferior en vivo, estilo apagado y zoom. («Usar mi ubicación» ya está hecho en F1, en los tres modos.)
+2. ~~**Mapa, parte 2**~~ (hecho en A2, 07/10/2026: `/mapa`, tarjeta ampliable, «Mi presupuesto» en color plano y ubicación «Calle + Nº»; ver `progreso.md`).
 3. **Estado de R7 y del resto de la lista anterior** (se entrega como informe).
 
 Deuda y detalles:
