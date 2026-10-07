@@ -54,6 +54,9 @@ supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado
   prueba de humo no escribe nada; la ruta de escritura se prueba a mano antes del lanzamiento.
 - Los números de los diseños son ejemplos; los datos reales salen del motor.
 
+## Node
+- Node 24 (el mismo que usa el CI: `node-version: 24` en `.github/workflows`; fijado en `.nvmrc` y en `engines` de package.json). Antes de `npm test`, `npm run dev` o los e2e: `nvm use` (lee `.nvmrc`). Con Node 20 fallan 5 ficheros de test por `node:sqlite`.
+
 ## Forma de trabajar
 - Proponer un plan antes de escribir código.
 - Primero el motor (funciones puras + tests), después ubicación, después interfaz.

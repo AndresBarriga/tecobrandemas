@@ -53,6 +53,6 @@
     "#lib/componentes/*": "./src/lib/componentes/*"
   },
   "engines": {
-    "node": ">=24"
+    "node": "24.x"
   }
 }
