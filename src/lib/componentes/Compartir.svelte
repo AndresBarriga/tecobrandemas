@@ -63,8 +63,8 @@
 		<button type="button" class={clase} onclick={alCompartir} disabled={compartiendo}>{compartiendo ? TARJETA.generando : boton}</button>
 	{:else if enlaces}
 		<div class="canales" role="group" aria-label={boton}>
-			<a class="{clase} canal" href={enlaces.whatsapp} target="_blank" rel="noopener noreferrer" onclick={() => alCompartirPor('whatsapp')}>{TARJETA.canales.whatsapp}</a>
-			<a class="{clase} canal" href={enlaces.x} target="_blank" rel="noopener noreferrer" onclick={() => alCompartirPor('x')}>{TARJETA.canales.x}</a>
+			<a class="{clase} canal" href={enlaces.whatsapp} target="_blank" rel="noopener noreferrer" onclick={(e) => { e.preventDefault(); alCompartirPor('whatsapp'); }}>{TARJETA.canales.whatsapp}</a>
+			<a class="{clase} canal" href={enlaces.x} target="_blank" rel="noopener noreferrer" onclick={(e) => { e.preventDefault(); alCompartirPor('x'); }}>{TARJETA.canales.x}</a>
 			<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor('copiar')}>{TARJETA.canales.copiar}</button>
 			<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor('descarga')}>{TARJETA.canales.descarga}</button>
 		</div>
