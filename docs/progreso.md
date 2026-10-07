@@ -269,6 +269,7 @@ Diseño en `docs/design/design-f1/` (README sección F1, `F1 Ya vivo aqui.dc.htm
 - **Línea de confirmación** bajo los campos, ya con la calle fijada: «Camino Robledal 32 · Casa de Campo · 28011», con aviso si el número no existe, o «Calle entera: te daremos una horquilla.».
 - **Teclado en móvil:** el desplegable mide el área visible (`visualViewport`), tiene scroll interno y sube la página si queda poco hueco.
 - **Datos:** `scripts/03b_sugerencias.py` lee `cod_postal` del GeoPackage de CartoCiudad (en todos los portales de Madrid: 224.448, 58 códigos) y genera: `viales_sugerencias.json` con el código postal de cada calle (+ los demás, para buscar por código) y `viales_portales.json` (524 kB, 136 kB comprimido; solo se descarga al escribir un número): por calle, los grupos (barrio, código postal, números en rangos). **No se toca D1**: el callejero de D1 (`viales`, `portales`) no tiene código postal.
+- **Caché:** los tres `viales_*.json` llevan el hash del contenido en el nombre (`scripts/copiar_datos.mjs` los copia a `static/data/` y escribe `src/lib/cliente/datos-rutas.json`, que va a git) y `scripts/cabeceras.mjs` les pone `Cache-Control: public, max-age=31536000, immutable`. Se piden solo al enfocar la calle (sugerencias) y al escribir un número (portales); `viales_zonas`, al elegir una calle en /mapa.
 - Sin tests nuevos (decisiones vigentes); los e2e se adaptaron a los textos y al nuevo campo.
 
 ## A2 · Tarjeta ampliable (07/10/2026, rama `a2-tarjeta-ampliable`)

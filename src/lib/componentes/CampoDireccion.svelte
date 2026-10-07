@@ -275,9 +275,6 @@
 					placeholder={T.numeroPlaceholder}
 					aria-invalid={!!errorNumero}
 					aria-describedby={errorNumero ? 'numero-error' : undefined}
-					onfocus={() => {
-						if (!portales) void cargarPortales().then((p) => (portales = p)).catch(() => {});
-					}}
 				/>
 			</div>
 		</div>

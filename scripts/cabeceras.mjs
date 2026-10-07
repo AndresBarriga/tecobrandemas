@@ -10,3 +10,7 @@ if (noindex) {
 } else {
 	console.log('_headers: indexación permitida');
 }
+
+// Los ficheros de calles llevan el hash de su contenido en el nombre (scripts/copiar_datos.mjs): caché larga e immutable
+appendFileSync('.svelte-kit/cloudflare/_headers', '\n/data/viales_*\n  Cache-Control: public, max-age=31536000, immutable\n');
+console.log('_headers: /data/viales_* con caché immutable');
