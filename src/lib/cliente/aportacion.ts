@@ -52,7 +52,7 @@ export async function enviarHabitacion(p: HabitacionPayload): Promise<EnvioAport
 	}
 }
 
-/** Habitaciones aportadas en el barrio con el mismo «incluye gastos»: el recuento y, desde 10, la mediana */
+/** Habitaciones aportadas en el barrio con el mismo «incluye gastos»: el recuento y, desde 20, la mediana */
 export async function pedirComparacion(barrio: string, gastos: boolean): Promise<{ n: number; mediana: number | null } | null> {
 	try {
 		// `t` evita la caché de 60 s: tras aportar, el recuento tiene que incluir la propia

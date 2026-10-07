@@ -9,6 +9,7 @@
  *    existe como HMAC con una sal que rota cada día (la clave caduca a las 24 h);
  *  - los fallos de antiabuso no se notifican como error: el resultado se ve igual y no se guarda.
  */
+import { MINIMO_COMPARACION as MINIMO_HABITACIONES } from '../resultado/habitacion';
 import type { D1Registro } from './db';
 
 export const EUROS_M2_MIN = 5;
@@ -20,6 +21,7 @@ export const DEDUPE_MS = 30 * 24 * 3600 * 1000;
 export const LIMITE_MS = 24 * 3600 * 1000;
 /** Recuentos públicos solo desde este número de observaciones por barrio */
 export const MINIMO_PUBLICO = 10;
+export { MINIMO_HABITACIONES };
 
 export type Resultado = 'guardado' | 'descartado' | 'limite';
 
@@ -221,11 +223,11 @@ export async function registrarHabitacion(c: Contexto, ip: string, h: Habitacion
 export interface ComparacionHabitaciones {
 	/** Habitaciones aportadas en el barrio con el mismo «incluye gastos» */
 	n: number;
-	/** Mediana en €/mes; solo desde 10 aportaciones */
+	/** Mediana en €/mes; solo desde 20 aportaciones */
 	mediana: number | null;
 }
 
-/** Con menos de 10 solo se da el recuento: la mediana de pocas habitaciones dejaría ver rentas sueltas */
+/** Con menos de 20 (MINIMO_HABITACIONES) solo se da el recuento: la mediana de pocas habitaciones dejaría ver rentas sueltas */
 export async function compararHabitaciones(db: D1Registro, barrio: string, gastos: boolean): Promise<ComparacionHabitaciones> {
 	const filas =
 		(await db
@@ -233,7 +235,7 @@ export async function compararHabitaciones(db: D1Registro, barrio: string, gasto
 			.bind(barrio, gastos ? 1 : 0)
 			.all<{ precio: number }>()).results ?? [];
 	const n = filas.length;
-	if (n < MINIMO_PUBLICO) return { n, mediana: null };
+	if (n < MINIMO_HABITACIONES) return { n, mediana: null };
 	const m = n >> 1;
 	return { n, mediana: n % 2 ? filas[m]!.precio : Math.round((filas[m - 1]!.precio + filas[m]!.precio) / 2) };
 }

@@ -4,8 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
 	type AnalisisEntrada, type Contexto, LIMITE_REGISTROS_DIA, claveLimite, leerAnalisis, leerAportacion,
-	LIMITE_GEOCODIFICACIONES_DIA, plausible, puedeGeocodificar, recuentos, registrarAnalisis, registrarAportacion, salDelDia
+	LIMITE_GEOCODIFICACIONES_DIA, MINIMO_HABITACIONES, compararHabitaciones, plausible, puedeGeocodificar, recuentos, registrarAnalisis, registrarAportacion, salDelDia
 } from '../src/lib/server/registro';
+import { MINIMO_COMPARACION } from '../src/lib/resultado/habitacion';
+import { GET as getHabitacion } from '../src/routes/api/habitacion/+server';
 import { d1Registro } from './d1';
 
 const BARRIOS = new Set(['071', '072']);
@@ -193,6 +195,45 @@ describe('atribución y recuentos', () => {
 		expect((await recuentos(d1, '071')).barrio).toBe(10);
 		expect((await recuentos(d1, '072')).barrio).toBeNull();
 		expect((await recuentos(d1, null)).barrio).toBeNull();
+	});
+});
+
+describe('habitaciones: la mediana pública', () => {
+	const con = (n: number, gastos = 1) => {
+		const { db, d1 } = d1Registro();
+		for (let i = 0; i < n; i++) db.prepare("INSERT INTO habitaciones (mes, barrio, precio, num_habitaciones, tamano_piso_tramo, gastos_incluidos) VALUES ('2026-10', '071', ?, 3, '60-90', ?)").run(400 + i * 10, gastos);
+		return d1;
+	};
+
+	it('el mínimo es 20, el mismo en el servidor y en el cliente', () => {
+		expect(MINIMO_HABITACIONES).toBe(20);
+		expect(MINIMO_COMPARACION).toBe(MINIMO_HABITACIONES);
+	});
+
+	it('con 19 solo se da el recuento; con 20, la mediana', async () => {
+		expect(await compararHabitaciones(con(19), '071', true)).toEqual({ n: 19, mediana: null });
+		expect(await compararHabitaciones(con(10), '071', true)).toEqual({ n: 10, mediana: null }); // el mínimo anterior ya no basta
+		const r = await compararHabitaciones(con(20), '071', true);
+		expect(r.n).toBe(20);
+		expect(r.mediana).toBe(495); // 400, 410, …, 590: la media de las dos centrales (490 y 500)
+	});
+
+	it('solo cuentan las habitaciones con el mismo «incluye gastos», y otro barrio no suma', async () => {
+		expect(await compararHabitaciones(con(25, 1), '071', false)).toEqual({ n: 0, mediana: null });
+		expect(await compararHabitaciones(con(25, 1), '072', true)).toEqual({ n: 0, mediana: null });
+	});
+
+	it('el endpoint público no da la mediana por debajo del mínimo', async () => {
+		const barrio = Object.keys((JSON.parse(readFileSync(new URL('../data/processed/seccion_barrio.json', import.meta.url), 'utf-8')) as { barrios: object }).barrios)[0]!;
+		const { db, d1 } = d1Registro();
+		const poner = (precio: number) =>
+			db.prepare("INSERT INTO habitaciones (mes, barrio, precio, num_habitaciones, tamano_piso_tramo, gastos_incluidos) VALUES ('2026-10', ?, ?, 3, '60-90', 1)").run(barrio, precio);
+		const get = async () =>
+			(await getHabitacion({ url: new URL(`http://x/api/habitacion?barrio=${barrio}&gastos=1`), platform: { env: { DB: d1, SECRETO: 'prueba' } } } as never)).json();
+		for (let i = 0; i < 19; i++) poner(400 + i * 10);
+		expect(await get()).toEqual({ n: 19, mediana: null });
+		poner(590);
+		expect(await get()).toEqual({ n: 20, mediana: 495 });
 	});
 });
 

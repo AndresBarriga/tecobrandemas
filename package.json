@@ -51,5 +51,8 @@
     "#lib/server/*": "./src/lib/server/*.ts",
     "#lib/ubicacion/*": "./src/lib/ubicacion/*.ts",
     "#lib/componentes/*": "./src/lib/componentes/*"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

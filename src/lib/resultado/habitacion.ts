@@ -1,6 +1,6 @@
 /**
  * Habitaciones (F1): la referencia oficial no las cubre, así que no hay nivel ni veredicto. Solo se
- * compara con lo que aportan otras personas del barrio, y la mediana únicamente desde 10 aportaciones
+ * compara con lo que aportan otras personas del barrio, y la mediana únicamente desde 20 aportaciones
  * con el mismo «incluye gastos». Nada de m² exactos: el tamaño del piso va en tramos.
  */
 import type { DatosMadrid } from './datos';
@@ -10,7 +10,8 @@ import { interpretarNumero } from './formulario';
 /** €/mes de una habitación que se acepta; fuera de este rango se pide revisar el precio */
 export const HABITACION_PRECIO_MIN = 150;
 export const HABITACION_PRECIO_MAX = 1500;
-export const MINIMO_COMPARACION = 10;
+/** Aportaciones (con el mismo «incluye gastos») a partir de las cuales el servidor da la mediana; el cliente y el servidor usan este mismo número */
+export const MINIMO_COMPARACION = 20;
 
 export type TramoPiso = 'hasta60' | '60-90' | '90-120' | 'mas120' | 'nose';
 

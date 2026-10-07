@@ -83,7 +83,7 @@
 	const modoActual = $derived(modoDe(f));
 	const modoPorDefecto = (s: 'mirando' | 'vivo') => (s === 'vivo' ? ('direccion' as const) : ('calle' as const));
 
-	// Habitación: comparación con las aportadas en el barrio (el recuento y, desde 10, la mediana)
+	// Habitación: comparación con las aportadas en el barrio (el recuento y, desde 20, la mediana)
 	const habitacionPantalla = $derived(pantalla?.tipo === 'habitacion' ? pantalla : null);
 	let comparacionHab = $state<{ n: number; mediana: number | null } | 'error' | null>(null);
 	let aporteHab = $state<EstadoAporte>('no');

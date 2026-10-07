@@ -4,6 +4,7 @@
  * atribuciones. tests/textos.test.ts lo comprueba sobre todo lo que sale de este módulo.
  */
 import type { MotivoSinDato } from '../motor';
+import { MINIMO_COMPARACION } from './habitacion';
 
 /** Lema bajo el logotipo (diseño: el nombre manda, el lema acompaña) */
 export const LEMA = '¿Tiene sentido este precio?';
@@ -340,8 +341,8 @@ export const HABITACION = {
 	mediana: (n: number) => `mediana, ${n} aportaciones`,
 	mismoGastos: (gastos: boolean) =>
 		`Solo cuentan habitaciones que también ${gastos ? 'incluyen' : 'no incluyen'} gastos. La mediana deja la mitad de las aportaciones por encima y la mitad por debajo.`,
-	pocas: (barrio: string, n: number) => `Aún no hay suficientes habitaciones en ${barrio} (${n} de ${10}). Aporta la tuya y suma.`,
-	pocasMirando: (barrio: string, n: number) => `Aún no hay suficientes habitaciones en ${barrio} (${n} de ${10}) para comparar.`,
+	pocas: (barrio: string, n: number) => `Aún no hay suficientes habitaciones en ${barrio} (${n} de ${MINIMO_COMPARACION}). Aporta la tuya y suma.`,
+	pocasMirando: (barrio: string, n: number) => `Aún no hay suficientes habitaciones en ${barrio} (${n} de ${MINIMO_COMPARACION}) para comparar.`,
 	cargando: 'Buscando habitaciones aportadas en tu barrio…',
 	sinConexion: 'No hemos podido consultar las habitaciones del barrio. Inténtalo de nuevo más tarde.',
 	aportar: {
@@ -355,7 +356,7 @@ export const HABITACION = {
 		etiqueta: 'Habitación aportada',
 		faltan: (n: number) => `Gracias. Faltan ${n} para ver tu barrio.`,
 		hay: (n: number, barrio: string) => `Gracias. ${n} aportaciones en ${barrio}.`,
-		detalle: 'Nadie ve las rentas por separado: solo la mediana, y solo desde 10 aportaciones.'
+		detalle: `Nadie ve las rentas por separado: solo la mediana, y solo desde ${MINIMO_COMPARACION} aportaciones.`
 	},
 	acciones: {
 		titulo: 'Qué puedes hacer',

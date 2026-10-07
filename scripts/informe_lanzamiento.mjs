@@ -12,7 +12,7 @@ import lighthouse from 'lighthouse';
 const BASE = (process.env.BASE_URL ?? 'https://a-su-precio.tiene-sentido.workers.dev').replace(/\/$/, '');
 const ORIGEN = new URL(BASE).origin;
 const PAGINAS = ['/', '/como-calculamos', '/cuanto-pagas'];
-const LIMITE_BUNDLE = 150 * 1024;
+const LIMITE_BUNDLE = 165 * 1024; // 150 KB hasta añadir PostHog (+50 KB); subido a 165 KB el 07/10/2026
 const MINIMO_LIGHTHOUSE = 90;
 
 const filas = [];
@@ -78,7 +78,7 @@ async function navegacion() {
 		if (r.request().resourceType() === 'script') js += tamaño;
 		else css += tamaño;
 	}
-	registrar('Bundle inicial < 150 KB gz', js + css < LIMITE_BUNDLE, `JS ${kb(js)} + CSS ${kb(css)} = ${kb(js + css)} (${recursos.length} ficheros)`);
+	registrar('Bundle inicial < 165 KB gz', js + css < LIMITE_BUNDLE, `JS ${kb(js)} + CSS ${kb(css)} = ${kb(js + css)} (${recursos.length} ficheros)`);
 
 	// Axe en las pantallas principales
 	const abrir = async (ruta) => {
