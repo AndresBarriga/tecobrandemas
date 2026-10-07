@@ -8,8 +8,8 @@
  */
 import { PUBLIC_POSTHOG_ENABLED, PUBLIC_POSTHOG_KEY } from '$app/env/public';
 import {
-	type APPS, type BRECHAS, type CANALES, type MODOS, type MOTIVOS_SIN_DATO, type RESPUESTAS_QUE_HARAS, type RESULTADOS,
-	filtrarEvento, navegadorApp
+	type BRECHAS, type CANALES, type MODOS, type MOTIVOS_SIN_DATO, type RESPUESTAS_QUE_HARAS, type RESULTADOS,
+	dominioDelReferrer, filtrarEvento, navegadorApp
 } from './analitica-filtro';
 import { leerOrigenDeLaUrl, tarjetaOrigen } from './origen';
 
@@ -32,14 +32,29 @@ let iniciada = false;
 let indiceAnalisis = 0;
 let inicioMs: number | null = null;
 
+/** Campaña de la visita: los utm_* de la URL de entrada o, sin ninguno, solo el dominio del referrer. Se lee una vez y vive en memoria */
+const CLAVES_UTM = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const;
+export function campanaDeLaVisita(url: string, referrer: string, propioHost: string): Record<string, string> {
+	const q = new URL(url).searchParams;
+	const salida: Record<string, string> = {};
+	for (const k of CLAVES_UTM) {
+		const v = q.get(k)?.trim();
+		if (v) salida[k] = v.slice(0, 100);
+	}
+	if (Object.keys(salida).length) return salida;
+	const dominio = dominioDelReferrer(referrer);
+	return dominio && dominio !== propioHost ? { ref_domain: dominio } : {};
+}
+
 /** Propiedades que acompañan a todos los eventos */
-function propiedadesGlobales(): { v: 1; navegador_app: (typeof APPS)[number]; tarjeta_origen: string | null; interno: boolean } {
+function propiedadesGlobales() {
 	leerOrigenDeLaUrl();
 	return {
-		v: 1,
+		v: 1 as const,
 		navegador_app: navegadorApp(navigator.userAgent),
 		tarjeta_origen: tarjetaOrigen(),
-		interno: new URLSearchParams(location.search).get('internal') === '1'
+		interno: new URLSearchParams(location.search).get('internal') === '1',
+		...campanaDeLaVisita(location.href, document.referrer, location.hostname)
 	};
 }
 

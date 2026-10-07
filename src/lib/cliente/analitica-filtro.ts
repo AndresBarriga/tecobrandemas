@@ -28,6 +28,7 @@ export const RESPUESTAS_QUE_HARAS = [
 
 const enumerado = (valores: readonly string[]) => (v: unknown) => typeof v === 'string' && valores.includes(v);
 const entero = (min: number, max: number) => (v: unknown) => typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;
+const texto100 = (v: unknown) => typeof v === 'string' && v.length > 0 && v.length <= 100;
 const IDENTIFICADOR_TARJETA = /^[0-9a-z]{10}$/;
 // Nombre de un distrito: letras (con tildes), espacios y guiones; nunca cifras ni signos de dirección
 const NOMBRE_DISTRITO = /^[\p{L} '·-]{2,40}$/u;
@@ -52,11 +53,20 @@ const VALIDADORES: Record<string, Validador> = {
 	// Globales (se registran al cargar)
 	v: (v) => v === 1,
 	navegador_app: enumerado(APPS),
+	// Campaña con la que llegó la persona (solo en memoria, de la URL de esa visita) o, sin campaña, el dominio del referrer
+	utm_source: texto100,
+	utm_medium: texto100,
+	utm_campaign: texto100,
+	utm_content: texto100,
+	utm_term: texto100,
+	ref_domain: (v) => typeof v === 'string' && /^[a-z0-9.-]{1,100}$/i.test(v),
 	tarjeta_origen: (v) => typeof v === 'string' && IDENTIFICADOR_TARJETA.test(v),
 	interno: (v) => typeof v === 'boolean'
 };
 
-export const PROPIEDADES_GLOBALES = ['v', 'navegador_app', 'tarjeta_origen', 'interno'] as const;
+export const PROPIEDADES_GLOBALES = [
+	'v', 'navegador_app', 'tarjeta_origen', 'interno', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'ref_domain'
+] as const;
 
 /** Eventos propios y las propiedades de cada uno */
 export const EVENTOS: Record<string, readonly string[]> = {
@@ -141,7 +151,7 @@ export function filtrarEvento<T extends EventoSdk>(e: T | null): T | null {
 			continue;
 		}
 		if (CAMPANA.test(clave)) {
-			if (esDelSdk && typeof valor === 'string') salida[clave] = valor.slice(0, 100);
+			if (typeof valor === 'string' && valor) salida[clave] = valor.slice(0, 100);
 			continue;
 		}
 		if (PROPIEDADES_OBLIGATORIAS.includes(clave)) {
