@@ -25,7 +25,7 @@
 	import { precargarDatos } from '#lib/cliente/datos';
 	import type { Punto } from '#lib/cliente/mapa';
 	import { tomarPrellenado } from '#lib/cliente/prellenado';
-	import { type EstadoFormulario, type ModoUbicacion, estadoInicial } from '#lib/cliente/estado';
+	import { type EstadoFormulario, type ModoUbicacion, estadoInicial, modoGuardado } from '#lib/cliente/estado';
 	import { type Entrada, guardarHistorial, leerHistorial } from '#lib/cliente/historial';
 	import { enviarAportacion, enviarHabitacion, pedirComparacion } from '#lib/cliente/aportacion';
 	import { registrarAnalisis } from '#lib/cliente/registro';
@@ -81,7 +81,7 @@
 	let aportadosBarrio = $state<number | null>(null);
 	const esVivo = $derived(f.situacion === 'vivo');
 	const modoActual = $derived(modoDe(f));
-	const modoPorDefecto = (s: 'mirando' | 'vivo') => (s === 'vivo' ? ('direccion' as const) : ('calle' as const));
+	const modoPorDefecto = (_s: 'mirando' | 'vivo') => 'calle' as const;
 
 	// Habitación: comparación con las aportadas en el barrio (el recuento y, desde 20, la mediana)
 	const habitacionPantalla = $derived(pantalla?.tipo === 'habitacion' ? pantalla : null);
@@ -348,7 +348,7 @@
 		activa = null;
 		void tick().then(() => {
 			if (!matchMedia('(min-width: 1024px)').matches) scrollTo({ top: 0 });
-			document.getElementById(f.modo === 'mapa' ? 'precio' : 'direccion')?.focus();
+			document.getElementById(f.modo === 'mapa' ? 'precio' : f.via ? 'numero' : 'direccion')?.focus();
 		});
 	}
 
@@ -369,8 +369,8 @@
 	}
 
 	function elegirSugerencia(nombre: string) {
-		const numero = f.direccion.match(/(\d+\s*[a-zA-Z]?)\s*$/)?.[1];
-		f.direccion = numero && f.modo === 'direccion' ? `${nombre}, ${numero.trim()}` : nombre;
+		f.via = nombre;
+		f.direccion = '';
 		void enviar();
 	}
 
@@ -392,9 +392,9 @@
 	}
 	async function irAlCampoDireccion() {
 		quitarUbicacion();
-		if (f.modo === 'mapa') f.modo = 'direccion';
+		if (f.modo === 'mapa') f.modo = 'calle';
 		await tick();
-		document.getElementById('direccion')?.focus();
+		(document.getElementById('direccion') ?? document.getElementById('numero'))?.focus();
 	}
 	function colocarEnElMapa(codigoBarrio: string) {
 		quitarUbicacion();
@@ -435,7 +435,7 @@
 		const numero = texto.trim();
 		if (!via) return AFINAR.fallo;
 		if (!/^\d{1,4}\s?[a-zA-Z]?$/.test(numero)) return AFINAR.invalido;
-		const afinada = { ...f, direccion: `${via} ${numero}`, modo: 'direccion' as const };
+		const afinada = { ...f, via, direccion: '', numero, modo: 'calle' as const };
 		try {
 			const r = await comprobar(afinada, null);
 			if (r.tipo === 'pantalla' && r.pantalla.tipo === 'resultado') {
@@ -458,7 +458,7 @@
 		pantalla = e.pantalla;
 		idTarjeta = e.pantalla.tipo === 'resultado' ? idDeTarjeta() : null;
 		registro = 'no';
-		f = { ...estadoInicial(), ...(e.formulario as Partial<EstadoFormulario>) };
+		f = { ...estadoInicial(), ...(e.formulario as Partial<EstadoFormulario>), modo: modoGuardado((e.formulario as Partial<EstadoFormulario>).modo) };
 		fase = 'resultado';
 		activa = i;
 		mensajeTarjeta = null;

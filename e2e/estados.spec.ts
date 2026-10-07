@@ -36,7 +36,7 @@ test.describe('niveles', () => {
 
 	test('06-horquilla: calle sin número', async ({ page }) => {
 		await abrir(page);
-		await comprobar(page, { modo: 'calle', direccion: 'Calle Sabadell', precio: '1400', superficie: '58' });
+		await comprobar(page, { direccion: 'Calle Sabadell', precio: '1400', superficie: '58' });
 		await expect(page.getByText('Ubicación aproximada.')).toBeVisible();
 		await expect(page.locator('main')).toContainText(/entre\s*\+\d+/);
 		await expect(page.getByLabel('Añade el número para afinar')).toBeVisible();
@@ -89,20 +89,19 @@ test.describe('sin dato', () => {
 test.describe('errores', () => {
 	test('15-direccion-no-encontrada con sugerencia y salidas', async ({ page }) => {
 		await abrir(page);
-		await comprobar(page, { modo: 'direccion', direccion: 'Calle del Berro Nuevo 14', precio: '2200', superficie: '90' });
+		await comprobar(page, { direccion: 'Calle del Berro Nuevo 14', precio: '2200', superficie: '90' });
 		await expect(page.getByText('No encontramos esa dirección en Madrid.')).toBeVisible();
 		await expect(page.getByRole('button', { name: 'Calle Fuente del Berro' })).toBeVisible();
-		await expect(page.getByRole('button', { name: 'Solo la calle' })).toBeVisible();
 		await expect(page.getByRole('button', { name: 'En el mapa' })).toBeVisible();
 		await captura(page, '15-direccion-no-encontrada');
-		// La sugerencia conserva el número y completa la comprobación
+		// La sugerencia fija la calle, conserva el número (en «Nº») y completa la comprobación
 		await page.getByRole('button', { name: 'Calle Fuente del Berro' }).click();
 		await expect(page.getByText('Por encima')).toBeVisible();
 	});
 
 	test('16-calle-demasiado-larga pide el número o el mapa', async ({ page }) => {
 		await abrir(page);
-		await comprobar(page, { modo: 'calle', direccion: 'Calle de Alcalá', precio: '1400', superficie: '58' });
+		await comprobar(page, { direccion: 'Calle de Alcalá', precio: '1400', superficie: '58' });
 		await expect(page.getByText(/cruza \d+ zonas con referencias distintas/)).toBeVisible();
 		await captura(page, '16-calle-larga');
 	});

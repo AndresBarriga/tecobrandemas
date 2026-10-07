@@ -12,6 +12,7 @@ export * from './resultado';
 export * from './tarjeta';
 export * from './compartir';
 export * from './autocompletar';
+export * from './calle';
 export * from './alias';
 export * from './formulario';
 export * from './aportacion';

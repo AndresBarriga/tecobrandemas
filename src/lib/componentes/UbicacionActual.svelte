@@ -6,7 +6,6 @@
 	type Lista = Extract<LecturaGps, { estado: 'lista' }>;
 
 	let {
-		protagonista = false,
 		activa = null,
 		alActivar,
 		alQuitar,
@@ -15,8 +14,6 @@
 		reinicio = 0,
 		alEmpezar
 	}: {
-		/** «Ya vivo aquí»: el chip es lo primero que se ofrece; en «mirando», una opción discreta */
-		protagonista?: boolean;
 		/** La lectura que se está usando: barrio y precisión */
 		activa?: { barrio: string; precisionM: number } | null;
 		alActivar: (l: Lista) => void;
@@ -90,7 +87,7 @@
 	);
 </script>
 
-<div class="ubicacion" class:protagonista>
+<div class="ubicacion">
 	{#if activa}
 		<div class="chip activa">
 			<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none" /><circle cx="11" cy="11" r="2.5" fill="currentColor" /></svg>
@@ -110,11 +107,11 @@
 				<circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" fill="none" /><circle cx="11" cy="11" r="2" fill="currentColor" />
 				<path d="M11 1v4M11 17v4M1 11h4M17 11h4" stroke="currentColor" stroke-width="2" />
 			</svg>
-			<span>{protagonista ? T.vivo : T.mirando}</span>
+			<span>{T.boton}</span>
 		</button>
 	{/if}
 
-	{#if protagonista && !activa}
+	{#if !activa && estado !== 'pidiendo'}
 		<p class="privacidad">
 			<svg width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><rect x="1.5" y="7" width="11" height="8" rx="1.5" fill="currentColor" /><path d="M4 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.8" fill="none" /></svg>
 			{T.privacidad}
@@ -153,13 +150,6 @@
 		background: var(--superficie);
 		color: var(--tinta);
 		font: 600 16px/1.2 var(--f-texto);
-	}
-	.protagonista .chip {
-		width: 100%;
-		min-height: 56px;
-		border: 2px solid var(--tinta);
-		font-weight: 700;
-		font-size: 17px;
 	}
 	.chip.pidiendo {
 		border: 2px dashed var(--tinta);

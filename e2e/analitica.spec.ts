@@ -141,7 +141,7 @@ test.describe('analítica sin cookies', () => {
 		// Sin conceder el permiso de ubicación: el navegador lo rechaza
 		await abrir(page, '/?ph_prueba=1');
 		await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
-		await page.getByRole('button', { name: 'Estoy en casa: usar mi ubicación' }).click();
+		await page.getByRole('button', { name: 'Usar mi ubicación' }).click();
 		await esperar(ev, 'usar_ubicacion');
 		expect(de(ev, 'usar_ubicacion').map((e) => e.properties.resultado)).toEqual(['denegada']);
 
@@ -149,7 +149,7 @@ test.describe('analítica sin cookies', () => {
 		await page.addInitScript(() => Object.defineProperty(navigator, 'geolocation', { value: undefined, configurable: true }));
 		await abrir(page, '/?ph_prueba=1');
 		await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
-		await page.getByRole('button', { name: 'Estoy en casa: usar mi ubicación' }).click();
+		await page.getByRole('button', { name: 'Usar mi ubicación' }).click();
 		await expect.poll(() => de(ev, 'usar_ubicacion').map((e) => e.properties.resultado), { timeout: 12_000 }).toEqual(['denegada', 'no_disponible']);
 	});
 
@@ -161,7 +161,7 @@ test.describe('analítica sin cookies', () => {
 		await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
 		await page.waitForTimeout(800);
 		expect(tipos(ev)).not.toContain('empieza'); // elegir el modo no es empezar
-		await page.getByRole('button', { name: 'Estoy en casa: usar mi ubicación' }).click();
+		await page.getByRole('button', { name: 'Usar mi ubicación' }).click();
 		await esperar(ev, 'usar_ubicacion');
 		expect(de(ev, 'empieza')).toHaveLength(1);
 		expect(de(ev, 'empieza')[0]!.properties).toMatchObject({ modo: 'vivo' });
@@ -180,7 +180,7 @@ test.describe('analítica sin cookies', () => {
 		const ev = await escuchar(context);
 		await abrir(page, '/?ph_prueba=1');
 		await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
-		await page.getByRole('button', { name: 'Estoy en casa: usar mi ubicación' }).click();
+		await page.getByRole('button', { name: 'Usar mi ubicación' }).click();
 		await esperar(ev, 'usar_ubicacion');
 		expect(de(ev, 'usar_ubicacion')[0]!.properties).toMatchObject({ resultado: 'fuera' });
 		expect(JSON.stringify(ev)).not.toMatch(/48\.8|2\.35|latitude|longitude/);

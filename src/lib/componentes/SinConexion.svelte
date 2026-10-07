@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ERRORES, euros, numero } from '#lib/resultado';
+	import { ERRORES, euros, numero, textoDireccion } from '#lib/resultado';
 	import type { EstadoFormulario } from '#lib/cliente/estado';
 
 	let { formulario, alReintentar, alEditar }: { formulario: EstadoFormulario; alReintentar: () => void; alEditar: () => void } = $props();
@@ -11,7 +11,7 @@
 	<p class="frase">{ERRORES.sinConexion.frase}</p>
 	<p class="texto">{ERRORES.sinConexion.texto}</p>
 	<div class="resumen">
-		<span>{formulario.direccion}</span>
+		<span>{textoDireccion(formulario)}</span>
 		<span class="cifras">{formulario.precio}{NB}€ al mes, {formulario.superficie}{NB}m²</span>
 		<span class="gris">{formulario.tipo === 'casa' ? 'Casa' : 'Piso'}, {formulario.largaDuracion ? 'larga duración' : 'no es de larga duración'}</span>
 	</div>

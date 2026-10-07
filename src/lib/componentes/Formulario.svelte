@@ -4,7 +4,7 @@
 	import type { Snippet } from 'svelte';
 	import Segmentado from './Segmentado.svelte';
 	import {
-		COMPARTIDO, ERRORES, FORMULARIO, FORMULARIO_VIVO, MESES, RESUMEN_FORMULARIO, SITUACION, TIPO_VIVIENDA, UBICACION_ACTUAL,
+		COMPARTIDO, ERRORES, FORMULARIO, FORMULARIO_VIVO, MESES, RESUMEN_FORMULARIO, SITUACION, TIPO_VIVIENDA,
 		interpretarSomos, type ErroresFormulario, type SugerenciaZona
 	} from '#lib/resultado';
 	import type { EstadoFormulario, ModoUbicacion, Situacion, TamanoPiso, TipoVivienda } from '#lib/cliente/estado';
@@ -35,7 +35,7 @@
 		alMapaEnBarrio
 	}: {
 		f: EstadoFormulario;
-		errores: ErroresFormulario & { direccion?: string; mapa?: string; firma?: string; rentaFirma?: string; habitacion?: string };
+		errores: ErroresFormulario & { direccion?: string; numero?: string; mapa?: string; firma?: string; rentaFirma?: string; habitacion?: string };
 		buscando?: boolean;
 		/** Ya hay un resultado en pantalla: el botón pasa a «Comprobar otro piso» */
 		comprobado?: boolean;
@@ -64,7 +64,6 @@
 	const vivo = $derived(f.situacion === 'vivo');
 	const habitacion = $derived(f.tipo === 'habitacion');
 	const modos = [
-		{ valor: 'direccion' as const, etiqueta: FORMULARIO.modos.direccion },
 		{ valor: 'calle' as const, etiqueta: FORMULARIO.modos.calle },
 		{ valor: 'mapa' as const, etiqueta: FORMULARIO.modos.mapa }
 	];
@@ -161,22 +160,18 @@
 
 	<fieldset class="donde">
 		<legend>{etiquetaDonde}</legend>
-		{#if vivo || f.ubicacionActual}
-			<UbicacionActual
-				{alEmpezar}
-				protagonista={vivo}
-				activa={f.ubicacionActual}
-				alActivar={(l) => alUbicacion?.(l)}
-				alQuitar={() => alQuitarUbicacion?.()}
-				alEscribir={() => alEscribirDireccion?.()}
-				alMapa={(c) => alMapaEnBarrio?.(c)}
-				reinicio={tecleo}
-			/>
-		{/if}
 		{#if !f.ubicacionActual}
-			{#if vivo}<p class="o-escribe">{UBICACION_ACTUAL.o}</p>{/if}
 			<Segmentado opciones={modos} valor={f.modo} onchange={alCambiarModo} nombre="modo" etiqueta={etiquetaDonde} />
 		{/if}
+		<UbicacionActual
+			{alEmpezar}
+			activa={f.ubicacionActual}
+			alActivar={(l) => alUbicacion?.(l)}
+			alQuitar={() => alQuitarUbicacion?.()}
+			alEscribir={() => alEscribirDireccion?.()}
+			alMapa={(c) => alMapaEnBarrio?.(c)}
+			reinicio={tecleo}
+		/>
 	</fieldset>
 
 	{#if f.ubicacionActual}
@@ -184,11 +179,12 @@
 	{:else if f.modo !== 'mapa'}
 		<CampoDireccion
 			bind:valor={f.direccion}
-			modo={f.modo}
+			bind:via={f.via}
+			bind:numero={f.numero}
 			error={errores.direccion}
+			errorNumero={errores.numero}
 			marcado={problema?.tipo === 'no_encontrada'}
 			ocultarAyuda={!!problema}
-			alElegirVia={() => {}}
 			{alElegirZona}
 			{alCambiarModo}
 			alTeclear={() => tecleo++}
@@ -196,18 +192,6 @@
 	{:else if mapa}
 		{@render mapa()}
 		{#if errores.mapa}<p class="mensaje-error" role="alert">{errores.mapa}</p>{/if}
-	{/if}
-
-	{#if !vivo && !f.ubicacionActual && f.modo !== 'mapa'}
-		<UbicacionActual
-			{alEmpezar}
-			activa={null}
-			alActivar={(l) => alUbicacion?.(l)}
-			alQuitar={() => alQuitarUbicacion?.()}
-			alEscribir={() => alEscribirDireccion?.()}
-			alMapa={(c) => alMapaEnBarrio?.(c)}
-			reinicio={tecleo}
-		/>
 	{/if}
 
 	{#if problema}
@@ -236,10 +220,8 @@
 			{/if}
 			<span class="otra-forma">{ERRORES.noEncontrada.otraForma}</span>
 			<div class="salidas">
-				{#if f.modo !== 'calle' && (problema.tipo === 'no_encontrada' || problema.tipo === 'demasiadas')}
-					<button type="button" class="boton boton-contorno" onclick={() => alCambiarModo('calle')}>{ERRORES.noEncontrada.soloCalle}</button>
-				{:else}
-					<button type="button" class="boton boton-contorno" onclick={() => alCambiarModo('direccion')}>{FORMULARIO.modos.direccion}</button>
+				{#if problema.tipo === 'pedir_numero'}
+					<button type="button" class="boton boton-contorno" onclick={() => document.getElementById('numero')?.focus()}>{ERRORES.pedirNumero(problema.calle, problema.nSecciones).escribirNumero}</button>
 				{/if}
 				<button type="button" class="boton boton-contorno" onclick={() => alCambiarModo('mapa')}>{ERRORES.noEncontrada.enMapa}</button>
 			</div>
@@ -550,10 +532,6 @@
 	}
 	.grupo {
 		gap: 8px;
-	}
-	.o-escribe {
-		font: 400 15px/1.3 var(--f-texto);
-		color: var(--grafito);
 	}
 	.grupo legend {
 		font: 600 14px/1.3 var(--f-texto);
