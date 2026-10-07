@@ -1,12 +1,13 @@
 /**
  * Prueba de humo contra un despliegue real:
- *   BASE_URL=https://a-su-precio.tiene-sentido.workers.dev npx playwright test e2e/humo.spec.ts --project=movil-390
+ *   BASE_URL=https://asuprecio.com npx playwright test e2e/humo.spec.ts --project=movil-390
  * No ensucia las métricas: se bloquea la analítica (/r7k, PostHog) y no se registra ningún análisis ni aportación.
  * Es de solo lectura: no escribe nada. La tarjeta de la tercera prueba es una fija (`pruebahumo`),
  * creada una vez a mano, marcada como de prueba y excluida de las métricas.
  * Las cifras exactas cambian con el IPC: se comprueba el nivel y la forma, no los números.
  */
 import { expect, test, type Page } from '@playwright/test';
+import { SITE_URL } from '../src/lib/resultado/sitio';
 import { abrir, comprobar } from './ayudas';
 
 const bloquearEventos = (page: Page) => page.route('**/r7k/**', (r) => r.fulfill({ status: 204 }));
@@ -66,7 +67,7 @@ test.describe('humo', () => {
 		const id = 'pruebahumo';
 		await page.goto(`/t/${id}`);
 		await expect(page.getByText(/Alguien ha comprobado un piso en/)).toBeVisible();
-		expect(await page.locator('meta[property="og:image"]').getAttribute('content')).toBe(`${baseURL}/t/${id}/og.jpg`);
+		expect(await page.locator('meta[property="og:image"]').getAttribute('content')).toBe(`${SITE_URL}/t/${id}/og.jpg`);
 		expect(await page.locator('meta[property="og:title"]').getAttribute('content')).toBeTruthy();
 		const og = await request.get(`/t/${id}/og.jpg`);
 		expect(og.status()).toBe(200);

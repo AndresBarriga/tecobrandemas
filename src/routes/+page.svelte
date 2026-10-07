@@ -37,7 +37,7 @@
 	import { recuentos } from '#lib/cliente/contadores';
 	import { leerOrigenDeLaUrl } from '#lib/cliente/origen';
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
-	import { MAPA_REFERENCIA, TARJETA } from '#lib/resultado';
+	import { MAPA_REFERENCIA, TARJETA, urlAbsoluta } from '#lib/resultado';
 
 	type Fase = 'inicio' | 'buscando' | 'confirmar' | 'resultado' | 'negociar' | 'sin_conexion';
 
@@ -476,6 +476,7 @@
 	<meta property="og:title" content={NOMBRE} />
 	<meta property="og:description" content={DESCRIPCION} />
 	<meta property="og:type" content="website" />
+	<meta property="og:url" content={urlAbsoluta('/')} />
 </svelte:head>
 
 <div class="pagina" data-fase={fase} data-listo={listo}>

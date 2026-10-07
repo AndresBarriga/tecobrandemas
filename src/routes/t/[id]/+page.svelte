@@ -3,12 +3,13 @@
 	import { page } from '$app/state';
 	import Cabecera from '#lib/componentes/Cabecera.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
-	import { NOMBRE, PAGINA_TARJETA, TARJETA_INQUILINO, textosEnlace } from '#lib/resultado';
+	import { NOMBRE, PAGINA_TARJETA, TARJETA_INQUILINO, textosEnlace, urlAbsoluta } from '#lib/resultado';
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
 
 	let { data } = $props();
 	const enlace = $derived(textosEnlace(data.tarjeta));
-	const imagen = $derived(`${page.url.origin}/t/${data.id}/og.jpg`);
+	const imagen = $derived(urlAbsoluta(`/t/${data.id}/og.jpg`, page.url.origin));
+	const direccion = $derived(urlAbsoluta(page.url.pathname, page.url.origin));
 
 	let canvas: HTMLCanvasElement;
 	onMount(() => void dibujarTarjeta(canvas, data.tarjeta));
@@ -21,7 +22,7 @@
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content={enlace.titulo} />
 	<meta property="og:description" content={enlace.descripcion} />
-	<meta property="og:url" content={page.url.href} />
+	<meta property="og:url" content={direccion} />
 	<meta property="og:image" content={imagen} />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />

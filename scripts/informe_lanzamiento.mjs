@@ -1,5 +1,5 @@
 // Informe de lanzamiento: comprueba contra un despliegue real lo que el plan promete.
-//   BASE_URL=https://a-su-precio.tiene-sentido.workers.dev npm run informe:lanzamiento
+//   BASE_URL=https://asuprecio.com npm run informe:lanzamiento
 // Mide el sitio publicado, no `vite dev` (en desarrollo el bundle y el rendimiento no son representativos).
 // Sale con código 1 si algo falla y escribe informe-lanzamiento.md.
 import { writeFileSync } from 'node:fs';
@@ -9,7 +9,7 @@ import { chromium } from '@playwright/test';
 import * as chromeLauncher from 'chrome-launcher';
 import lighthouse from 'lighthouse';
 
-const BASE = (process.env.BASE_URL ?? 'https://a-su-precio.tiene-sentido.workers.dev').replace(/\/$/, '');
+const BASE = (process.env.BASE_URL ?? 'https://asuprecio.com').replace(/\/$/, '');
 const ORIGEN = new URL(BASE).origin;
 const PAGINAS = ['/', '/como-calculamos', '/cuanto-pagas'];
 const LIMITE_BUNDLE = 165 * 1024; // 150 KB hasta añadir PostHog (+50 KB); subido a 165 KB el 07/10/2026

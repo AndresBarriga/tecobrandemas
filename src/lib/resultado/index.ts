@@ -13,6 +13,7 @@ export * from './tarjeta';
 export * from './compartir';
 export * from './autocompletar';
 export * from './calle';
+export * from './sitio';
 export * from './alias';
 export * from './formulario';
 export * from './aportacion';

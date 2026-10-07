@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import indexacion from '../../config/indexacion.json';
+	import { urlAbsoluta } from '#lib/resultado';
 	import { iniciarAnalitica, paginaSalida, paginaVista } from '#lib/cliente/analitica';
 	let { children } = $props();
 
@@ -34,6 +35,7 @@
 </script>
 
 <svelte:head>
+	<link rel="canonical" href={urlAbsoluta(page.url.pathname, page.url.origin)} />
 	{#if noindex}<meta name="robots" content="noindex, nofollow" />{/if}
 </svelte:head>
 

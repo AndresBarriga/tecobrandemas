@@ -55,7 +55,7 @@ jobs:
     needs: desplegar
     runs-on: ubuntu-latest
     env:
-      BASE_URL: ${{ vars.URL_PRODUCCION || 'https://a-su-precio.tiene-sentido.workers.dev' }}
+      BASE_URL: ${{ vars.URL_PRODUCCION || 'https://asuprecio.com' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

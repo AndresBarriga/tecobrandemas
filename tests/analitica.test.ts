@@ -71,11 +71,11 @@ describe('analítica: lista blanca (before_send)', () => {
 	});
 
 	it('las URL salen sin query (salvo utm_*), sin hash y con /t/:id; el referrer, solo el dominio', () => {
-		expect(limpiarUrl('https://a-su-precio.workers.dev/?t=abcde12345&utm_source=ig&utm_medium=story&gclid=XYZ&direccion=Calle%20Mayor#x')).toBe(
-			'https://a-su-precio.workers.dev/?utm_source=ig&utm_medium=story'
+		expect(limpiarUrl('https://asuprecio.com/?t=abcde12345&utm_source=ig&utm_medium=story&gclid=XYZ&direccion=Calle%20Mayor#x')).toBe(
+			'https://asuprecio.com/?utm_source=ig&utm_medium=story'
 		);
-		expect(limpiarUrl('https://a-su-precio.workers.dev/t/abcde12345?x=1')).toBe('https://a-su-precio.workers.dev/t/:id');
-		expect(limpiarUrl('https://a-su-precio.workers.dev/mapa?capa=presupuesto&m2=60&barrio=042')).toBe('https://a-su-precio.workers.dev/mapa');
+		expect(limpiarUrl('https://asuprecio.com/t/abcde12345?x=1')).toBe('https://asuprecio.com/t/:id');
+		expect(limpiarUrl('https://asuprecio.com/mapa?capa=presupuesto&m2=60&barrio=042')).toBe('https://asuprecio.com/mapa');
 		expect(dominioDelReferrer('https://l.instagram.com/?u=https%3A%2F%2Fexample.com%2Fsecreto')).toBe('l.instagram.com');
 		const r = filtrarEvento({
 			event: '$pageview',

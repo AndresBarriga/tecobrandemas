@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  BASE_URL: ${{ vars.URL_PRODUCCION || 'https://a-su-precio.tiene-sentido.workers.dev' }}
+  BASE_URL: ${{ vars.URL_PRODUCCION || 'https://asuprecio.com' }}
 
 jobs:
   informe:
