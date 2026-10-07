@@ -234,8 +234,30 @@
 				return;
 			}
 			comparte({ modo: modoActual, canal, tarjeta_id: id, resultado: nivelAnalitica });
-			void subirTarjeta(tarjetaActual, id);
-			if (canal === 'copiar') mensajeTarjeta = (await copiarEnlace(id)) ? TARJETA.enlaceCopiado : urlDeTarjeta(id);
+			const subida = subirTarjeta(tarjetaActual, id);
+			if (canal === 'copiar') {
+				// Se copia ya (hace falta el gesto de la persona) y se avisa cuando la tarjeta ya existe en el servidor
+				const copiado = await copiarEnlace(id);
+				mensajeTarjeta = TARJETA.generando;
+				await subida;
+				mensajeTarjeta = copiado ? TARJETA.enlaceCopiado : urlDeTarjeta(id);
+				return;
+			}
+			// WhatsApp y X miran el enlace en cuanto se abren: si la tarjeta aún no está subida, la vista previa sale vacía
+			// y WhatsApp se acuerda del fallo. Se abre el canal cuando la tarjeta ya existe.
+			mensajeTarjeta = TARJETA.generando;
+			if (!(await subida)) {
+				mensajeTarjeta = TARJETA.error;
+				return;
+			}
+			mensajeTarjeta = null;
+			const destino = canal === 'whatsapp' ? enlaces?.whatsapp : enlaces?.x;
+			if (destino) {
+				// Con 'noopener' open() devuelve siempre null: se abre normal y se corta el vínculo a mano
+				const ventana = window.open(destino, '_blank');
+				if (ventana) ventana.opener = null;
+				else location.href = destino; // ventana emergente bloqueada (p. ej. Safari tras una espera)
+			}
 		} catch {
 			mensajeTarjeta = TARJETA.error;
 		}
@@ -478,6 +500,8 @@
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content={urlAbsoluta('/')} />
 	<meta property="og:image" content={urlAbsoluta('/og-portada.png')} />
+	<meta property="og:image:secure_url" content={urlAbsoluta('/og-portada.png')} />
+	<meta property="og:image:type" content="image/png" />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
 	<meta name="twitter:card" content="summary_large_image" />

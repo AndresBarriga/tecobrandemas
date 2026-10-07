@@ -139,10 +139,10 @@
 				</button>
 			{:else if enlaces}
 				<div class="canales" role="group" aria-label={BOTON_COMPARTIR}>
-					<a class="boton canal" href={enlaces.whatsapp} target="_blank" rel="noopener noreferrer" onclick={() => alCompartirPor?.('whatsapp')}
+					<a class="boton canal" href={enlaces.whatsapp} target="_blank" rel="noopener noreferrer" onclick={(e) => { e.preventDefault(); alCompartirPor?.('whatsapp'); }}
 						>{TARJETA.canales.whatsapp}</a
 					>
-					<a class="boton canal" href={enlaces.x} target="_blank" rel="noopener noreferrer" onclick={() => alCompartirPor?.('x')}
+					<a class="boton canal" href={enlaces.x} target="_blank" rel="noopener noreferrer" onclick={(e) => { e.preventDefault(); alCompartirPor?.('x'); }}
 						>{TARJETA.canales.x}</a
 					>
 					<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor?.('copiar')}>{TARJETA.canales.copiar}</button>
