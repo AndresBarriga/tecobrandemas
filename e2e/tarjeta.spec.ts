@@ -1,8 +1,22 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { SITE_URL } from '../src/lib/resultado/sitio';
 import { abrir, comprobar, esperarAnimacion, sinCompartirNativo } from './ayudas';
 
 const carpeta = () => `e2e/capturas/${test.info().project.name}`;
+
+test('la portada tiene imagen de vista previa (og:image 1200×630) y tarjeta grande', async ({ page, request }) => {
+	await abrir(page);
+	const meta = (n: string) => page.locator(`meta[${n}]`).getAttribute('content');
+	expect(await meta('property="og:image"')).toBe(`${SITE_URL}/og-portada.png`);
+	expect(await meta('property="og:image:width"')).toBe('1200');
+	expect(await meta('property="og:image:height"')).toBe('630');
+	expect(await meta('name="twitter:card"')).toBe('summary_large_image');
+	expect(await meta('name="twitter:image"')).toBe(`${SITE_URL}/og-portada.png`);
+	const img = await request.get('/og-portada.png');
+	expect(img.status()).toBe(200);
+	expect(img.headers()['content-type']).toBe('image/png');
+});
 
 test.describe('tarjeta y /t/:id', () => {
 	test('22-tarjeta: se genera en menos de 3 s, sin precio, y el enlace /t/:id la muestra', async ({ page, request, baseURL }) => {
