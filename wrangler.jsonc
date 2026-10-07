@@ -6,6 +6,8 @@
 	"compatibility_flags": ["nodejs_compat"],
 	// Dominio propio (se añadió desde el panel): declarado aquí para que un despliegue no lo elimine. Sin www: lo redirige una regla de Cloudflare.
 	"routes": [{ "pattern": "asuprecio.com", "custom_domain": true }],
+	// Sin URL de workers.dev: el sitio solo se sirve desde el dominio propio
+	"workers_dev": false,
 	"assets": {
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"

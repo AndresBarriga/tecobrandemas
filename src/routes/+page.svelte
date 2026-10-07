@@ -477,6 +477,11 @@
 	<meta property="og:description" content={DESCRIPCION} />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content={urlAbsoluta('/')} />
+	<meta property="og:image" content={urlAbsoluta('/og-portada.png')} />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:image" content={urlAbsoluta('/og-portada.png')} />
 </svelte:head>
 
 <div class="pagina" data-fase={fase} data-listo={listo}>
