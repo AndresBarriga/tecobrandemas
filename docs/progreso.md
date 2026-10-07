@@ -263,7 +263,7 @@ Diseño en `docs/design/design-f1/` (README sección F1, `F1 Ya vivo aqui.dc.htm
 - Sin tests nuevos ni capturas, según las decisiones vigentes; se ajustó el test de formato (espacio duro antes de «m²») en los textos nuevos.
 
 ## A2 · «Mi presupuesto»: color y lectura (07/10/2026, rama `a2-mapa-presupuesto-color`)
-- **Color:** sin puntos ni rayado. «No llega» #E4DFD3 (plano), «Dentro» #8DBBA2, «Te sobra» #3F7F62; «Sin dato» #EFECE4 plano, con rayado tenue (1 px #CFC9BA cada 8 px) solo con zoom ≥ 12 (≤ 29,1 m/px). Líneas de barrio y contorno del municipio (nuevo, `contornoMunicipio`) más marcados que las de zona. Solo esta capa; Referencia y Evolución no cambian.
+- **Color:** sin puntos ni rayado. «No llega» #E8E3D8 (plano), «Dentro» #84B598, «Te sobra» #3A7A5D (ajustados el 07/10/2026 para subir el contraste No llega-Dentro a 1,81:1); «Sin dato» #EFECE4 plano, con rayado tenue (1 px #CFC9BA cada 8 px) solo con zoom ≥ 12 (≤ 29,1 m/px). Líneas de barrio y contorno del municipio (nuevo, `contornoMunicipio`) más marcados que las de zona. Solo esta capa; Referencia y Evolución no cambian.
 - **Textos:** «No llega», «Dentro», «Te sobra» en leyenda, hoja y nota; la hoja dice «no llega a la referencia», «queda dentro de la referencia» y «te sobra margen respecto a la referencia».
 - **Leyenda en móvil:** una línea de tres chips con color bajo el conmutador (solo en esta capa), además de la de la hoja.
 - **Resumen:** con más del 95 % de las zonas con dato en «Te sobra», o con menos del 5 % pero alguna, añade el aviso de probar con más o menos metros (con 0 zonas sigue el mensaje propio).

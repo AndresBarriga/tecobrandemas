@@ -281,12 +281,12 @@ export function numeroDelCampo(texto: string): number | null {
 /**
  * Colores de cada capa. «Referencia»: la escala de Paja de «Tu zona». «Evolución»: Acero, otra familia.
  * «Mi presupuesto»: No llega (gris cálido claro, plano), Dentro (verde medio), Te sobra (verde oscuro, no negro).
- * Contrastes de partida 1,6:1 (No llega-Dentro) y 2,2:1 (Dentro-Te sobra); sin dato, #EFECE4 plano (SIN_DATO_PRESUPUESTO).
+ * Contrastes 1,8:1 (No llega-Dentro) y 2,2:1 (Dentro-Te sobra); sin dato, #EFECE4 plano (SIN_DATO_PRESUPUESTO).
  */
 export const TONOS_MAPA: Record<CapaMapa, readonly string[]> = {
 	referencia: ['#F3E4B0', '#E2BE55', '#BF962F', '#8E6B1D', '#5A4413'],
 	evolucion: ['#E3ECF4', '#B5CADD', '#86A9C9', '#5384B0', '#2F5B8A'],
-	presupuesto: ['#E4DFD3', '#8DBBA2', '#3F7F62']
+	presupuesto: ['#E8E3D8', '#84B598', '#3A7A5D']
 };
 
 /** «Sin dato» en «Mi presupuesto»: relleno plano; el rayado tenue (#CFC9BA, 1 px cada 8 px) solo con zoom ≥ 12 */
