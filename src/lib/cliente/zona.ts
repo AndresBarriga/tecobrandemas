@@ -32,6 +32,18 @@ export function lineasEntreBarrios(mapa: DatosMapa, datos: DatosMadrid): Promise
 	return lineas;
 }
 
+let contorno: Promise<[number, number][][]> | null = null;
+
+/** Contorno del municipio: las aristas que solo tienen una zona a un lado (una sola vez por visita) */
+export function contornoMunicipio(mapa: DatosMapa): Promise<[number, number][][]> {
+	contorno ??= Promise.resolve().then(() => {
+		const capa = mapa.topo.objects.secciones as GeometryCollection;
+		const m = mesh(mapa.topo, capa, (a, b) => a === b);
+		return m.coordinates.map((l) => l.map(([lon, lat]) => puntoAMetros({ lon: lon!, lat: lat! })));
+	});
+	return contorno;
+}
+
 const dentro = (b: [number, number, number, number], x0: number, y0: number, x1: number, y1: number) =>
 	!(b[2] < x0 || b[0] > x1 || b[3] < y0 || b[1] > y1);
 

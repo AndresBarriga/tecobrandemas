@@ -1,12 +1,13 @@
 <script lang="ts">
-	import { MAPA_REFERENCIA as T, TONOS_MAPA, type CapaMapa } from '#lib/resultado';
+	import { MAPA_REFERENCIA as T, SIN_DATO_PRESUPUESTO, TONOS_MAPA, type CapaMapa } from '#lib/resultado';
 	import { type Caja, type MadridCargado } from '#lib/cliente/mapa-madrid';
 	import { colocarNombres } from '#lib/cliente/zona-mapa';
 
 	/**
 	 * Mapa de Madrid por zonas (SVG con la vista en metros). El color llega ya calculado: este componente
 	 * solo pinta, mueve la vista y avisa de la zona tocada. Visual de «Tu zona»: escala de Paja, rayado gris
-	 * para «sin dato», puntos para «por debajo», líneas gruesas entre barrios y nombres en Tinta con halo claro.
+	 * para «sin dato», líneas gruesas entre barrios y nombres en Tinta con halo claro. «Mi presupuesto» usa
+	 * rellenos planos (gris cálido, verde medio, verde oscuro) y solo rayea «sin dato» con zoom ≥ 12.
 	 * A zoom bajo se nombran los distritos y, al acercar, los barrios. (Se probó con canvas: con la CPU
 	 * limitada a una sexta parte, cambiar la superficie tardaba 1,2 s frente a 0,19 s en SVG.)
 	 */
@@ -73,8 +74,11 @@
 
 	// ——— Colores ———
 	const paleta = $derived(TONOS_MAPA[capa]);
-	const relleno = (t: number | null | undefined) =>
-		t === null || t === undefined ? 'url(#mp-rayado)' : capa === 'presupuesto' && t === 0 ? 'url(#mp-debajo)' : paleta[t]!;
+	const presupuesto = $derived(capa === 'presupuesto');
+	// Zoom 12 de teselas de 256 px a la latitud de Madrid: 119.278 m/px ÷ 2^12
+	const hayRayado = $derived(!presupuesto || mpp <= 29.1);
+	const sinDato = $derived(!presupuesto ? 'url(#mp-rayado)' : hayRayado ? 'url(#mp-rayado-tenue)' : SIN_DATO_PRESUPUESTO.relleno);
+	const relleno = (t: number | null | undefined) => (t === null || t === undefined ? sinDato : paleta[t]!);
 	const grosor = $derived(mpp > 60 ? 0.35 : mpp > 25 ? 0.6 : 1);
 	const trazadoSel = $derived(seleccion ? (madrid.porCusec.get(seleccion)?.d ?? '') : '');
 	const trazadoRes = $derived([...resaltadas].map((c) => madrid.porCusec.get(c)?.d ?? '').join(''));
@@ -219,16 +223,17 @@
 					<rect width={6 * mpp} height={6 * mpp} fill="#DAD5CA" />
 					<line x1="0" y1="0" x2="0" y2={6 * mpp} stroke="#857F74" stroke-width={1.5 * mpp} />
 				</pattern>
-				<pattern id="mp-debajo" width={7 * mpp} height={7 * mpp} patternUnits="userSpaceOnUse">
-					<rect width={7 * mpp} height={7 * mpp} fill="#F6F4EE" />
-					<circle cx={3.5 * mpp} cy={3.5 * mpp} r={1.5 * mpp} fill="#1C1B19" />
+				<pattern id="mp-rayado-tenue" width={8 * mpp} height={8 * mpp} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+					<rect width={8 * mpp} height={8 * mpp} fill={SIN_DATO_PRESUPUESTO.relleno} />
+					<line x1="0" y1="0" x2="0" y2={8 * mpp} stroke={SIN_DATO_PRESUPUESTO.rayado} stroke-width={mpp} />
 				</pattern>
 			</defs>
 			<rect x={vx} y={vy} width={w * mpp} height={h * mpp} fill="#ECEAE5" />
 			{#each madrid.celdas as c (c.cusec)}
-				<path d={c.d} fill-rule="evenodd" fill={relleno(tonos.get(c.cusec))} stroke="#857F74" stroke-width={grosor} stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+				<path d={c.d} fill-rule="evenodd" fill={relleno(tonos.get(c.cusec))} stroke={presupuesto ? '#BDB7A8' : '#857F74'} stroke-width={grosor} stroke-linejoin="round" vector-effect="non-scaling-stroke" />
 			{/each}
-			<path d={madrid.lineasBarrio} fill="none" stroke="#A39D91" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+			<path d={madrid.lineasBarrio} fill="none" stroke={presupuesto ? '#857F74' : '#A39D91'} stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+			{#if presupuesto}<path d={madrid.contorno} fill="none" stroke="#5F5A50" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke" />{/if}
 			{#if trazadoRes}<path d={trazadoRes} fill="none" stroke="#1C1B19" stroke-width="3.5" stroke-linejoin="round" vector-effect="non-scaling-stroke" />{/if}
 			{#if trazadoSel}
 				<path d={trazadoSel} fill="none" stroke="#F6F4EE" stroke-width="8" stroke-linejoin="round" vector-effect="non-scaling-stroke" />

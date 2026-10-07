@@ -9,7 +9,7 @@
 	import Segmentado from '#lib/componentes/Segmentado.svelte';
 	import {
 		MAPA_REFERENCIA as T, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, TONOS_MAPA, capaEvolucion, capaPresupuesto, capaReferencia,
-		distanciaCorta, hojaDeZona, numero, numeroDelCampo, superficieValida, zonasCercanas, zonasDelMapa, type CapaMapa, type SugerenciaVia, type SugerenciaZona
+		distanciaCorta, extremoPresupuesto, hojaDeZona, numero, numeroDelCampo, superficieValida, zonasCercanas, zonasDelMapa, type CapaMapa, type SugerenciaVia, type SugerenciaZona
 	} from '#lib/resultado';
 	import { type Caja, type MadridCargado, cargarMadrid, unirCajas } from '#lib/cliente/mapa-madrid';
 	import { metrosAPunto } from '#lib/cliente/mapa';
@@ -150,6 +150,8 @@
 	const tituloLeyenda = $derived(capa === 'presupuesto' ? T.leyendaPresupuesto : capa === 'evolucion' ? T.leyendaEvolucion : T.leyenda);
 	const errorMetros = $derived(capa === 'presupuesto' && metros !== null && !superficieValida(metros) ? T.presupuesto.metrosFuera : null);
 
+	const extremo = $derived(resumen ? extremoPresupuesto(resumen) : null);
+
 	const hoja = $derived.by(() => {
 		const z = seleccion ? zonaPorCusec.get(seleccion) : undefined;
 		return z && madrid ? hojaDeZona(z, madrid.datos, capa, superficieCapa, presupuesto) : null;
@@ -278,20 +280,25 @@
 		<div class="muestras" style:--n={calculada.leyenda.length + 1}>
 			{#each calculada.leyenda as l (l.etiqueta)}
 				<div class="muestra">
-					<span
-						class="color"
-						class:trama={capa === 'presupuesto' && l.tono === 0}
-						style:background={capa === 'presupuesto' && l.tono === 0 ? undefined : l.tono === null ? undefined : TONOS_MAPA[capa][l.tono]}
-					></span>
+					<span class="color" style:background={l.tono === null ? undefined : TONOS_MAPA[capa][l.tono]}></span>
 					<span class="etiqueta-l">{l.etiqueta}</span>
 				</div>
 			{/each}
 			<div class="muestra">
-				<span class="color rayado"></span>
+				<span class="color rayado" class:plano={capa === 'presupuesto'}></span>
 				<span class="etiqueta-l">{T.sinDato}</span>
 			</div>
 		</div>
 	{/if}
+{/snippet}
+
+<!-- Móvil, «Mi presupuesto»: los tres colores siempre a la vista, bajo el conmutador de capa -->
+{#snippet chipsPresupuesto()}
+	<ul class="chips-leyenda solo-movil" aria-label={T.leyendaPresupuesto}>
+		{#each [T.presupuesto.debajo, T.presupuesto.dentro, T.presupuesto.margen] as nombre, i (nombre)}
+			<li><span class="punto" style:background={TONOS_MAPA.presupuesto[i]}></span>{nombre}</li>
+		{/each}
+	</ul>
 {/snippet}
 
 {#snippet notas()}
@@ -324,9 +331,11 @@
 			/>
 		</div>
 
+		{#if capa === 'presupuesto'}{@render chipsPresupuesto()}{/if}
+
 		<section class="mapa" aria-label={T.mapa} aria-busy={estado === 'cargando'}>
 			{#if estado === 'listo' && madrid}
-				<MapaMadrid {madrid} {tonos} {capa} {seleccion} {resaltadas} {enfoque} margenInferior={movil ? altoHoja : 0} margenSuperior={movil ? 64 : 0} alElegir={elegirZona} />
+				<MapaMadrid {madrid} {tonos} {capa} {seleccion} {resaltadas} {enfoque} margenInferior={movil ? altoHoja : 0} margenSuperior={movil ? (capa === 'presupuesto' ? 108 : 64) : 0} alElegir={elegirZona} />
 				{#if errorMetros}
 					<div class="mapa-aviso" role="status">
 						<p>{errorMetros}</p>
@@ -387,6 +396,7 @@
 									<span>{T.presupuesto.ninguna.texto}</span>
 								{:else if resumen}
 									<strong>{T.presupuesto.resumen(String(resumen.porcentaje), numero(resumen.llega), numero(resumen.conDato))}</strong>
+									{#if extremo}<span>{T.presupuesto.extremo[extremo]}</span>{/if}
 									<span class="nota">{T.presupuesto.notaPoblacion}</span>
 								{:else}
 									<span>{T.presupuesto.pideDatos}</span>
@@ -568,6 +578,7 @@
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 10px;
+		align-items: end;
 	}
 	.campo-grupo {
 		display: flex;
@@ -766,8 +777,42 @@
 	.color.rayado {
 		background: repeating-linear-gradient(45deg, #dad5ca 0 3px, #857f74 3px 4.5px);
 	}
-	.color.trama {
-		background: radial-gradient(circle at 50% 50%, #1c1b19 0 1.5px, transparent 1.6px) 0 0 / 7px 7px, #f6f4ee;
+	.color.rayado.plano {
+		background: #efece4;
+	}
+	.chips-leyenda {
+		position: absolute;
+		z-index: 3;
+		top: 64px;
+		left: var(--margen);
+		right: var(--margen);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 6px;
+		pointer-events: none;
+	}
+	.chips-leyenda li {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		min-width: 0;
+		padding: 6px 4px;
+		border-radius: var(--radio);
+		background: #f6f4ee;
+		box-shadow: 0 1px 4px rgb(28 27 25 / 0.25);
+		font: 700 13px/1.1 var(--f-texto);
+		white-space: nowrap;
+	}
+	.punto {
+		flex: none;
+		width: 14px;
+		height: 14px;
+		border-radius: 3px;
+		border: 1px solid #5f5a50;
 	}
 	.etiqueta-l {
 		font: 600 12px/1.2 var(--f-semi);
@@ -826,6 +871,9 @@
 	}
 	.mapa-aviso {
 		top: 64px;
+	}
+	.chips-leyenda ~ .mapa .mapa-aviso {
+		top: 108px;
 	}
 	.pie-hoja {
 		margin: 0 calc(-1 * var(--margen));

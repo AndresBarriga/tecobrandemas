@@ -733,10 +733,10 @@ export const MAPA_REFERENCIA = {
 		titulo: 'Mi presupuesto',
 		campoPresupuesto: 'Lo que puedes pagar al mes (€)',
 		campoMetros: 'Metros (m²)',
-		debajo: 'Por debajo',
+		debajo: 'No llega',
 		dentro: 'Dentro',
-		margen: 'Con margen',
-		nota: 'Por debajo: menos que el mínimo de la referencia. Dentro: entre el mínimo y el máximo. Con margen: más que el máximo.',
+		margen: 'Te sobra',
+		nota: 'No llega: menos que el mínimo de la referencia. Dentro: entre el mínimo y el máximo. Te sobra: más que el máximo.',
 		aviso: 'No son pisos disponibles. La referencia son contratos registrados; lo que se pide hoy puede ser más alto, así que «dentro» es orientativo.',
 		resumen: (porcentaje: string, llega: string, conDato: string) =>
 			`En el ${porcentaje}\u00A0% de las zonas con dato (${llega} de ${conDato}) tu presupuesto llega a la referencia.`,
@@ -755,6 +755,10 @@ export const MAPA_REFERENCIA = {
 		ninguna: {
 			titulo: 'Tu presupuesto no llega a la referencia de ninguna zona.',
 			texto: 'Con estos metros, la referencia de todas las zonas es mayor. Prueba con menos metros o con otro presupuesto.'
+		},
+		extremo: {
+			sobra: 'Tu presupuesto llega a casi todas las zonas con estos metros. Prueba con más metros para ver dónde se ajusta.',
+			pocas: 'Tu presupuesto llega a muy pocas zonas con estos metros. Prueba con menos metros para ver dónde se ajusta.'
 		}
 	},
 	hoja: {
@@ -765,9 +769,9 @@ export const MAPA_REFERENCIA = {
 		procedencia: (n: string, mes: string) =>
 			`${n} alquileres registrados · IRPF 2024, propietarios personas físicas, contratos vigentes de distintas fechas · ajustado por el IPC hasta ${mes}`,
 		presupuesto: {
-			debajo: (e: string) => `Tu presupuesto (${e} al mes) queda por debajo del mínimo de la referencia.`,
+			debajo: (e: string) => `Tu presupuesto (${e} al mes) no llega a la referencia.`,
 			dentro: (e: string) => `Tu presupuesto (${e} al mes) queda dentro de la referencia.`,
-			margen: (e: string) => `Tu presupuesto (${e} al mes) queda por encima del máximo de la referencia.`
+			margen: (e: string) => `Con tu presupuesto (${e} al mes) te sobra margen respecto a la referencia.`
 		},
 		evolucion: (antes: string, despues: string, variacion: string) =>
 			`Mediana registrada: de ${antes}\u00A0€/m² en 2015 a ${despues}\u00A0€/m² en 2024 (${variacion}). Sin descontar la inflación.`,
