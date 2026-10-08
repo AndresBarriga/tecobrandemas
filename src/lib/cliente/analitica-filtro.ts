@@ -9,7 +9,8 @@
  *  - las propiedades `$…` del SDK salen todas (el modo sin cookies las necesita: `$raw_user_agent`, `$host`,
  *    `$device_id`, el tamaño de pantalla…), salvo las de IP, geolocalización y perfil (SDK_PROHIBIDAS);
  *  - toda URL (`$current_url`, `$referrer`, `$initial_current_url`…) sale con la ruta y con una query reducida a
- *    QUERY_PERMITIDA (utm_source, utm_medium, utm_campaign, utm_content, c, t e internal); `/t/<id>` pasa a `/t/:id`;
+ *    PARAMETROS_URL (utm_source, utm_medium, utm_campaign, utm_content, t e internal), cada uno con su formato cerrado;
+ *    un parámetro que no cumple se elimina entero (nunca se recorta); `/t/<id>` pasa a `/t/:id`;
  *  - nunca: dirección, coordenadas, precio, metros, barrio, sección censal ni texto libre.
  */
 
@@ -30,8 +31,13 @@ export const RESPUESTAS_QUE_HARAS = [
 
 const enumerado = (valores: readonly string[]) => (v: unknown) => typeof v === 'string' && valores.includes(v);
 const entero = (min: number, max: number) => (v: unknown) => typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;
-const texto100 = (v: unknown) => typeof v === 'string' && v.length > 0 && v.length <= 100;
 const IDENTIFICADOR_TARJETA = /^[0-9a-z]{10}$/;
+/**
+ * Valor de campaña (`utm_*`, en la URL y como propiedad): hasta 40 caracteres, solo letras minúsculas, cifras, guion y guion
+ * bajo, empezando por letra y sin tres cifras seguidas. Así no puede ser un precio («2500»), una sección censal («2807904033»)
+ * ni una cifra suelta. Si no encaja se descarta entero; nunca se recorta ni se pasa a minúsculas.
+ */
+export const campanaValida = (v: unknown): v is string => typeof v === 'string' && /^[a-z][a-z0-9_-]{0,39}$/.test(v) && !/\d{3}/.test(v);
 // Nombre de un distrito: letras (con tildes), espacios y guiones; nunca cifras ni signos de dirección
 const NOMBRE_DISTRITO = /^[\p{L} '·-]{2,40}$/u;
 
@@ -56,10 +62,10 @@ const VALIDADORES: Record<string, Validador> = {
 	v: (v) => v === 1,
 	navegador_app: enumerado(APPS),
 	// Campaña con la que llegó la persona (solo en memoria, de la URL de esa visita) o, sin campaña, el dominio del referrer
-	utm_source: texto100,
-	utm_medium: texto100,
-	utm_campaign: texto100,
-	utm_content: texto100,
+	utm_source: campanaValida,
+	utm_medium: campanaValida,
+	utm_campaign: campanaValida,
+	utm_content: campanaValida,
 	ref_domain: (v) => typeof v === 'string' && /^[a-z0-9.-]{1,100}$/i.test(v),
 	tarjeta_origen: (v) => typeof v === 'string' && IDENTIFICADOR_TARJETA.test(v),
 	interno: (v) => typeof v === 'boolean'
@@ -94,21 +100,31 @@ export const SDK_PROHIBIDAS = /^\$(ip|geoip\w*|geo\w*|country\w*|city\w*|region\
 /** Sin `$` y obligatorias para PostHog */
 const PROPIEDADES_OBLIGATORIAS = ['token', 'distinct_id'];
 
-/** Propiedades de campaña que se dejan salir; el resto (utm_term, gclid, fbclid, etc.) se quita */
+/** Propiedades de campaña que se dejan salir, con su formato (campanaValida); el resto (utm_term, gclid, fbclid, etc.) se quita */
 const CAMPANA = /^utm_(source|medium|campaign|content)$/;
-/** Lo único que sale de la query de una URL: la campaña, la tarjeta de origen (`t`), el código de enlace (`c`) y la marca interna; el resto (m2, precio, barrio, gclid…) se quita */
-export const QUERY_PERMITIDA: readonly string[] = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'c', 't', 'internal'];
-const VALOR_SENCILLO = /^[\w.-]{1,40}$/;
+/**
+ * Lo único que sale de la query de una URL y el formato de cada valor; el resto (m2, precio, barrio, gclid, c…) se quita.
+ * `t` es el id de tarjeta (10 caracteres de base 36) y no puede ser solo cifras (parecería una sección censal); `internal`, solo `1`.
+ */
+const PARAMETROS_URL = new Map<string, (v: string) => boolean>([
+	['utm_source', campanaValida],
+	['utm_medium', campanaValida],
+	['utm_campaign', campanaValida],
+	['utm_content', campanaValida],
+	['t', (v) => IDENTIFICADOR_TARJETA.test(v) && !/^\d+$/.test(v)],
+	['internal', (v) => v === '1']
+]);
+export const QUERY_PERMITIDA: readonly string[] = [...PARAMETROS_URL.keys()];
 
 /** Una URL con su ruta y la query reducida a QUERY_PERMITIDA, sin hash; `/t/<id>` pasa a `/t/:id`. `$direct` se queda como está */
 export function limpiarUrl(url: string): string {
 	if (url === '$direct') return url;
 	try {
 		const u = new URL(url, 'https://x.invalid');
-		const query = [...u.searchParams].filter(([k, v]) => (CAMPANA.test(k) ? v !== '' : QUERY_PERMITIDA.includes(k) && VALOR_SENCILLO.test(v)));
+		const query = [...u.searchParams].filter(([k, v]) => PARAMETROS_URL.get(k)?.(v) === true);
 		const origen = /^https?:\/\//i.test(url) ? u.origin : '';
 		const ruta = limpiarRuta(u.pathname);
-		return `${origen}${ruta}${query.length ? `?${query.map(([k, v]) => `${k}=${encodeURIComponent(v.slice(0, 100))}`).join('&')}` : ''}`;
+		return `${origen}${ruta}${query.length ? `?${query.map(([k, v]) => `${k}=${v}`).join('&')}` : ''}`;
 	} catch {
 		return '';
 	}
@@ -152,7 +168,7 @@ export function filtrarEvento<T extends EventoSdk>(e: T | null): T | null {
 			continue;
 		}
 		if (CAMPANA.test(clave)) {
-			if (typeof valor === 'string' && valor) salida[clave] = valor.slice(0, 100);
+			if (campanaValida(valor)) salida[clave] = valor;
 			continue;
 		}
 		if (PROPIEDADES_OBLIGATORIAS.includes(clave)) {
