@@ -340,3 +340,12 @@ Diseño en `docs/design/design-f1/` (README sección F1, `F1 Ya vivo aqui.dc.htm
   - Cómo calculamos: «Los niveles» (cuatro, con «Por debajo»), «contratos» en lugar de «alquileres registrados», frases de Mi presupuesto, «Tus datos» sin «Somos N» (en el formulario, «Personas en el contrato») y «compartes» en vez de «compartís».
   - Contacto: hola@asuprecio.com en Quiénes somos (antes, el Gmail personal).
   - El ejemplo de la portada sigue a la pestaña activa (`construirMuestra(datos, modo)`).
+
+## Limpieza de `abierto.md` (08/10/2026)
+Qué se retiró y por qué, para no perder la historia:
+- **PR #14, #15 y #16** (correcciones de la Fase 1: resultado y tarjetas, formulario, «Tu zona»): se cerraron sin fusionar; su contenido ya está en el código (`?modo=`, «Añade el número para afinar», «Tu zona» con horquilla, tarjetas del inquilino). El #17 (habitaciones) sí se fusionó. Se quitó la instrucción «fusionar #14 a #17 en orden».
+- **Notas de «Correcciones F1»** (ya hechas): el titular de rango en una línea solo para Mi alquiler, la opción «¿Y tú? Compruébalo con el tuyo.» como último texto de la tarjeta, y «Añade el número para afinar» solo con calle sin número. Los alias de barrios ya cargados (El Rastro, Conde Duque, Tribunal, Huertas, Barrio de las Letras, Ópera, Bernabéu, Las Tablas, Sanchinarro, Valdebebas, La Latina, Vallecas y Barrio de Salamanca) están en `src/lib/resultado/alias.ts`.
+- **Cola «Mapa»:** la parte 2 (`/mapa`, tarjeta ampliable, «Mi presupuesto», ubicación «Calle + Nº») se hizo en A2; la parte 1 (PMTiles como activo estático) pasó a «Por verificar».
+- **`URL_PRODUCCION`:** la variable del repositorio no existe (solo `PUBLIC_POSTHOG_KEY`); los flujos usan https://asuprecio.com por defecto, así que se quitó el aviso.
+- **Duplicados** unificados: pruebas en móvil real, R2, plan de pago de Workers, caducidad de tarjetas y previsualizaciones por rama.
+- **Nuevo:** la prueba de humo en rojo por el beacon de Cloudflare Web Analytics, y la sección de credibilidad de los datos aportados.
