@@ -63,7 +63,7 @@ Los eventos de uso van a PostHog (`eu.i.posthog.com`) a través de un proxy del 
 
 **Propiedades `$…` y URL (08/10/2026):** el modo sin cookies de PostHog calcula el identificador diario en el servidor a partir de `$raw_user_agent`, `$host` y la IP de la petición; sin `$raw_user_agent` el evento se descarta con el aviso `cookieless_missing_user_agent`. Por eso `before_send` (`analitica-filtro.ts`) deja pasar **todas** las propiedades `$…` que añade el SDK (comprobado con la 1.438.1: `$raw_user_agent`, `$host`, `$lib`, `$lib_version`, `$cookieless_mode`, `$device_id`, `$time`, `$pathname`, `$browser`, `$os`, `$device_type`, `$screen_width/height`, `$viewport_width/height`, idioma, zona horaria…) y quita solo las de IP y geolocalización (`$ip`, `$geoip_*`, país, ciudad, latitud…) y las de perfil (`$set`, `$set_once`), además de los valores que no sean texto, número o booleano. Siguen quitándose las que no empiezan por `$`: `title`, los identificadores de clic (`gclid`, `fbclid`…) y `utm_term`; `token` y `distinct_id` (siempre `$posthog_cookieless`) los exige PostHog. **Toda URL** (`$current_url`, `$referrer`, `$initial_current_url`, `$session_entry_url`… y cualquier texto que empiece por `http`) sale con su ruta (`/t/<id>` pasa a `/t/:id`), sin hash y con la query reducida a `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `t` e `internal`, cada uno con un formato cerrado (ver «Formato de los parámetros de URL»): `/mapa?m2=70` sale como `/mapa`. Si se actualiza `posthog-js`, repetir `e2e/analitica.spec.ts` y revisar si aparecen propiedades nuevas (el test de `tests/analitica.test.ts` comprueba que un evento de ejemplo conserva `$raw_user_agent` y los UTM y no lleva m², precio, dirección ni coordenadas).
 
-**Campaña en todos los eventos:** al cargar se leen `utm_source`, `utm_medium`, `utm_campaign` y `utm_content` de la URL (con el formato de abajo; `utm_term` ya no) y se registran en memoria (`posthog.register`) como propiedades de todos los eventos de esa carga, incluidos `completa` y `comparte`; sin ninguna campaña, solo `ref_domain` (el dominio del referrer, nunca la URL, y nunca el propio sitio). Nada en cookies ni en el almacenamiento del navegador. El proxy `/r7k` reenvía el cuerpo tal cual y, en cabeceras, el user agent y la IP.
+**Campaña en todos los eventos:** al cargar se leen `utm_source`, `utm_medium`, `utm_campaign` y `utm_content` de la URL (con el formato de abajo; `utm_term` ya no) y se registran en memoria (`posthog.register`) como propiedades de todos los eventos de esa carga, incluidos `completa` y `comparte`; sin ninguna campaña, solo `ref_domain` (el dominio del referrer, nunca la URL, y nunca el propio sitio). La analítica no usa cookies ni almacenamiento del navegador; el historial de la sesión sí usa `sessionStorage` (clave `asp:historial`: el formulario, con la dirección, y el resultado de cada comprobación, hasta 20; no sale del dispositivo y se borra al cerrar la pestaña) y SvelteKit guarda claves `sveltekit:*`. «Tus datos» (Cómo calculamos) lo cuenta así, y aclara que al comprobar la dirección sí se envía al servidor para calcular el resultado (no se guarda). El proxy `/r7k` reenvía el cuerpo tal cual y, en cabeceras, el user agent y la IP.
 
 **Formato de los parámetros de URL (08/10/2026):** la query de una URL que sale hacia PostHog (`$current_url`, `$referrer`, `$initial_current_url`…) solo conserva estos parámetros, y **un parámetro que no cumple su formato se elimina entero** (nunca se envía recortado ni cambiado a minúsculas):
 
@@ -72,6 +72,19 @@ Los eventos de uso van a PostHog (`eu.i.posthog.com`) a través de un proxy del 
 | `utm_source`, `utm_medium`, `utm_campaign`, `utm_content` | hasta 40 caracteres; solo letras minúsculas, cifras, `-` y `_`; empieza por letra y no lleva tres cifras seguidas. Así no puede ser un precio (`2500`), una sección censal (`2807904033`) ni una cifra suelta; tampoco `oct-2026` ni `Instagram`: se escribe `oct-26` o `instagram` |
 | `t` | exactamente 10 caracteres de base 36 (`0-9a-z`, el id de tarjeta) y no solo cifras (parecería una sección censal; un id aleatorio de solo cifras sale una vez entre unos 370.000) |
 | `internal` | solo `1` |
+
+**Ejemplo de enlace de campaña que funciona:**
+
+```
+https://asuprecio.com/?utm_source=instagram&utm_medium=bio&utm_campaign=soft-oct&utm_content=mensaje-a
+```
+
+**Lo que lo rompe** (el parámetro entero deja de salir hacia PostHog, y el enlace sigue funcionando):
+- **Mayúsculas:** `utm_source=Instagram` → escribir `instagram`.
+- **Años y números largos:** `utm_campaign=oct-2026` → `oct-26`; nunca cifras sueltas ni precios (`2500`) ni números de 10 cifras (`2807904033`). No puede haber tres cifras seguidas.
+- **Espacios, acentos, `ñ`, puntos y símbolos:** `mensaje a` → `mensaje-a`; solo valen letras sin acento, cifras, `-` y `_`.
+- **Empezar por cifra o guion** (`1bio`, `-bio`) o **pasar de 40 caracteres.**
+- `utm_term` y `c` no se envían nunca.
 
 El mismo formato de campaña se exige a las propiedades `utm_*` de los eventos (`posthog.register` al cargar). `c` ya no se deja pasar: ningún código de la app lo escribe ni lo lee. Todo lo demás (`m2`, `precio`, `barrio`, `capa`, `gclid`…) se quita. La definición está en `analitica-filtro.ts` (`PARAMETROS_URL`, `campanaValida`) y la comprueban `tests/analitica.test.ts` y `e2e/analitica.spec.ts`.
 
