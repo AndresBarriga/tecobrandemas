@@ -1,6 +1,6 @@
 /** Lo que la persona ha escrito en el formulario; son textos tal cual, sin interpretar */
 export type ModoUbicacion = 'calle' | 'mapa';
-/** «Estoy mirando un piso» (un anuncio) o «Ya vivo aquí» (mi alquiler) */
+/** «Un anuncio» o «Mi alquiler» */
 export type Situacion = 'mirando' | 'vivo';
 export type TipoVivienda = 'piso' | 'habitacion' | 'casa';
 export type TamanoPiso = 'hasta60' | '60-90' | '90-120' | 'mas120' | 'nose';
@@ -21,7 +21,7 @@ export interface EstadoFormulario {
 	tipo: TipoVivienda;
 	/** «Somos N» (2-12) de un piso compartido con un solo contrato; solo en pantalla, no se guarda */
 	somos: string;
-	/** Fecha de firma («Ya vivo aquí»): «hace menos de un año», o mes (1-12) y año */
+	/** Fecha de firma («Mi alquiler»): «hace menos de un año», o mes (1-12) y año */
 	firmaReciente: boolean;
 	firmaMes: string;
 	firmaAno: string;
@@ -36,7 +36,7 @@ export interface EstadoFormulario {
 }
 
 export const estadoInicial = (): EstadoFormulario => ({
-	situacion: 'mirando',
+	situacion: 'vivo',
 	modo: 'calle',
 	direccion: '',
 	via: null,

@@ -24,7 +24,7 @@
 	{#if paso.techo}
 		<div class="techo" style:left={pc(paso.techo.desde)} style:width={ancho(paso.techo)}></div>
 		<div class="marca" style:left={pc(paso.techo.hasta)}></div>
-		<div class="et techo-et" style:left={pc(paso.techo.hasta)}>techo para un piso excelente <strong>{paso.techo.valor}</strong></div>
+		<div class="et techo-et" style:left={pc(paso.techo.hasta)}>si fuera un piso excelente <strong>{paso.techo.valor}</strong></div>
 	{/if}
 	{#if paso.punto}
 		<div class="guia" style:left={pc(paso.techo ? paso.techo.hasta : paso.banda.hasta)} style:width={pc(Math.max(0, paso.punto.x - (paso.techo ? paso.techo.hasta : paso.banda.hasta)))}></div>
@@ -37,7 +37,7 @@
 		style:left={pc(paso.alinearDerecha ? paso.banda.hasta : mitad)}
 		style:transform={paso.alinearDerecha ? 'translateX(-100%)' : 'translateX(-50%)'}
 	>
-		referencia <strong>{paso.referencia}</strong>
+		contratos de aquí <strong>{paso.referencia}</strong>
 	</div>
 </div>
 

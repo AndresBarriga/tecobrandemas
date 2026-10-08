@@ -297,3 +297,46 @@ Diseño en `docs/design/design-f1/` (README sección F1, `F1 Ya vivo aqui.dc.htm
 - **Presupuesto del bundle:** el que mide el informe de lanzamiento pasa de 111,6 KB a 161,9 KB gz con PostHog, así que el presupuesto sube de 150 a 165 KB (decisión del 07/10/2026). El SDK se carga ya tras la carga de la página, pero antes de que el informe dé la página por terminada.
 - **Habitaciones:** la mediana pública de `/api/habitacion` sale ahora desde 20 aportaciones (antes 10); el recuento por barrio de análisis y aportaciones sigue en 10.
 
+
+## Cambio de encuadre: contratos vigentes (08/10/2026, rama `encuadre-contratos-vigentes`)
+- **Por qué:** `docs/brief-cambio-de-encuadre.md`. La referencia mide lo que pagan quienes ya tienen contrato, no el precio de mercado; los textos ya no la presentan como «techo» ni como «lo que se paga aquí». Idea de fondo: entrar cuesta más que estar dentro. El motor no cambia.
+- **Nombres de nivel:** «Dentro de rango», «Algo por encima», «Fuera de rango» y «Por debajo». En «Estoy mirando», «Por debajo» es solo una etiqueta (precio bajo la parte baja en todas las zonas posibles, el mismo criterio que «Ya vivo aquí»); el nivel sigue siendo «dentro». «Cerca del techo» (inquilino) pasa a «Algo por encima».
+- **Portada:** «Ya vivo aquí» primero y por defecto. Las tarjetas de anuncio enlazan a `/?t=…&modo=mirando` y quien llega desde el mapa abre «Estoy mirando». El evento `empieza` ya llevaba `modo`: no hay evento nuevo. Conviene una anotación en PostHog el día del despliegue, porque el reparto entre modos cambia por el orden por defecto.
+- **Resultado «Estoy mirando»:** titulares y frases nuevos («Piden X. Lo habitual aquí: de A a B.»), aviso fijo de contratos vigentes junto a la cifra, cuadro «Entrar vs. estar dentro» con su línea de contexto y barra con «contratos de aquí» y «si fuera un piso excelente». En «Algo por encima» el % va en la frase, sin la franja.
+- **Línea de fuente:** «Basado en N contratos vigentes… No incluye empresas ni fondos.», con el mes del dato del IPC.
+- **Negociar:** sin «techo» ni precio propuesto; pide la explicación de la diferencia o margen y cita primero los contratos declarados a Hacienda y después el Ministerio.
+- **Tarjeta:** lema «Lo que piden frente a lo que pagan» (también en la cabecera), etiqueta nueva, franja habitual en euros (sin el precio pedido) y `asuprecio.com` dentro de la imagen. Ojo: en «Algo por encima» y «Fuera de rango», el % junto con la franja permite deducir el precio pedido. La validación del servidor acepta «Por debajo» en la clase a; las tarjetas guardadas conservan sus textos.
+- **Mapa, «Tu zona» y «Cómo calculamos»:** etiquetas y leyendas con la frase base, aviso de «Mi presupuesto» destacado, sección «Contratos vigentes, no anuncios», bloque «Qué incluye la referencia» y explicación de la «parte alta» (no es un máximo).
+- **Tests:** ningún test nuevo. `tests/textos.test.ts` prohíbe además «techo», «lo que se paga aquí», «lo que se paga en tu zona», «puedes respirar», «dentro de lo razonable» y «como mucho» («cuesta entrar» sigue prohibido). En los componentes se revisa el texto visible: no se miran las expresiones ni las clases (`paso.techo`, `class="techo"`). Se actualizaron los unitarios de textos, vista, ratio y resultado y los e2e (incluido `humo.spec.ts`). Los e2e eligen «Estoy mirando un piso» de forma explícita. Resultado: 357 unitarios y 75 e2e en móvil 390 en verde.
+- **Pendiente propuesto:** plantilla para «Ya vivo aquí» (renovación o subida) en un PR aparte, sin citar normas.
+- **Segunda vuelta (08/10/2026):**
+  - Portada: titular «¿Cuánto pagan los demás?» y lema «Lo que pagan, no lo que piden.».
+  - Selector: «Mi alquiler» (primero y por defecto) y «Un anuncio»; los valores internos `vivo` y `mirando` no cambian. Título del formulario según el modo: «Comprueba tu alquiler» o «Comprueba un anuncio».
+  - Mapa: subtítulo de la capa Referencia, ayuda y nota de «Mi presupuesto».
+  - Cómo calculamos: «Pasos de uso» a todo el ancho y en dos párrafos; texto nuevo de Quiénes somos; la sección `#lim` pasa a `#lo-que-no-calculamos`.
+  - «← Volver» en las pantallas sin dato abiertas desde esa lista (`/?motivo=…`): vuelve atrás en el historial o, si no se llegó desde la web, va a esa sección.
+  - Frases bloqueadas: también «ya vivo aquí», «estoy mirando un piso» y «tiene sentido este precio».
+  - Las pantallas de resultado y las tarjetas quedan pendientes de revisión.
+- **Tercera vuelta (08/10/2026): tarjetas y resultados.** Lo que cambia:
+  - Lema: «Contratos reales, por zona.».
+  - Etiqueta «Se sale de lo habitual» (antes «Fuera de rango»), en anuncio, Mi alquiler, vista previa y Cómo calculamos. Las tarjetas ya compartidas con la etiqueta antigua se siguen mostrando; el servidor solo valida las nuevas.
+  - **Anuncio:**
+    - «Dentro»: «Entrar aquí sale por lo mismo que estar dentro.»; «Por debajo»: «…sale más barato…».
+    - «Algo por encima»: hasta +3 % (`UMBRAL_LIMITE_ALTO`) solo «En el límite alto de lo habitual aquí.»; más, una línea «Un X % por encima de lo habitual aquí.» y la frase del piso excelente, sin repetir la cifra.
+    - «Se sale de lo habitual»: «Piden» + cifra grande + «más por entrar que lo que pagan los contratos actuales de la zona» + «frente al tramo alto de esos contratos, ajustado a N m²». Ya no sale la línea «Piden X €. Lo habitual aquí…».
+  - **Tarjeta de Mi alquiler:** texto por tramo, con umbrales de presentación en `tarjeta.ts` (`UMBRALES_TARJETA`; el motor no cambia): hasta +5 % «límite alto» (sin cifra grande), hasta casi el doble «+X %», entre 1,9 y 2,1 veces «el doble», desde 2,1 «X,X veces». Debajo de la cifra: «sobre lo más alto habitual en tu zona (N m²)».
+  - «Tu zona» también en Mi alquiler (como contexto).
+  - La encuesta «¿Qué vas a hacer…?» se reinicia en cada resultado.
+  - Ejemplo de portada y de Cómo calculamos con un caso de +32 % (2.690 €); `static/og-portada.png` regenerada con los textos nuevos (`node scripts/og_portada.mjs`).
+  - «Equivale a un mes» (singular).
+  - Botones «otro» según el modo.
+  - «Mapa de Madrid» alineado con el titular en escritorio.
+  - Compartir: WhatsApp, X y la hoja del móvil llevan la frase de la tarjeta (sin importes en euros) en lugar de «Mira mi resultado». En escritorio, WhatsApp solo admite texto: la imagen sale como vista previa del enlace, y se avisa de que «Descargar imagen» sirve para adjuntarla.
+  - Pendiente: el bloque duplicado «Qué puedes hacer» / «¿Qué vas a hacer…?» no se reprodujo como duplicado literal; sin tocar a la espera de saber a cuál se refiere.
+- **Cuarta vuelta (08/10/2026):**
+  - «Se sale de lo habitual» (anuncio): bajo la cifra grande, «sobre lo más alto habitual en tu zona (N m²)». «Piden un X % más por entrar que lo que pagan los contratos actuales de la zona» y su línea «frente al tramo alto de esos contratos, ajustado a N m²» van solo en el cuadro «Entrar vs. estar dentro».
+  - **Tarjeta del anuncio en todos los niveles:** había dos condiciones, una en `Resultado.svelte` y otra en `+page.svelte` (`tarjetaActual`). Frases propias: dentro, por debajo, límite alto y algo por encima (`FRASE_TARJETA*` en `textos.ts`). En «por debajo» ningún tercio queda marcado en la barra de la tarjeta.
+  - «Qué puedes hacer» pasa a «Siguientes pasos». La encuesta se queda igual: sus opciones ya cambian según el modo (anuncio: negociar, descartar, seguir, curiosidad; Mi alquiler: hablar_casero, asesoramiento, nada, curiosidad). No hay valores nuevos de `que_haras`.
+  - Cómo calculamos: «Los niveles» (cuatro, con «Por debajo»), «contratos» en lugar de «alquileres registrados», frases de Mi presupuesto, «Tus datos» sin «Somos N» (en el formulario, «Personas en el contrato») y «compartes» en vez de «compartís».
+  - Contacto: hola@asuprecio.com en Quiénes somos (antes, el Gmail personal).
+  - El ejemplo de la portada sigue a la pestaña activa (`construirMuestra(datos, modo)`).

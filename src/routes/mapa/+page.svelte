@@ -385,7 +385,7 @@
 									</div>
 								</div>
 								{#if errorMetros}<p class="error" id="metros-error">{errorMetros}</p>{/if}
-								<p class="aviso">{T.presupuesto.aviso}</p>
+								<p class="aviso destacado">{T.presupuesto.aviso}</p>
 							</div>
 						{/if}
 
@@ -611,6 +611,12 @@
 		border-radius: var(--radio);
 		padding: 10px 12px;
 		font: 500 14px/1.45 var(--f-texto);
+	}
+	/* «Son contratos vigentes, no anuncios»: tiene que leerse, no quedar como nota al pie */
+	.aviso.destacado {
+		border-left: 3px solid var(--tinta);
+		font: 600 15px/1.45 var(--f-texto);
+		color: var(--tinta);
 	}
 	.resumen {
 		display: flex;
@@ -887,7 +893,7 @@
 	.ficha:empty {
 		display: none;
 	}
-	/* En la hoja, «Comprueba un piso aquí» sube antes de la procedencia: se ve sin desplazarse */
+	/* En la hoja, «Comprueba un anuncio aquí» sube antes de la procedencia: se ve sin desplazarse */
 	.ficha .boton-paja {
 		order: 1;
 	}

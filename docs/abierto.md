@@ -26,7 +26,7 @@ Deuda y detalles:
 - Correcciones F1: el titular de rango en una sola línea con tamaño ajustado solo se aplica al resultado del inquilino («+65 % a +76 %»); en el de anuncios sigue el diseño («entre … y …», que puede partirse en dos líneas).
 - Correcciones F1: «¿Y tú? Compruébalo con el tuyo.» se añadió como cuarto texto de la tarjeta del inquilino (no como sufijo de los otros); el texto factual va primero y sale elegido por defecto.
 - Correcciones F1: «Añade el número para afinar» solo aparece con calle sin número; con horquilla por el punto del dispositivo (radio de precisión) se corrige colocando el punto en el mapa.
-- Correcciones F1: «Tu zona» del inquilino solo sale con horquilla (modo contexto); sin horquilla no se enseña.
+- Correcciones F1: «Tu zona» del inquilino salía solo con horquilla. Desde el 08/10/2026 sale siempre, solo como contexto (mapa, sin lista de zonas).
 - «Suma las habitaciones del piso»: la referencia del piso entero usa las zonas de la ubicación (con varias, el rango que las abarca todas) y los dos extremos del tamaño; no tiene tests propios (regla A2).
 - Guardar en la tarjeta el tipo de cifra (% o «veces») en vez de deducirlo del texto (`heroEnVeces`).
 - Barra: la línea vertical del techo puede cruzar el texto de «parte alta» cuando este pasa a la derecha de su marca (sin medir).

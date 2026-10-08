@@ -18,7 +18,7 @@ export const resultadoDeClase = (clase: 'a' | 'b' | 'c'): ResultadoAnalitica => 
 
 const POSICIONES = ['baja', 'media', 'alta'] as const;
 
-/** Lo que sale de «completa» para un resultado de anuncio o de «Ya vivo aquí», o para una habitación */
+/** Lo que sale de «completa» para un resultado de anuncio o de «Mi alquiler», o para una habitación */
 export function datosCompleta(p: Extract<Pantalla, { tipo: 'resultado' | 'habitacion' }>, modo: ModoAnalitica): DatosCompleta {
 	if (p.tipo === 'habitacion') {
 		return { modo, resultado: null, posicion: null, brecha_tramo: null, es_horquilla: false, distrito: distritoDeLugar(p.lugar) };

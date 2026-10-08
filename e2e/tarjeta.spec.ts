@@ -80,7 +80,7 @@ test.describe('tarjeta y /t/:id', () => {
 		const sinJpeg = await request.post('/api/tarjeta', {
 			multipart: {
 				tarjeta: JSON.stringify({
-					clase: 'c', etiqueta: 'Por encima del techo para un piso excelente', hero: { tipo: 'cifra', texto: '+30 %' },
+					clase: 'c', etiqueta: 'Se sale de lo habitual', hero: { tipo: 'cifra', texto: '+30 %' },
 					nota: 'x', frase: 'y', barrio: 'Goya', aproximada: false,
 					barra: { banda: { desde: 0.4, hasta: 0.6 }, incertidumbre: null, techo: { desde: 0.6, hasta: 0.7 }, punto: 0.8, tercio: null },
 					precio: 2500, direccion: 'Calle X 3'

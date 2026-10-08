@@ -148,7 +148,7 @@ describe('pantalla de resultado', () => {
 		expect(p.etiquetaBrecha).toBe('Cuánto más te piden');
 		expect(p.brechaPct).toBe(porcentaje(precio / r.sup - 1, true));
 		expect(p.brechaEuros).toBe(`+${numero(precio - r.sup)}\u00A0€/mes · +${numero((precio - r.sup) * 12)}\u00A0€/año`);
-		expect(p.base).toContain('Basado en 100 alquileres registrados en la zona');
+		expect(p.base).toContain('Basado en 100 contratos vigentes en la zona');
 		expect(p.base).toContain('agosto de 2026');
 		expect(p.quePuedesHacer.length).toBeGreaterThan(0);
 		expect(p.avisoUbicacion).toBeNull();
@@ -376,8 +376,8 @@ describe('tu zona (vista)', () => {
 		const v = construirTuZona(entrada(5000, 'c'));
 		expect(v.modo).toBe('vacia');
 		expect(v.lista).toBeNull();
-		expect(v.vacia!.titulo).toBe('Zonas cercanas donde la referencia llega a este precio: ninguna');
-		expect(v.vacia!.texto).toBe('Este precio (71,4\u00A0€/m²) supera la referencia de todas las zonas a 1,5\u00A0km o menos.');
+		expect(v.vacia!.titulo).toBe('Zonas cercanas donde este precio es habitual: ninguna');
+		expect(v.vacia!.texto).toBe('Este precio (71,4\u00A0€/m²) supera lo habitual en todas las zonas a 1,5\u00A0km o menos.');
 		expect(v.intro).not.toContain('Los números señalan');
 	});
 
@@ -386,7 +386,7 @@ describe('tu zona (vista)', () => {
 		expect(v.modo).toBe('contexto');
 		expect(v.lista).toBeNull();
 		expect(v.vacia).toBeNull();
-		expect(v.contexto).toContain('solo tienes el contexto');
+		expect(v.contexto).toContain('dentro de lo habitual aquí');
 	});
 
 	it('la leyenda tiene 6 muestras y la muesca cae en el tramo del precio por m²', () => {

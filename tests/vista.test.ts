@@ -35,9 +35,10 @@ describe('meses equivalentes', () => {
 		[5.98, `casi 6${NB}meses`, `+5,9${NB}meses`],
 		[3.41, `más de 3${NB}meses`, `+3,4${NB}meses`],
 		[4.1, `unos 4${NB}meses`, `+4,1${NB}meses`],
-		[1.5, `más de 1${NB}mes`, `+1,5${NB}meses`],
-		[0.4, 'menos de 1 mes', `+0,4${NB}meses`],
-		[0.8, 'casi 1 mes', `+0,8${NB}meses`]
+		[1.5, 'más de un mes', `+1,5${NB}meses`],
+		[1.1, 'un mes', `+1,1${NB}meses`],
+		[0.4, 'menos de un mes', `+0,4${NB}meses`],
+		[0.8, 'casi un mes', `+0,8${NB}meses`]
 	])('%f → «%s»', (m, frase, extra) => {
 		expect(mesesEquivalentes(m, false)).toMatchObject({ frase, extra });
 	});
@@ -67,12 +68,18 @@ describe('vista del resultado', () => {
 		expect(v.lugar).toBe('Almagro, Chamberí');
 		expect(v.contexto).toBe(`70${NB}m², 2.500${NB}€/mes`);
 		expect(v.fuente).toBe(
-			`Basado en 100 alquileres registrados en la zona, referencia 2024 ajustada por el IPC del alquiler (hasta agosto de 2026).`
+			'Basado en 100 contratos vigentes en la zona, de propietarios particulares declarados a Hacienda (2024), ajustados por el IPC del alquiler hasta agosto de 2026. No incluye empresas ni fondos.'
 		);
+		// Bajo la cifra grande, «sobre lo más alto habitual…»; «Piden un X % más…» y su línea pequeña, solo en el cuadro
+		expect(v.principal).toMatchObject({ nota: `sobre lo más alto habitual en tu zona (70${NB}m²)` });
+		expect(v.pidenFrase).toMatch(/^Piden un [\d,]+\u00A0% más por entrar que lo que pagan los contratos actuales de la zona$/);
+		expect(v.encuadre).toBe(`frente al tramo alto de esos contratos, ajustado a 70${NB}m²`);
+		expect(v.etiqueta).toBe('Se sale de lo habitual');
+		expect(v.frase).toBe('Ni para un piso excelente es habitual pagar esto aquí.');
 		expect(v.barra.delta).toBe(v.brecha!.mes);
 	});
 
-	it('dentro y explicable: titular, sin porcentaje ni meses', () => {
+	it('dentro y explicable: titular, sin meses; en explicable, el % solo en la frase y sin la franja', () => {
 		const p = resultado(1000);
 		expect(p.vista.clase).toBe('a');
 		expect(p.vista.principal).toMatchObject({ tipo: 'titular', texto: expect.stringMatching(/^Parte (baja|media|alta)$/) });
@@ -81,7 +88,18 @@ describe('vista del resultado', () => {
 		const b = resultado((p.barra.sup.max + p.barra.techo.max) / 2);
 		expect(b.vista.clase).toBe('b');
 		expect(b.vista.principal.tipo).toBe('titular');
-		expect(JSON.stringify(b.vista)).not.toContain('%');
+		// Una sola línea con el %, sin franja y sin repetir la cifra (ni «+X €»)
+		expect(b.vista.principal).toMatchObject({ enFrase: true, texto: expect.stringMatching(/^Un [\d,]+\u00A0% por encima de lo habitual aquí\.$/) });
+		expect(JSON.stringify(b.vista)).not.toMatch(/\+\d+\u00A0€/);
+		expect(b.vista.frase).toBe('');
+		expect(b.vista.matiz).toContain('Solo cuadra si el piso es excelente (ascensor, garaje');
+		expect(b.vista.habitual).toBeTruthy();
+		// Hasta ~3 %: solo «en el límite alto», sin la nota del piso excelente
+		const l = resultado(p.barra.sup.max * 1.02);
+		expect(l.vista.clase).toBe('b');
+		expect(l.vista.principal).toMatchObject({ enFrase: true, texto: 'En el límite alto de lo habitual aquí.' });
+		expect(l.vista.matiz).toBeNull();
+		expect(b.vista.meses).toBeNull();
 		expect(b.vista.barra.tercio).toBeNull();
 	});
 
@@ -92,6 +110,8 @@ describe('vista del resultado', () => {
 		const lejos = resultado(sup * 3.4).vista;
 		expect(lejos.principal).toMatchObject({ tipo: 'cifra', texto: `3,4${NB}veces` });
 		expect(lejos.frase).toBe(cerca.frase);
+		expect(lejos.principal).toMatchObject({ nota: `lo más alto habitual en tu zona (70${NB}m²)` });
+		expect(lejos.pidenFrase).toBe('Piden 3,4\u00A0veces el tramo alto de los contratos actuales de la zona');
 	});
 
 	it('horquilla: intervalo, fuente con la suma de alquileres y aviso con la calle', () => {
@@ -100,8 +120,8 @@ describe('vista del resultado', () => {
 		expect(p.vista.principal.tipo).toBe('rango');
 		expect(p.vista.brecha!.mes.startsWith('de +')).toBe(true);
 		expect(p.vista.meses!.extra.startsWith('al menos')).toBe(true);
-		expect(p.vista.fuente).toContain('Basado en 180 alquileres registrados en las zonas que cruza la calle');
-		expect(p.vista.fuente).toContain('La referencia empieza entre');
+		expect(p.vista.fuente).toContain('Basado en 180 contratos vigentes en las zonas que cruza la calle');
+		expect(p.vista.fuente).toContain('La parte baja de lo habitual va de');
 		expect(p.vista.aviso).toBe(
 			'Calle de Alcalá, sin número, cruza 2 zonas con referencias distintas. Por eso te damos una horquilla.'
 		);
@@ -144,8 +164,12 @@ describe('negociar con el dato', () => {
 		const usted = textoNegociar(p, 'usted');
 		expect(tu).toContain(`vivienda de 70${NB}m² en Almagro que anuncian por 2.500${NB}€ al mes`);
 		expect(tu).toContain(p.vista.barra.parteAlta);
-		expect(tu).toContain('te agradecería que me lo indicaras');
-		expect(usted).toContain('le agradecería que me lo indicaran');
+		expect(tu).toContain('Entiendo que hoy se pide más por entrar.');
+		expect(tu).toContain('¿Me podrías decir qué explica la diferencia');
+		expect(usted).toContain('¿Podría indicarme qué explica la diferencia');
+		expect(tu).not.toMatch(/techo/i);
+		// Primero los contratos declarados a Hacienda, después el Ministerio
+		expect(tu.indexOf('declarados a Hacienda')).toBeLessThan(tu.indexOf('Ministerio de Vivienda'));
 		expect(tu).toContain('serpavi.mivau.gob.es');
 	});
 });

@@ -4,7 +4,9 @@
  *
  * Reglas de contenido (revisables):
  *  - nivel «por encima»: la cifra es el % sobre la parte alta; debajo, € al mes y al año;
- *  - nivel «explicable» y «dentro»: titular en lugar de cifra, sin porcentaje;
+ *  - nivel «explicable» y «dentro»: titular en lugar de cifra; en «explicable», el % va en la frase;
+ *  - la referencia se presenta como lo que pagan quienes ya viven aquí (contratos vigentes),
+ *    nunca como precio de mercado: «lo habitual aquí», «dentro de rango», «se sale de lo habitual»;
  *  - con horquilla manda el nivel más prudente; el % y los € solo salen si ese nivel es
  *    «por encima», y como intervalo.
  */
@@ -14,7 +16,7 @@ import type { BarrioDeSeccion } from './datos';
 import { euros, mesAnio, numero, porcentaje } from './formato';
 import { partesRatio, UMBRAL_VECES } from './ratio';
 import {
-	ETIQUETA_NIVEL, FRASE_NIVEL, type ContextoAviso, AVISO_UBICACION
+	ETIQUETA_NIVEL, ETIQUETA_POR_DEBAJO, FRASE_NIVEL, FUENTE, MIRANDO, type ContextoAviso, AVISO_UBICACION
 } from './textos';
 import type { Ubicacion } from './ubicacion';
 
@@ -23,9 +25,14 @@ const NB = ' ';
 export type Clase = 'a' | 'b' | 'c';
 
 export type Principal =
-	| { tipo: 'cifra'; texto: string; nota: string }
-	| { tipo: 'rango'; desde: string; hasta: string; nota: string }
-	| { tipo: 'titular'; texto: string; nota: string };
+	/** `antes`: palabra pequeña sobre la cifra («Piden») */
+	| { tipo: 'cifra'; texto: string; nota: string; antes?: string }
+	| { tipo: 'rango'; desde: string; hasta: string; nota: string; antes?: string }
+	/** `enFrase`: el titular es una frase (no un rótulo en mayúsculas condensadas) */
+	| { tipo: 'titular'; texto: string; nota: string; enFrase?: boolean };
+
+/** Hasta este exceso sobre la parte alta, «algo por encima» es solo «en el límite alto» (umbral de presentación) */
+export const UMBRAL_LIMITE_ALTO = 0.03;
 
 export interface Meses {
 	/** «casi 3 meses» */
@@ -47,7 +54,22 @@ export interface Vista {
 	precio: string;
 	etiqueta: string;
 	principal: Principal;
+	/** Puede ir vacía (en el límite alto el titular ya lo dice todo) */
 	frase: string;
+	/** Segunda línea bajo la frase («Solo cuadra si el piso es excelente») */
+	matiz: string | null;
+	/** Solo en «se sale de lo habitual»: la frase del cuadro «Entrar vs. estar dentro» («Piden un 23 % más por entrar…») */
+	pidenFrase: string | null;
+	/** Su línea pequeña: contra qué se compara («frente al tramo alto de esos contratos, ajustado a 90 m²») */
+	encuadre: string | null;
+	/** «En el límite alto»: hasta ~3 % sobre la parte alta */
+	limiteAlto: boolean;
+	/** Rótulo corto para la tarjeta cuando el titular de la pantalla es una frase */
+	tituloCorto: string | null;
+	/** «de 588 a 767 €»: la franja habitual (parte baja a parte alta) */
+	habitual: string;
+	/** Aviso fijo junto a la cifra: se compara con contratos vigentes */
+	avisoContratos: string;
 	/** Aviso de ubicación aproximada (cuerpo; el título va aparte) */
 	aviso: string | null;
 	/** Solo en «por encima»: al mes y al año */
@@ -55,7 +77,7 @@ export interface Vista {
 	meses: Meses | null;
 	/** Textos de las etiquetas directas de la barra */
 	barra: { precio: string; parteAlta: string; techo: string; delta: string | null; tercio: 0 | 1 | 2 | null };
-	/** «Basado en N alquileres registrados…» */
+	/** «Basado en N contratos vigentes…» */
 	fuente: string;
 }
 
@@ -63,11 +85,13 @@ export interface Vista {
 export function mesesEquivalentes(m: number, alMenos: boolean): Meses {
 	const n = Math.floor(m);
 	const f = m - n;
+	// «un mes», no «1 mes»; «unos 2 meses»
+	const cuenta = (k: number) => (k === 1 ? 'un mes' : `${k}${NB}meses`);
 	let frase: string;
-	if (n === 0) frase = f >= 0.75 ? 'casi 1 mes' : 'menos de 1 mes';
-	else if (f >= 0.75) frase = `casi ${n + 1}${NB}meses`;
-	else if (f >= 0.25) frase = `más de ${n}${NB}${n === 1 ? 'mes' : 'meses'}`;
-	else frase = `unos ${n}${NB}${n === 1 ? 'mes' : 'meses'}`;
+	if (n === 0) frase = f >= 0.75 ? 'casi un mes' : 'menos de un mes';
+	else if (f >= 0.75) frase = `casi ${cuenta(n + 1)}`;
+	else if (f >= 0.25) frase = `más de ${cuenta(n)}`;
+	else frase = n === 1 ? 'un mes' : `unos ${cuenta(n)}`;
 
 	// Truncado, no redondeado: «+5,9 meses» para 5,98, para no contradecir «casi 6 meses»
 	const truncado = (Math.floor(m * 10) / 10).toFixed(1).replace('.', ',');
@@ -91,7 +115,8 @@ const intervalo = (min: number, max: number, f: (x: number) => string) =>
 export function principalPorEncima(ratio: number, ratioMax: number | null, m2: string): Principal {
 	const p = partesRatio(ratio);
 	// Con horquilla (varias zonas posibles) se habla de «estas zonas»
-	const nota = `${p.complemento} de la referencia para ${m2} en ${ratioMax !== null ? 'estas zonas' : 'esta zona'}`;
+	const varias = ratioMax !== null;
+	const nota = `${p.enVeces ? '' : 'sobre '}lo más alto habitual en ${varias ? 'estas zonas' : 'tu zona'} (${m2})`;
 	if (ratioMax !== null) {
 		const veces = ratio >= UMBRAL_VECES;
 		const formato = (r: number) => (veces ? partesRatio(r).cifra : porcentaje(r - 1, true));
@@ -99,6 +124,17 @@ export function principalPorEncima(ratio: number, ratioMax: number | null, m2: s
 		if (desde !== hasta) return { tipo: 'rango', desde, hasta, nota };
 	}
 	return { tipo: 'cifra', texto: p.cifra, nota };
+}
+
+/** La frase del cuadro «Entrar vs. estar dentro»: una sola cifra (o un intervalo con horquilla) */
+export function pidenFrase(ratio: number, ratioMax: number | null): string {
+	const zona = ratioMax !== null ? 'de estas zonas' : 'de la zona';
+	if (ratio >= UMBRAL_VECES) {
+		const [d, h] = [numero(ratio, 1), ratioMax !== null ? numero(ratioMax, 1) : null];
+		return h !== null && h !== d ? MIRANDO.pidenVecesRango(d, h, zona) : MIRANDO.pidenVeces(`${d}${NB}veces`, zona);
+	}
+	const [d, h] = [porcentaje(ratio - 1), ratioMax !== null ? porcentaje(ratioMax - 1) : null];
+	return h !== null && h !== d ? MIRANDO.pidenPctRango(d, h, zona) : MIRANDO.pidenPct(d, zona);
 }
 
 function claseDe(n: Nivel): Clase {
@@ -122,7 +158,17 @@ export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ip
 	const m2 = `${numero(anuncio.superficie)}${NB}m²`;
 	const conBrecha = secciones.filter((s) => s.brecha !== null);
 
+	// Franja que comparten todas las zonas posibles: de la mayor parte baja a la menor parte alta
+	const habitual = `de ${numero(barra.inf.max)} a ${euros(barra.sup.min)}`;
+	// «Por debajo»: bajo la parte baja en todas las zonas posibles (el mismo criterio que «Mi alquiler»)
+	const porDebajo = nivel.nivel === 'dentro' && anuncio.precio < barra.inf.min;
+
 	let principal: Principal;
+	let frase: string = FRASE_NIVEL[clase];
+	let matiz: string | null = null;
+	let encuadre: string | null = null;
+	let pidenFraseCaja: string | null = null;
+	let tituloCorto: string | null = null;
 	let brecha: Vista['brecha'] = null;
 	let meses: Meses | null = null;
 	let delta: string | null = null;
@@ -144,35 +190,45 @@ export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ip
 		// Meses de alquiler al año que supone la brecha; en horquilla, la menor
 		const mesesMin = Math.min(...conBrecha.map((s) => s.brecha!.euroAño / anuncio.precio));
 		meses = mesesEquivalentes(mesesMin, horquilla && brecha.mes.startsWith('de '));
+		// Bajo la cifra grande va «sobre lo más alto habitual…»; «Piden un X % más…» solo en el cuadro «Entrar vs. estar dentro»
+		pidenFraseCaja = pidenFrase(horquilla ? analisis.pctMin + 1 : prudente.pct + 1, horquilla ? analisis.pctMax + 1 : null);
+		encuadre = MIRANDO.encuadre(m2);
 	} else if (nivel.nivel === 'explicable') {
-		const t = (prudente.referencia.max - prudente.referencia.sup);
-		const cerca = (anuncio.precio - prudente.referencia.sup) / t >= 0.5;
-		principal = {
-			tipo: 'titular',
-			texto: cerca ? 'Cerca del techo' : 'Sobre la parte alta',
-			nota: horquilla
-				? 'Por encima de la parte alta de la referencia, pero por debajo del techo para un piso excelente.'
-				: `+${euros(prudente.brecha!.euroMes)} al mes sobre la parte alta, por debajo del techo para un piso excelente.`
-		};
+		// Sin rango ni «+1 €»: «algo por encima» no debe leerse como fuera de la franja ni repetir la cifra
+		const limiteAlto = prudente.brecha!.pct <= UMBRAL_LIMITE_ALTO;
+		if (limiteAlto) {
+			principal = { tipo: 'titular', texto: MIRANDO.limiteAlto, nota: '', enFrase: true };
+			frase = '';
+			tituloCorto = 'Límite alto';
+		} else {
+			principal = {
+				tipo: 'titular',
+				texto: horquilla ? MIRANDO.algoPorEncimaHorquilla : MIRANDO.algoPorEncima(porcentaje(prudente.brecha!.pct)),
+				nota: '',
+				enFrase: true
+			};
+			frase = '';
+			matiz = FRASE_NIVEL.b;
+			tituloCorto = 'Sobre la parte alta';
+		}
 	} else {
 		principal = {
 			tipo: 'titular',
-			texto: `Parte ${nivel.posicion}`,
-			nota: `Entre ${numero(barra.inf.max)} y ${euros(barra.sup.min)} al mes para ${m2} en ${horquilla ? 'estas zonas' : 'esta zona'}.`
+			texto: porDebajo ? ETIQUETA_POR_DEBAJO : `Parte ${nivel.posicion}`,
+			nota: MIRANDO.notaDentro(numero(barra.inf.max), euros(barra.sup.min), m2, horquilla)
 		};
+		frase = porDebajo ? MIRANDO.porDebajo : MIRANDO.dentro;
 	}
 
-	const frase = FRASE_NIVEL[clase];
-
 	const suma = secciones.reduce((t, s) => t + s.seccion.n, 0);
-	const ref = `referencia 2024 ajustada por el IPC del alquiler (hasta ${mesAnio(ipcMes)})`;
+	const mes = mesAnio(ipcMes);
 	const zonas = ubicacion.motivo === 'calle' ? 'las zonas que cruza la calle' : 'las zonas posibles';
 	const fuente = horquilla
-		? `Basado en ${numero(suma)} alquileres registrados en ${zonas}, ${ref}.` +
+		? FUENTE.varias(numero(suma), zonas, mes) +
 			(numero(barra.inf.min) !== numero(barra.inf.max)
-				? ` La referencia empieza entre ${numero(barra.inf.min)} y ${euros(barra.inf.max)}.`
+				? ` La parte baja de lo habitual va de ${numero(barra.inf.min)} a ${euros(barra.inf.max)}.`
 				: '')
-		: `Basado en ${numero(suma)} alquileres registrados en la zona, ${ref}.`;
+		: FUENTE.una(numero(suma), mes);
 
 	return {
 		clase,
@@ -180,9 +236,16 @@ export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ip
 		contexto: `${m2}, ${euros(anuncio.precio)}/mes`,
 		m2,
 		precio: euros(anuncio.precio),
-		etiqueta: ETIQUETA_NIVEL[clase],
+		etiqueta: porDebajo ? ETIQUETA_POR_DEBAJO : ETIQUETA_NIVEL[clase],
 		principal,
 		frase,
+		matiz,
+		pidenFrase: pidenFraseCaja,
+		encuadre,
+		limiteAlto: nivel.nivel === 'explicable' && prudente.brecha!.pct <= UMBRAL_LIMITE_ALTO,
+		tituloCorto,
+		habitual,
+		avisoContratos: MIRANDO.aviso,
 		aviso: avisoUbicacion(ubicacion, secciones.length, horquilla),
 		brecha,
 		meses,
@@ -191,7 +254,7 @@ export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ip
 			parteAlta: rangoEuros(barra.sup.min, barra.sup.max),
 			techo: rangoEuros(barra.techo.min, barra.techo.max),
 			delta,
-			tercio: nivel.nivel === 'dentro' ? ({ baja: 0, media: 1, alta: 2 } as const)[nivel.posicion] : null
+			tercio: nivel.nivel === 'dentro' && !porDebajo ? ({ baja: 0, media: 1, alta: 2 } as const)[nivel.posicion] : null
 		},
 		fuente
 	};

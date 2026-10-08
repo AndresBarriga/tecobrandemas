@@ -7,6 +7,11 @@
 
 {#if vista.brecha && meses}
 	<div class="caja">
+		<div class="cabeza">
+			<h2 class="titulo">{EQUIVALENCIA.titulo}</h2>
+			{#if vista.pidenFrase}<p class="piden">{vista.pidenFrase}</p>{/if}
+			{#if vista.encuadre}<p class="subtitulo">{vista.encuadre}</p>{/if}
+		</div>
 		<div class="importes">
 			<div>
 				<span class="etiqueta">{EQUIVALENCIA.alMes}</span>
@@ -45,6 +50,22 @@
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
+	}
+	.cabeza {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.titulo {
+		font: 700 17px/1.3 var(--f-texto);
+	}
+	.piden {
+		font: 600 17px/1.35 var(--f-texto);
+		text-wrap: pretty;
+	}
+	.subtitulo {
+		font: 400 13px/1.4 var(--f-texto);
+		color: var(--grafito);
 	}
 	.importes {
 		display: grid;

@@ -5,7 +5,7 @@ async function parteAlta(page: import('@playwright/test').Page): Promise<number>
 	await abrir(page);
 	await comprobar(page, { precio: '2500', superficie: '90' });
 	const aria = (await page.locator('.barra[role="img"]').first().getAttribute('aria-label')) ?? '';
-	return Number(aria.match(/Parte alta de la referencia, ([\d.]+)/)![1]!.replace('.', ''));
+	return Number(aria.match(/Parte alta de lo que pagan los contratos de aquí, ([\d.]+)/)![1]!.replace('.', ''));
 }
 
 test.describe('aviso de posible error al teclear', () => {
@@ -15,7 +15,7 @@ test.describe('aviso de posible error al teclear', () => {
 
 		await abrir(page);
 		await comprobar(page, { precio: String(Math.round(sup * 3.5)), superficie: '90' });
-		await expect(page.getByRole('heading', { name: '¿Seguro? Es más de 3 veces la parte alta de la referencia' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: '¿Seguro? Es más de 3 veces la parte alta de lo habitual aquí' })).toBeVisible();
 		await expect(page.getByRole('button', { name: 'Sí, es correcto' })).toBeVisible();
 		await expect(page.getByRole('button', { name: 'Corregir' })).toBeVisible();
 		// Nada de resultado, tarjeta ni botón de compartir
@@ -29,7 +29,7 @@ test.describe('aviso de posible error al teclear', () => {
 
 		// Confirmar muestra el resultado (el evento confirma_precio se comprueba en e2e/analitica.spec.ts)
 		await page.fill('#precio', String(Math.round(sup * 3.5)));
-		await page.locator('form').getByRole('button', { name: /^Comprobar (el precio|otro piso)$/ }).click();
+		await page.locator('form').getByRole('button', { name: /^Comprobar (el precio|otro anuncio)$/ }).click();
 		await page.getByRole('button', { name: 'Sí, es correcto' }).click();
 		await expect(page.getByRole('group', { name: 'Compartir el resultado' })).toBeVisible();
 		await esperarAnimacion(page);

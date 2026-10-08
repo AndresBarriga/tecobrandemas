@@ -1,5 +1,5 @@
 /**
- * «Comprueba un piso aquí» (/mapa → portada): la zona elegida viaja en memoria, en la misma pestaña. No va
+ * «Comprueba un anuncio aquí» (/mapa → portada): la zona elegida viaja en memoria, en la misma pestaña. No va
  * en la URL ni en el almacenamiento del navegador, así que ni se envía ni se guarda: se lee una sola vez.
  */
 import type { Punto } from '#lib/ubicacion/geocodificar';

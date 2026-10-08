@@ -13,7 +13,7 @@ test.describe('Tu zona', () => {
 		await expect(zona.getByRole('heading', { level: 2, name: 'Tu zona' })).toBeVisible();
 		await expect(zona.getByRole('img', { name: /Mapa de tu zona y las zonas a 1,5 km o menos/ })).toBeVisible({ timeout: 15_000 });
 		await expect(zona.getByText(/tu precio: 27,8\s€\/m²/)).toBeVisible();
-		await expect(zona.getByText('Parte alta de la referencia, en €/m² al mes')).toBeVisible();
+		await expect(zona.getByText('Parte alta de lo que pagan quienes ya viven aquí, en €/m² al mes')).toBeVisible();
 		await expect(zona.getByText('Cortes iguales para toda la ciudad')).toBeVisible();
 
 		const filas = zona.locator('.fila');
@@ -33,7 +33,7 @@ test.describe('Tu zona', () => {
 			await zona.getByRole('button', { name: /^Zona 1, una zona de/ }).click();
 			await expect(filas.first()).toHaveAttribute('aria-pressed', 'true');
 		} else {
-			await expect(zona.getByText('Zonas cercanas donde la referencia llega a este precio: ninguna')).toBeVisible();
+			await expect(zona.getByText('Zonas cercanas donde este precio es habitual: ninguna')).toBeVisible();
 		}
 		await expect(zona.getByText(/La renta registrada en esta zona ha (subido|bajado) un \d+\s%/)).toBeVisible();
 		await zona.scrollIntoViewIfNeeded();
@@ -48,7 +48,7 @@ test.describe('Tu zona', () => {
 		await comprobar(page, { precio: '1000', superficie: '90' });
 		const zona = page.getByRole('region', { name: 'Tu zona' });
 		await expect(zona.getByRole('img', { name: /Mapa de tu zona/ })).toBeVisible({ timeout: 15_000 });
-		await expect(zona.getByText('solo tienes el contexto')).toBeVisible();
+		await expect(zona.getByText(/dentro de lo habitual aquí/)).toBeVisible();
 		await expect(zona.locator('.fila')).toHaveCount(0);
 		await zona.screenshot({ path: `${carpeta()}/32-tu-zona-a.png` });
 	});

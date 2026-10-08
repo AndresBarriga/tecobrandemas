@@ -68,8 +68,8 @@
 		{ valor: 'mapa' as const, etiqueta: FORMULARIO.modos.mapa }
 	];
 	const situaciones = [
-		{ valor: 'mirando' as const, etiqueta: SITUACION.mirando },
-		{ valor: 'vivo' as const, etiqueta: SITUACION.vivo }
+		{ valor: 'vivo' as const, etiqueta: SITUACION.vivo },
+		{ valor: 'mirando' as const, etiqueta: SITUACION.mirando }
 	];
 	const tipos = [
 		{ valor: 'piso' as const, etiqueta: TIPO_VIVIENDA.piso },

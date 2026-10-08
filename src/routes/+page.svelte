@@ -16,8 +16,8 @@
 	import TuZona from '#lib/componentes/TuZona.svelte';
 	import { type TuZonaCargada, cargarTuZona } from '#lib/cliente/zona';
 	import {
-		AFINAR, DESCRIPCION, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
-		construirTarjeta, construirTarjetaInquilino, textosEnlace, textosInquilino, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, filaHistorial, interpretarNumero, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
+		AFINAR, DESCRIPCION, LEMA, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
+		construirTarjeta, construirTarjetaInquilino, textoCompartir, textosEnlace, textosInquilino, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, filaHistorial, interpretarNumero, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
 		parecePrecioErroneo,
 		type Pantalla, type PantallaResultado, type SugerenciaZona, type Ubicacion
 	} from '#lib/resultado';
@@ -76,10 +76,12 @@
 			});
 	});
 
-	// «Ya vivo aquí»: aportar el alquiler (botón explícito) y cuántos hay en el barrio
+	// «Mi alquiler»: aportar el alquiler (botón explícito) y cuántos hay en el barrio
 	let aporte = $state<EstadoAporte>('no');
 	let aportadosBarrio = $state<number | null>(null);
 	const esVivo = $derived(f.situacion === 'vivo');
+	/** Pantalla sin dato abierta desde «Lo que no calculamos» (/?motivo=…): lleva «← Volver» */
+	let desdeLimites = $state(false);
 	const modoActual = $derived(modoDe(f));
 	const modoPorDefecto = (_s: 'mirando' | 'vivo') => 'calle' as const;
 
@@ -154,7 +156,7 @@
 		listo = true;
 		nativo = puedeCompartirNativo();
 		leerOrigenDeLaUrl();
-		// /cuanto-pagas redirige aquí con el selector en «Ya vivo aquí»
+		// /cuanto-pagas redirige aquí con el selector en «Mi alquiler»
 		// /?modo=vivo y /?modo=mirando preseleccionan la modalidad (y su modo de ubicación por defecto)
 		const modalidad = new URLSearchParams(location.search).get('modo');
 		if (modalidad === 'vivo' || modalidad === 'mirando') {
@@ -162,15 +164,20 @@
 			f.modo = modoPorDefecto(modalidad);
 		}
 		// Enlaces de «Cómo calculamos»: /?motivo=obra_nueva abre esa pantalla «sin dato» (no cuenta como comprobación)
-		// /mapa → «Comprueba un piso aquí»: el mapa de la portada, centrado en el barrio y con la zona marcada
+		// /mapa → «Comprueba un anuncio aquí»: el mapa de la portada, centrado en el barrio y con la zona marcada
 		const prellenado = tomarPrellenado();
 		if (prellenado) {
+			// Quien llega desde el mapa busca piso: se abre «Un anuncio»
+			f.situacion = 'mirando';
 			f.modo = 'mapa';
 			enfoqueMapa = { clase: 'barrio', codigo: prellenado.barrio, vez: ++vezMapa };
 			puntoInicial = prellenado.punto;
 		}
 		const motivo = pantallaSinDatoDeClave(new URLSearchParams(location.search).get('motivo') ?? '');
-		if (motivo) mostrar(motivo, null, false);
+		if (motivo) {
+			mostrar(motivo, null, false);
+			desdeLimites = true;
+		}
 		precargarDatos();
 		historial = leerHistorial();
 	});
@@ -191,9 +198,9 @@
 				)
 			: []
 	);
-	/** Los datos de la tarjeta que se dibuja y se comparte; null si este resultado no tiene tarjeta */
+	/** Los datos de la tarjeta que se dibuja y se comparte (todos los niveles); null si no hay resultado */
 	const tarjetaActual = $derived(
-		!resultado ? null : resultado.inquilino ? construirTarjetaInquilino(resultado, textoTarjeta) : resultado.vista.clase === 'c' ? construirTarjeta(resultado) : null
+		!resultado ? null : resultado.inquilino ? construirTarjetaInquilino(resultado, textoTarjeta) : construirTarjeta(resultado)
 	);
 
 	$effect(() => {
@@ -204,7 +211,7 @@
 	// tarjeta solo se sube al servidor cuando la persona elige WhatsApp, X, copiar o la hoja del móvil.
 	let idTarjeta = $state<string | null>(null);
 	let nativo = $state(false);
-	const enlaces = $derived(idTarjeta ? enlacesCompartir(urlDeTarjeta(idTarjeta)) : null);
+	const enlaces = $derived(idTarjeta ? enlacesCompartir(urlDeTarjeta(idTarjeta), tarjetaActual ? textoCompartir(tarjetaActual) : undefined) : null);
 
 	async function compartir() {
 		if (!tarjetaActual || !canvasTarjeta || !idTarjeta) return;
@@ -268,6 +275,7 @@
 
 	function mostrar(p: Pantalla, u: Ubicacion | null, alHistorial = true) {
 		pantalla = p;
+		desdeLimites = false;
 		idTarjeta = p.tipo === 'resultado' ? idDeTarjeta() : null;
 		registro = 'no';
 		textoTarjeta = 0;
@@ -493,7 +501,7 @@
 </script>
 
 <svelte:head>
-	<title>{NOMBRE} · ¿Tiene sentido este precio?</title>
+	<title>{NOMBRE} · {LEMA}</title>
 	<meta name="description" content={DESCRIPCION} />
 	<meta property="og:title" content={NOMBRE} />
 	<meta property="og:description" content={DESCRIPCION} />
@@ -510,7 +518,7 @@
 
 <div class="pagina" data-fase={fase} data-listo={listo}>
 	<div class="cabecera-caja" class:con-resultado={hayResultado}>
-		<Cabecera derecha={cabecera} actual="comprobar" alOtroPiso={otroPiso} alVolver={() => (fase = 'resultado')} />
+		<Cabecera derecha={cabecera} actual="comprobar" modo={esVivo ? 'vivo' : 'mirando'} alOtroPiso={otroPiso} alVolver={() => (fase = 'resultado')} />
 	</div>
 
 	<main class="rejilla" class:hay-resultado={hayResultado}>
@@ -521,13 +529,13 @@
 			</h1>
 			<p class="subtitular">{SUBTITULAR_INICIO}</p>
 			{#if !hayResultado}<a class="enlace enlace-mapa" href="/mapa">{MAPA_REFERENCIA.enlacePortada}</a>{/if}
-			{#if !hayResultado}<MuestraResultado alListo={() => (muestraLista = true)} />{/if}
+			{#if !hayResultado}<MuestraResultado modo={esVivo ? 'vivo' : 'mirando'} alListo={() => (muestraLista = true)} />{/if}
 			<div class="fantasma" class:oculto={muestraLista && !hayResultado} aria-hidden="true">
-				<p>Aquí verás el anuncio frente a la referencia de su zona.</p>
+				<p>Aquí verás el precio frente a lo que pagan quienes ya viven en la zona.</p>
 				<div class="fantasma-barra">
-					<span class="f-anuncio">tu anuncio</span>
+					<span class="f-anuncio">tu precio</span>
 					<span class="f-pista"></span>
-					<span class="f-ref">referencia</span>
+					<span class="f-ref">contratos de aquí</span>
 					<span class="f-punto"></span>
 					<span class="f-cero">0&nbsp;€</span>
 				</div>
@@ -647,7 +655,7 @@
 				/>
 				{/key}
 			{:else if pantalla?.tipo === 'sin_dato'}
-				<SinDato {pantalla} alOtro={otroPiso} />
+				<SinDato {pantalla} alOtro={otroPiso} volver={desdeLimites} modo={esVivo ? 'vivo' : 'mirando'} />
 			{/if}
 		</div>
 	</main>
@@ -767,6 +775,12 @@
 		}
 		.hero > * {
 			width: min(600px, 100%);
+		}
+		/* El enlace al mapa se alinea con la columna del titular y el subtítulo (centrada, de 600 px) */
+		.hero > .enlace-mapa {
+			width: fit-content;
+			align-self: flex-start;
+			margin-left: calc((100% - min(600px, 100%)) / 2);
 		}
 		.hero h1 {
 			font-size: 104px;

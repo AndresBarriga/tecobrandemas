@@ -2,31 +2,32 @@
 	import { onMount } from 'svelte';
 	import Barra from './Barra.svelte';
 	import Icono from './Icono.svelte';
-	import { MUESTRA, construirMuestra, heroEnVeces, type Muestra } from '#lib/resultado';
+	import { MUESTRA, construirMuestra, heroEnVeces, type Muestra, type ModoMuestra } from '#lib/resultado';
 	import { cargarDatos } from '#lib/cliente/datos';
 
-	/** Avisa a la página de que la muestra está lista (entonces el esquema gris sobra) */
-	let { alListo }: { alListo?: () => void } = $props();
+	/** `modo`: la pestaña activa («Un anuncio» o «Mi alquiler»). `alListo` avisa a la página de que la muestra está lista (entonces el esquema gris sobra) */
+	let { modo, alListo }: { modo: ModoMuestra; alListo?: () => void } = $props();
 
-	let muestra = $state<Muestra | null>(null);
+	let datos = $state<Awaited<ReturnType<typeof cargarDatos>> | null>(null);
 
 	// Solo en escritorio: en móvil la portada no la enseña, así que ni se calcula
 	onMount(() => {
 		if (!matchMedia('(min-width: 1024px)').matches) return;
 		void cargarDatos()
 			.then((d) => {
-				muestra = construirMuestra(d);
-				if (muestra) alListo?.();
+				datos = d;
+				if (construirMuestra(d, modo)) alListo?.();
 			})
 			.catch(() => {});
 	});
 
+	const muestra = $derived<Muestra | null>(datos ? construirMuestra(datos, modo) : null);
 	const v = $derived(muestra?.vista);
-	const principal = $derived(v?.principal);
+	const principal = $derived(muestra?.principal);
 </script>
 
 {#if muestra && v && principal}
-	<section class="muestra nivel-{v.clase}" aria-labelledby="muestra-titulo">
+	<section class="muestra nivel-{muestra.clase}" aria-labelledby="muestra-titulo">
 		<div class="cabeza">
 			<h2 id="muestra-titulo">{MUESTRA.titulo}</h2>
 			<span class="sello">{MUESTRA.ejemplo}</span>
@@ -35,17 +36,20 @@
 			<p class="nombre">{muestra.lugar}</p>
 			<p class="contexto">{muestra.contexto}</p>
 		</div>
-		<p class="etiqueta"><Icono clase={v.clase} />{v.etiqueta}</p>
+		<p class="etiqueta"><Icono clase={muestra.icono} />{muestra.etiqueta}</p>
 		{#if principal.tipo === 'cifra'}
 			<div class="principal">
 				<p class="cifra" class:veces={heroEnVeces(principal.texto)}>{principal.texto}</p>
 				<p class="nota">{principal.nota}</p>
 			</div>
 		{:else}
-			<p class="titular">{principal.tipo === 'titular' ? principal.texto : ''}</p>
+			<div class="principal">
+				<p class="titular">{principal.texto}</p>
+				<p class="nota">{principal.nota}</p>
+			</div>
 		{/if}
-		<p class="frase">{v.frase}</p>
-		<div class="barra"><Barra barra={muestra.barra} vista={v} /></div>
+		{#if muestra.frase}<p class="frase">{muestra.frase}</p>{/if}
+		<div class="barra"><Barra barra={muestra.barra} vista={v} etiquetaPrecio={muestra.etiquetaPrecio} /></div>
 		<p class="pie">{MUESTRA.nota}</p>
 	</section>
 {/if}
@@ -102,8 +106,9 @@
 	}
 	.principal {
 		display: flex;
-		align-items: flex-end;
-		gap: 16px;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 6px;
 	}
 	.cifra {
 		font: 900 88px/0.85 var(--f-extra);

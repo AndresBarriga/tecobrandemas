@@ -36,7 +36,7 @@ Lo que depende de un PR sin fusionar lleva su número. Producción: https://asup
 | Dirección no encontrada (4i) | Hecho | `e2e/estados.spec.ts` 15 |
 | Sin conexión (4k) | Hecho | `e2e/estados.spec.ts` 17 |
 | Sin dato, uno por motivo (5j-5p) | Hecho | `e2e/estados.spec.ts` 07-14 |
-| Tarjeta 1080×1350, 5 casos (4a-4e) | Parcial | `e2e/tarjeta.spec.ts` 22. La tarjeta solo se ofrece en el nivel c; los 5 casos del diseño no están todos comprobados uno a uno |
+| Tarjeta 1080×1350, 5 casos (4a-4e) | Parcial | `e2e/tarjeta.spec.ts` 22. Desde el 08/10/2026 la tarjeta del anuncio se ofrece en todos los niveles (dentro, por debajo, algo por encima y se sale de lo habitual); los 5 casos del diseño no están todos comprobados uno a uno |
 | `/t/:id` (5f, 5g) | Hecho | `e2e/tarjeta.spec.ts` 23 |
 | Vista previa OG 1200×630 (5h, 5i) | Hecho | `e2e/tarjeta.spec.ts` 24 (`og.jpg`) |
 | ¿Cuánto pagas tú? (5q-5s) | Hecho | `e2e/registro.spec.ts` 24-26 |

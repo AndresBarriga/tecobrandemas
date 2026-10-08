@@ -7,14 +7,14 @@ test.describe('flujo', () => {
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
-		await expect(page.getByText('Por encima del techo para un piso excelente')).toBeVisible();
+		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
 		await esperarAnimacion(page);
 		expect(Date.now() - t0).toBeLessThan(30_000);
 		await expect(page.getByRole('img', { name: /Tu anuncio, 2\.500/ })).toBeVisible();
 	});
 
 	test('formatea el precio al salir del campo y valida con mensajes que dicen cómo corregir', async ({ page }) => {
-		await abrir(page);
+		await abrir(page, '/?modo=mirando');
 		await page.fill('#precio', '2200€');
 		await page.locator('#superficie').focus();
 		await expect(page.locator('#precio')).toHaveValue('2.200');
@@ -22,7 +22,7 @@ test.describe('flujo', () => {
 		await page.locator('#precio').focus();
 		await expect(page.getByText(/Escribe los m².*entre 10 y 500/)).toBeVisible();
 		await page.getByRole('button', { name: 'Comprobar el precio' }).click();
-		// «Estoy mirando un piso» empieza por «Calle»
+		// «Un anuncio» empieza por «Calle»
 		await expect(page.getByText(/Escribe el nombre de la calle/)).toBeVisible();
 	});
 
@@ -37,7 +37,7 @@ test.describe('flujo', () => {
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		// En escritorio la portada ya enseña un resultado de muestra: se espera al de verdad
 		await expect(page.getByRole('group', { name: 'Compartir el resultado' })).toBeVisible();
-		await expect(page.getByText('Por encima del techo')).toBeVisible();
+		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
 		expect(externas).toEqual([]);
 		// Solo se envía la dirección a nuestro Worker (para situar el piso); ni precio ni m² en ningún cuerpo
 		const rutas = posts.map((p) => new URL(p.url).pathname);
@@ -58,11 +58,11 @@ test.describe('flujo', () => {
 		expect(await page.evaluate(() => document.fonts.check('900 40px "Sofia Sans Extra Condensed"'))).toBe(true);
 	});
 
-	test('«Otro piso» vuelve al formulario con lo escrito', async ({ page }) => {
+	test('«Otro anuncio» vuelve al formulario con lo escrito', async ({ page }) => {
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Por encima del techo')).toBeVisible();
-		await page.getByRole('button', { name: /Comparar con otro piso/ }).click();
+		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
+		await page.getByRole('button', { name: /Comparar con otro anuncio/ }).click();
 		await expect(page.locator('#direccion')).toBeVisible();
 		// El número escrito al final de la calle pasa al campo «Nº»
 		await expect(page.locator('#direccion')).toHaveValue('Calle de Fuente del Berro');

@@ -34,10 +34,10 @@ describe('textoRatio (precio / R_sup)', () => {
 describe('cifra principal del nivel «por encima»', () => {
 	it('una sola cifra, en % o en veces', () => {
 		expect(principalPorEncima(1.5, null, `90${NB}m²`)).toEqual({
-			tipo: 'cifra', texto: `+50${NB}%`, nota: `sobre la parte alta de la referencia para 90${NB}m² en esta zona`
+			tipo: 'cifra', texto: `+50${NB}%`, nota: `sobre lo más alto habitual en tu zona (90${NB}m²)`
 		});
 		expect(principalPorEncima(3.4, null, `90${NB}m²`)).toEqual({
-			tipo: 'cifra', texto: `3,4${NB}veces`, nota: `la parte alta de la referencia para 90${NB}m² en esta zona`
+			tipo: 'cifra', texto: `3,4${NB}veces`, nota: `lo más alto habitual en tu zona (90${NB}m²)`
 		});
 	});
 

@@ -1,16 +1,18 @@
 /**
  * Tarjeta compartible (R6): lo que se dibuja en el canvas de 1080×1350 y en la imagen OG de
  * 1200×630, y lo que guarda /t/:id. Lleva la cifra o el titular, el nivel, el barrio, la frase
- * y la barra en fracciones. Nunca lleva precio, superficie ni dirección: la barra va en
- * fracciones de su propia escala, de modo que no se puede volver al importe.
+ * y la barra en fracciones. Nunca lleva el precio pedido, la superficie ni la dirección; la del
+ * anuncio sí lleva la franja habitual («Lo habitual aquí: de 588 a 767 €») para sostenerse sola.
  */
 import { numero, porcentaje } from './formato';
 import { heroEnVeces, partesRatio } from './ratio';
+import { principalPorEncima } from './vista';
 import type { PantallaResultado } from './resultado';
 import {
-	ATRIBUCIONES, ETIQUETA_NIVEL, ETIQUETA_OG, FRASE_TARJETA, INQUILINO, NOMBRE, NOTA_TARJETA, OG, TARJETA, TARJETA_INQUILINO
+	ATRIBUCIONES, ETIQUETA_NIVEL, ETIQUETA_OG, ETIQUETA_POR_DEBAJO, FRASE_TARJETA, FRASE_TARJETA_LIMITE, FRASE_TARJETA_POR_DEBAJO, INQUILINO, MIRANDO, NOMBRE, NOTA_TARJETA, OG, TARJETA,
+	TARJETA_INQUILINO
 } from './textos';
-import type { Clase } from './vista';
+import type { Clase, Vista } from './vista';
 
 export const TARJETA_ANCHO = 1080;
 export const TARJETA_ALTO = 1350;
@@ -27,12 +29,27 @@ export interface Tramo01 {
 	hasta: number;
 }
 
-/** Posición del inquilino en su tarjeta: por debajo, dentro de la referencia, cerca del techo o por encima */
+/** Posición del inquilino en su tarjeta: por debajo, dentro de rango, algo por encima o se sale de lo habitual */
 export type PosicionTarjeta = 'debajo' | 'dentro' | 'encimab' | 'encima';
 const CLASE_DE: Record<PosicionTarjeta, Clase> = { debajo: 'a', dentro: 'a', encimab: 'b', encima: 'c' };
 
+/**
+ * Tramo del texto de la tarjeta del inquilino, por el cociente precio / parte alta. Son umbrales de
+ * presentación, orientativos: el nivel y la etiqueta siguen saliendo del motor.
+ */
+export type TramoTarjeta = 'debajo' | 'dentro' | 'limite' | 'encima' | 'doble' | 'veces';
+export const UMBRALES_TARJETA = { limite: 1.05, doble: 1.9, veces: 2.1 } as const;
+
+export function tramoDeTarjeta(pos: PosicionTarjeta, ratio: number): TramoTarjeta {
+	if (pos === 'debajo' || pos === 'dentro') return pos;
+	if (ratio <= UMBRALES_TARJETA.limite) return 'limite';
+	if (ratio < UMBRALES_TARJETA.doble) return 'encima';
+	if (ratio < UMBRALES_TARJETA.veces) return 'doble';
+	return 'veces';
+}
+
 export interface TarjetaDatos {
-	/** Tarjeta del inquilino («Ya vivo aquí»): su posición. Nunca lleva la renta ni la fecha de firma */
+	/** Tarjeta del inquilino («Mi alquiler»): su posición. Nunca lleva la renta ni la fecha de firma */
 	inquilino?: { posicion: PosicionTarjeta };
 	clase: Clase;
 	etiqueta: string;
@@ -55,11 +72,18 @@ export interface TarjetaDatos {
 	};
 }
 
-export const CTA_TARJETA = 'Comprueba otro piso';
+export const CTA_TARJETA = 'Comprueba otro anuncio';
 export const PIE_TARJETA = TARJETA.pie;
 
 const notaPorEncima = (h: Hero): string =>
 	(h.tipo === 'cifra' ? heroEnVeces(h.texto) : h.tipo === 'rango' && heroEnVeces(h.hasta)) ? 'la parte alta' : 'sobre la parte alta';
+
+/** La frase de la tarjeta del anuncio, por nivel: dentro, por debajo, límite alto, algo por encima y se sale de lo habitual */
+function fraseDeTarjeta(v: Vista): string {
+	if (v.clase === 'a') return v.etiqueta === ETIQUETA_POR_DEBAJO ? FRASE_TARJETA_POR_DEBAJO : FRASE_TARJETA.a;
+	if (v.clase === 'b') return v.limiteAlto ? FRASE_TARJETA_LIMITE : FRASE_TARJETA.b;
+	return FRASE_TARJETA.c;
+}
 
 export function construirTarjeta(p: PantallaResultado): TarjetaDatos {
 	const { vista, barra } = p;
@@ -72,17 +96,17 @@ export function construirTarjeta(p: PantallaResultado): TarjetaDatos {
 			? { tipo: 'rango', desde: principal.desde, hasta: principal.hasta }
 			: principal.tipo === 'cifra'
 				? { tipo: 'cifra', texto: principal.texto }
-				: { tipo: 'titular', texto: principal.texto };
+				: { tipo: 'titular', texto: vista.tituloCorto ?? principal.texto };
 	const pos = barra.posiciones;
 	return {
 		clase: vista.clase,
-		etiqueta: ETIQUETA_NIVEL[vista.clase],
+		etiqueta: vista.etiqueta,
 		hero,
 		nota:
 			vista.clase === 'c'
 				? NOTA_TARJETA.c(lugar, aproximada, notaPorEncima(hero))
 				: NOTA_TARJETA[vista.clase](lugar),
-		frase: FRASE_TARJETA[vista.clase],
+		frase: `${MIRANDO.habitual(vista.habitual)} ${fraseDeTarjeta(vista)}`,
 		barrio,
 		aproximada,
 		barra: {
@@ -100,19 +124,20 @@ const posicionDeTarjeta = (pos: 'debajo' | 'baja' | 'media' | 'alta' | 'encimab'
 
 /** Los tres textos de una posición; el de «por encima» con el % o las veces sobre la parte alta */
 export function textosInquilino(pos: PosicionTarjeta, ratio: number, horquilla = false): string[] {
-	const t = TARJETA_INQUILINO.textos[pos];
-	if (pos !== 'encima') return [...t] as string[];
-	const p = partesRatio(ratio);
-	const dinamico = p.enVeces
-		? TARJETA_INQUILINO.encimaVeces(`${numero(ratio, 1)}\u00A0veces`, horquilla)
-		: TARJETA_INQUILINO.encimaCifra(porcentaje(ratio - 1).replace(/^−/, ''), horquilla);
-	return [dinamico, ...(t.slice(1) as string[])];
+	const tramo = tramoDeTarjeta(pos, ratio);
+	const t = TARJETA_INQUILINO.textos[tramo] as readonly (string | null)[];
+	if (tramo === 'encima') return [TARJETA_INQUILINO.encimaCifra(porcentaje(ratio - 1).replace(/^−/, ''), horquilla), ...(t.slice(1) as string[])];
+	if (tramo === 'veces') return [TARJETA_INQUILINO.encimaVeces(`${numero(ratio, 1)}\u00A0veces`, horquilla), ...(t.slice(1) as string[])];
+	return [...t] as string[];
 }
 
 /** ¿Es una de las frases de las tarjetas del inquilino? (el servidor solo guarda esas) */
 function fraseInquilinoValida(pos: PosicionTarjeta, frase: string): boolean {
-	if ((TARJETA_INQUILINO.textos[pos] as readonly (string | null)[]).includes(frase)) return true;
-	return pos === 'encima' && /^Pago (al menos )?(un \d{1,4}(,\d)?\u00A0% más que|\d{1,3},\d\u00A0veces) la parte alta de la referencia de mi zona\.$/.test(frase);
+	const estaticas = (tramos: TramoTarjeta[]) =>
+		tramos.flatMap((t) => TARJETA_INQUILINO.textos[t] as readonly (string | null)[]).includes(frase);
+	if (pos === 'debajo' || pos === 'dentro') return estaticas([pos]);
+	if (estaticas(['limite', 'encima', 'doble', 'veces'])) return true;
+	return /^Pago (al menos )?(un \d{1,4}(,\d)?\u00A0% más que lo habitual en mi zona\. ¿Y\u00A0tú\?|\d{1,3},\d\u00A0veces lo habitual en mi zona)$/.test(frase);
 }
 
 /**
@@ -123,17 +148,38 @@ export function construirTarjetaInquilino(p: PantallaResultado, texto: 0 | 1 | 2
 	const i = p.inquilino!;
 	const base = construirTarjeta(p);
 	const posicion = posicionDeTarjeta(i.pos);
-	const hero: Hero = posicion === 'encima' ? base.hero : { tipo: 'titular', texto: i.titular };
+	const tramo = tramoDeTarjeta(posicion, p.ratioMin);
+	let hero: Hero;
+	if (tramo === 'encima' || tramo === 'doble' || tramo === 'veces') {
+		// La cifra va por la razón sobre la parte alta, también en el tramo que el motor llama «explicable»
+		const ratioMax = p.barra.horquilla ? p.ratioMin * (p.barra.sup.max / p.barra.sup.min) : null;
+		const c = principalPorEncima(p.ratioMin, ratioMax, p.vista.m2);
+		hero = c.tipo === 'rango' ? { tipo: 'rango', desde: c.desde, hasta: c.hasta } : c.tipo === 'cifra' ? { tipo: 'cifra', texto: c.texto } : base.hero;
+	} else if (tramo === 'limite') hero = { tipo: 'titular', texto: TARJETA_INQUILINO.tituloLimite };
+	else hero = { tipo: 'titular', texto: i.titular };
+	const enVeces = hero.tipo === 'cifra' ? heroEnVeces(hero.texto) : hero.tipo === 'rango' && heroEnVeces(hero.hasta);
 	return {
 		...base,
 		inquilino: { posicion },
 		clase: CLASE_DE[posicion],
 		etiqueta: INQUILINO.etiqueta[posicion === 'dentro' ? 'dentro' : posicion],
 		hero,
-		nota: TARJETA_INQUILINO.nota[posicion],
+		nota: tramo === 'debajo' || tramo === 'dentro' || tramo === 'limite' ? TARJETA_INQUILINO.nota[tramo] : enVeces ? TARJETA_INQUILINO.nota.veces : TARJETA_INQUILINO.nota.encima,
 		// «Por encima» tiene dos textos: un índice que no existe cae en el factual
 		frase: textosInquilino(posicion, p.ratioMin, p.horquilla)[texto] ?? textosInquilino(posicion, p.ratioMin, p.horquilla)[0]!
 	};
+}
+
+/**
+ * Texto del mensaje al compartir por WhatsApp, X o la hoja del móvil: la frase de la tarjeta (la que la persona
+ * eligió), sin precio ni dirección. Reemplaza al «Mira mi resultado» de antes.
+ */
+export function textoCompartir(t: TarjetaDatos): string {
+	if (t.inquilino) return t.frase;
+	// El anuncio: la etiqueta, la cifra o el titular y su nota, sin importes en euros
+	const h = t.hero;
+	const cifra = h.tipo === 'rango' ? `entre ${h.desde} y ${h.hasta}` : h.texto;
+	return `${t.etiqueta}: ${cifra} ${t.nota}.`;
 }
 
 /** Título, descripción y textos de la vista previa del enlace: sin precio ni dirección */
@@ -153,10 +199,10 @@ export function textosEnlace(t: TarjetaDatos): { titulo: string; descripcion: st
 		titulo: `${NOMBRE} · Un piso en ${lugar}`,
 		descripcion:
 			t.clase === 'c'
-				? `${cifra} ${notaPorEncima(t.hero)} de la referencia de alquileres registrados en la zona. Comprueba tu piso.`
-				: `${ETIQUETA_NIVEL[t.clase]} en ${lugar}. Comprueba tu piso.`,
+				? `${cifra} ${notaPorEncima(t.hero)} de lo que pagan quienes ya viven en la zona. Comprueba tu piso.`
+				: `${t.etiqueta} en ${lugar}. Comprueba tu piso.`,
 		og: {
-			etiqueta: ETIQUETA_OG[t.clase],
+			etiqueta: t.etiqueta === ETIQUETA_POR_DEBAJO ? ETIQUETA_POR_DEBAJO : ETIQUETA_OG[t.clase],
 			titular: OG.titular(t.barrio),
 			nota: t.hero.tipo === 'titular' ? t.nota : OG.notaCifra(notaPorEncima(t.hero) === 'la parte alta'),
 			cta: OG.cta
@@ -189,7 +235,7 @@ export function validarTarjeta(x: unknown): TarjetaDatos | null {
 		if (pos !== 'debajo' && pos !== 'dentro' && pos !== 'encimab' && pos !== 'encima') return null;
 		if (CLASE_DE[pos] !== clase || t.etiqueta !== INQUILINO.etiqueta[pos] || typeof t.frase !== 'string' || !fraseInquilinoValida(pos, t.frase)) return null;
 		inquilino = { posicion: pos };
-	} else if (t.etiqueta !== ETIQUETA_NIVEL[clase]) return null;
+	} else if (t.etiqueta !== ETIQUETA_NIVEL[clase] && !(clase === 'a' && t.etiqueta === ETIQUETA_POR_DEBAJO)) return null;
 	const h = t.hero as Record<string, unknown> | undefined;
 	let hero: Hero;
 	if (h?.tipo === 'cifra' && texto(h.texto, 30)) hero = { tipo: 'cifra', texto: h.texto };
@@ -206,7 +252,7 @@ export function validarTarjeta(x: unknown): TarjetaDatos | null {
 	return {
 		...(inquilino ? { inquilino } : {}),
 		clase,
-		etiqueta: inquilino ? INQUILINO.etiqueta[inquilino.posicion] : ETIQUETA_NIVEL[clase],
+		etiqueta: inquilino ? INQUILINO.etiqueta[inquilino.posicion] : t.etiqueta === ETIQUETA_POR_DEBAJO ? ETIQUETA_POR_DEBAJO : ETIQUETA_NIVEL[clase],
 		hero,
 		nota: t.nota,
 		frase: t.frase,
