@@ -1,7 +1,8 @@
 /**
  * Analítica de uso con PostHog (UE), sin cookies ni almacenamiento: el SDK habla con un proxy del propio
  * dominio (/r7k), no carga scripts remotos, no crea perfiles de persona y pasa cada evento por la lista
- * blanca de analitica-filtro.ts antes de enviarlo. Solo se inicia si PUBLIC_POSTHOG_ENABLED=true (el job de
+ * blanca de analitica-filtro.ts antes de enviarlo (deja pasar `$raw_user_agent` y el resto de propiedades `$` del SDK, que el modo sin
+ * cookies necesita; quita IP, geolocalización y toda la query de las URL salvo utm_*, c, t e internal). Solo se inicia si PUBLIC_POSTHOG_ENABLED=true (el job de
  * despliegue); en desarrollo, en las pruebas y en local no hace nada.
  *
  * Nunca se llama a identify() ni a $set. Los eventos y sus propiedades están en EVENTOS (analitica-filtro.ts).
@@ -32,8 +33,8 @@ let iniciada = false;
 let indiceAnalisis = 0;
 let inicioMs: number | null = null;
 
-/** Campaña de la visita: los utm_* de la URL de entrada o, sin ninguno, solo el dominio del referrer. Se lee una vez y vive en memoria */
-const CLAVES_UTM = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const;
+/** Campaña de la visita: los utm_* (source, medium, campaign y content) de la URL de entrada o, sin ninguno, solo el dominio del referrer. Se lee una vez y vive en memoria */
+const CLAVES_UTM = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'] as const;
 export function campanaDeLaVisita(url: string, referrer: string, propioHost: string): Record<string, string> {
 	const q = new URL(url).searchParams;
 	const salida: Record<string, string> = {};

@@ -349,3 +349,11 @@ Qué se retiró y por qué, para no perder la historia:
 - **`URL_PRODUCCION`:** la variable del repositorio no existe (solo `PUBLIC_POSTHOG_KEY`); los flujos usan https://asuprecio.com por defecto, así que se quitó el aviso.
 - **Duplicados** unificados: pruebas en móvil real, R2, plan de pago de Workers, caducidad de tarjetas y previsualizaciones por rama.
 - **Nuevo:** la prueba de humo en rojo por el beacon de Cloudflare Web Analytics, y la sección de credibilidad de los datos aportados.
+
+## Analítica: user agent para el modo sin cookies (08/10/2026, rama `analitica-ua-cookieless`)
+- **Problema:** PostHog descartaba los eventos con el aviso `cookieless_missing_user_agent`: el modo sin cookies calcula el identificador diario en el servidor con `$raw_user_agent`, `$host` y la IP, y `before_send` quitaba las propiedades `$…` que no estaban en una lista.
+- **Arreglo (`analitica-filtro.ts`):** pasan todas las propiedades `$…` del SDK (`$raw_user_agent`, `$host`, `$device_id`, tamaño de pantalla…) salvo IP, geolocalización y perfil (`$ip`, `$geoip_*`, `$set`…). Toda URL (`$current_url`, `$referrer`, `$initial_current_url`…) sale con su ruta y la query reducida a `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `c`, `t` e `internal` (`/mapa?m2=70` sale como `/mapa`). `utm_term` deja de salir.
+- **UTM en todos los eventos:** ya viajaban registrados en memoria al cargar (`posthog.register`), también en `completa`; el e2e lo comprueba.
+- **Test:** `tests/analitica.test.ts` pasa un evento de ejemplo por `before_send` (el user agent y los UTM se conservan; ni m², precio, dirección ni coordenadas en ninguna propiedad ni URL). Es un test nuevo, pedido expresamente por el usuario (excepción a la regla de no añadir tests nuevos).
+- **Texto público:** «Tus datos» dice ahora que PostHog recibe el user agent, el idioma y el tamaño de pantalla, y de las direcciones web solo la ruta y los parámetros de campaña.
+- **Después de desplegar:** comprobar en PostHog (Live events) que los eventos ya entran sin el aviso (`docs/operacion.md`, «Verificar en PostHog»).
