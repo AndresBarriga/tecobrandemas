@@ -357,3 +357,11 @@ Qué se retiró y por qué, para no perder la historia:
 - **Test:** `tests/analitica.test.ts` pasa un evento de ejemplo por `before_send` (el user agent y los UTM se conservan; ni m², precio, dirección ni coordenadas en ninguna propiedad ni URL). Es un test nuevo, pedido expresamente por el usuario (excepción a la regla de no añadir tests nuevos).
 - **Texto público:** «Tus datos» dice ahora que PostHog recibe el user agent, el idioma y el tamaño de pantalla, y de las direcciones web solo la ruta y los parámetros de campaña.
 - **Después de desplegar:** comprobar en PostHog (Live events) que los eventos ya entran sin el aviso (`docs/operacion.md`, «Verificar en PostHog»).
+
+## Analítica: evento `mapa_capa` (08/10/2026, rama `analitica-mapa-capa`)
+- **Qué mide:** qué capa de `/mapa` se ve (`referencia`, `presupuesto` o `evolucion`). Sale al cargar el mapa y cada vez que se cambia de capa. Una sola propiedad, `capa`, con valores cerrados.
+- **Comprobado antes de implementarlo:** la capa ya está en la URL (`/mapa?capa=…&m2=…&barrio=…`), pero **no llegaba a PostHog**: el filtro deja en la query solo `utm_*`, `c`, `t` e `internal`, y el cambio de capa no genera `$pageview`. Por eso hacía falta un evento.
+- **Privacidad:** el evento no lleva zona, barrio, presupuesto, metros ni coordenadas (comprobado en el navegador: ni `m2=` ni `barrio=` ni los importes escritos salen en ningún evento).
+- **Prueba en desarrollo:** `?ph_prueba=1` se recuerda ahora una vez vista (solo en `vite dev`), porque `/mapa` reescribe la URL y la quitaba.
+- «Tus datos» menciona ahora «la capa del mapa que miras».
+- **Textos públicos sobre almacenamiento (08/10/2026, mismo PR):** «Tus datos» dice ahora que PostHog «no usa cookies ni guarda nada en tu navegador» para medir; que el historial de la sesión vive en `sessionStorage` y guarda lo escrito en cada comprobación, con la dirección, y el resultado; que al comprobar la dirección sí se envía al servidor para calcular el resultado (no se guarda) y que lo que no sale del dispositivo es la lista del historial. `docs/operacion.md` recoge `asp:historial` y las claves `sveltekit:*`, y el formato exacto de los `utm_*` con un ejemplo.

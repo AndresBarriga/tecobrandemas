@@ -282,11 +282,11 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 			parrafos: [
 				'Los datos del anuncio los escribes tú; no leemos páginas de portales. Para situar el piso, la dirección se envía a nuestro servidor; no se guarda. Solo guardamos un análisis de anuncio si marcas la casilla, y guardamos el barrio, el mes, el precio, los metros y el nivel del resultado: nunca la dirección ni tu IP.',
 				'Si vives de alquiler y pulsas «Aportar mi alquiler», guardamos el barrio, la renta, los metros, el mes y el año de la firma (y lo que pagabas al firmar, si lo has escrito). Si pulsas «Aportar mi habitación», guardamos el barrio, la renta, cuántas habitaciones tiene el piso, un tramo de tamaño (nunca los metros exactos), si incluye gastos y el mes. Ninguna aportación se envía sin pulsar, y nunca guardamos la dirección, la ubicación, tu nombre ni tu correo. Si compartes piso con un solo contrato y escribes cuántas personas sois, ese número solo se usa en tu pantalla (para enseñarte tu parte) y no se guarda ni se envía. «Usar mi ubicación» se queda en tu navegador: las coordenadas no se envían ni se guardan. Los análisis, las aportaciones de alquiler y las de habitaciones se guardan por separado y no se mezclan con los datos oficiales.',
-				'Para limitar abusos usamos un código derivado de tu conexión que caduca a las 24 horas, y para no contar dos veces el mismo piso, otro hecho con el precio, los metros y el barrio que se guarda 30 días. Ninguno permite saber quién eres. La web se sirve desde Cloudflare, que, como cualquier alojamiento, ve la conexión. La lista de pisos comprobados en esta sesión se queda solo en tu navegador y se borra al cerrarlo.',
+				'Para limitar abusos usamos un código derivado de tu conexión que caduca a las 24 horas, y para no contar dos veces el mismo piso, otro hecho con el precio, los metros y el barrio que se guarda 30 días. Ninguno permite saber quién eres. La web se sirve desde Cloudflare, que, como cualquier alojamiento, ve la conexión. La lista de pisos comprobados en esta sesión vive solo en tu navegador (almacenamiento de sesión): guarda lo que escribiste en cada comprobación, con la dirección, y el resultado. Al comprobar, la dirección sí se envía a nuestro servidor para calcular el resultado, aunque no se guarda; lo que no sale de tu dispositivo es esta lista, que se borra al cerrar la pestaña.',
 				'Si compartes una tarjeta, guardamos su imagen y los textos que ves (porcentaje, nivel y barrio) para que el enlace siga funcionando. No caducan automáticamente: si quieres que borremos una, escríbenos con su enlace.'
 			],
 			guardamos: ['El barrio', 'El mes', 'El precio o la renta', 'Los metros', 'El nivel del resultado', 'El mes y año de firma, si aportas tu alquiler', 'Habitaciones del piso, tramo de tamaño y gastos, si aportas una habitación'],
-			noGuardamos: ['La dirección', 'Tu ubicación ni tus coordenadas', 'Tu IP', 'Nada si no pulsas «Aportar» o no marcas la casilla', 'Tu lista de pisos de esta sesión, que se queda en tu navegador'],
+			noGuardamos: ['La dirección', 'Tu ubicación ni tus coordenadas', 'Tu IP', 'Nada si no pulsas «Aportar» o no marcas la casilla', 'Tu lista de pisos de esta sesión, dirección incluida: solo vive en tu navegador y se borra al cerrar la pestaña'],
 			notas: [
 				{ titulo: 'Código antiabuso', texto: ['Se deriva de tu conexión y caduca a las 24 horas.'] },
 				{ titulo: 'Cloudflare', texto: ['Sirve la web y, como cualquier alojamiento, ve la conexión.'] },
@@ -294,8 +294,8 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 					titulo: 'Pasos de uso',
 					ancha: true,
 					texto: [
-						'Para saber si la herramienta sirve, contamos pasos como empezar, obtener un resultado o compartir, junto con el tipo de resultado, el distrito y desde dónde llegaste.',
-						'Usamos PostHog, con servidores en la UE y sin cookies: para contar visitas recibe tu IP y los datos de tu navegador (su user agent, el idioma y el tamaño de pantalla), los usa para generar un identificador anónimo que cambia cada día y no los guarda. De las direcciones web solo enviamos la ruta y los parámetros de campaña, nunca la dirección, el precio ni los metros.'
+						'Para saber si la herramienta sirve, contamos pasos como empezar, obtener un resultado o compartir, junto con el tipo de resultado, el distrito, la capa del mapa que miras y desde dónde llegaste.',
+						'Usamos PostHog, con servidores en la UE. Para medir no usa cookies ni guarda nada en tu navegador: para contar visitas recibe tu IP y los datos de tu navegador (su user agent, el idioma y el tamaño de pantalla), los usa para generar un identificador anónimo que cambia cada día y no los guarda. De las direcciones web solo enviamos la ruta y los parámetros de campaña, nunca la dirección, el precio ni los metros.'
 					]
 				}
 			]

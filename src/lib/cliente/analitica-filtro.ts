@@ -3,7 +3,7 @@
  * evento antes de que salga del navegador, y los tests la prueban sola.
  *
  * Reglas:
- *  - solo salen `$pageview`, `$pageleave` y los eventos de EVENTOS;
+ *  - solo salen `$pageview`, `$pageleave` y los eventos de EVENTOS (entre ellos `mapa_capa`, con la capa de /mapa);
  *  - de un evento propio solo salen sus propiedades (más las globales), y cada valor tiene que ser de su
  *    enum o tener su formato; lo demás se quita;
  *  - las propiedades `$…` del SDK salen todas (el modo sin cookies las necesita: `$raw_user_agent`, `$host`,
@@ -21,6 +21,8 @@ export const RESULTADOS_UBICACION = ['ok', 'denegada', 'imprecisa', 'fuera', 'no
 export const POSICIONES = ['baja', 'media', 'alta'] as const;
 export const BRECHAS = ['lt0', '0_10', '10_25', '25_50', '50_100', 'gt100'] as const;
 export const CANALES = ['whatsapp', 'x', 'copiar', 'descargar', 'nativo'] as const;
+/** Capas de /mapa (`mapa_capa.capa`): nunca la zona, el presupuesto ni los metros */
+export const CAPAS_MAPA = ['referencia', 'presupuesto', 'evolucion'] as const;
 export const APPS = ['instagram', 'facebook', 'whatsapp', 'x', 'tiktok', 'otro', 'ninguno'] as const;
 export const MOTIVOS_SIN_DATO = [
 	'superficie_menor', 'superficie_mayor', 'obra_nueva', 'unifamiliar', 'temporal', 'testigos', 'sin_dato_seccion', 'fuera_de_madrid', 'habitacion'
@@ -57,6 +59,7 @@ const VALIDADORES: Record<string, Validador> = {
 	motivo: enumerado(MOTIVOS_SIN_DATO),
 	respuesta: enumerado(RESPUESTAS_QUE_HARAS),
 	canal: enumerado(CANALES),
+	capa: enumerado(CAPAS_MAPA),
 	tarjeta_id: (v) => typeof v === 'string' && IDENTIFICADOR_TARJETA.test(v),
 	// Globales (se registran al cargar)
 	v: (v) => v === 1,
@@ -85,7 +88,8 @@ export const EVENTOS: Record<string, readonly string[]> = {
 	sin_dato: ['modo', 'motivo'],
 	que_haras: ['modo', 'respuesta', 'resultado'],
 	comparte: ['modo', 'canal', 'tarjeta_id', 'resultado'],
-	aporta: ['tipo']
+	aporta: ['tipo'],
+	mapa_capa: ['capa']
 };
 
 export const EVENTOS_SDK = ['$pageview', '$pageleave'] as const;
