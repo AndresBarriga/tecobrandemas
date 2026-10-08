@@ -34,7 +34,7 @@ async function escuchar(context: BrowserContext): Promise<Evento[]> {
 const tipos = (ev: Evento[]) => ev.map((e) => e.event);
 const de = (ev: Evento[], nombre: string) => ev.filter((e) => e.event === nombre);
 const esperar = (ev: Evento[], nombre: string) => expect.poll(() => tipos(ev), { timeout: 12_000 }).toContain(nombre);
-const URL_PRUEBA = '/?ph_prueba=1&t=abcdefghij&utm_source=ig&utm_medium=story&gclid=XYZ&internal=1';
+const URL_PRUEBA = '/?ph_prueba=1&t=abcdefghij&utm_source=ig&utm_medium=story&gclid=XYZ&internal=1&m2=70';
 
 test.describe('analítica sin cookies', () => {
 	test('tras un análisis completo: sin cookies ni localStorage, sin claves nuevas en sessionStorage y solo peticiones al propio dominio', async ({ page, context, baseURL }) => {
@@ -74,10 +74,14 @@ test.describe('analítica sin cookies', () => {
 		expect(tipos(ev).filter((t) => /^(llegada|segundo|desde_tarjeta|servido_|vivo_|comparte_)/.test(t))).toEqual([]);
 
 		const pv = de(ev, '$pageview')[0]!.properties;
-		expect(pv.$current_url).toMatch(/\/\?utm_source=ig&utm_medium=story$/); // sin t=, gclid ni internal
+		// La query se reduce a utm_*, c, t e internal: ni ph_prueba, ni gclid, ni m2
+		expect(pv.$current_url).toMatch(/\/\?t=abcdefghij&utm_source=ig&utm_medium=story&internal=1$/);
 		expect(pv).toMatchObject({ utm_source: 'ig', utm_medium: 'story', tarjeta_origen: 'abcdefghij', interno: true, v: 1 });
 		expect(pv).not.toHaveProperty('gclid');
-		expect(pv).not.toHaveProperty('$raw_user_agent');
+		// El modo sin cookies de PostHog necesita el user agent y el host; sin ellos descarta el evento (cookieless_missing_user_agent)
+		expect(pv).toHaveProperty('$raw_user_agent');
+		expect(pv).toMatchObject({ $host: expect.any(String), $lib: 'web', $screen_width: expect.any(Number) });
+		expect(Object.keys(pv).filter((k) => /^\$(ip|geo)/i.test(k))).toEqual([]);
 		expect(pv).toMatchObject({ distinct_id: '$posthog_cookieless', $cookieless_mode: true, $process_person_profile: false });
 
 		expect(de(ev, 'empieza')[0]!.properties).toMatchObject({ modo: 'mirando' });
@@ -96,13 +100,19 @@ test.describe('analítica sin cookies', () => {
 
 		// Ninguna propiedad fuera de la lista, y nada del anuncio en ningún sitio
 		for (const e of ev) {
-			const permitidas = e.event.startsWith('$') ? null : new Set(['token', 'distinct_id', 'v', 'navegador_app', 'tarjeta_origen', 'interno', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'ref_domain', '$cookieless_mode', '$process_person_profile', ...(await import('../src/lib/cliente/analitica-filtro')).EVENTOS[e.event]!]);
+			const filtro = await import('../src/lib/cliente/analitica-filtro');
+			const permitidas = e.event.startsWith('$') ? null : new Set(['token', 'distinct_id', 'v', 'navegador_app', 'tarjeta_origen', 'interno', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'ref_domain', ...filtro.EVENTOS[e.event]!]);
 			for (const k of Object.keys(e.properties)) {
-				if (k.startsWith('$')) expect((await import('../src/lib/cliente/analitica-filtro')).PROPIEDADES_SDK, `${e.event}.${k}`).toContain(k);
+				// Las `$…` del SDK salen (menos IP, geolocalización y perfil); las demás, solo las de la lista
+				if (k.startsWith('$')) expect(filtro.SDK_PROHIBIDAS.test(k), `${e.event}.${k}`).toBe(false);
 				else if (permitidas) expect(permitidas.has(k), `${e.event}.${k}`).toBe(true);
 			}
+			// Ninguna URL lleva más query que la permitida
+			for (const v of Object.values(e.properties)) {
+				if (typeof v === 'string' && /^https?:\/\//.test(v)) expect([...new URL(v).searchParams.keys()].filter((k) => !filtro.QUERY_PERMITIDA.includes(k)), `${e.event} ${v}`).toEqual([]);
+			}
 		}
-		expect(JSON.stringify(ev)).not.toMatch(/2500|2\.500|Berro|Goya|Calle|"direccion"|"precio"|"m2"|"lat"/);
+		expect(JSON.stringify(ev)).not.toMatch(/2500|2\.500|Berro|Goya|Calle|"direccion"|"precio"|"m2"|"lat"|m2=|gclid/);
 	});
 
 	test('«sin dato», error del geocodificador y «confirma_precio»', async ({ page, context }) => {

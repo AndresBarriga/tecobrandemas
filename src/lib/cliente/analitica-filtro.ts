@@ -6,8 +6,10 @@
  *  - solo salen `$pageview`, `$pageleave` y los eventos de EVENTOS;
  *  - de un evento propio solo salen sus propiedades (más las globales), y cada valor tiene que ser de su
  *    enum o tener su formato; lo demás se quita;
- *  - de las propiedades `$…` del SDK solo salen las de PROPIEDADES_SDK;
- *  - las URL salen sin query (salvo utm_*) y el referrer, solo el dominio;
+ *  - las propiedades `$…` del SDK salen todas (el modo sin cookies las necesita: `$raw_user_agent`, `$host`,
+ *    `$device_id`, el tamaño de pantalla…), salvo las de IP, geolocalización y perfil (SDK_PROHIBIDAS);
+ *  - toda URL (`$current_url`, `$referrer`, `$initial_current_url`…) sale con la ruta y con una query reducida a
+ *    QUERY_PERMITIDA (utm_source, utm_medium, utm_campaign, utm_content, c, t e internal); `/t/<id>` pasa a `/t/:id`;
  *  - nunca: dirección, coordenadas, precio, metros, barrio, sección censal ni texto libre.
  */
 
@@ -58,14 +60,13 @@ const VALIDADORES: Record<string, Validador> = {
 	utm_medium: texto100,
 	utm_campaign: texto100,
 	utm_content: texto100,
-	utm_term: texto100,
 	ref_domain: (v) => typeof v === 'string' && /^[a-z0-9.-]{1,100}$/i.test(v),
 	tarjeta_origen: (v) => typeof v === 'string' && IDENTIFICADOR_TARJETA.test(v),
 	interno: (v) => typeof v === 'boolean'
 };
 
 export const PROPIEDADES_GLOBALES = [
-	'v', 'navegador_app', 'tarjeta_origen', 'interno', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'ref_domain'
+	'v', 'navegador_app', 'tarjeta_origen', 'interno', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'ref_domain'
 ] as const;
 
 /** Eventos propios y las propiedades de cada uno */
@@ -84,33 +85,30 @@ export const EVENTOS: Record<string, readonly string[]> = {
 export const EVENTOS_SDK = ['$pageview', '$pageleave'] as const;
 
 /**
- * Propiedades que el SDK añade a `$pageview` y `$pageleave` y que se dejan salir; las demás (`$raw_user_agent`,
- * idioma, zona horaria, tamaño de pantalla, título de la página, etc.) se quitan. Lista fijada con la prueba de
- * e2e/analitica.spec.ts (SDK 1.438.1; docs/operacion.md, «Lista blanca de propiedades»).
- * `token`, `distinct_id` (siempre «$posthog_cookieless»), `$cookieless_mode` y `$process_person_profile` son
- * obligatorias: sin ellas PostHog no aplicaría el modo sin cookies ni descartaría el perfil de persona.
+ * Propiedades `$…` que nunca salen: IP, geolocalización y datos de perfil (no hay perfiles de persona). Todas las
+ * demás `$…` del SDK salen: el modo sin cookies de PostHog calcula el identificador diario en el servidor a partir
+ * de `$raw_user_agent`, `$host` y la IP de la petición, y sin ellas descarta el evento (`cookieless_missing_user_agent`).
+ * `token` y `distinct_id` (siempre «$posthog_cookieless») también son obligatorias.
  */
-export const PROPIEDADES_SDK: readonly string[] = [
-	'$current_url', '$pathname', '$host', '$referrer', '$referring_domain',
-	'$browser', '$browser_version', '$os', '$os_version', '$device_type',
-	'$lib', '$lib_version', '$insert_id', '$time', '$pageview_id',
-	'$cookieless_mode', '$process_person_profile', '$is_identified',
-	'$prev_pageview_pathname', '$prev_pageview_duration'
-];
+export const SDK_PROHIBIDAS = /^\$(ip|geoip\w*|geo\w*|country\w*|city\w*|region\w*|subdivision\w*|latitude|longitude|postal\w*|location\w*|set|set_once)$/i;
 /** Sin `$` y obligatorias para PostHog */
 const PROPIEDADES_OBLIGATORIAS = ['token', 'distinct_id'];
 
-/** Propiedades de campaña que se dejan salir; el resto (gclid, fbclid, etc.) se quita */
-const CAMPANA = /^utm_(source|medium|campaign|content|term)$/;
+/** Propiedades de campaña que se dejan salir; el resto (utm_term, gclid, fbclid, etc.) se quita */
+const CAMPANA = /^utm_(source|medium|campaign|content)$/;
+/** Lo único que sale de la query de una URL: la campaña, la tarjeta de origen (`t`), el código de enlace (`c`) y la marca interna; el resto (m2, precio, barrio, gclid…) se quita */
+export const QUERY_PERMITIDA: readonly string[] = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'c', 't', 'internal'];
+const VALOR_SENCILLO = /^[\w.-]{1,40}$/;
 
-/** Una URL sin query (salvo utm_*) y sin hash; `/t/<id>` pasa a `/t/:id` */
+/** Una URL con su ruta y la query reducida a QUERY_PERMITIDA, sin hash; `/t/<id>` pasa a `/t/:id`. `$direct` se queda como está */
 export function limpiarUrl(url: string): string {
+	if (url === '$direct') return url;
 	try {
 		const u = new URL(url, 'https://x.invalid');
-		const utm = [...u.searchParams].filter(([k]) => CAMPANA.test(k));
+		const query = [...u.searchParams].filter(([k, v]) => (CAMPANA.test(k) ? v !== '' : QUERY_PERMITIDA.includes(k) && VALOR_SENCILLO.test(v)));
 		const origen = /^https?:\/\//i.test(url) ? u.origin : '';
 		const ruta = limpiarRuta(u.pathname);
-		return `${origen}${ruta}${utm.length ? `?${utm.map(([k, v]) => `${k}=${encodeURIComponent(v.slice(0, 100))}`).join('&')}` : ''}`;
+		return `${origen}${ruta}${query.length ? `?${query.map(([k, v]) => `${k}=${encodeURIComponent(v.slice(0, 100))}`).join('&')}` : ''}`;
 	} catch {
 		return '';
 	}
@@ -118,7 +116,7 @@ export function limpiarUrl(url: string): string {
 
 export const limpiarRuta = (ruta: string) => ruta.replace(/^\/t\/[^/]+/, '/t/:id');
 
-/** Del referrer solo el dominio («https://www.instagram.com/» → «www.instagram.com») */
+/** Del referrer solo el dominio («https://www.instagram.com/» → «www.instagram.com»); se usa para `ref_domain` */
 export function dominioDelReferrer(referrer: string): string {
 	try {
 		return new URL(referrer).hostname;
@@ -147,7 +145,10 @@ export function filtrarEvento<T extends EventoSdk>(e: T | null): T | null {
 	const salida: Record<string, unknown> = {};
 	for (const [clave, valor] of Object.entries(entrada)) {
 		if (clave.startsWith('$')) {
-			if (PROPIEDADES_SDK.includes(clave)) salida[clave] = valor;
+			if (SDK_PROHIBIDAS.test(clave)) continue;
+			// Solo valores sencillos: un objeto o una lista podrían llevar cualquier cosa
+			if (valor === null || typeof valor === 'number' || typeof valor === 'boolean') salida[clave] = valor;
+			else if (typeof valor === 'string') salida[clave] = valor.slice(0, 600);
 			continue;
 		}
 		if (CAMPANA.test(clave)) {
@@ -167,11 +168,14 @@ export function filtrarEvento<T extends EventoSdk>(e: T | null): T | null {
 		if (VALIDADORES[clave]?.(valor)) salida[clave] = valor;
 	}
 
-	// URL y referrer
-	for (const clave of ['$current_url']) if (typeof salida[clave] === 'string') salida[clave] = limpiarUrl(salida[clave] as string);
-	for (const clave of ['$pathname', '$prev_pageview_pathname']) if (typeof salida[clave] === 'string') salida[clave] = limpiarRuta(salida[clave] as string);
-	if (typeof salida.$referrer === 'string') salida.$referrer = dominioDelReferrer(salida.$referrer) || '$direct';
-	if (typeof salida.$referring_domain === 'string') salida.$referring_domain = salida.$referring_domain.replace(/[/?#].*$/, '');
+	// URL («$current_url», «$referrer», «$initial_current_url»…), rutas y dominios: se limpian por el nombre de la propiedad
+	// y, por si el SDK añade otra, por su valor (cualquier texto que empiece por http:// o https://)
+	for (const [clave, valor] of Object.entries(salida)) {
+		if (typeof valor !== 'string') continue;
+		if (/referring_domain$/.test(clave)) salida[clave] = valor.replace(/[/?#].*$/, '');
+		else if (/pathname$/.test(clave)) salida[clave] = limpiarRuta(valor);
+		else if (/(url|referrer)$/.test(clave) || /^https?:\/\//i.test(valor)) salida[clave] = limpiarUrl(valor);
+	}
 
 	const { $set: _s, $set_once: _so, ...resto } = e as Record<string, unknown>;
 	return { ...resto, properties: salida } as T;

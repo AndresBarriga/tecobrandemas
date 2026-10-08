@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-	dominioDelReferrer, distritoDeLugar, filtrarEvento, limpiarUrl, navegadorApp, tramoDeBrecha, EVENTOS, PROPIEDADES_SDK
+	dominioDelReferrer, distritoDeLugar, filtrarEvento, limpiarUrl, navegadorApp, tramoDeBrecha, EVENTOS, SDK_PROHIBIDAS
 } from '../src/lib/cliente/analitica-filtro';
 import { datosCompleta, modoDe, motivoDeSinDato, resultadoDeClase } from '../src/lib/cliente/analitica-datos';
 import { MOTIVOS_SIN_DATO } from '../src/lib/cliente/analitica-filtro';
@@ -48,17 +48,27 @@ describe('analítica: lista blanca (before_send)', () => {
 		}
 	});
 
-	it('quita las propiedades $ del SDK que no están en la lista (user agent, idioma, zona horaria…) y $set', () => {
+	it('deja pasar las propiedades $ del SDK que el modo sin cookies necesita; quita IP, geolocalización, perfil, título y los identificadores de clic', () => {
 		const r = filtrarEvento({
 			event: '$pageview',
 			$set: { email: 'a@b.c' },
 			$set_once: { x: 1 },
-			properties: { ...base, $raw_user_agent: 'Mozilla/5.0', $browser_language: 'es-ES', $timezone: 'Europe/Madrid', $screen_width: 390, title: 'Resultado: Goya', gclid: 'XYZ', fbclid: 'F', $browser: 'Chrome', $device_type: 'Mobile' }
+			properties: {
+				...base, $raw_user_agent: 'Mozilla/5.0 (Macintosh)', $host: 'asuprecio.com', $device_id: null, $session_id: 's1', $window_id: 'w1',
+				$browser_language: 'es-ES', $timezone: 'Europe/Madrid', $screen_width: 390, $viewport_height: 800, $lib: 'web', $lib_version: '1.438.1',
+				$time: 1791446609.4, $browser: 'Chrome', $os: 'Mac OS X', $device_type: 'Desktop',
+				$ip: '203.0.113.7', $geoip_city_name: 'Madrid', $geoip_latitude: 40.4, $geoip_disable: true, $set: { email: 'a@b.c' }, $groups: { a: 1 },
+				title: 'Resultado: Goya', gclid: 'XYZ', fbclid: 'F'
+			}
 		})!;
-		expect(Object.keys(r.properties!).sort()).toEqual(['$browser', '$cookieless_mode', '$device_type', '$process_person_profile', 'distinct_id', 'token']);
+		for (const k of ['$raw_user_agent', '$host', '$device_id', '$session_id', '$window_id', '$browser_language', '$timezone', '$screen_width', '$viewport_height', '$lib', '$lib_version', '$time', '$browser', '$os', '$device_type']) {
+			expect(r.properties, k).toHaveProperty(k);
+		}
+		expect(r.properties).toMatchObject({ $raw_user_agent: 'Mozilla/5.0 (Macintosh)', $cookieless_mode: true, distinct_id: '$posthog_cookieless' });
+		for (const k of ['$ip', '$geoip_city_name', '$geoip_latitude', '$geoip_disable', '$set', '$groups', 'title', 'gclid', 'fbclid']) expect(r.properties, k).not.toHaveProperty(k);
 		expect(r).not.toHaveProperty('$set');
 		expect(r).not.toHaveProperty('$set_once');
-		for (const k of Object.keys(r.properties!).filter((k) => k.startsWith('$'))) expect(PROPIEDADES_SDK, k).toContain(k);
+		for (const k of Object.keys(r.properties!).filter((k) => k.startsWith('$'))) expect(SDK_PROHIBIDAS.test(k), k).toBe(false);
 	});
 
 	it('la campaña y el dominio del referrer salen en los eventos propios; nada más', () => {
@@ -70,10 +80,12 @@ describe('analítica: lista blanca (before_send)', () => {
 		expect(filtrarEvento({ event: 'completa', properties: { ...base, ref_domain: 'https://x.com/ruta?secreto=1' } })!.properties).not.toHaveProperty('ref_domain');
 	});
 
-	it('las URL salen sin query (salvo utm_*), sin hash y con /t/:id; el referrer, solo el dominio', () => {
-		expect(limpiarUrl('https://asuprecio.com/?t=abcde12345&utm_source=ig&utm_medium=story&gclid=XYZ&direccion=Calle%20Mayor#x')).toBe(
-			'https://asuprecio.com/?utm_source=ig&utm_medium=story'
+	it('las URL salen con la ruta y la query reducida a utm_source, utm_medium, utm_campaign, utm_content, c, t e internal; sin hash y con /t/:id', () => {
+		expect(limpiarUrl('https://asuprecio.com/?t=abcde12345&utm_source=ig&utm_medium=story&gclid=XYZ&direccion=Calle%20Mayor&utm_term=kw&c=ig1&internal=1#x')).toBe(
+			'https://asuprecio.com/?t=abcde12345&utm_source=ig&utm_medium=story&c=ig1&internal=1'
 		);
+		expect(limpiarUrl('https://asuprecio.com/mapa?m2=70&utm_campaign=lanzamiento')).toBe('https://asuprecio.com/mapa?utm_campaign=lanzamiento');
+		expect(limpiarUrl('$direct')).toBe('$direct');
 		expect(limpiarUrl('https://asuprecio.com/t/abcde12345?x=1')).toBe('https://asuprecio.com/t/:id');
 		expect(limpiarUrl('https://asuprecio.com/mapa?capa=presupuesto&m2=60&barrio=042')).toBe('https://asuprecio.com/mapa');
 		expect(dominioDelReferrer('https://l.instagram.com/?u=https%3A%2F%2Fexample.com%2Fsecreto')).toBe('l.instagram.com');
@@ -81,8 +93,48 @@ describe('analítica: lista blanca (before_send)', () => {
 			event: '$pageview',
 			properties: { ...base, $current_url: 'https://x.dev/t/abcde12345?utm_campaign=c&barrio=Goya', $pathname: '/t/abcde12345', $referrer: 'https://l.instagram.com/?u=secreto', $referring_domain: 'l.instagram.com', utm_campaign: 'c', utm_source: 's' }
 		})!;
-		expect(r.properties).toMatchObject({ $current_url: 'https://x.dev/t/:id?utm_campaign=c', $pathname: '/t/:id', $referrer: 'l.instagram.com', utm_campaign: 'c', utm_source: 's' });
+		// La ruta se mantiene en las URL, también en el referrer; la query se queda en lo permitido
+		expect(r.properties).toMatchObject({ $current_url: 'https://x.dev/t/:id?utm_campaign=c', $pathname: '/t/:id', $referrer: 'https://l.instagram.com/', $referring_domain: 'l.instagram.com', utm_campaign: 'c', utm_source: 's' });
 		expect(JSON.stringify(r)).not.toMatch(/secreto|Goya|abcde12345/);
+	});
+
+	it('un evento de ejemplo conserva $raw_user_agent y los UTM; y no lleva m², precio, dirección ni coordenadas en ninguna propiedad ni URL', () => {
+		const ua = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1';
+		const enlace = 'https://asuprecio.com/?utm_source=ig&utm_medium=story&utm_campaign=lanzamiento&utm_content=check&c=a1&t=abcde12345&internal=1&m2=70&metros=70&precio=2500&direccion=Calle%20de%20Alcal%C3%A1%2012&lat=40.42&lng=-3.68&gclid=XYZ';
+		const sucio = filtrarEvento({
+			event: '$pageview',
+			uuid: '01a11a89-ee18-7f29-b79b-fa365bc0a859',
+			timestamp: '2026-10-08T08:03:29.432Z',
+			$set: { direccion: 'Calle de Alcalá 12' },
+			properties: {
+				...base, ...globales, utm_source: 'ig', utm_medium: 'story', utm_campaign: 'lanzamiento', utm_content: 'check', utm_term: 'kw', gclid: 'XYZ',
+				$raw_user_agent: ua, $host: 'asuprecio.com', $device_id: null, $lib: 'web', $lib_version: '1.438.1', $time: 1791446609.4,
+				$pathname: '/mapa', $browser: 'Safari', $os: 'iOS', $device_type: 'Mobile', $screen_width: 390, $screen_height: 844, $viewport_width: 390, $viewport_height: 664,
+				$current_url: enlace, $initial_current_url: enlace, $session_entry_url: enlace,
+				$referrer: 'https://asuprecio.com/mapa?m2=70&precio=2500&direccion=Calle%20Mayor', $initial_referrer: '$direct', $referring_domain: 'asuprecio.com',
+				$ip: '203.0.113.7', $geoip_city_name: 'Madrid', $geoip_latitude: 40.4168, $geoip_longitude: -3.7038,
+				precio: 2500, m2: 70, direccion: 'Calle de Alcalá 12', lat: 40.4168, lng: -3.7038
+			}
+		})!;
+		const p = sucio.properties!;
+		// Lo que el modo sin cookies necesita
+		expect(p).toMatchObject({ $raw_user_agent: ua, $host: 'asuprecio.com', $lib: 'web', $browser: 'Safari', $screen_width: 390, $viewport_height: 664, $cookieless_mode: true, distinct_id: '$posthog_cookieless' });
+		// La campaña viaja como propiedades (utm_term ya no)
+		expect(p).toMatchObject({ utm_source: 'ig', utm_medium: 'story', utm_campaign: 'lanzamiento', utm_content: 'check' });
+		expect(p).not.toHaveProperty('utm_term');
+		// Las URL conservan ruta y solo la query permitida
+		expect(p.$current_url).toBe('https://asuprecio.com/?utm_source=ig&utm_medium=story&utm_campaign=lanzamiento&utm_content=check&c=a1&t=abcde12345&internal=1');
+		expect(p.$initial_current_url).toBe(p.$current_url);
+		expect(p.$session_entry_url).toBe(p.$current_url);
+		expect(p.$referrer).toBe('https://asuprecio.com/mapa');
+		expect(p.$initial_referrer).toBe('$direct');
+		// Nada de IP ni geolocalización
+		expect(Object.keys(p).filter((k) => /^\$(ip|geo)/i.test(k))).toEqual([]);
+		// Ni m², precio, dirección ni coordenadas, en ninguna propiedad ni URL
+		for (const k of ['precio', 'm2', 'metros', 'direccion', 'lat', 'lng', 'gclid']) expect(p, k).not.toHaveProperty(k);
+		const texto = JSON.stringify(sucio);
+		expect(texto).not.toMatch(/m2=|metros=|precio=|direccion=|lat=|lng=|gclid|Alcal|Calle|2500|40\.41|3\.70|203\.0\.113/i);
+		expect(sucio).not.toHaveProperty('$set');
 	});
 
 	it('nunca salen dirección, coordenadas, precio, metros, barrio ni texto libre, en ningún evento', () => {
