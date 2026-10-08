@@ -10,7 +10,7 @@
 import { PUBLIC_POSTHOG_ENABLED, PUBLIC_POSTHOG_KEY } from '$app/env/public';
 import {
 	type BRECHAS, type CANALES, type MODOS, type MOTIVOS_SIN_DATO, type RESPUESTAS_QUE_HARAS, type RESULTADOS,
-	dominioDelReferrer, filtrarEvento, navegadorApp
+	campanaValida, dominioDelReferrer, filtrarEvento, navegadorApp
 } from './analitica-filtro';
 import { leerOrigenDeLaUrl, tarjetaOrigen } from './origen';
 
@@ -39,8 +39,9 @@ export function campanaDeLaVisita(url: string, referrer: string, propioHost: str
 	const q = new URL(url).searchParams;
 	const salida: Record<string, string> = {};
 	for (const k of CLAVES_UTM) {
-		const v = q.get(k)?.trim();
-		if (v) salida[k] = v.slice(0, 100);
+		// Un valor que no encaja (mayúsculas, cifras sueltas, más de 40 caracteres…) se descarta entero
+		const v = q.get(k);
+		if (campanaValida(v)) salida[k] = v;
 	}
 	if (Object.keys(salida).length) return salida;
 	const dominio = dominioDelReferrer(referrer);

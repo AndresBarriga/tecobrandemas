@@ -76,14 +76,27 @@ describe('analítica: lista blanca (before_send)', () => {
 		const r = filtrarEvento<{ event: string; properties: Record<string, unknown> }>(e);
 		expect(r!.properties).toMatchObject({ utm_source: 'instagram', utm_medium: 'story', utm_campaign: 'launch', utm_content: 'check', ref_domain: 'instagram.com' });
 		expect(r!.properties).not.toHaveProperty('utm_extra');
+		// Como propiedad, el mismo formato: lo que no encaja no sale (ni recortado)
+		const mal = filtrarEvento({ event: 'completa', properties: { ...base, utm_source: 'Instagram', utm_medium: '2500', utm_campaign: 'a'.repeat(41), utm_content: 'oct-2026' } })!;
+		for (const k of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content']) expect(mal.properties, k).not.toHaveProperty(k);
 		expect(r!.properties).not.toHaveProperty('gclid');
 		expect(filtrarEvento({ event: 'completa', properties: { ...base, ref_domain: 'https://x.com/ruta?secreto=1' } })!.properties).not.toHaveProperty('ref_domain');
 	});
 
-	it('las URL salen con la ruta y la query reducida a utm_source, utm_medium, utm_campaign, utm_content, c, t e internal; sin hash y con /t/:id', () => {
+	it('las URL salen con la ruta y la query reducida a utm_source, utm_medium, utm_campaign, utm_content, t e internal, cada uno con su formato; sin hash y con /t/:id', () => {
 		expect(limpiarUrl('https://asuprecio.com/?t=abcde12345&utm_source=ig&utm_medium=story&gclid=XYZ&direccion=Calle%20Mayor&utm_term=kw&c=ig1&internal=1#x')).toBe(
-			'https://asuprecio.com/?t=abcde12345&utm_source=ig&utm_medium=story&c=ig1&internal=1'
+			'https://asuprecio.com/?t=abcde12345&utm_source=ig&utm_medium=story&internal=1'
 		);
+		// `c` ya no sale (nada lo usa); lo que no cumple el formato se elimina entero, nunca se recorta
+		expect(limpiarUrl('https://asuprecio.com/?c=ig1&utm_source=ig')).toBe('https://asuprecio.com/?utm_source=ig');
+		expect(limpiarUrl('https://asuprecio.com/?t=abc&internal=2')).toBe('https://asuprecio.com/');
+		expect(limpiarUrl('https://asuprecio.com/?t=abcde123456&internal=true')).toBe('https://asuprecio.com/'); // 11 caracteres
+		expect(limpiarUrl('https://asuprecio.com/?t=2807904033')).toBe('https://asuprecio.com/'); // solo cifras: parecería una sección censal
+		for (const malo of ['Instagram', '2500', '2807904033', 'oct-2026', 'a'.repeat(41), 'ig story', '-ig', 'ig.1', 'ig%2C1', 'story€']) {
+			expect(limpiarUrl(`https://asuprecio.com/?utm_source=${encodeURIComponent(malo)}`), malo).toBe('https://asuprecio.com/');
+		}
+		expect(limpiarUrl(`https://asuprecio.com/?utm_campaign=${'a'.repeat(40)}`)).toBe(`https://asuprecio.com/?utm_campaign=${'a'.repeat(40)}`);
+		expect(limpiarUrl('https://asuprecio.com/?utm_content=v2&utm_medium=story_ig-1')).toBe('https://asuprecio.com/?utm_content=v2&utm_medium=story_ig-1');
 		expect(limpiarUrl('https://asuprecio.com/mapa?m2=70&utm_campaign=lanzamiento')).toBe('https://asuprecio.com/mapa?utm_campaign=lanzamiento');
 		expect(limpiarUrl('$direct')).toBe('$direct');
 		expect(limpiarUrl('https://asuprecio.com/t/abcde12345?x=1')).toBe('https://asuprecio.com/t/:id');
@@ -123,7 +136,7 @@ describe('analítica: lista blanca (before_send)', () => {
 		expect(p).toMatchObject({ utm_source: 'ig', utm_medium: 'story', utm_campaign: 'lanzamiento', utm_content: 'check' });
 		expect(p).not.toHaveProperty('utm_term');
 		// Las URL conservan ruta y solo la query permitida
-		expect(p.$current_url).toBe('https://asuprecio.com/?utm_source=ig&utm_medium=story&utm_campaign=lanzamiento&utm_content=check&c=a1&t=abcde12345&internal=1');
+		expect(p.$current_url).toBe('https://asuprecio.com/?utm_source=ig&utm_medium=story&utm_campaign=lanzamiento&utm_content=check&t=abcde12345&internal=1');
 		expect(p.$initial_current_url).toBe(p.$current_url);
 		expect(p.$session_entry_url).toBe(p.$current_url);
 		expect(p.$referrer).toBe('https://asuprecio.com/mapa');
