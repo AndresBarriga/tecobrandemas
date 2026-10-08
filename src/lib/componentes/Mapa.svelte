@@ -9,7 +9,7 @@
 	let { alMarcar, enfocar = null, puntoInicial = null }: {
 		alMarcar: (u: Ubicacion | null) => void;
 		enfocar?: Enfoque | null;
-		/** Punto ya elegido en otra página (/mapa → «Comprueba un piso aquí»): se marca al cargar */
+		/** Punto ya elegido en otra página (/mapa → «Comprueba un anuncio aquí»): se marca al cargar */
 		puntoInicial?: Punto | null;
 	} = $props();
 

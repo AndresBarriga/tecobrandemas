@@ -47,7 +47,7 @@ test.describe('analítica sin cookies', () => {
 		});
 		await abrir(page, URL_PRUEBA);
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Por encima del techo')).toBeVisible();
+		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
 		await page.getByRole('button', { name: 'Intentar negociar el precio' }).click();
 		await esperar(ev, 'que_haras');
 		await esperar(ev, '$pageview');
@@ -65,7 +65,7 @@ test.describe('analítica sin cookies', () => {
 		const ev = await escuchar(context);
 		await abrir(page, URL_PRUEBA);
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Por encima del techo')).toBeVisible();
+		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
 		await page.getByRole('button', { name: 'Intentar negociar el precio' }).click();
 		await esperar(ev, 'que_haras');
 
@@ -90,7 +90,7 @@ test.describe('analítica sin cookies', () => {
 		expect(de(ev, 'que_haras')[0]!.properties).toMatchObject({ modo: 'mirando', respuesta: 'negociar', resultado: 'nivel3' });
 
 		// Segundo análisis dentro de la misma carga: el índice sube (antes era el evento «segundo»)
-		await page.getByRole('button', { name: /Comparar con otro piso/ }).click();
+		await page.getByRole('button', { name: /Comparar con otro anuncio/ }).click();
 		await comprobar(page, { precio: '2600', superficie: '90' });
 		await expect.poll(() => de(ev, 'completa').map((e) => e.properties.indice_analisis)).toEqual([1, 2]);
 
@@ -114,7 +114,7 @@ test.describe('analítica sin cookies', () => {
 		expect(de(ev, 'sin_dato')[0]!.properties).toMatchObject({ modo: 'mirando', motivo: 'obra_nueva' });
 		expect(tipos(ev)).not.toContain('completa');
 
-		await abrir(page, '/?ph_prueba=1');
+		await abrir(page, '/?ph_prueba=1&modo=mirando');
 		await page.fill('#direccion', 'Calle Que No Existe Ninguna 99999');
 		await page.fill('#precio', '1500');
 		await page.fill('#superficie', '70');
@@ -142,7 +142,7 @@ test.describe('analítica sin cookies', () => {
 		const ev = await escuchar(context);
 		// Sin conceder el permiso de ubicación: el navegador lo rechaza
 		await abrir(page, '/?ph_prueba=1');
-		await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
+		await page.getByRole('radio', { name: 'Mi alquiler' }).check();
 		await page.getByRole('button', { name: 'Usar mi ubicación' }).click();
 		await esperar(ev, 'usar_ubicacion');
 		expect(de(ev, 'usar_ubicacion').map((e) => e.properties.resultado)).toEqual(['denegada']);
@@ -150,7 +150,7 @@ test.describe('analítica sin cookies', () => {
 		// Sin API de geolocalización (fallo técnico, no una decisión de la persona)
 		await page.addInitScript(() => Object.defineProperty(navigator, 'geolocation', { value: undefined, configurable: true }));
 		await abrir(page, '/?ph_prueba=1');
-		await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
+		await page.getByRole('radio', { name: 'Mi alquiler' }).check();
 		await page.getByRole('button', { name: 'Usar mi ubicación' }).click();
 		await expect.poll(() => de(ev, 'usar_ubicacion').map((e) => e.properties.resultado), { timeout: 12_000 }).toEqual(['denegada', 'no_disponible']);
 	});
@@ -160,7 +160,7 @@ test.describe('analítica sin cookies', () => {
 		await context.setGeolocation({ latitude: 48.8566, longitude: 2.3522, accuracy: 20 }); // fuera de Madrid: el análisis sigue abierto
 		const ev = await escuchar(context);
 		await abrir(page, '/?ph_prueba=1');
-		await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
+		await page.getByRole('radio', { name: 'Mi alquiler' }).check();
 		await page.waitForTimeout(800);
 		expect(tipos(ev)).not.toContain('empieza'); // elegir el modo no es empezar
 		await page.getByRole('button', { name: 'Usar mi ubicación' }).click();
@@ -181,14 +181,14 @@ test.describe('analítica sin cookies', () => {
 		await context.setGeolocation({ latitude: 48.8566, longitude: 2.3522, accuracy: 20 }); // París: fuera de Madrid
 		const ev = await escuchar(context);
 		await abrir(page, '/?ph_prueba=1');
-		await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
+		await page.getByRole('radio', { name: 'Mi alquiler' }).check();
 		await page.getByRole('button', { name: 'Usar mi ubicación' }).click();
 		await esperar(ev, 'usar_ubicacion');
 		expect(de(ev, 'usar_ubicacion')[0]!.properties).toMatchObject({ resultado: 'fuera' });
 		expect(JSON.stringify(ev)).not.toMatch(/48\.8|2\.35|latitude|longitude/);
 	});
 
-	test('compartir, aportar y «Ya vivo aquí» con su pregunta', async ({ page, context }) => {
+	test('compartir, aportar y «Mi alquiler» con su pregunta', async ({ page, context }) => {
 		await sinCompartirNativo(page);
 		const ev = await escuchar(context);
 		await abrir(page, '/?ph_prueba=1');
@@ -243,7 +243,7 @@ test.describe('analítica sin cookies', () => {
 		const ev = await escuchar(context);
 		await abrir(page, '/');
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Por encima del techo')).toBeVisible();
+		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
 		await page.waitForTimeout(3500);
 		expect(ev).toEqual([]);
 	});

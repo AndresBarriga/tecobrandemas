@@ -14,7 +14,7 @@ import { type Barra, construirBarra } from './barra';
 import { type Evolucion, evolucion } from './evolucion';
 import { euros, mesAnio, numero } from './formato';
 import {
-	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, type ClaveSinDato, type MotivoPantalla,
+	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, FUENTE, type ClaveSinDato, type MotivoPantalla,
 	PRECIO_PEDIDO, QUE_PUEDES_HACER, SIN_DATO, TEXTO_OFICIAL_SIN_DATO
 } from './textos';
 import type { PantallaHabitacion } from './habitacion';
@@ -56,7 +56,7 @@ export interface PantallaResultado {
 	textoMaximo: string | null;
 	/** «Referencia: 1.068 – 1.661 €/mes» */
 	rango: string;
-	/** «Basado en 139 alquileres registrados en la zona · referencia 2024 ajustada por el IPC del alquiler (hasta agosto de 2026)» */
+	/** «Basado en 139 contratos vigentes en la zona, de propietarios particulares declarados a Hacienda (2024)…» */
 	base: string;
 	avisoUbicacion: string | null;
 	horquilla: boolean;
@@ -77,7 +77,7 @@ export interface PantallaResultado {
 	registro: RegistroAnalisis | null;
 	/** Lo que necesita «Tu zona» para calcularse en el navegador; el punto no sale del dispositivo */
 	zona: ParametrosZona | null;
-	/** «Ya vivo aquí»: la lectura del inquilino; null en un anuncio */
+	/** «Mi alquiler»: la lectura del inquilino; null en un anuncio */
 	inquilino: InfoInquilino | null;
 }
 
@@ -150,12 +150,12 @@ export function pantallaSinDatoDeClave(clave: string): PantallaSinDato | null {
 function titularNivel(n: Nivel): string {
 	if (n.nivel === 'dentro') {
 		const parte = { baja: 'baja', media: 'media', alta: 'alta' }[n.posicion];
-		return `Dentro de la referencia, en la parte ${parte}`;
+		return `Dentro de rango, en la parte ${parte}`;
 	}
 	if (n.nivel === 'explicable') {
-		return 'Por encima de la referencia, aunque podría explicarse si el piso tiene características excelentes';
+		return 'Algo por encima de lo habitual: solo cuadra si el piso es excelente';
 	}
-	return 'Por encima de la parte alta de la referencia, incluso para un piso de máxima calidad';
+	return 'Se sale de lo habitual: ni para un piso excelente es habitual pagar esto aquí';
 }
 
 function intervalo(a: number, b: number, formato: (x: number) => string): string {
@@ -196,10 +196,10 @@ function desdeAnalisis(
 		brechaEuros,
 		textoMaximo:
 			nivel.nivel === 'explicable'
-				? `Un piso con las mejores características posibles podría llegar a ${euros(r.referencia.max)} al mes en ${an.horquilla ? 'estas zonas' : 'esta zona'}.`
+				? `Si fuera un piso excelente, lo habitual llegaría a ${euros(r.referencia.max)} al mes en ${an.horquilla ? 'estas zonas' : 'esta zona'}.`
 				: null,
-		rango: `Referencia: ${numero(r.referencia.inf)} – ${euros(r.referencia.sup)} al mes`,
-		base: `Basado en ${numero(r.seccion.n)} alquileres registrados en la zona · referencia 2024 ajustada por el IPC del alquiler (hasta ${mesAnio(datos.ipc.ultimo_mes)})`,
+		rango: `Lo habitual aquí: ${numero(r.referencia.inf)} – ${euros(r.referencia.sup)} al mes`,
+		base: FUENTE.una(numero(r.seccion.n), mesAnio(datos.ipc.ultimo_mes)),
 		avisoUbicacion: vista.aviso,
 		horquilla: an.horquilla,
 		barra,

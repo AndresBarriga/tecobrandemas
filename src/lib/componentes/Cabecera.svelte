@@ -2,9 +2,9 @@
 	import Logo from './Logo.svelte';
 	import { INQUILINO, NAVEGACION } from '#lib/resultado';
 
-	/** «otro»: enlace «Otro piso» (pantallas de resultado); «madrid»: etiqueta fija; «nada»: solo el logotipo */
+	/** «otro»: enlace «Otro anuncio» / «Otro alquiler» (pantallas de resultado); «madrid»: etiqueta fija; «nada»: solo el logotipo */
 	let {
-		derecha = 'madrid', alOtroPiso, alVolver, volverHref, actual
+		derecha = 'madrid', alOtroPiso, alVolver, volverHref, actual, modo = 'mirando'
 	}: {
 		derecha?: 'otro' | 'volver' | 'madrid' | 'editar' | 'nada';
 		alOtroPiso?: () => void;
@@ -13,6 +13,8 @@
 		volverHref?: string;
 		/** Página actual, para marcarla en la navegación de escritorio */
 		actual?: 'comprobar' | 'mapa' | 'como';
+		/** Modo actual: el enlace dice «Otro anuncio» u «Otro alquiler» */
+		modo?: 'mirando' | 'vivo';
 	} = $props();
 </script>
 
@@ -21,7 +23,7 @@
 	{#if volverHref}
 		<a class="otro" href={volverHref}>Volver</a>
 	{:else if derecha === 'otro'}
-		<button class="otro" type="button" onclick={alOtroPiso}>{NAVEGACION.otroPiso}</button>
+		<button class="otro" type="button" onclick={alOtroPiso}>{NAVEGACION.otroPiso[modo]}</button>
 	{:else if derecha === 'editar'}
 		<button class="otro" type="button" onclick={alOtroPiso}>{INQUILINO.editar}</button>
 	{:else if derecha === 'volver'}

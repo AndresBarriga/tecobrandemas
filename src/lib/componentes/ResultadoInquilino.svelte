@@ -186,7 +186,8 @@
 
 		<p class="no-cuadra"><a href="mailto:{ALGO_NO_CUADRA.correo}">{ALGO_NO_CUADRA.texto}</a></p>
 
-		<QueHaras modo="vivo" alElegir={(r) => alQueHaras?.(r)} />
+		<!-- Cada resultado pregunta de nuevo: la respuesta anterior no se conserva -->
+		{#key pantalla}<QueHaras modo="vivo" alElegir={(r) => alQueHaras?.(r)} />{/key}
 	</div>
 </article>
 

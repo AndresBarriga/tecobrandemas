@@ -69,7 +69,7 @@ export function validarFormulario(f: FormularioCrudo): ValidacionFormulario {
 	};
 }
 
-// ——— «Ya vivo aquí»: fecha de firma, renta al firmar y «Somos N» ———
+// ——— «Mi alquiler»: fecha de firma, renta al firmar y «Somos N» ———
 
 export interface FirmaCruda {
 	reciente: boolean;

@@ -53,8 +53,9 @@
 	const hayTramoParte = $derived(barra.horquilla && barra.posiciones.sup.max > barra.posiciones.sup.min);
 	const hayTramoTecho = $derived(barra.horquilla && barra.posiciones.techo.max > barra.posiciones.techo.min);
 
-	const referenciaDentro = $derived(bandaAncho >= 66 && !esA);
-	const referenciaFuera = $derived(bandaAncho < 66 && !esA);
+	// «contratos de aquí» cabe dentro de la banda desde unos 120 px
+	const referenciaDentro = $derived(bandaAncho >= 120 && !esA);
+	const referenciaFuera = $derived(bandaAncho < 120 && !esA);
 	// Con horquilla las cifras de rango van en una leyenda bajo la barra: sin etiquetas largas que se pisen
 	const horquilla = $derived(barra.horquilla);
 	const filaParte = $derived(horquilla ? 60 : esA ? 84 : 62);
@@ -62,6 +63,9 @@
 	const alto = $derived(horquilla ? 84 : esA ? 124 : 102);
 
 	const anuncioIzq = $derived(centrar(precioX, wAnuncio));
+	// El rótulo de la banda, fuera de ella, cede el sitio a la etiqueta del precio si se pisan
+	const refIzq = $derived(centrar(bandaMedio, wRef));
+	const refChoca = $derived(refIzq < anuncioIzq + wAnuncio + 8 && refIzq + wRef + 8 > anuncioIzq);
 	// La fila de «parte alta» es la del «0 €» (salvo en el nivel a); la del techo queda debajo
 	const parteIzq = $derived(anclarDerecha(parteMax, wParte, W, esA ? 0 : wCero + 8));
 	const techoIzq = $derived(anclarDerecha(techoMax, wTecho, W));
@@ -70,7 +74,7 @@
 	);
 
 	const descripcion = $derived(
-		`${etiquetaPrecio.charAt(0).toUpperCase()}${etiquetaPrecio.slice(1)}, ${etiquetas.precio}. Parte alta de la referencia, ${etiquetas.parteAlta}. Techo para un piso excelente, ${etiquetas.techo}.`
+		`${etiquetaPrecio.charAt(0).toUpperCase()}${etiquetaPrecio.slice(1)}, ${etiquetas.precio}. Parte alta de lo que pagan los contratos de aquí, ${etiquetas.parteAlta}. Si fuera un piso excelente, ${etiquetas.techo}.`
 	);
 </script>
 
@@ -90,13 +94,13 @@
 	</div>
 
 	{#if referenciaFuera}
-		<div class="et ref" bind:offsetWidth={wRef} style:left="{centrar(bandaMedio, wRef)}px">referencia</div>
+		<div class="et ref" bind:offsetWidth={wRef} style:left="{refIzq}px" style:visibility={refChoca ? 'hidden' : null}>contratos de aquí</div>
 		<div class="tick" style:left="{bandaMedio}px"></div>
 	{/if}
 
 	<div class="pista"></div>
 	<div class="banda" style:left="{bandaIzq}px" style:width="{bandaAncho}px">
-		{#if referenciaDentro}referencia{/if}
+		{#if referenciaDentro}contratos de aquí{/if}
 	</div>
 	{#if hayTramoParte}
 		<div class="incertidumbre" style:left="{parteMin}px" style:width="{parteMax - parteMin}px"></div>
@@ -121,7 +125,7 @@
 		</div>
 	{/if}
 
-	<!-- Marcas de la parte alta y del techo; con horquilla son corchetes que abarcan el tramo -->
+	<!-- Marcas de la parte alta y de «si fuera un piso excelente» (R_max); con horquilla son corchetes que abarcan el tramo -->
 	<div
 		class="marca"
 		class:tramo={hayTramoParte}
@@ -143,7 +147,7 @@
 	></div>
 	{#if !horquilla}
 	<div class="et nota" bind:offsetWidth={wTecho} style:top="{filaTecho}px" style:left="{techoIzq}px">
-		techo para un piso excelente <strong>{etiquetas.techo}</strong>
+		si fuera un piso excelente <strong>{etiquetas.techo}</strong>
 	</div>
 	{/if}
 
@@ -154,8 +158,8 @@
 
 {#if horquilla}
 	<ul class="leyenda">
-		<li><span class="muestra incertidumbre"></span>Parte alta de la referencia: <strong>{etiquetas.parteAlta}</strong></li>
-		<li><span class="muestra techo"></span>Techo para un piso excelente: <strong>{etiquetas.techo}</strong></li>
+		<li><span class="muestra incertidumbre"></span>Parte alta de los contratos de aquí: <strong>{etiquetas.parteAlta}</strong></li>
+		<li><span class="muestra techo"></span>Si fuera un piso excelente: <strong>{etiquetas.techo}</strong></li>
 		{#if esC && etiquetas.delta}<li><span class="muestra acento"></span>Sobre la parte alta: <strong>{etiquetas.delta}</strong></li>{/if}
 	</ul>
 {/if}

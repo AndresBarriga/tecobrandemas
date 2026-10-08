@@ -77,8 +77,8 @@ test.describe('compartir la tarjeta (escritorio: cuatro canales)', () => {
 		const id = async () =>
 			decodeURIComponent((await page.getByRole('link', { name: 'WhatsApp' }).getAttribute('href'))!).match(/\/t\/([0-9a-z]{10})/)![1];
 		const primero = await id();
-		// En móvil el formulario se esconde tras el resultado: se vuelve con «Otro piso»
-		if (!(await page.locator('#precio').isVisible())) await page.getByRole('button', { name: 'Otro piso' }).first().click();
+		// En móvil el formulario se esconde tras el resultado: se vuelve con «Otro anuncio»
+		if (!(await page.locator('#precio').isVisible())) await page.getByRole('button', { name: 'Otro anuncio' }).first().click();
 		await comprobar(page, { precio: '2600', superficie: '90' });
 		await expect.poll(id).not.toBe(primero);
 	});

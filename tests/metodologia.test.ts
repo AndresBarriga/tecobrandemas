@@ -41,11 +41,12 @@ describe('página «Cómo calculamos»', () => {
 		expect(sin.banda.hasta * e.escalaMax * ipc.factor).toBeCloseTo(con.banda.hasta * e.escalaMax, 0);
 		expect(con.anterior).toEqual(sin.banda);
 		expect(e.pasos[2]!.techo!.desde).toBeCloseTo(con.banda.hasta, 6);
-		expect(e.pasos[3]!.punto!.x).toBeCloseTo(2200 / e.escalaMax, 6);
+		expect(e.pasos[3]!.punto!.x).toBeCloseTo(2690 / e.escalaMax, 6);
 		for (const p of e.pasos) for (const x of [p.banda.desde, p.banda.hasta]) expect(x).toBeGreaterThanOrEqual(0), expect(x).toBeLessThanOrEqual(1);
 	});
 
-	it('los tres niveles tienen su punto dentro de la escala y en orden', () => {
+	it('los niveles (por debajo, dentro, algo por encima, se sale de lo habitual) tienen su punto dentro de la escala y en orden', () => {
+		expect(m.niveles!.items.map((n) => n.etiqueta)).toEqual(['Por debajo', 'Dentro de rango', 'Algo por encima', 'Se sale de lo habitual']);
 		const xs = m.niveles!.items.map((n) => n.x);
 		expect(xs).toEqual([...xs].sort((a, b) => a - b));
 		expect(xs.every((x) => x > 0 && x < 1)).toBe(true);
@@ -74,7 +75,7 @@ describe('página «Cómo calculamos»', () => {
 	});
 
 	it('Quiénes somos y Financiación llevan los textos y el correo; nunca «sección» ni palabras prohibidas', () => {
-		expect(m.quienesSomos.contacto.correo).toBe('andresbarrigaru@gmail.com');
+		expect(m.quienesSomos.contacto.correo).toBe('hola@asuprecio.com');
 		expect(m.financiacion.join(' ')).toMatch(/independiente/);
 		expect(texto).not.toMatch(/ilegal|abusiv|actualizado a hoy/i);
 	});

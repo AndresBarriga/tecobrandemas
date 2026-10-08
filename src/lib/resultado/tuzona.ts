@@ -122,7 +122,7 @@ export function construirTuZona({ anuncio, clase, origen, cusecs, motivo = null,
 		muesca: { x, alineada: x > 62 ? 'derecha' : x < 20 ? 'izquierda' : 'centro' },
 		lista,
 		vacia,
-		contexto: modo === 'contexto' ? (inquilino ? TU_ZONA.contextoInquilino : TU_ZONA.contexto) : null,
+		contexto: modo === 'contexto' ? (inquilino ? (cusecs.length > 1 ? TU_ZONA.contextoInquilinoVarias : TU_ZONA.contextoInquilino) : TU_ZONA.contexto) : null,
 		cruce: cusecs.length > 1 ? (motivo === 'calle' ? TU_ZONA.cruce.calle : motivo === 'pin' ? TU_ZONA.cruce.pin : TU_ZONA.cruce.otro)(cusecs.length) : null,
 		evolucion: evolucion(datos, cusecs)
 	};

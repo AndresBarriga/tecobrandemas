@@ -1,10 +1,37 @@
 <script lang="ts">
-	import { BOTON_OFICIAL, BOTON_OTRO_PISO, ETIQUETA_SIN_REFERENCIA, type PantallaSinDato } from '#lib/resultado';
+	import { BOTON_OFICIAL, BOTON_OTRO_PISO, ETIQUETA_SIN_REFERENCIA, VOLVER_LIMITES, type PantallaSinDato } from '#lib/resultado';
 
-	let { pantalla, alOtro }: { pantalla: PantallaSinDato; alOtro: () => void } = $props();
+	let {
+		pantalla,
+		alOtro,
+		volver = false,
+		modo = 'mirando'
+	}: {
+		pantalla: PantallaSinDato;
+		alOtro: () => void;
+		/** Abierta desde «Lo que no calculamos»: enlace «← Volver» arriba */
+		volver?: boolean;
+		/** El botón «otro»: anuncio (por defecto) o alquiler */
+		modo?: 'mirando' | 'vivo';
+	} = $props();
+
+	// Si se llegó desde esta web, vuelve atrás en el historial; si no, el enlace lleva a «Lo que no calculamos»
+	function alVolver(e: MouseEvent) {
+		let mismaWeb = false;
+		try {
+			mismaWeb = !!document.referrer && new URL(document.referrer).origin === location.origin;
+		} catch {
+			mismaWeb = false;
+		}
+		if (mismaWeb && history.length > 1) {
+			e.preventDefault();
+			history.back();
+		}
+	}
 </script>
 
 <article class="sin-dato">
+	{#if volver}<a class="volver" href={VOLVER_LIMITES.href} onclick={alVolver}>{VOLVER_LIMITES.texto}</a>{/if}
 	{#if pantalla.lugar}
 		<div class="lugar">
 			<h1>{pantalla.lugar}</h1>
@@ -29,7 +56,7 @@
 			<span>{BOTON_OFICIAL}</span>
 			<span class="detalle">serpavi.mivau.gob.es</span>
 		</a>
-		<button type="button" class="boton" onclick={alOtro}>{BOTON_OTRO_PISO}</button>
+		<button type="button" class="boton" onclick={alOtro}>{BOTON_OTRO_PISO[modo]}</button>
 	</div>
 </article>
 
@@ -41,6 +68,15 @@
 		gap: 18px;
 		width: 100%;
 		max-width: 600px;
+	}
+	.volver {
+		align-self: flex-start;
+		font: 600 15px/1.3 var(--f-texto);
+		color: var(--tinta);
+		padding: 8px 0;
+		min-height: 44px;
+		display: inline-flex;
+		align-items: center;
 	}
 	.lugar h1 {
 		font: 700 17px/1.3 var(--f-texto);

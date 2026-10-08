@@ -17,8 +17,8 @@ test.describe('Cómo calculamos', () => {
 		await expect(page.locator('#ej')).toContainText('Con el ajuste del IPC (×1,054)');
 
 		await expect(page.locator('#dat')).toContainText('Qué guardamos (solo si marcas la casilla)');
-		await expect(page.locator('#lim a')).toHaveCount(7);
-		await expect(page.getByRole('link', { name: 'andresbarrigaru@gmail.com' })).toHaveAttribute('href', 'mailto:andresbarrigaru@gmail.com');
+		await expect(page.locator('#lo-que-no-calculamos a')).toHaveCount(7);
+		await expect(page.getByRole('link', { name: 'hola@asuprecio.com' })).toHaveAttribute('href', 'mailto:hola@asuprecio.com');
 		await expect(page.getByRole('table', { name: 'Fuentes de datos' })).toBeVisible();
 		expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 		await page.screenshot({ path: `${carpeta()}/30-como-calculamos.png`, fullPage: true });
@@ -38,7 +38,7 @@ test.describe('Cómo calculamos', () => {
 
 	test('«Ver por qué» abre la pantalla sin dato correspondiente, sin contarla como comprobación', async ({ page }) => {
 		await page.goto('/como-calculamos');
-		await page.locator('#lim').getByRole('link', { name: /Obra nueva/ }).click();
+		await page.locator('#lo-que-no-calculamos').getByRole('link', { name: /Obra nueva/ }).click();
 		await page.locator('[data-listo=true]').waitFor();
 		await expect(page.getByRole('heading', { name: 'Obra nueva' })).toBeVisible();
 		await expect(page.getByRole('link', { name: /Consultar el sistema oficial/ })).toBeVisible();

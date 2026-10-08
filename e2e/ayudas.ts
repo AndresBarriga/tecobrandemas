@@ -9,7 +9,7 @@ export interface Piso {
 	obraNueva?: boolean;
 	largaDuracion?: boolean;
 	tipo?: 'piso' | 'habitacion' | 'casa';
-	/** «Ya vivo aquí»: fecha de firma (o «hace menos de un año») y renta al firmar */
+	/** «Mi alquiler»: fecha de firma (o «hace menos de un año») y renta al firmar */
 	vivo?: { mes?: number; ano?: number; reciente?: boolean; rentaFirma?: string };
 }
 
@@ -23,7 +23,8 @@ export async function abrir(page: Page, ruta = '/') {
 }
 
 export async function rellenar(page: Page, p: Piso) {
-	if (p.vivo) await page.getByRole('radio', { name: 'Ya vivo aquí' }).check();
+	// «Mi alquiler» es el modo por defecto: un anuncio elige «Un anuncio»
+	await page.getByRole('radio', { name: p.vivo ? 'Mi alquiler' : 'Un anuncio' }).check();
 	const tipo = page.getByRole('radiogroup', { name: 'Tipo de vivienda' });
 	if (p.tipo === 'casa') await tipo.getByRole('radio', { name: 'Casa' }).check();
 	if (p.tipo === 'habitacion') await tipo.getByRole('radio', { name: 'Habitación' }).check();
@@ -47,7 +48,7 @@ export async function rellenar(page: Page, p: Piso) {
 
 export async function comprobar(page: Page, p: Piso) {
 	await rellenar(page, p);
-	await page.locator('form').getByRole('button', { name: /^(Comprobar (el precio|otro piso|mi alquiler|otro alquiler)|Comparar (mi|la) habitación)$/ }).click();
+	await page.locator('form').getByRole('button', { name: /^(Comprobar (el precio|otro anuncio|mi alquiler|otro alquiler)|Comparar (mi|la) habitación)$/ }).click();
 }
 
 /** Espera a que el punto de la barra termine de deslizarse */

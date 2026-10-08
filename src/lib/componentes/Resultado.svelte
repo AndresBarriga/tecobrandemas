@@ -6,7 +6,7 @@
 	import QueHaras from './QueHaras.svelte';
 	import TarjetaAmpliable from './TarjetaAmpliable.svelte';
 	import {
-		AVISO_APROXIMADA_TITULO, BOTON_COMPARTIR, BOTON_OTRO_PISO, ENLACE_OFICIAL, REGISTRO, TARJETA, heroEnVeces, ALGO_NO_CUADRA, type RespuestaQueHaras,
+		AVISO_APROXIMADA_TITULO, BOTON_COMPARTIR, ENLACE_OFICIAL, ETIQUETA_POR_DEBAJO, REGISTRO, TARJETA, heroEnVeces, ALGO_NO_CUADRA, type RespuestaQueHaras,
 		type Canal, type Contador, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
@@ -61,7 +61,7 @@
 			<p>{v.contexto}</p>
 		</div>
 
-		<p class="etiqueta"><Icono clase={v.clase} />{v.etiqueta}</p>
+		<p class="etiqueta"><Icono clase={v.etiqueta === ETIQUETA_POR_DEBAJO ? 'abajo' : v.clase} />{v.etiqueta}</p>
 
 		{#if principal.tipo === 'cifra'}
 			<div class="principal">
@@ -79,12 +79,14 @@
 			</div>
 		{:else}
 			<div class="principal">
-				<p class="titular">{principal.texto}</p>
-				<p class="nota">{principal.nota}</p>
+				<p class="titular" class:en-frase={principal.enFrase}>{principal.texto}</p>
+				{#if principal.nota}<p class="nota">{principal.nota}</p>{/if}
 			</div>
 		{/if}
 
-		<p class="frase">{v.frase}</p>
+		{#if v.frase}<p class="frase">{v.frase}</p>{/if}
+		{#if v.matiz}<p class="matiz">{v.matiz}</p>{/if}
+		<p class="contratos">{v.avisoContratos}</p>
 
 		{#if v.aviso}
 			<div class="aviso">
@@ -115,7 +117,7 @@
 		<p class="fuente">{v.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
 
 		<div class="acciones">
-			<h2>Qué puedes hacer</h2>
+			<h2>Siguientes pasos</h2>
 			{#each pantalla.quePuedesHacer as a (a.id)}
 				{#if a.id === 'oficial'}
 					<a class="accion" href={ENLACE_OFICIAL} target="_blank" rel="noopener noreferrer">
@@ -131,29 +133,25 @@
 			{/each}
 		</div>
 
-		{#if v.clase === 'c'}
-			{#if tarjeta}<TarjetaAmpliable {tarjeta} titulo={TARJETA.titulo} detalle={TARJETA.detalle} />{/if}
-			{#if nativo}
-				<button type="button" class="boton" onclick={alCompartir} disabled={compartiendo}>
-					{compartiendo ? TARJETA.generando : BOTON_COMPARTIR}
-				</button>
-			{:else if enlaces}
-				<div class="canales" role="group" aria-label={BOTON_COMPARTIR}>
-					<a class="boton canal" href={enlaces.whatsapp} target="_blank" rel="noopener noreferrer" onclick={(e) => { e.preventDefault(); alCompartirPor?.('whatsapp'); }}
-						>{TARJETA.canales.whatsapp}</a
-					>
-					<a class="boton canal" href={enlaces.x} target="_blank" rel="noopener noreferrer" onclick={(e) => { e.preventDefault(); alCompartirPor?.('x'); }}
-						>{TARJETA.canales.x}</a
-					>
-					<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor?.('copiar')}>{TARJETA.canales.copiar}</button>
-					<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor?.('descarga')}>{TARJETA.canales.descarga}</button>
-				</div>
-				<p class="mensaje aviso">{TARJETA.canalesAviso}</p>
-			{/if}
-			<p class="mensaje" role="status">{mensajeTarjeta ?? ''}</p>
-		{:else}
-			<button type="button" class="boton" onclick={alOtro}>{BOTON_OTRO_PISO}</button>
+		{#if tarjeta}<TarjetaAmpliable {tarjeta} titulo={TARJETA.titulo} detalle={TARJETA.detalle} />{/if}
+		{#if nativo}
+			<button type="button" class="boton" onclick={alCompartir} disabled={compartiendo}>
+				{compartiendo ? TARJETA.generando : BOTON_COMPARTIR}
+			</button>
+		{:else if enlaces}
+			<div class="canales" role="group" aria-label={BOTON_COMPARTIR}>
+				<a class="boton canal" href={enlaces.whatsapp} target="_blank" rel="noopener noreferrer" onclick={(e) => { e.preventDefault(); alCompartirPor?.('whatsapp'); }}
+					>{TARJETA.canales.whatsapp}</a
+				>
+				<a class="boton canal" href={enlaces.x} target="_blank" rel="noopener noreferrer" onclick={(e) => { e.preventDefault(); alCompartirPor?.('x'); }}
+					>{TARJETA.canales.x}</a
+				>
+				<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor?.('copiar')}>{TARJETA.canales.copiar}</button>
+				<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor?.('descarga')}>{TARJETA.canales.descarga}</button>
+			</div>
+			<p class="mensaje aviso">{TARJETA.canalesAviso}</p>
 		{/if}
+		<p class="mensaje" role="status">{mensajeTarjeta ?? ''}</p>
 
 		{#if pantalla.registro && alRegistrar}
 			<div class="consentimiento-fila">
@@ -173,7 +171,8 @@
 
 		<p class="no-cuadra"><a href="mailto:{ALGO_NO_CUADRA.correo}">{ALGO_NO_CUADRA.texto}</a></p>
 
-		<QueHaras modo="mirando" alElegir={(r) => alQueHaras?.(r)} />
+		<!-- Cada resultado pregunta de nuevo: la respuesta anterior no se conserva -->
+		{#key pantalla}<QueHaras modo="mirando" alElegir={(r) => alQueHaras?.(r)} />{/key}
 	</div>
 </article>
 
@@ -303,6 +302,22 @@
 	}
 	.frase {
 		font: 600 21px/1.3 var(--f-texto);
+		text-wrap: pretty;
+	}
+	/* El titular es una frase («Un 4 % por encima de lo habitual aquí.»), no un rótulo */
+	.titular.en-frase {
+		font: 800 34px/1.05 var(--f-extra);
+		text-transform: none;
+		text-wrap: balance;
+	}
+	.matiz {
+		font: 500 17px/1.4 var(--f-texto);
+		text-wrap: pretty;
+	}
+	.contratos {
+		font: 500 15px/1.4 var(--f-texto);
+		border-left: 3px solid var(--acento);
+		padding-left: 10px;
 		text-wrap: pretty;
 	}
 	.aviso {

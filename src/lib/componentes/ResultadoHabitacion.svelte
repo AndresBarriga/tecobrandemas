@@ -19,7 +19,7 @@
 		alAportar?: () => void;
 		/** «¿Compartís piso con un solo contrato?»: vuelve al formulario con el tipo en «Piso» */
 		alPiso: () => void;
-		/** «¿Vives en una habitación? Aporta la tuya»: pasa a «Ya vivo aquí» con los datos prellenados */
+		/** «¿Vives en una habitación? Aporta la tuya»: pasa a «Mi alquiler» con los datos prellenados */
 		alVivo?: () => void;
 	} = $props();
 
@@ -106,7 +106,7 @@
 				<span class="accion-titulo">{HABITACION.acciones.suma}</span>
 				<span class="accion-detalle">{HABITACION.acciones.sumaDetalle}</span>
 			</button>
-			<a class="accion" href="/como-calculamos#lim"><span class="accion-titulo">{HABITACION.acciones.porQue}</span></a>
+			<a class="accion" href="/como-calculamos#lo-que-no-calculamos"><span class="accion-titulo">{HABITACION.acciones.porQue}</span></a>
 		</div>
 
 		{#if sumaAbierta}

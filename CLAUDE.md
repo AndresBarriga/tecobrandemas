@@ -30,6 +30,8 @@ supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado
   canales (la tarjeta solo se guarda al elegir un canal), el ratio por tramos («+X %» o «X,X veces la parte
   alta») y el aviso «¿Seguro?» con más de 3 veces la parte alta. El cálculo está en `src/lib/resultado`; la
   geometría del mapa, en `src/lib/cliente/zona*.ts`. En «Tu zona» se dice «zona», nunca «sección».
+- Encuadre (08/10/2026, `docs/brief-cambio-de-encuadre.md`): la referencia son contratos vigentes, no precio de mercado. Nunca
+  «techo», «lo que se paga aquí» ni «puedes respirar»: «lo habitual aquí», «dentro de rango», «fuera de rango». «Mi alquiler» (antes «Ya vivo aquí») es el modo por defecto; el otro es «Un anuncio».
 - Producción en Cloudflare (Worker + D1 + R2) con CI en GitHub, en el **plan gratuito**. Sin dominio propio y con
   `noindex` en todo el sitio hasta el lanzamiento: `config/indexacion.json`.
 - Se trabaja en ramas con PR; el CI despliega al fusionar en `main` y lanza después la prueba de humo (de solo

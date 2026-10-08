@@ -1,6 +1,6 @@
 /**
  * Reglas de CLAUDE.md sobre textos y estructura (Hito 4):
- *  - ningún texto dice «ilegal», «abusivo», «actualizado a hoy» ni «cuesta entrar»;
+ *  - ningún texto dice «ilegal», «abusivo», «actualizado a hoy», «cuesta entrar» ni las frases del encuadre antiguo («techo»…);
  *  - atribuciones y enlace al valor oficial siempre presentes;
  *  - los componentes no calculan: no importan motor/ ni ubicacion/.
  */
@@ -14,7 +14,13 @@ import {
 	type DatosMadrid, TU_ZONA, construirPantalla, construirTarjeta, construirTuZona, validarAportacion, validarFormulario, zona
 } from '../src/lib/resultado';
 
-const PROHIBIDAS = ['ilegal', 'abusivo', 'actualizado a hoy', 'cuesta entrar'];
+const PROHIBIDAS = [
+	'ilegal', 'abusivo', 'actualizado a hoy', 'cuesta entrar',
+	// Encuadre de contratos vigentes (docs/brief-cambio-de-encuadre.md): la referencia no es un techo ni el precio de mercado
+	'techo', 'lo que se paga aquí', 'lo que se paga en tu zona', 'puedes respirar', 'dentro de lo razonable', 'como mucho',
+	// Nombres antiguos del selector y del lema
+	'ya vivo aquí', 'estoy mirando un piso', 'tiene sentido este precio'
+];
 const sinTildes = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 
 function cadenas(v: unknown): string[] {
@@ -152,7 +158,9 @@ describe('estructura', () => {
 			const texto = readFileSync(ruta, 'utf-8')
 				.replace(/<script[\s\S]*?<\/script>/g, '')
 				.replace(/<style[\s\S]*?<\/style>/g, '');
-			for (const palabra of PROHIBIDAS) expect(sinTildes(texto), `${ruta}: «${palabra}»`).not.toContain(sinTildes(palabra));
+			// Las frases prohibidas se buscan en el texto visible: sin expresiones ni clases (`paso.techo`, class="techo")
+			const visible = texto.replace(/\{[^{}]*\}/g, '').replace(/\sclass="[^"]*"/g, '');
+			for (const palabra of PROHIBIDAS) expect(sinTildes(visible), `${ruta}: «${palabra}»`).not.toContain(sinTildes(palabra));
 			expect(texto, ruta).not.toMatch(/\d [€%]|\d m²/);
 		}
 	});

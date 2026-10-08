@@ -34,7 +34,7 @@ export interface HabitacionPayload {
 
 export interface PantallaHabitacion {
 	tipo: 'habitacion';
-	/** «Ya vivo aquí» (puede aportar) o «Estoy mirando» (solo compara) */
+	/** «Mi alquiler» (puede aportar) o «Un anuncio» (solo compara) */
 	vivo: boolean;
 	/** «Fuente del Berro, Salamanca» */
 	lugar: string;

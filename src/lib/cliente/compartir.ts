@@ -3,7 +3,7 @@
  * los enlaces ya existen; la tarjeta solo se sube al servidor cuando la persona elige un canal
  * que necesita el enlace (WhatsApp, X, copiar o la hoja del móvil). «Descargar imagen» no sube nada.
  */
-import { NOMBRE, TARJETA, urlAbsoluta, type TarjetaDatos } from '#lib/resultado';
+import { NOMBRE, urlAbsoluta, textoCompartir, type TarjetaDatos } from '#lib/resultado';
 import { aBlob, dibujarOg } from './tarjeta-canvas';
 
 const subidas = new Map<string, Promise<boolean>>();
@@ -53,7 +53,7 @@ export async function compartirNativo(datos: TarjetaDatos, canvas: HTMLCanvasEle
 	const [subida, jpg] = await Promise.all([subirTarjeta(datos, id), aBlob(canvas, 0.92)]);
 	const fichero = new File([jpg], 'a-su-precio.jpg', { type: 'image/jpeg' });
 	try {
-		await navigator.share({ files: [fichero], title: NOMBRE, text: TARJETA.compartirTitulo, ...(subida ? { url: urlDeTarjeta(id) } : {}) });
+		await navigator.share({ files: [fichero], title: NOMBRE, text: textoCompartir(datos), ...(subida ? { url: urlDeTarjeta(id) } : {}) });
 		return 'compartida';
 	} catch (e) {
 		if ((e as DOMException).name === 'AbortError') return 'cancelada';

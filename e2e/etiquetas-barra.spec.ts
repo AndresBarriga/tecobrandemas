@@ -9,7 +9,7 @@ async function parteAlta(page: Page): Promise<number> {
 	await abrir(page);
 	await comprobar(page, { precio: '2500', superficie: '90' });
 	const aria = (await page.locator('.barra[role="img"]').first().getAttribute('aria-label')) ?? '';
-	const m = aria.match(/Parte alta de la referencia, ([\d.]+)/);
+	const m = aria.match(/Parte alta de lo que pagan los contratos de aquí, ([\d.]+)/);
 	if (!m) throw new Error(`sin parte alta en «${aria}»`);
 	return Number(m[1]!.replace('.', ''));
 }

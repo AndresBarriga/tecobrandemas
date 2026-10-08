@@ -4,7 +4,7 @@
  * TarjetaDatos: no hay precio ni dirección que dibujar.
  */
 import {
-	CTA_TARJETA, LEMA, NOMBRE, TARJETA_INQUILINO, colocarEtiqueta, OG_ALTO, OG_ANCHO, PIE_TARJETA, TARJETA_ALTO, TARJETA_ANCHO,
+	CTA_TARJETA, ETIQUETA_POR_DEBAJO, LEMA, NOMBRE, TARJETA, TARJETA_INQUILINO, colocarEtiqueta, OG_ALTO, OG_ANCHO, PIE_TARJETA, TARJETA_ALTO, TARJETA_ANCHO,
 	textosEnlace, type TarjetaDatos
 } from '#lib/resultado';
 
@@ -24,6 +24,8 @@ const FAMILIA = { texto: '"Sofia Sans"', semi: '"Sofia Sans Semi Condensed"', ex
 
 type Fam = keyof typeof FAMILIA;
 const NB = ' ';
+/** Rótulo de la banda de la barra: lo que pagan los contratos vigentes */
+const ROTULO_BANDA = 'contratos de aquí';
 
 export async function cargarFuentes(): Promise<void> {
 	if (!document.fonts) return;
@@ -130,7 +132,7 @@ function etiqueta(ctx: Ctx, t: TarjetaDatos, texto: string, x: number, y: number
 	ctx.scale(icono / 20, icono / 20);
 	ctx.lineWidth = 2;
 	ctx.strokeStyle = fondo;
-	ctx.stroke(new Path2D(ICONO[t.inquilino?.posicion === 'debajo' ? 'abajo' : t.clase]));
+	ctx.stroke(new Path2D(ICONO[t.inquilino?.posicion === 'debajo' || t.etiqueta === ETIQUETA_POR_DEBAJO ? 'abajo' : t.clase]));
 	ctx.restore();
 
 	fuente(ctx, 700, tam, 'texto');
@@ -147,14 +149,17 @@ function hero(ctx: Ctx, t: TarjetaDatos, x: number, y: number, maxW: number, k: 
 		const tam = Math.min(k.cifra, (k.cifra * maxW) / Math.max(ancho(ctx, h.texto), 1));
 		fuente(ctx, 900, tam, 'extra', -tam * 0.015);
 		if (dibujar) linea(ctx, h.texto, x - tam * 0.03, y, tam * k.lhCifra, { color: COLOR.tinta });
-		return tam * k.lhCifra;
+		// La coma de «3,4 veces» baja de la línea: más aire debajo
+		return tam * k.lhCifra + (/\bveces\b/.test(h.texto) ? tam * 0.12 : 0);
 	}
 	if (h.tipo === 'titular') {
 		fuente(ctx, 900, k.titular, 'extra');
 		const lineas = envolver(ctx, h.texto.toUpperCase(), maxW);
 		const lh = k.titular * 0.8;
-		if (dibujar) lineas.forEach((l, i) => linea(ctx, l, x, y + i * lh, lh, { color: COLOR.tinta }));
-		return lineas.length * lh;
+		// Una mayúscula con tilde («LÍMITE») sube por encima de la línea: se baja el titular
+		const tilde = /[ÁÉÍÓÚ]/.test(lineas.join('')) ? k.titular * 0.16 : 0;
+		if (dibujar) lineas.forEach((l, i) => linea(ctx, l, x, y + tilde + i * lh, lh, { color: COLOR.tinta }));
+		return lineas.length * lh + tilde;
 	}
 	// rango: «entre +40 % y +47 %», con salto de línea si no cabe
 	const piezas: { s: string; fam: Fam; peso: number; tam: number }[] = [
@@ -206,12 +211,17 @@ function barraTarjeta(ctx: Ctx, t: TarjetaDatos, x: number, y: number, g: Geom):
 	// «tu anuncio» sobre el punto
 	const rotuloPunto = t.inquilino ? 'mi alquiler' : 'tu anuncio';
 	fuente(ctx, 700, 30, 'semi');
-	linea(ctx, rotuloPunto, x + Math.min(Math.max(dotX, ancho(ctx, rotuloPunto) / 2), g.W - ancho(ctx, rotuloPunto) / 2), y, 36, { color: COLOR.tinta, align: 'center' });
+	const wPunto = ancho(ctx, rotuloPunto);
+	const cPunto = Math.min(Math.max(dotX, wPunto / 2), g.W - wPunto / 2);
+	linea(ctx, rotuloPunto, x + cPunto, y, 36, { color: COLOR.tinta, align: 'center' });
 
-	const dentro = bandW >= 150 && t.clase !== 'a';
-	if (!dentro && t.clase !== 'a') {
+	// «contratos de aquí» cabe dentro de la banda desde unos 280 px
+	const dentro = bandW >= 280 && t.clase !== 'a';
+	// Fuera de la banda, el rótulo cede el sitio a «tu anuncio» si se pisan
+	const choca = Math.abs(bandL + bandW / 2 - cPunto) < (ancho(ctx, ROTULO_BANDA) + wPunto) / 2 + 12;
+	if (!dentro && t.clase !== 'a' && !choca) {
 		fuente(ctx, 700, 30, 'semi');
-		linea(ctx, 'referencia', x + bandL + bandW / 2, y, 36, { color: COLOR.tinta, align: 'center' });
+		linea(ctx, ROTULO_BANDA, x + bandL + bandW / 2, y, 36, { color: COLOR.tinta, align: 'center' });
 		rect(ctx, x + bandL + bandW / 2 - 1.5, y + 38, 3, 12, COLOR.tinta);
 	}
 
@@ -219,11 +229,11 @@ function barraTarjeta(ctx: Ctx, t: TarjetaDatos, x: number, y: number, g: Geom):
 	rect(ctx, x + bandL, y + 50, bandW, 60, COLOR.tinta);
 	if (dentro) {
 		fuente(ctx, 700, 30, 'semi');
-		linea(ctx, 'referencia', x + bandL + bandW / 2, y + 50, 60, { color: COLOR.papel, align: 'center' });
+		linea(ctx, ROTULO_BANDA, x + bandL + bandW / 2, y + 50, 60, { color: COLOR.papel, align: 'center' });
 	}
 	if (b.incertidumbre) rect(ctx, x + X(b.incertidumbre.desde), y + 50, X(b.incertidumbre.hasta) - X(b.incertidumbre.desde), 60, COLOR.grafito);
 
-	// Techo: contorno de 4 px sin el lado izquierdo
+	// «Si fuera un piso excelente» (R_max): contorno de 4 px sin el lado izquierdo
 	ctx.strokeStyle = COLOR.tinta;
 	ctx.lineWidth = 4;
 	ctx.beginPath();
@@ -239,7 +249,8 @@ function barraTarjeta(ctx: Ctx, t: TarjetaDatos, x: number, y: number, g: Geom):
 	fuente(ctx, 600, 30, 'semi');
 	linea(ctx, `0${NB}€`, x, y + 118, 36, { color: COLOR.tinta });
 	if (t.clase === 'a') {
-		const tercio = t.barra.tercio ?? 1;
+		// Sin tercio («por debajo»): ninguna posición queda marcada
+		const tercio = t.barra.tercio;
 		['baja', 'media', 'alta'].forEach((s, i) => {
 			const cx = x + bandL + (bandW / 3) * (i + 0.5);
 			fuente(ctx, i === tercio ? 800 : 500, 30, 'semi');
@@ -249,7 +260,7 @@ function barraTarjeta(ctx: Ctx, t: TarjetaDatos, x: number, y: number, g: Geom):
 	} else {
 		// Entera y sin pisar el «0 €»: a la izquierda de su marca si cabe; si no, a su derecha
 		fuente(ctx, 600, 30, 'semi');
-		const texto = 'techo para un piso excelente';
+		const texto = 'si fuera un piso excelente';
 		const izq = colocarEtiqueta(techoE, ancho(ctx, texto), g.W, ancho(ctx, `0${NB}€`) + 16);
 		linea(ctx, texto, x + izq, y + 118, 36, { color: COLOR.tinta });
 	}
@@ -276,9 +287,9 @@ export async function dibujarTarjeta(canvas: HTMLCanvasElement, t: TarjetaDatos)
 	fuente(ctx, 600, 34, 'texto');
 	const subLineas = envolver(ctx, t.nota, W);
 	const subH = subLineas.length * 34 * 1.25;
-	// La tarjeta del inquilino lleva el lema bajo el logotipo y «Mi alquiler en [barrio]» sobre la cifra
+	// Las dos tarjetas llevan el lema bajo el logotipo; la del inquilino, además, «Mi alquiler en [barrio]» sobre la cifra
 	const inq = !!t.inquilino;
-	const lemaH = inq ? 30 * 1.3 + 6 : 0;
+	const lemaH = 30 * 1.3 + 6;
 	const miAlquilerH = inq ? 34 * 1.25 + 14 : 0;
 	let hTop = 44 + lemaH + 30 + etiquetaH + 30 + miAlquilerH + alturaHero + 12 + subH;
 
@@ -310,11 +321,9 @@ export async function dibujarTarjeta(canvas: HTMLCanvasElement, t: TarjetaDatos)
 	fuente(ctx, 600, 32, 'texto');
 	linea(ctx, 'Madrid', X0 + W, y + 4, 40, { color: COLOR.tinta, align: 'right' });
 	y += 44;
-	if (inq) {
-		fuente(ctx, 500, 30, 'texto');
-		linea(ctx, LEMA, X0, y + 6, 30 * 1.3, { color: COLOR.tinta });
-		y += lemaH;
-	}
+	fuente(ctx, 500, 30, 'texto');
+	linea(ctx, LEMA, X0, y + 6, 30 * 1.3, { color: COLOR.tinta });
+	y += lemaH;
 	y += 30;
 	etiqueta(ctx, t, t.etiqueta, X0, y, 32, COLOR.papel);
 	y += etiquetaH + 30;
@@ -343,6 +352,8 @@ export async function dibujarTarjeta(canvas: HTMLCanvasElement, t: TarjetaDatos)
 	const bw = ancho(ctx, cta) + 60;
 	rect(ctx, X0, y, bw, botonH, COLOR.tinta, 8);
 	linea(ctx, cta, X0 + 30, y + 20, 36 * 1.2, { color: COLOR.paja });
+	// El dominio va dentro de la imagen: las capturas viajan sin enlace
+	linea(ctx, TARJETA.dominio, X0 + W, y + 20, 36 * 1.2, { color: COLOR.tinta, align: 'right' });
 	y += botonH + 28;
 	fuente(ctx, 500, 30, 'texto');
 	pieLineas.forEach((l, i) => linea(ctx, l, X0, y + i * 30 * 1.3, 30 * 1.3, { color: COLOR.tinta }));
@@ -361,10 +372,8 @@ export async function dibujarOg(canvas: HTMLCanvasElement, t: TarjetaDatos): Pro
 	// Panel izquierdo
 	fuente(ctx, 800, 36, 'extra', 0.36);
 	linea(ctx, NOMBRE.toUpperCase(), 48, 56, 36, { color: COLOR.tinta });
-	if (t.inquilino) {
-		fuente(ctx, 500, 24, 'texto');
-		linea(ctx, LEMA, 48, 98, 30, { color: COLOR.tinta });
-	}
+	fuente(ctx, 500, 24, 'texto');
+	linea(ctx, LEMA, 48, 98, 30, { color: COLOR.tinta });
 	const maxL = 500 - 96;
 	const k = { cifra: 200, titular: 110, rango: 110, lhCifra: 0.78, palabra: 30 };
 	fuente(ctx, 600, 32, 'texto');

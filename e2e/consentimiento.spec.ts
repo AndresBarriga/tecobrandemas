@@ -35,7 +35,7 @@ test.describe('registro anónimo de análisis (R7)', () => {
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		await page.getByRole('checkbox', { name: /Suma este piso/ }).check();
-		await page.getByRole('button', { name: /otro piso/i }).first().click();
+		await page.getByRole('button', { name: /otro anuncio/i }).first().click();
 		await comprobar(page, { precio: '1400', superficie: '90' });
 		await expect(page.getByRole('checkbox', { name: /Suma este piso/ })).not.toBeChecked();
 	});
@@ -43,7 +43,7 @@ test.describe('registro anónimo de análisis (R7)', () => {
 	test('Tus datos: la página enseña qué se guarda y el correo de contacto', async ({ page }) => {
 		await page.goto('/como-calculamos#tus-datos');
 		await expect(page.getByText(/el barrio, el mes, el precio, los metros/)).toBeVisible();
-		await expect(page.getByRole('link', { name: 'andresbarrigaru@gmail.com' })).toHaveAttribute('href', 'mailto:andresbarrigaru@gmail.com');
+		await expect(page.getByRole('link', { name: 'hola@asuprecio.com' })).toHaveAttribute('href', 'mailto:hola@asuprecio.com');
 	});
 
 	test('noindex: meta robots en todo el sitio y la vista previa de /t/:id sigue completa', async ({ page, request }) => {

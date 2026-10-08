@@ -31,7 +31,7 @@ test.describe('aportaciones y recuentos', () => {
 		await page.screenshot({ path: `${carpeta()}/26-aportacion-enviada.png`, fullPage: true });
 	});
 
-	test('validación de «Ya vivo aquí»: la fecha de firma es obligatoria y la renta al firmar, plausible', async ({ page }) => {
+	test('validación de «Mi alquiler»: la fecha de firma es obligatoria y la renta al firmar, plausible', async ({ page }) => {
 		await abrir(page);
 		await comprobar(page, { precio: '1620', superficie: '90', vivo: { rentaFirma: '20' } });
 		await expect(page.getByText(/Elige el mes y el año de la firma/)).toBeVisible();
@@ -47,7 +47,7 @@ test.describe('aportaciones y recuentos', () => {
 		page.on('request', (r) => r.method() === 'POST' && r.url().endsWith('/api/analisis') && analisis.push(r.postData() ?? ''));
 		await abrir(page, '/?t=abcdefghij');
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Por encima del techo')).toBeVisible();
+		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
 		expect(analisis).toHaveLength(0);
 		await page.getByRole('checkbox', { name: /Suma este piso/ }).check();
 		await expect.poll(() => analisis.length).toBe(1);

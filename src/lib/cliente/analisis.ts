@@ -93,7 +93,7 @@ export async function comprobar(f: EstadoFormulario, pin: Ubicacion | null | 'fu
 	const v = validarFormulario(crudo(f));
 	const errores: ErroresCampos = v.ok ? {} : { ...v.errores };
 
-	// «Ya vivo aquí»: fecha de firma obligatoria y renta al firmar opcional
+	// «Mi alquiler»: fecha de firma obligatoria y renta al firmar opcional
 	let extra: ExtraInquilino | null = null;
 	if (f.situacion === 'vivo') {
 		const hoy = new Date();

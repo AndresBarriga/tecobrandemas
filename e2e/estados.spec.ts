@@ -11,23 +11,23 @@ const captura = (page: Page, nombre: string) =>
 
 test('01-inicio', async ({ page }) => {
 	await abrir(page);
-	await expect(page.getByRole('heading', { level: 1 })).toContainText('El anuncio pide.');
+	await expect(page.getByRole('heading', { level: 1 })).toContainText('¿Cuánto pagan los demás?');
 	await captura(page, '01-inicio');
 });
 
 test.describe('niveles', () => {
 	const niveles: [string, string, string, RegExp][] = [
-		['02-nivel-a-dentro', '1700', 'Dentro de la referencia', /PARTE (BAJA|MEDIA|ALTA)/i],
-		['03-nivel-b-explicable', '2100', 'Por encima, explicable si es excelente', /sobre la parte alta/i],
-		['04-nivel-c-por-encima', '2500', 'Por encima del techo para un piso excelente', /\+\d+(,\d)? %/],
-		['05-nivel-c-extremo', '4000', 'Por encima del techo para un piso excelente', /\+\d+\s%/],
-		['05b-nivel-c-en-veces', '4500', 'Por encima del techo para un piso excelente', /\d,\d\sveces/]
+		['02-nivel-a-dentro', '1700', 'Dentro de rango', /PARTE (BAJA|MEDIA|ALTA)/i],
+		['03-nivel-b-explicable', '2100', 'Algo por encima', /por encima de lo habitual aquí/i],
+		['04-nivel-c-por-encima', '2500', 'Se sale de lo habitual', /\+\d+(,\d)? %/],
+		['05-nivel-c-extremo', '4000', 'Se sale de lo habitual', /\+\d+\s%/],
+		['05b-nivel-c-en-veces', '4500', 'Se sale de lo habitual', /\d,\d\sveces/]
 	];
 	for (const [nombre, precio, etiqueta, texto] of niveles) {
 		test(nombre, async ({ page }) => {
 			await abrir(page);
 			await comprobar(page, { precio, superficie: '90' });
-			await expect(page.getByText(etiqueta, { exact: true }).first()).toBeVisible();
+			await expect(page.getByText(etiqueta, { exact: true }).filter({ visible: true }).first()).toBeVisible();
 			await expect(page.locator('main')).toContainText(texto);
 			await esperarAnimacion(page);
 			await captura(page, nombre);
@@ -47,7 +47,7 @@ test.describe('niveles', () => {
 	test('el contador del barrio no sale sin dato real', async ({ page }) => {
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Por encima del techo')).toBeVisible();
+		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
 		await expect(page.locator('main')).not.toContainText('personas han comprobado');
 		});
 });
@@ -96,7 +96,7 @@ test.describe('errores', () => {
 		await captura(page, '15-direccion-no-encontrada');
 		// La sugerencia fija la calle, conserva el número (en «Nº») y completa la comprobación
 		await page.getByRole('button', { name: 'Calle Fuente del Berro' }).click();
-		await expect(page.getByText('Por encima')).toBeVisible();
+		await expect(page.getByText(/^(Se sale de lo habitual|Algo por encima)$/).first()).toBeVisible();
 	});
 
 	test('16-calle-demasiado-larga pide el número o el mapa', async ({ page }) => {
@@ -116,7 +116,7 @@ test.describe('errores', () => {
 		await captura(page, '17-sin-conexion');
 		await page.unroute('**/api/geocode');
 		await page.getByRole('button', { name: 'Reintentar' }).click();
-		await expect(page.getByText('Por encima')).toBeVisible();
+		await expect(page.getByText(/^(Se sale de lo habitual|Algo por encima)$/).first()).toBeVisible();
 	});
 
 	test('18-validacion con mensajes en ciruela', async ({ page }) => {
@@ -141,7 +141,7 @@ test.describe('otras pantallas', () => {
 		await expect(page.getByRole('heading', { level: 1, name: /Negociar con el dato/i })).toBeVisible();
 		await expect(page.getByLabel(/Tu mensaje/)).toHaveValue(/2\.500 € al mes/);
 		await page.getByRole('radio', { name: 'Tú' }).check();
-		await expect(page.getByLabel(/Tu mensaje/)).toHaveValue(/te agradecería/);
+		await expect(page.getByLabel(/Tu mensaje/)).toHaveValue(/Entiendo que hoy se pide más por entrar/);
 		await page.getByRole('radio', { name: 'Usted' }).check();
 		await captura(page, '19-negociar');
 		await page.getByRole('button', { name: 'Copiar el texto' }).click();
@@ -151,7 +151,7 @@ test.describe('otras pantallas', () => {
 	});
 
 	test('20-en el mapa: marca un punto y comprueba sin geocodificar', async ({ page }) => {
-		await abrir(page);
+		await abrir(page, '/?modo=mirando');
 		const posts: string[] = [];
 		page.on('request', (r) => r.method() === 'POST' && posts.push(new URL(r.url()).pathname));
 		await page.getByRole('radio', { name: 'En el mapa' }).check();
@@ -176,14 +176,14 @@ test.describe('otras pantallas', () => {
 		test.skip(!info.project.name.startsWith('escritorio'), 'solo en escritorio');
 		await abrir(page);
 		await comprobar(page, { precio: '1700', superficie: '90' });
-		await expect(page.getByText('Dentro de la referencia', { exact: true })).toBeVisible();
+		await expect(page.getByText('Dentro de rango', { exact: true })).toBeVisible();
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Por encima del techo')).toBeVisible();
+		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
 		const filas = page.getByRole('button', { name: /Goya/ });
 		await expect(filas).toHaveCount(2);
 		await captura(page, '21-historial');
 		await filas.nth(1).click();
-		await expect(page.getByText('Dentro de la referencia', { exact: true })).toBeVisible();
+		await expect(page.getByText('Dentro de rango', { exact: true })).toBeVisible();
 		await expect(page.locator('#precio')).toHaveValue('1.700');
 		// Se guarda en sessionStorage, no en localStorage
 		expect(await page.evaluate(() => localStorage.length)).toBe(0);

@@ -1,6 +1,6 @@
 /**
- * Resultado de «Ya vivo aquí»: el mismo motor y la misma referencia, vista desde quien ya paga.
- * Seis posiciones (por debajo, parte baja, media o alta, cerca del techo y por encima del techo),
+ * Resultado de «Mi alquiler»: el mismo motor y la misma referencia, vista desde quien ya paga.
+ * Seis posiciones (por debajo, parte baja, media o alta, algo por encima y se sale de lo habitual),
  * con el año de firma al lado y sin ajustar la renta. La comparación usa siempre el piso entero:
  * «Somos N» solo sirve para enseñar «tu parte» en pantalla y no se guarda.
  */
@@ -29,13 +29,13 @@ export interface InfoInquilino {
 	icono: Clase | 'abajo';
 	etiqueta: string;
 	titular: string;
-	/** Cifra grande (en % o «veces») cuando está por encima del techo */
+	/** Cifra grande (en % o «veces») cuando se sale de lo habitual */
 	cifra: string | null;
 	nota: string;
 	frase: string;
 	/** «Lo que pagas: 980 €/mes · 90 m² · contrato de 2016» */
 	pagas: string;
-	/** Solo cerca del techo o por encima: € sobre la parte alta, al mes y al año */
+	/** Solo algo por encima o se sale de lo habitual: € sobre la parte alta, al mes y al año */
 	brecha: { mes: string; año: string } | null;
 	contrato: { titulo: string; texto: string; detalle: string; cambio: string | null };
 	/** «600 €» si se compartió contrato entre N; solo en pantalla */
@@ -138,7 +138,7 @@ export function aInquilino(p: PantallaResultado, a: Anuncio, extra: ExtraInquili
 	// El inquilino no registra el anuncio (R7) ni ve «Tu zona»: aporta con su propio botón
 	// Por debajo de la referencia no hay «tercio» al que señalar en la banda
 	const vista = pos === 'debajo' ? { ...p.vista, barra: { ...p.vista.barra, tercio: null } } : p.vista;
-	// Con horquilla (calle que cruza varias zonas o radio de precisión) se enseña el mapa con todas las zonas afectadas
-	const zona = p.horquilla && p.zona ? { ...p.zona, clase: 'a' as const, inquilino: true } : null;
+	// «Tu zona» también en «Mi alquiler», solo como contexto (sin lista de zonas). Con horquilla, las zonas afectadas llevan contorno grueso
+	const zona = p.zona ? { ...p.zona, clase: 'a' as const, inquilino: true } : null;
 	return { ...p, vista, registro: null, zona, inquilino: info };
 }

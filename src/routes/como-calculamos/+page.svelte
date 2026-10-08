@@ -4,6 +4,7 @@
 	import Cabecera from '#lib/componentes/Cabecera.svelte';
 	import Icono from '#lib/componentes/Icono.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
+	import { ETIQUETA_NIVEL } from '#lib/resultado';
 
 	let { data } = $props();
 	const p = $derived(data.pagina);
@@ -112,7 +113,7 @@
 								</div>
 								<div class="barra-caja"><BarraEjemplo {paso} precio={p.ejemplo.precio} /></div>
 								{#if paso.nivel}
-									<span class="etiqueta nivel-{paso.nivel}"><Icono clase={paso.nivel} />{paso.nivel === 'a' ? 'Dentro de la referencia' : paso.nivel === 'b' ? 'Por encima, explicable si es excelente' : 'Por encima del techo para un piso excelente'}</span>
+									<span class="etiqueta nivel-{paso.nivel}"><Icono clase={paso.nivel} />{ETIQUETA_NIVEL[paso.nivel]}</span>
 								{/if}
 							</li>
 						{/each}
@@ -121,13 +122,13 @@
 			</section>
 
 			<section id="niv">
-				<h2>Los tres niveles</h2>
+				<h2>Los niveles</h2>
 				{#if p.niveles}
 					<div class="niveles">
-						{#each p.niveles.items as n (n.clase)}
+						{#each p.niveles.items as n (n.etiqueta)}
 							<div class="nivel">
 								<div class="nivel-texto">
-									<span class="etiqueta nivel-{n.clase}"><Icono clase={n.clase} />{n.etiqueta}</span>
+									<span class="etiqueta nivel-{n.clase}"><Icono clase={n.icono ?? n.clase} />{n.etiqueta}</span>
 									<span class="nivel-desc">{n.descripcion}</span>
 								</div>
 								<div class="mini nivel-{n.clase}" aria-hidden="true">
@@ -143,9 +144,15 @@
 			</section>
 
 			<section id="ped" class="oscura">
-				<h2>Un precio pedido, no firmado</h2>
+				<h2>{p.precioPedido.titulo}</h2>
 				<p class="lead">{p.precioPedido.destacado}</p>
 				<p class="claro">{p.precioPedido.cuerpo}</p>
+				<h3>{p.precioPedido.incluye.titulo}</h3>
+				<ul class="claro">
+					{#each p.precioPedido.incluye.items as t (t)}<li>{t}</li>{/each}
+				</ul>
+				<h3>{p.precioPedido.parteAlta.titulo}</h3>
+				<p class="claro">{p.precioPedido.parteAlta.texto}</p>
 			</section>
 
 			<section id="map">
@@ -195,12 +202,15 @@
 				</div>
 				<div class="notas">
 					{#each p.datos.notas as n (n.titulo)}
-						<div><span class="nota-titulo">{n.titulo}</span><span>{n.texto}</span></div>
+						<div class:ancha={n.ancha}>
+							<span class="nota-titulo">{n.titulo}</span>
+							{#each n.texto as t (t)}<p>{t}</p>{/each}
+						</div>
 					{/each}
 				</div>
 			</section>
 
-			<section id="lim">
+			<section id="lo-que-no-calculamos">
 				<h2>Lo que no calculamos</h2>
 				<p>{p.limites.intro}</p>
 				<div class="limites">
@@ -511,6 +521,17 @@
 	.oscura .lead {
 		color: var(--papel);
 	}
+	.oscura h3 {
+		color: var(--paja);
+		margin-top: 4px;
+	}
+	.oscura ul {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding-left: 18px;
+		list-style: disc;
+	}
 	.claro {
 		color: var(--pista);
 	}
@@ -560,6 +581,11 @@
 	}
 	.nota-titulo {
 		font-weight: 700;
+	}
+	/* «Pasos de uso»: texto largo, a todo el ancho de la rejilla */
+	.notas .ancha {
+		grid-column: 1 / -1;
+		gap: 8px;
 	}
 
 	/* Límites */
