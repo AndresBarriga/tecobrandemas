@@ -9,7 +9,7 @@
  */
 import { PUBLIC_POSTHOG_ENABLED, PUBLIC_POSTHOG_KEY } from '$app/env/public';
 import {
-	type BRECHAS, type CANALES, type MODOS, type MOTIVOS_SIN_DATO, type RESPUESTAS_QUE_HARAS, type RESULTADOS,
+	type BRECHAS, type CANALES, type CAPAS_MAPA, type MODOS, type MOTIVOS_SIN_DATO, type RESPUESTAS_QUE_HARAS, type RESULTADOS,
 	campanaValida, dominioDelReferrer, filtrarEvento, navegadorApp
 } from './analitica-filtro';
 import { leerOrigenDeLaUrl, tarjetaOrigen } from './origen';
@@ -18,7 +18,9 @@ type Modo = (typeof MODOS)[number];
 type Resultado = (typeof RESULTADOS)[number];
 
 // Solo en `vite dev`, `?ph_prueba=1` la activa con una clave de mentira (para e2e/analitica.spec.ts); en producción no existe
-const deLaPrueba = () => import.meta.env.DEV && new URLSearchParams(location.search).has('ph_prueba');
+// Se recuerda una vez vista: páginas como /mapa reescriben la URL y quitarían el parámetro
+let pruebaVista = false;
+const deLaPrueba = () => import.meta.env.DEV && (pruebaVista ||= new URLSearchParams(location.search).has('ph_prueba'));
 export const analiticaActiva = () => (PUBLIC_POSTHOG_ENABLED && PUBLIC_POSTHOG_KEY !== '') || deLaPrueba();
 
 /** Ruta del proxy en el propio dominio (src/routes/r7k) */
@@ -182,4 +184,9 @@ export function comparte(d: { modo: Modo; canal: (typeof CANALES)[number]; tarje
 
 export function aporta(tipo: 'alquiler' | 'habitacion'): void {
 	enviar('aporta', { tipo });
+}
+
+/** /mapa: la capa que se ve al cargar y cada vez que se cambia. Solo el nombre de la capa: nada de la zona, el presupuesto ni los metros */
+export function mapaCapa(capa: (typeof CAPAS_MAPA)[number]): void {
+	enviar('mapa_capa', { capa });
 }

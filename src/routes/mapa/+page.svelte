@@ -13,6 +13,7 @@
 	} from '#lib/resultado';
 	import { type Caja, type MadridCargado, cargarMadrid, unirCajas } from '#lib/cliente/mapa-madrid';
 	import { metrosAPunto } from '#lib/cliente/mapa';
+	import { mapaCapa } from '#lib/cliente/analitica';
 	import { dejarPrellenado } from '#lib/cliente/prellenado';
 	import { ubicarme } from '#lib/cliente/ubicacion-actual';
 	import { zonasDeVia } from '#lib/cliente/vias';
@@ -106,6 +107,13 @@
 		llevarA(b.caja);
 		origen = { centro: b.centro, donde: T.presupuesto.cercanas.a(b.nombre) };
 		rellenar = { texto: b.nombre, vez: ++vezRelleno };
+	});
+	// Analítica: la capa inicial (ya leída de la URL, porque `listo` se pone al final de onMount) y cada cambio de capa
+	let capaEnviada: CapaMapa | null = null;
+	$effect(() => {
+		if (!listo || capa === capaEnviada) return;
+		capaEnviada = capa;
+		mapaCapa(capa);
 	});
 	$effect(() => {
 		if (!listo) return;

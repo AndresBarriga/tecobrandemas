@@ -294,7 +294,7 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 					titulo: 'Pasos de uso',
 					ancha: true,
 					texto: [
-						'Para saber si la herramienta sirve, contamos pasos como empezar, obtener un resultado o compartir, junto con el tipo de resultado, el distrito y desde dónde llegaste.',
+						'Para saber si la herramienta sirve, contamos pasos como empezar, obtener un resultado o compartir, junto con el tipo de resultado, el distrito, la capa del mapa que miras y desde dónde llegaste.',
 						'Usamos PostHog, con servidores en la UE y sin cookies: para contar visitas recibe tu IP y los datos de tu navegador (su user agent, el idioma y el tamaño de pantalla), los usa para generar un identificador anónimo que cambia cada día y no los guarda. De las direcciones web solo enviamos la ruta y los parámetros de campaña, nunca la dirección, el precio ni los metros.'
 					]
 				}
