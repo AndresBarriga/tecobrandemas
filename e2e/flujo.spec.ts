@@ -10,7 +10,8 @@ test.describe('flujo', () => {
 		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
 		await esperarAnimacion(page);
 		expect(Date.now() - t0).toBeLessThan(30_000);
-		await expect(page.getByRole('img', { name: /Tu anuncio, 2\.500/ })).toBeVisible();
+		await expect(page.getByText(/2\.500 €\/mes · precio del anuncio/)).toBeVisible();
+		await expect(page.getByRole('img', { name: /Contratos vigentes de la zona: parte alta/ })).toBeVisible();
 	});
 
 	test('formatea el precio al salir del campo y valida con mensajes que dicen cómo corregir', async ({ page }) => {

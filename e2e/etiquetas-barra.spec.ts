@@ -4,12 +4,12 @@ import { abrir, comprobar, esperarAnimacion } from './ayudas';
 
 const carpeta = () => `e2e/capturas/${test.info().project.name}`;
 
-/** Parte alta de la referencia (€/mes) de Fuente del Berro para 90 m², leída de la propia barra */
+/** Parte alta de la referencia (€/mes) de Fuente del Berro para 90 m², leída de las propias reglas */
 async function parteAlta(page: Page): Promise<number> {
 	await abrir(page);
 	await comprobar(page, { precio: '2500', superficie: '90' });
-	const aria = (await page.locator('.barra[role="img"]').first().getAttribute('aria-label')) ?? '';
-	const m = aria.match(/Parte alta de lo que pagan los contratos de aquí, ([\d.]+)/);
+	const aria = (await page.locator('.reglas[role="img"]').first().getAttribute('aria-label')) ?? '';
+	const m = aria.match(/parte alta ([\d.]+)/);
 	if (!m) throw new Error(`sin parte alta en «${aria}»`);
 	return Number(m[1]!.replace('.', ''));
 }
@@ -23,7 +23,7 @@ interface Caja {
 }
 
 async function cajas(page: Page): Promise<{ barra: Caja; etiquetas: Caja[] }> {
-	return page.locator('.barra[role="img"]').first().evaluate((el) => {
+	return page.locator('.reglas[role="img"]').first().evaluate((el) => {
 		const r = el.getBoundingClientRect();
 		const c = (e: Element, nombre: string) => {
 			const b = e.getBoundingClientRect();
@@ -31,14 +31,14 @@ async function cajas(page: Page): Promise<{ barra: Caja; etiquetas: Caja[] }> {
 		};
 		return {
 			barra: c(el, 'barra'),
-			etiquetas: [...el.querySelectorAll('.et')].map((e) => c(e, (e.textContent ?? '').trim().replace(/\s+/g, ' ')))
+			etiquetas: [...el.querySelectorAll('.et, .valor')].map((e) => c(e, (e.textContent ?? '').trim().replace(/\s+/g, ' ')))
 		};
 	});
 }
 
 // Brechas de +100 %, +240 % y +400 % sobre la parte alta (ratio 2, 3,4 y 5)
 for (const [pct, ratio] of [[100, 2], [240, 3.4], [400, 5]] as const) {
-	test(`etiquetas de la barra enteras y sin solaparse con +${pct} %`, async ({ page }) => {
+	test(`etiquetas de las reglas enteras y sin solaparse con +${pct} %`, async ({ page }) => {
 		const sup = await parteAlta(page);
 		const precio = Math.round(sup * ratio) + 1;
 		await abrir(page);
@@ -62,7 +62,7 @@ for (const [pct, ratio] of [[100, 2], [240, 3.4], [400, 5]] as const) {
 				expect(solapa, `«${a.nombre}» pisa «${b.nombre}»`).toBe(false);
 			}
 		}
-		await page.locator('.barra[role="img"]').first().screenshot({ path: `${carpeta()}/33-barra-mas${pct}.png` });
+		await page.locator('.reglas[role="img"]').first().screenshot({ path: `${carpeta()}/33-barra-mas${pct}.png` });
 
 		// La cifra grande («5,0 veces») cabe entera en el ancho de la pantalla
 		const cifra = await page.locator('main .cifra').first().evaluate((e) => {

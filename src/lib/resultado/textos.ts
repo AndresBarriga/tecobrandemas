@@ -334,7 +334,8 @@ export const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Ju
 
 export const INQUILINO = {
 	editar: 'Editar los datos',
-	pagas: (precio: string, m2: string, contrato: string) => `Lo que pagas: ${precio}/mes · ${m2} · ${contrato}`,
+	/** Cabecera del resultado: m², precio y de cuándo es el contrato */
+	pagas: (precio: string, m2: string, contrato: string) => `${m2} · ${precio}/mes · lo que pagas · ${contrato}`,
 	contratoDe: (ano: number) => `Contrato de ${ano}`,
 	contratoReciente: 'Contrato de hace menos de un año',
 	etiqueta: {
@@ -390,6 +391,64 @@ export const INQUILINO = {
 	compartir: 'Compartir mi resultado',
 	acciones: { titulo: 'Siguientes pasos', oficial: 'Consultar el valor oficial', mirando: 'Comprobar un anuncio' },
 	servido: '¿Te ha servido?'
+} as const;
+
+/**
+ * Resultado con dos referencias (rediseño del 09/10/2026): «Contratos vigentes» (lo que se paga, «zona») y «Anuncios
+ * recientes» (lo que se pide, «barrio de X» o «distrito de Y», nunca «zona»). Cada cifra, una sola vez por pantalla.
+ */
+export const COMPARATIVA = {
+	/** Frase resumen: dos frases cortas o, si los dos veredictos van en la misma dirección, una sola */
+	resumen: {
+		contratos: { encima: 'Por encima de los contratos.', dentro: 'Dentro de los contratos.', debajo: 'Por debajo de los contratos.' },
+		anuncios: { por_encima: 'Por encima de los anuncios.', en_linea: 'En línea con los anuncios.', por_debajo: 'Por debajo de los anuncios.' },
+		ambas: {
+			encima: { mirando: 'Por encima de anuncios y contratos.', vivo: 'Por encima de contratos y anuncios.' },
+			debajo: { mirando: 'Por debajo de anuncios y contratos.', vivo: 'Por debajo de contratos y anuncios.' }
+		}
+	},
+	veredicto: { encima: 'Por encima', enLinea: 'En línea', debajo: 'Por debajo' },
+	contratos: {
+		titulo: 'Contratos vigentes',
+		sub: 'lo que se paga',
+		notaSobre: 'sobre la parte alta de la zona',
+		notaVeces: 'la parte alta de la zona',
+		notaBajo: 'bajo la parte alta de la zona',
+		notaRango: 'frente a la parte alta, según la zona exacta'
+	},
+	anuncios: {
+		titulo: 'Anuncios recientes',
+		sub: { mirando: 'lo que se pide', vivo: 'si te mudaras' },
+		nota: (nivel: 'barrio' | 'distrito') => `frente a la media del ${nivel}`
+	},
+	/** Una línea por modo bajo las tarjetas: sustituye a las explicaciones anteriores */
+	explicacion: {
+		mirando: 'Un anuncio muestra lo que se pide por entrar; los contratos, lo que pagan quienes ya viven de alquiler.',
+		vivo: 'Tu alquiler se compara con lo que pagan quienes ya viven de alquiler; si te mudaras, cuenta lo que se pide por entrar.'
+	},
+	reglas: {
+		contratos: 'Contratos vigentes de la zona',
+		anuncios: (lugar: string) => `Anuncios recientes · ${lugar}`,
+		parteAlta: 'parte alta',
+		techo: 'si fuera piso excelente',
+		aria: {
+			contratos: (parteAlta: string, techo: string) =>
+				`Contratos vigentes de la zona: parte alta ${parteAlta}; si fuera un piso excelente, ${techo}. El punto marca tu precio.`,
+			anuncios: (lugar: string, media: string) => `Anuncios recientes del ${lugar}: media ${media}, con la banda «en línea» alrededor.`
+		}
+	},
+	/** Impacto en euros: una sola vez y solo frente a los contratos */
+	impacto: {
+		titulo: 'Sobre la parte alta de los contratos vigentes',
+		alMes: 'Al mes',
+		alAño: 'Al año',
+		frase: (meses: string, modo: 'mirando' | 'vivo') => `Equivale a ${meses} de ${modo === 'vivo' ? 'tu' : 'este'} alquiler al año.`,
+		bloques: '12 meses de alquiler'
+	},
+	/** Cabecera: lugar, m² y precio */
+	cabecera: { mirando: 'precio del anuncio', vivo: 'lo que pagas' },
+	/** Portada, estado vacío */
+	vacio: 'Aquí verás tu precio frente a los contratos vigentes y a los anuncios recientes de la zona'
 } as const;
 
 /**
@@ -622,13 +681,6 @@ export const QUE_HARAS = {
 /** Enlace junto al resultado: solo un mailto, sin evento ni datos del anuncio */
 export const ALGO_NO_CUADRA = { texto: '¿Algo no cuadra? Escríbenos', correo: 'hola@asuprecio.com' } as const;
 
-export const EQUIVALENCIA = {
-	titulo: 'Entrar vs. estar dentro',
-	alMes: 'Al mes',
-	alAño: 'Al año',
-	bloques: '12 meses de alquiler'
-} as const;
-
 export const SESION = {
 	titulo: 'Comprobados en esta sesión',
 	nota: 'Solo en este navegador. Se borran al cerrar la pestaña.'
@@ -652,7 +704,12 @@ export const TARJETA = {
 	ampliar: 'Ver en grande',
 	ampliadaTitulo: 'Tu tarjeta, en grande',
 	cerrar: 'Cerrar',
-	detalle: 'Sin dirección ni el precio que piden. Solo el barrio, la cifra, lo habitual aquí y la fuente.',
+	/** Junto a la miniatura y en el diálogo: el eje lleva euros, así que el punto deja deducir el precio */
+	detalle: 'La tarjeta muestra tu barrio y permite deducir tu precio.',
+	/** Cierre de la tarjeta: nunca «a su precio» como veredicto */
+	cierre: '¿Está a su precio? Compruébalo en asuprecio.com',
+	/** Fuentes de la tarjeta v2, en una sola línea: la atribución completa está en la página enlazada */
+	fuentes: 'Datos: SERPAVI (Ministerio de Vivienda) y Ayuntamiento de Madrid · detalle en asuprecio.com/como-calculamos',
 	pie: 'Estimación independiente. Origen de los datos: Ministerio de Vivienda y Agenda Urbana. Elaboración propia con datos extraídos del sitio web del INE: www.ine.es',
 	/** Dentro de la imagen: las capturas viajan sin enlace */
 	dominio: 'asuprecio.com',
@@ -662,7 +719,7 @@ export const TARJETA = {
 	enlaceCopiado: 'Enlace copiado.',
 	canales: { whatsapp: 'WhatsApp', x: 'X', copiar: 'Copiar enlace', descarga: 'Descargar imagen' },
 	canalesAviso:
-		'Al elegir WhatsApp, X o copiar el enlace se guarda la tarjeta (sin precio ni dirección) para que el enlace funcione. En WhatsApp la imagen sale como vista previa del enlace; si prefieres adjuntarla tú, descárgala.',
+		'Al copiar el enlace se guarda la tarjeta (sin dirección ni precio exacto) para que el enlace funcione y se vea con su vista previa. «Descargar imagen» no guarda nada.',
 	descargaHecha: 'Imagen descargada. No se ha guardado nada.',
 	error: 'No hemos podido preparar la tarjeta. Inténtalo de nuevo.'
 } as const;
@@ -726,6 +783,13 @@ export const PAGINA_TARJETA = {
 	titular: '¿Y el tuyo?',
 	explicacion:
 		'Esta herramienta compara lo que piden en un anuncio de alquiler en Madrid con lo que pagan quienes ya viven de alquiler en la zona: contratos vigentes declarados a Hacienda (2024, datos del Ministerio de Vivienda), ajustados por el IPC del alquiler.',
+	/** Tarjetas del rediseño: dos referencias */
+	explicacionDos: {
+		mirando:
+			'Esta herramienta compara lo que piden en un anuncio de alquiler en Madrid con dos referencias: los contratos vigentes de la zona (declarados a Hacienda en 2024, datos del Ministerio de Vivienda, ajustados por el IPC del alquiler) y los anuncios recientes del barrio o del distrito (Ayuntamiento de Madrid).',
+		vivo:
+			'Esta herramienta compara un alquiler de Madrid con dos referencias: los contratos vigentes de la zona (declarados a Hacienda en 2024, datos del Ministerio de Vivienda, ajustados por el IPC del alquiler) y los anuncios recientes del barrio o del distrito (Ayuntamiento de Madrid).'
+	},
 	boton: 'Comprueba tu piso',
 	nota: 'La tarjeta no incluye la dirección ni el precio exacto del anuncio.',
 	noExiste: { titulo: 'Esta tarjeta no existe', texto: 'Puede que el enlace esté incompleto o que ya no esté disponible.' }

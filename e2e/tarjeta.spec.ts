@@ -79,10 +79,15 @@ test.describe('tarjeta y /t/:id', () => {
 		expect(mala.status()).toBe(400);
 		const sinJpeg = await request.post('/api/tarjeta', {
 			multipart: {
+				// Una tarjeta v2 válida (con campos de más, que se descartan) y una imagen que no es JPEG
 				tarjeta: JSON.stringify({
-					clase: 'c', etiqueta: 'Se sale de lo habitual', hero: { tipo: 'cifra', texto: '+30 %' },
-					nota: 'x', frase: 'y', barrio: 'Goya', aproximada: false,
-					barra: { banda: { desde: 0.4, hasta: 0.6 }, incertidumbre: null, techo: { desde: 0.6, hasta: 0.7 }, punto: 0.8, tercio: null },
+					v: 2, modo: 'mirando', resumen: 'Por encima de los contratos.', barrio: 'Goya', aproximada: false,
+					contratos: { clase: 'c', icono: 'c', etiqueta: 'Se sale de lo habitual', cifra: '+30 %', nota: 'sobre la parte alta de la zona' },
+					anuncios: null,
+					reglas: {
+						marcas: [{ x: 0, texto: '750 €' }, { x: 1, texto: '3.000 €' }], punto: 0.8,
+						contratos: { banda: { desde: 0.4, hasta: 0.6 }, incertidumbre: null, parteAlta: 0.6, techo: 0.7 }, anuncios: null
+					},
 					precio: 2500, direccion: 'Calle X 3'
 				}),
 				og: { name: 'og.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('no soy un jpeg') }
@@ -175,26 +180,20 @@ test.describe('vista previa para rastreadores (WhatsApp, Facebook, X)', () => {
 		await expect(page.getByRole('link', { name: 'A su precio, inicio' })).toBeVisible();
 	});
 
-	test('WhatsApp y X se abren cuando la tarjeta ya está subida (si no, la vista previa sale vacía)', async ({ page, context }) => {
+	test('copiar el enlace avisa cuando la tarjeta ya está subida (si no, la vista previa saldría vacía)', async ({ page, context }) => {
+		await context.grantPermissions(['clipboard-read', 'clipboard-write']);
 		await sinCompartirNativo(page);
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		await expect(page.getByRole('group', { name: 'Compartir el resultado' })).toBeVisible();
 		await esperarAnimacion(page);
-		// La subida tarda: el canal no puede abrirse antes de que termine
-		let subidaTerminada = 0;
+		// La subida tarda: mientras tanto se avisa de que se está preparando
 		await page.route('**/api/tarjeta', async (ruta) => {
 			await new Promise((r) => setTimeout(r, 1200));
 			await ruta.continue();
-			subidaTerminada = Date.now();
 		});
-		await context.route(/wa\.me|x\.com/, (r) => r.fulfill({ status: 200, body: 'ok' }));
-		const popup = context.waitForEvent('page');
-		await page.getByRole('link', { name: 'WhatsApp' }).click();
-		const nueva = await popup;
-		const abierta = Date.now();
-		expect(nueva.url()).toMatch(/wa\.me|about:blank/);
-		expect(subidaTerminada).toBeGreaterThan(0);
-		expect(abierta).toBeGreaterThanOrEqual(subidaTerminada - 50);
+		await page.getByRole('button', { name: 'Copiar enlace' }).click();
+		await expect(page.getByText('Preparando la tarjeta…')).toBeVisible();
+		await expect(page.getByText('Enlace copiado.')).toBeVisible({ timeout: 5000 });
 	});
 });

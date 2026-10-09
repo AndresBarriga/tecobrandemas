@@ -178,7 +178,7 @@ describe('pantalla de resultado', () => {
 		// Con zonas en niveles distintos no se promedia: la barra conserva los tramos y no hay aclaración
 		expect(q.barra.horquilla).toBe(true);
 		expect(q.vista.aclaracion).toBe('Punto cerca de zonas con referencias distintas: la cifra depende de cuál sea la tuya.');
-		expect(construirTarjeta(q).barra.incertidumbre).not.toBeNull();
+		expect(construirTarjeta(q).reglas.contratos.incertidumbre).not.toBeNull();
 	});
 
 	it('avisos de ubicación aproximada', () => {
@@ -457,30 +457,32 @@ describe('evolución', () => {
 // ——— Tarjeta ———
 
 describe('tarjeta', () => {
-	it('lleva cifra, nivel, barrio, frase y barra en fracciones; nunca el precio ni los m²', () => {
+	it('lleva resumen, cifra, nivel, barrio y reglas en fracciones; nunca el precio exacto ni los m²', () => {
 		const r = refDe('A');
 		const precio = Math.round(r.max + 237);
 		const p = construirPantalla(anuncio(precio), ubic(['A']), DATOS);
 		if (p.tipo !== 'resultado') throw new Error('esperaba resultado');
 		const t = construirTarjeta(p);
-		expect(t).toMatchObject({ clase: 'c', hero: { tipo: 'cifra', texto: p.brechaPct }, barrio: 'Almagro', aproximada: false });
+		expect(t).toMatchObject({ v: 2, modo: 'mirando', contratos: { clase: 'c', cifra: p.brechaPct }, barrio: 'Almagro', aproximada: false });
+		expect(t.resumen).toBe(p.comparativa.resumen);
 		const texto = JSON.stringify(t);
 		expect(texto).not.toContain(String(precio));
 		expect(texto).not.toContain('€/mes');
-		// Con la escala fija de la tarjeta no se puede volver al importe
-		expect(t.barra.punto).toBeCloseTo(1 / 1.15);
-		expect(t.barra.techo.hasta).toBeLessThan(t.barra.punto);
+		// El punto va en fracción del eje y el eje solo lleva euros redondeados a 50
+		expect(t.reglas.punto).toBeGreaterThan(0);
+		expect(t.reglas.punto).toBeLessThan(1);
+		for (const m of t.reglas.marcas) expect(m.texto).toMatch(/[05]0 €$/);
+		expect(t.reglas.contratos.techo).toBeLessThan(t.reglas.punto);
 	});
 
-	it('niveles sin porcentaje: titular y frase propia', () => {
+	it('dentro de rango y algo por encima: el nivel y la cifra frente a la parte alta, con su signo', () => {
 		const r = refDe('A');
-		for (const [precio, clase] of [[r.inf + 1, 'a'], [(r.sup + r.max) / 2, 'b']] as const) {
+		for (const [precio, clase, signo] of [[r.inf + 1, 'a', '−'], [(r.sup + r.max) / 2, 'b', '+']] as const) {
 			const p = construirPantalla(anuncio(precio), ubic(['A']), DATOS);
 			if (p.tipo !== 'resultado') throw new Error('esperaba resultado');
 			const t = construirTarjeta(p);
-			expect(t.clase).toBe(clase);
-			expect(t.hero.tipo).toBe('titular');
-			expect(JSON.stringify(t)).not.toContain('%');
+			expect(t.contratos.clase).toBe(clase);
+			expect(t.contratos.cifra.startsWith(signo)).toBe(true);
 		}
 	});
 
@@ -490,8 +492,8 @@ describe('tarjeta', () => {
 		if (p.tipo !== 'resultado') throw new Error('esperaba resultado');
 		const t = construirTarjeta(p);
 		expect(t.aproximada).toBe(true);
-		expect(t.hero.tipo).toBe('cifra');
-		expect(t.barra.incertidumbre).toBeNull();
+		expect(t.contratos.cifra).not.toContain(' a ');
+		expect(t.reglas.contratos.incertidumbre).toBeNull();
 	});
 });
 

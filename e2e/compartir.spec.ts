@@ -3,14 +3,13 @@ import { abrir, comprobar, conCompartirNativo, esperarAnimacion, sinCompartirNat
 
 type Peticion = { metodo: string; url: string; cuerpo: string };
 
-test.describe('compartir la tarjeta (escritorio: cuatro canales)', () => {
+test.describe('compartir la tarjeta (escritorio: copiar enlace y descargar imagen)', () => {
 	test.beforeEach(async ({ page }) => sinCompartirNativo(page));
 
-	test('no se guarda nada hasta elegir un canal; WhatsApp y X llevan el id y la subida es una sola', async ({ page, context }) => {
+	test('no se guarda nada hasta copiar el enlace; el enlace lleva el id y la subida es una sola', async ({ page, context }) => {
+		await context.grantPermissions(['clipboard-read', 'clipboard-write']);
 		const peticiones: Peticion[] = [];
 		page.on('request', (r) => peticiones.push({ metodo: r.method(), url: r.url(), cuerpo: r.postData() ?? '' }));
-		// WhatsApp y X se abren en otra pestaña: no salimos a internet en las pruebas
-		await context.route(/https:\/\/(wa\.me|x\.com)\//, (r) => r.fulfill({ status: 200, body: 'ok', contentType: 'text/html' }));
 
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
@@ -19,42 +18,33 @@ test.describe('compartir la tarjeta (escritorio: cuatro canales)', () => {
 		await expect(grupo).toBeVisible();
 		await grupo.scrollIntoViewIfNeeded();
 		await page.screenshot({ path: `e2e/capturas/${test.info().project.name}/37-compartir-canales.png` });
-		await expect(grupo.getByRole('link', { name: 'WhatsApp' })).toBeVisible();
-		await expect(grupo.getByRole('link', { name: 'X', exact: true })).toBeVisible();
+		// En escritorio solo dos: copiar enlace (con vista previa) y descargar la imagen
 		await expect(grupo.getByRole('button', { name: 'Copiar enlace' })).toBeVisible();
 		await expect(grupo.getByRole('button', { name: 'Descargar imagen' })).toBeVisible();
-		// Instagram: sin botón propio
-		await expect(page.getByText('Instagram')).toHaveCount(0);
+		await expect(grupo.getByRole('link', { name: 'WhatsApp' })).toHaveCount(0);
+		// El aviso: la tarjeta muestra el barrio y deja deducir el precio
+		await expect(page.getByText('La tarjeta muestra tu barrio y permite deducir tu precio.').first()).toBeVisible();
 		// Sin elegir canal, nada se sube
 		expect(peticiones.filter((p) => p.url.endsWith('/api/tarjeta'))).toHaveLength(0);
 
-		const hrefWa = (await grupo.getByRole('link', { name: 'WhatsApp' }).getAttribute('href'))!;
-		const hrefX = (await grupo.getByRole('link', { name: 'X', exact: true }).getAttribute('href'))!;
-		const id = decodeURIComponent(hrefWa).match(/\/t\/([0-9a-z]{10})/)![1]!;
-		expect(hrefWa).toMatch(/^https:\/\/wa\.me\/\?text=/);
-		expect(hrefX).toMatch(/^https:\/\/x\.com\/intent\/post\?/);
-		expect(decodeURIComponent(hrefX)).toContain(`/t/${id}`);
-		// El texto compartido no lleva datos del anuncio
-		expect(decodeURIComponent(hrefWa + hrefX)).not.toMatch(/2\.?500|90\s?m|Fuente del Berro|€/);
-
-		// WhatsApp: se abre en otra pestaña y se sube la tarjeta con ese id
-		const [popup] = await Promise.all([context.waitForEvent('page'), grupo.getByRole('link', { name: 'WhatsApp' }).click()]);
-		await popup.close();
-		await expect.poll(() => peticiones.filter((p) => p.url.endsWith('/api/tarjeta')).length).toBe(1);
+		await grupo.getByRole('button', { name: 'Copiar enlace' }).click();
+		await expect(page.getByText('Enlace copiado.')).toBeVisible();
+		const enlace = await page.evaluate(() => navigator.clipboard.readText());
+		const id = enlace.match(/\/t\/([0-9a-z]{10})$/)![1]!;
+		expect(peticiones.filter((p) => p.url.endsWith('/api/tarjeta'))).toHaveLength(1);
 		const subida = peticiones.find((p) => p.url.endsWith('/api/tarjeta'))!;
 		expect(subida.cuerpo).toContain(id);
 		expect(subida.cuerpo).not.toMatch(/2500|2\.500|Fuente del Berro/);
 
-		// X: mismo id, sin subir otra vez
-		const [popup2] = await Promise.all([context.waitForEvent('page'), grupo.getByRole('link', { name: 'X', exact: true }).click()]);
-		await popup2.close();
+		// Copiar otra vez: mismo id, sin subir otra vez
+		await grupo.getByRole('button', { name: 'Copiar enlace' }).click();
 		await page.waitForTimeout(500);
 		expect(peticiones.filter((p) => p.url.endsWith('/api/tarjeta'))).toHaveLength(1);
 
 		// La tarjeta existe en /t/<id> (los eventos de compartir se comprueban en e2e/analitica.spec.ts)
 		await expect.poll(async () => (await page.request.get(`/t/${id}`)).status()).toBe(200);
 		// Nada de terceros durante toda la prueba
-		const externas = peticiones.filter((p) => !p.url.startsWith(new URL(page.url()).origin) && !/wa\.me|x\.com/.test(p.url));
+		const externas = peticiones.filter((p) => !p.url.startsWith(new URL(page.url()).origin));
 		expect(externas).toEqual([]);
 	});
 
@@ -72,15 +62,18 @@ test.describe('compartir la tarjeta (escritorio: cuatro canales)', () => {
 	});
 
 	test('con un id distinto por resultado', async ({ page }) => {
+		const id = async () => {
+			const r = page.waitForResponse((x) => x.url().endsWith('/api/tarjeta'));
+			await page.getByRole('button', { name: 'Copiar enlace' }).click();
+			return ((await (await r).json()) as { id: string }).id;
+		};
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		const id = async () =>
-			decodeURIComponent((await page.getByRole('link', { name: 'WhatsApp' }).getAttribute('href'))!).match(/\/t\/([0-9a-z]{10})/)![1];
 		const primero = await id();
 		// En móvil el formulario se esconde tras el resultado: se vuelve con «Otro anuncio»
 		if (!(await page.locator('#precio').isVisible())) await page.getByRole('button', { name: 'Otro anuncio' }).first().click();
 		await comprobar(page, { precio: '2600', superficie: '90' });
-		await expect.poll(id).not.toBe(primero);
+		expect(await id()).not.toBe(primero);
 	});
 });
 

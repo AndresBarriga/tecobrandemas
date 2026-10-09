@@ -196,7 +196,7 @@ describe('historial', () => {
 describe('tarjeta en el servidor', () => {
 	it('valida lo que construye el cliente y descarta cualquier campo extra', () => {
 		const t = construirTarjeta(resultado(2500));
-		const limpia = validarTarjeta({ ...t, precio: 2500, direccion: 'Calle X 3', barra: { ...t.barra } });
+		const limpia = validarTarjeta({ ...t, precio: 2500, direccion: 'Calle X 3', reglas: { ...t.reglas } });
 		expect(limpia).toEqual(t);
 		expect(JSON.stringify(limpia)).not.toMatch(/2500|Calle X/);
 	});
@@ -204,16 +204,16 @@ describe('tarjeta en el servidor', () => {
 	it('rechaza lo mal formado', () => {
 		const t = construirTarjeta(resultado(2500));
 		expect(validarTarjeta(null)).toBeNull();
-		expect(validarTarjeta({ ...t, clase: 'd' })).toBeNull();
-		expect(validarTarjeta({ ...t, etiqueta: 'Otra' })).toBeNull();
-		expect(validarTarjeta({ ...t, barra: { ...t.barra, punto: 7 } })).toBeNull();
-		expect(validarTarjeta({ ...t, frase: 'x'.repeat(500) })).toBeNull();
-		expect(validarTarjeta({ ...t, hero: { tipo: 'cifra', texto: '' } })).toBeNull();
+		expect(validarTarjeta({ ...t, contratos: { ...t.contratos, clase: 'd' } })).toBeNull();
+		expect(validarTarjeta({ ...t, contratos: { ...t.contratos, etiqueta: 'Otra' } })).toBeNull();
+		expect(validarTarjeta({ ...t, reglas: { ...t.reglas, punto: 7 } })).toBeNull();
+		expect(validarTarjeta({ ...t, resumen: 'x'.repeat(500) })).toBeNull();
+		expect(validarTarjeta({ ...t, contratos: { ...t.contratos, cifra: '' } })).toBeNull();
 	});
 
 	it('el título y la descripción del enlace no llevan precio ni dirección', () => {
 		const e = textosEnlace(construirTarjeta(resultado(2500)));
-		expect(e.titulo).toBe('A su precio · Un piso en Almagro');
+		expect(e.titulo).toBe('A su precio · Un anuncio en Almagro');
 		expect(JSON.stringify(e)).not.toMatch(/2\.?500|€\/mes/);
 	});
 });

@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import type { Anuncio } from '../src/lib/motor';
 import * as textos from '../src/lib/resultado/textos';
 import {
-	type DatosMadrid, TU_ZONA, aInquilino, construirPantalla, construirTarjeta, construirTarjetaInquilino, construirTuZona, validarAportacion, validarFormulario, zona
+	type DatosMadrid, TU_ZONA, aInquilino, construirPantalla, construirTarjeta, construirTuZona, validarAportacion, validarFormulario, zona
 } from '../src/lib/resultado';
 
 const PROHIBIDAS = [
@@ -88,7 +88,7 @@ describe('textos', () => {
 		...cadenas(pantallas),
 		...pantallas.flatMap((p) => (p.tipo === 'resultado' ? cadenas(construirTarjeta(p)) : [])),
 		...cadenas(inquilinos),
-		...inquilinos.flatMap((p) => cadenas(construirTarjetaInquilino(p, 0))),
+		...inquilinos.flatMap((p) => cadenas(construirTarjeta(p))),
 		...cadenas(sinDato),
 		...cadenas(validarFormulario({ precio: '', superficie: '', obraNueva: false, largaDuracion: true, tipo: 'piso' })),
 		...cadenas(validarAportacion({ precio: '', superficie: '', anioContrato: '', barrio: '', consentimiento: false }, [], 2026)),

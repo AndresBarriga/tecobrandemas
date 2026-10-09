@@ -24,7 +24,7 @@ test.describe('humo', () => {
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
 		await expect(page.getByText(/^\+\d+\s%$/).filter({ visible: true }).first()).toBeVisible();
-		await expect(page.getByRole('img', { name: /Tu anuncio, .*Parte alta de lo que pagan los contratos de aquí/ })).toBeVisible();
+		await expect(page.getByRole('img', { name: /Contratos vigentes de la zona: parte alta .*€/ })).toBeVisible();
 		await expect(page.getByText(/Goya, Salamanca/)).toBeVisible();
 		await expect(page.getByRole('checkbox', { name: /Suma este piso/ })).not.toBeChecked();
 		expect(ajenas).toEqual([]);

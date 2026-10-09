@@ -3,13 +3,17 @@
 	import { page } from '$app/state';
 	import Cabecera from '#lib/componentes/Cabecera.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
-	import { NOMBRE, PAGINA_TARJETA, TARJETA_INQUILINO, textosEnlace, urlAbsoluta } from '#lib/resultado';
+	import { NOMBRE, PAGINA_TARJETA, TARJETA_INQUILINO, esDeInquilino, esV2, textosEnlace, urlAbsoluta } from '#lib/resultado';
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
 
 	let { data } = $props();
 	const enlace = $derived(textosEnlace(data.tarjeta));
 	const imagen = $derived(urlAbsoluta(`/t/${data.id}/og.jpg`, page.url.origin));
 	const direccion = $derived(urlAbsoluta(page.url.pathname, page.url.origin));
+	const inquilino = $derived(esDeInquilino(data.tarjeta));
+	const explicacion = $derived(
+		esV2(data.tarjeta) ? PAGINA_TARJETA.explicacionDos[data.tarjeta.modo] : inquilino ? PAGINA_TARJETA.explicacionInquilino : PAGINA_TARJETA.explicacion
+	);
 
 	let canvas: HTMLCanvasElement;
 	onMount(() => void dibujarTarjeta(canvas, data.tarjeta));
@@ -41,11 +45,11 @@
 			<canvas bind:this={canvas} width="1080" height="1350" aria-label="Tarjeta compartida: {enlace.descripcion}"></canvas>
 		</div>
 		<div class="texto">
-			<p class="intro">{data.tarjeta.inquilino ? PAGINA_TARJETA.introInquilino(data.tarjeta.barrio) : PAGINA_TARJETA.intro(data.tarjeta.barrio)}</p>
+			<p class="intro">{inquilino ? PAGINA_TARJETA.introInquilino(data.tarjeta.barrio) : PAGINA_TARJETA.intro(data.tarjeta.barrio)}</p>
 			<h1>{PAGINA_TARJETA.titular}</h1>
-			<p class="explicacion">{data.tarjeta.inquilino ? PAGINA_TARJETA.explicacionInquilino : PAGINA_TARJETA.explicacion}</p>
-			<a class="boton" href={data.tarjeta.inquilino ? `/?t=${data.id}&modo=vivo` : `/?t=${data.id}&modo=mirando`}>{data.tarjeta.inquilino ? TARJETA_INQUILINO.cta : PAGINA_TARJETA.boton}</a>
-			<p class="nota">{data.tarjeta.inquilino ? PAGINA_TARJETA.notaInquilino : PAGINA_TARJETA.nota}</p>
+			<p class="explicacion">{explicacion}</p>
+			<a class="boton" href={inquilino ? `/?t=${data.id}&modo=vivo` : `/?t=${data.id}&modo=mirando`}>{inquilino ? TARJETA_INQUILINO.cta : PAGINA_TARJETA.boton}</a>
+			<p class="nota">{inquilino ? PAGINA_TARJETA.notaInquilino : PAGINA_TARJETA.nota}</p>
 		</div>
 	</main>
 	<Pie />

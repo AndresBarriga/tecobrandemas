@@ -50,10 +50,16 @@
 			<button type="button" class="cerrar" onclick={() => dialogo?.close()}>{TARJETA.cerrar}</button>
 		</div>
 		{#if imagen}<img src={imagen} alt={descripcion} />{/if}
+		<p class="aviso-dialogo">{detalle}</p>
 	</div>
 </dialog>
 
 <style>
+	.aviso-dialogo {
+		font: 500 14px/1.4 var(--f-texto);
+		color: var(--grafito);
+		margin-top: 10px;
+	}
 	.tarjeta {
 		display: flex;
 		gap: 14px;

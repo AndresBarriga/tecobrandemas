@@ -10,6 +10,7 @@ export * from './evolucion';
 export * from './ubicacion';
 export * from './resultado';
 export * from './oferta';
+export * from './comparativa';
 export * from './tarjeta';
 export * from './compartir';
 export * from './autocompletar';
