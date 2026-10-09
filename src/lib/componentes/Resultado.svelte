@@ -6,7 +6,7 @@
 	import QueHaras from './QueHaras.svelte';
 	import TarjetaAmpliable from './TarjetaAmpliable.svelte';
 	import {
-		AVISO_APROXIMADA_TITULO, BOTON_COMPARTIR, ENLACE_OFICIAL, ETIQUETA_POR_DEBAJO, REGISTRO, TARJETA, heroEnVeces, ALGO_NO_CUADRA, type RespuestaQueHaras,
+		AVISO_APROXIMADA_TITULO, BOTON_COMPARTIR, ENLACE_OFICIAL, ETIQUETA_POR_DEBAJO, OFERTA, REGISTRO, TARJETA, heroEnVeces, ALGO_NO_CUADRA, type RespuestaQueHaras,
 		type Canal, type Contador, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
@@ -89,12 +89,12 @@
 		{#if pantalla.oferta}
 			<!-- «Lo que se pide»: dos líneas bajo el titular, sin barra ni diferencia entre las referencias -->
 			<div class="oferta">
-				<p class="oferta-titular">{pantalla.oferta.titular}</p>
 				<p class="oferta-linea">{pantalla.oferta.linea}</p>
 				<p class="oferta-pie">{pantalla.oferta.pie}</p>
 			</div>
 		{/if}
-		<p class="contratos">{v.avisoContratos}</p>
+		<!-- Con veredicto de oferta (por encima de contratos), el bloque ya cuantifica lo que este aviso dice y en «por encima de las dos» lo desmentiría -->
+		{#if !pantalla.oferta?.veredicto}<p class="contratos">{v.avisoContratos}</p>{/if}
 
 		{#if v.aviso}
 			<div class="aviso">
@@ -122,7 +122,13 @@
 			</div>
 		{/if}
 
-		<p class="fuente">{v.fuente}{#if pantalla.oferta}{' '}{pantalla.oferta.fuente}{/if} <a href="/como-calculamos">Cómo calculamos</a></p>
+		{#if pantalla.oferta}
+			<!-- Cada fuente en su párrafo: la de los anuncios no se pega a los contratos -->
+			<p class="fuente">{OFERTA.contratos} {v.fuente}</p>
+			<p class="fuente">{pantalla.oferta.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
+		{:else}
+			<p class="fuente">{v.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
+		{/if}
 
 		<div class="acciones">
 			<h2>Siguientes pasos</h2>
@@ -335,12 +341,9 @@
 		border-left: 3px solid var(--tinta);
 		padding-left: 10px;
 	}
-	.oferta-titular {
-		font: 600 17px/1.35 var(--f-texto);
-		text-wrap: pretty;
-	}
 	.oferta-linea {
-		font: 500 15px/1.4 var(--f-texto);
+		font: 600 16px/1.4 var(--f-texto);
+		text-wrap: pretty;
 	}
 	.oferta-pie {
 		font: 400 13px/1.4 var(--f-texto);

@@ -2,7 +2,7 @@
  * «Lo que se pide» en el resultado: los anuncios recientes del Ayuntamiento como segunda referencia, ya
  * formateados para pintar. Solo existe con la flag de la oferta encendida (sin `datos.oferta` no hay nada).
  *
- *  - «Un anuncio»: el titular de uno de los cinco casos (contratos × anuncios) y, en dos, la línea con la cifra;
+ *  - «Un anuncio»: una línea con la cifra que habla solo de la oferta (el veredicto sobre contratos lo dice la parte de contratos);
  *  - «Mi alquiler»: el titular contra contratos no cambia; la oferta es una línea sin veredicto;
  *  - nunca la diferencia entre las dos referencias, ni el nombre del barrio, ni un porcentaje;
  *  - sin dato de la zona o con menos de 30 m²: ni línea ni error (null).
@@ -22,9 +22,12 @@ export interface PantallaOferta {
 	estimada: number;
 	/** Solo en «Un anuncio» */
 	caso: CasoOferta | null;
-	/** Frase del caso; null en «Mi alquiler» (ahí manda el titular contra contratos) */
-	titular: string | null;
-	/** Línea con la cifra: «Anuncios recientes en el barrio: ≈1.028 €.» (en «por debajo», «Como referencia, …»; en «Mi alquiler», «Si buscaras…») */
+	/**
+	 * El bloque lleva un veredicto sobre la oferta (el precio supera los contratos): la pantalla oculta entonces el aviso
+	 * «Se compara con contratos vigentes… Por eso un anuncio suele salir por encima», que el bloque ya cuantifica
+	 */
+	veredicto: boolean;
+	/** Una línea con la cifra: «Anuncios recientes en el barrio: ≈1.028 €.»; en «Mi alquiler», «Si buscaras en el barrio, …» */
 	linea: string;
 	/** «Media del barrio, junio de 2026.» */
 	pie: string;
@@ -48,11 +51,7 @@ function textos(nivel: NivelOferta, mes: string, estimada: number, caso: CasoOfe
 	const m = mesAnio(mes);
 	const pie = OFERTA.pie(nivel, m);
 	const fuente = OFERTA.fuente(m);
-	if (caso === null) return { titular: null, linea: OFERTA.vivo.linea(nivel, x), pie, fuente };
-	if (caso === 'dentro') return { titular: OFERTA.mirando.dentro.titular, linea: OFERTA.mirando.dentro.linea(nivel, x), pie, fuente };
-	if (caso === 'debajo') return { titular: OFERTA.mirando.debajo.titular, linea: OFERTA.mirando.debajo.linea(nivel, x), pie, fuente };
-	const c = OFERTA.mirando[caso];
-	return { titular: c.titular(nivel), linea: c.linea(nivel, x), pie, fuente };
+	return { linea: caso === null ? OFERTA.vivo.linea(nivel, x) : OFERTA.mirando[caso](nivel, x), pie, fuente };
 }
 
 /** «Un anuncio»: el caso según dónde queda el precio frente a los contratos y frente a la estimación */
@@ -64,10 +63,10 @@ export function construirOferta(
 	if (!r) return null;
 	const caso = casoOferta(contraContratos, r.contraOferta);
 	const estimada = Math.round(r.oferta.estimada);
-	return { contraOferta: r.contraOferta, nivel: r.oferta.nivel, mes: r.oferta.mes, estimada, caso, ...textos(r.oferta.nivel, r.oferta.mes, estimada, caso) };
+	return { contraOferta: r.contraOferta, nivel: r.oferta.nivel, mes: r.oferta.mes, estimada, caso, veredicto: caso.startsWith('encima'), ...textos(r.oferta.nivel, r.oferta.mes, estimada, caso) };
 }
 
 /** «Mi alquiler»: la misma referencia como línea secundaria, sin veredicto */
 export function ofertaInquilino(o: PantallaOferta): PantallaOferta {
-	return { ...o, caso: null, ...textos(o.nivel, o.mes, o.estimada, null) };
+	return { ...o, caso: null, veredicto: false, ...textos(o.nivel, o.mes, o.estimada, null) };
 }

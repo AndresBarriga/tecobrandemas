@@ -386,36 +386,23 @@ export const INQUILINO = {
  * barrio: el nivel (barrio o distrito) va siempre en la etiqueta. «Anuncios recientes» es solo esta serie.
  */
 export const OFERTA = {
-	/** Atribución de la serie; el mes lo pone quien construye el texto */
+	/** Atribución de la serie; el mes lo pone quien construye el texto. Va en un párrafo propio, aparte de la de los contratos */
 	fuente: (mes: string) =>
-		`Fuente: Ayuntamiento de Madrid, Banco de Datos, serie 4.3.21.D (elaboración del Ayuntamiento a partir de datos de Idealista), ${mes}.`,
-	/** Pie de las dos líneas: de qué es media y de qué mes */
+		`Anuncios recientes: Ayuntamiento de Madrid, Banco de Datos, serie 4.3.21.D (elaboración del Ayuntamiento a partir de datos de Idealista), ${mes}.`,
+	/** Encabezado de la fuente de los contratos cuando la pantalla lleva también la de los anuncios (va delante de «Basado en N contratos…») */
+	contratos: 'Contratos: SERPAVI (Ministerio de Vivienda), 2024.',
+	/** Pie de la línea: de qué es media y de qué mes */
 	pie: (nivel: 'barrio' | 'distrito', mes: string) => `Media del ${nivel}, ${mes}.`,
-	/** «Un anuncio»: el titular de cada caso y la línea con la cifra (la misma en los cuatro casos de «dentro» y «por encima»; «por debajo» lleva la suya) */
+	/**
+	 * «Un anuncio»: el bloque de oferta habla solo de la oferta, en una línea con la cifra. El titular, la píldora y el
+	 * veredicto sobre los contratos los dice solo la parte de contratos. «Dentro» y «por debajo» solo informan.
+	 */
 	mirando: {
-		dentro: {
-			titular: 'Dentro de rango frente a los contratos vigentes de la zona.',
-			linea: (nivel: 'barrio' | 'distrito', x: string) => `Anuncios recientes en el ${nivel}: ≈${x}.`
-		},
-		encima_en_linea: {
-			titular: (nivel: 'barrio' | 'distrito') =>
-				`Por encima de los contratos vigentes de la zona, pero en línea con los anuncios recientes del ${nivel}.`,
-			linea: (nivel: 'barrio' | 'distrito', x: string) => `Anuncios recientes en el ${nivel}: ≈${x}.`
-		},
-		encima_bajo_oferta: {
-			titular: (nivel: 'barrio' | 'distrito') =>
-				`Por encima de los contratos vigentes de la zona y por debajo de los anuncios recientes del ${nivel}.`,
-			linea: (nivel: 'barrio' | 'distrito', x: string) => `Anuncios recientes en el ${nivel}: ≈${x}.`
-		},
-		encima_ambas: {
-			titular: (nivel: 'barrio' | 'distrito') =>
-				`Por encima de las dos referencias: los contratos vigentes de la zona y los anuncios recientes del ${nivel}.`,
-			linea: (nivel: 'barrio' | 'distrito', x: string) => `Anuncios recientes en el ${nivel}: ≈${x}.`
-		},
-		debajo: {
-			titular: 'Por debajo del rango de los contratos vigentes de la zona.',
-			linea: (nivel: 'barrio' | 'distrito', x: string) => `Como referencia, los anuncios recientes del ${nivel} rondan ${x}.`
-		}
+		dentro: (nivel: 'barrio' | 'distrito', x: string) => `Anuncios recientes en el ${nivel}: ≈${x}.`,
+		debajo: (nivel: 'barrio' | 'distrito', x: string) => `Anuncios recientes en el ${nivel}: ≈${x}.`,
+		encima_en_linea: (nivel: 'barrio' | 'distrito', x: string) => `En línea con los anuncios recientes del ${nivel} (≈${x}).`,
+		encima_bajo_oferta: (nivel: 'barrio' | 'distrito', x: string) => `Por debajo de los anuncios recientes del ${nivel} (≈${x}).`,
+		encima_ambas: (nivel: 'barrio' | 'distrito', x: string) => `También por encima de los anuncios recientes del ${nivel} (≈${x}).`
 	},
 	/** «Mi alquiler»: la misma línea en los cinco casos, sin veredicto */
 	vivo: {

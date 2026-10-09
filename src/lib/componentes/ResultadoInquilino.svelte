@@ -7,7 +7,7 @@
 	import QueHaras from './QueHaras.svelte';
 	import { unaLinea } from '#lib/cliente/ajustar';
 	import {
-		ENLACE_OFICIAL, INQUILINO, TARJETA_INQUILINO, heroEnVeces, ALGO_NO_CUADRA, type RespuestaQueHaras, type Canal, type EnlacesCompartir, type PantallaResultado
+		ENLACE_OFICIAL, INQUILINO, OFERTA, TARJETA_INQUILINO, heroEnVeces, ALGO_NO_CUADRA, type RespuestaQueHaras, type Canal, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
 	export type EstadoAporte = 'no' | 'enviando' | 'hecho' | 'error' | 'limite';
@@ -127,7 +127,12 @@
 			</div>
 		</div>
 
-		<p class="fuente">{v.fuente}{#if pantalla.oferta}{' '}{pantalla.oferta.fuente}{/if} <a href="/como-calculamos">Cómo calculamos</a></p>
+		{#if pantalla.oferta}
+			<p class="fuente">{OFERTA.contratos} {v.fuente}</p>
+			<p class="fuente">{pantalla.oferta.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
+		{:else}
+			<p class="fuente">{v.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
+		{/if}
 
 		{#if i.tuParte}
 			<p class="tu-parte">Tu parte: <strong>{i.tuParte}</strong> al mes <span>(solo en tu pantalla)</span></p>
