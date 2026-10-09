@@ -86,6 +86,14 @@
 
 		{#if v.frase}<p class="frase">{v.frase}</p>{/if}
 		{#if v.matiz}<p class="matiz">{v.matiz}</p>{/if}
+		{#if pantalla.oferta}
+			<!-- «Lo que se pide»: dos líneas bajo el titular, sin barra ni diferencia entre las referencias -->
+			<div class="oferta">
+				<p class="oferta-titular">{pantalla.oferta.titular}</p>
+				{#if pantalla.oferta.linea}<p class="oferta-linea">{pantalla.oferta.linea}</p>{/if}
+				<p class="oferta-pie">{pantalla.oferta.pie}</p>
+			</div>
+		{/if}
 		<p class="contratos">{v.avisoContratos}</p>
 
 		{#if v.aviso}
@@ -114,7 +122,7 @@
 			</div>
 		{/if}
 
-		<p class="fuente">{v.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
+		<p class="fuente">{v.fuente}{#if pantalla.oferta}{' '}{pantalla.oferta.fuente}{/if} <a href="/como-calculamos">Cómo calculamos</a></p>
 
 		<div class="acciones">
 			<h2>Siguientes pasos</h2>
@@ -319,6 +327,24 @@
 		border-left: 3px solid var(--acento);
 		padding-left: 10px;
 		text-wrap: pretty;
+	}
+	.oferta {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		border-left: 3px solid var(--tinta);
+		padding-left: 10px;
+	}
+	.oferta-titular {
+		font: 600 17px/1.35 var(--f-texto);
+		text-wrap: pretty;
+	}
+	.oferta-linea {
+		font: 500 15px/1.4 var(--f-texto);
+	}
+	.oferta-pie {
+		font: 400 13px/1.4 var(--f-texto);
+		color: var(--grafito);
 	}
 	.aviso {
 		background: var(--superficie);

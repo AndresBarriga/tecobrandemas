@@ -9,7 +9,7 @@ import { heroEnVeces, partesRatio } from './ratio';
 import { principalPorEncima } from './vista';
 import type { PantallaResultado } from './resultado';
 import {
-	ATRIBUCIONES, ETIQUETA_NIVEL, ETIQUETA_OG, ETIQUETA_POR_DEBAJO, FRASE_TARJETA, FRASE_TARJETA_LIMITE, FRASE_TARJETA_POR_DEBAJO, INQUILINO, MIRANDO, NOMBRE, NOTA_TARJETA, OG, TARJETA,
+	ATRIBUCIONES, ETIQUETA_NIVEL, ETIQUETA_OG, ETIQUETA_POR_DEBAJO, FRASE_TARJETA, FRASE_TARJETA_LIMITE, FRASE_TARJETA_POR_DEBAJO, INQUILINO, MIRANDO, NOMBRE, NOTA_TARJETA, OFERTA, OG, TARJETA,
 	TARJETA_INQUILINO
 } from './textos';
 import type { Clase, Vista } from './vista';
@@ -51,6 +51,11 @@ export function tramoDeTarjeta(pos: PosicionTarjeta, ratio: number): TramoTarjet
 export interface TarjetaDatos {
 	/** Tarjeta del inquilino («Mi alquiler»): su posición. Nunca lleva la renta ni la fecha de firma */
 	inquilino?: { posicion: PosicionTarjeta };
+	/**
+	 * La pantalla añade el matiz de «Lo que se pide» y la tarjeta no lleva su línea: el titular dice expresamente
+	 * «frente a los contratos vigentes de la zona» para no parecer el veredicto completo. Ausente con la flag apagada
+	 */
+	contratos?: true;
 	clase: Clase;
 	etiqueta: string;
 	hero: Hero;
@@ -98,15 +103,18 @@ export function construirTarjeta(p: PantallaResultado): TarjetaDatos {
 				? { tipo: 'cifra', texto: principal.texto }
 				: { tipo: 'titular', texto: vista.tituloCorto ?? principal.texto };
 	const pos = barra.posiciones;
+	const contratos = p.oferta !== null && p.oferta !== undefined;
+	const notas = contratos ? OFERTA.tarjeta.nota : NOTA_TARJETA;
 	return {
+		...(contratos ? { contratos: true as const } : {}),
 		clase: vista.clase,
 		etiqueta: vista.etiqueta,
 		hero,
 		nota:
 			vista.clase === 'c'
-				? NOTA_TARJETA.c(lugar, aproximada, notaPorEncima(hero))
-				: NOTA_TARJETA[vista.clase](lugar),
-		frase: `${MIRANDO.habitual(vista.habitual)} ${fraseDeTarjeta(vista)}`,
+				? notas.c(lugar, aproximada, notaPorEncima(hero))
+				: notas[vista.clase](lugar),
+		frase: `${contratos ? OFERTA.tarjeta.habitual(vista.habitual) : MIRANDO.habitual(vista.habitual)} ${fraseDeTarjeta(vista)}`,
 		barrio,
 		aproximada,
 		barra: {
@@ -158,13 +166,14 @@ export function construirTarjetaInquilino(p: PantallaResultado, texto: 0 | 1 | 2
 	} else if (tramo === 'limite') hero = { tipo: 'titular', texto: TARJETA_INQUILINO.tituloLimite };
 	else hero = { tipo: 'titular', texto: i.titular };
 	const enVeces = hero.tipo === 'cifra' ? heroEnVeces(hero.texto) : hero.tipo === 'rango' && heroEnVeces(hero.hasta);
+	const notas = base.contratos ? OFERTA.tarjeta.inquilino : TARJETA_INQUILINO.nota;
 	return {
 		...base,
 		inquilino: { posicion },
 		clase: CLASE_DE[posicion],
 		etiqueta: INQUILINO.etiqueta[posicion === 'dentro' ? 'dentro' : posicion],
 		hero,
-		nota: tramo === 'debajo' || tramo === 'dentro' || tramo === 'limite' ? TARJETA_INQUILINO.nota[tramo] : enVeces ? TARJETA_INQUILINO.nota.veces : TARJETA_INQUILINO.nota.encima,
+		nota: tramo === 'debajo' || tramo === 'dentro' || tramo === 'limite' ? notas[tramo] : enVeces ? notas.veces : notas.encima,
 		// «Por encima» tiene dos textos: un índice que no existe cae en el factual
 		frase: textosInquilino(posicion, p.ratioMin, p.horquilla)[texto] ?? textosInquilino(posicion, p.ratioMin, p.horquilla)[0]!
 	};
@@ -191,7 +200,7 @@ export function textosEnlace(t: TarjetaDatos): { titulo: string; descripcion: st
 		return {
 			titulo: `${titular} en ${lugar} · ${NOMBRE}`,
 			descripcion: `${t.frase} Comprueba tu alquiler.`,
-			og: { etiqueta: t.etiqueta, titular: t.frase, nota: TARJETA_INQUILINO.notaOg[pos](lugar), cta: TARJETA_INQUILINO.cta }
+			og: { etiqueta: t.etiqueta, titular: t.frase, nota: (t.contratos ? OFERTA.tarjeta.ogInquilino : TARJETA_INQUILINO.notaOg)[pos](lugar), cta: TARJETA_INQUILINO.cta }
 		};
 	}
 	const cifra = t.hero.tipo === 'cifra' ? t.hero.texto : t.hero.tipo === 'rango' ? `${t.hero.desde} a ${t.hero.hasta}` : t.hero.texto;
@@ -203,7 +212,7 @@ export function textosEnlace(t: TarjetaDatos): { titulo: string; descripcion: st
 				: `${t.etiqueta} en ${lugar}. Comprueba tu piso.`,
 		og: {
 			etiqueta: t.etiqueta === ETIQUETA_POR_DEBAJO ? ETIQUETA_POR_DEBAJO : ETIQUETA_OG[t.clase],
-			titular: OG.titular(t.barrio),
+			titular: t.contratos ? OFERTA.tarjeta.og(t.barrio) : OG.titular(t.barrio),
 			nota: t.hero.tipo === 'titular' ? t.nota : OG.notaCifra(notaPorEncima(t.hero) === 'la parte alta'),
 			cta: OG.cta
 		}
@@ -249,8 +258,10 @@ export function validarTarjeta(x: unknown): TarjetaDatos | null {
 	if (!texto(t.nota, 200) || !texto(t.frase, 200)) return null;
 	if (t.barrio !== null && !texto(t.barrio, 80)) return null;
 	if (typeof t.aproximada !== 'boolean') return null;
+	if (t.contratos !== undefined && t.contratos !== true) return null;
 	return {
 		...(inquilino ? { inquilino } : {}),
+		...(t.contratos === true ? { contratos: true as const } : {}),
 		clase,
 		etiqueta: inquilino ? INQUILINO.etiqueta[inquilino.posicion] : t.etiqueta === ETIQUETA_POR_DEBAJO ? ETIQUETA_POR_DEBAJO : ETIQUETA_NIVEL[clase],
 		hero,

@@ -8,6 +8,7 @@ import type { Anuncio } from '../motor';
 import type { AportacionPayload } from './aportacion';
 import { euros, numero } from './formato';
 import type { Firma } from './formulario';
+import { ofertaInquilino } from './oferta';
 import type { PantallaResultado } from './resultado';
 import { INQUILINO } from './textos';
 import { principalPorEncima, type Clase } from './vista';
@@ -140,5 +141,5 @@ export function aInquilino(p: PantallaResultado, a: Anuncio, extra: ExtraInquili
 	const vista = pos === 'debajo' ? { ...p.vista, barra: { ...p.vista.barra, tercio: null } } : p.vista;
 	// «Tu zona» también en «Mi alquiler», solo como contexto (sin lista de zonas). Con horquilla, las zonas afectadas llevan contorno grueso
 	const zona = p.zona ? { ...p.zona, clase: 'a' as const, inquilino: true } : null;
-	return { ...p, vista, registro: null, zona, inquilino: info };
+	return { ...p, vista, registro: null, zona, inquilino: info, oferta: p.oferta ? ofertaInquilino(p.oferta) : null };
 }

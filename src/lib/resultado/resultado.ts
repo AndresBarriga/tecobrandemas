@@ -13,8 +13,9 @@ import { type DatosMadrid, barrioDe, datosSeccion } from './datos';
 import { type Barra, construirBarra } from './barra';
 import { type Evolucion, evolucion } from './evolucion';
 import { euros, mesAnio, numero } from './formato';
+import { type PantallaOferta, construirOferta } from './oferta';
 import {
-	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, FUENTE, type ClaveSinDato, type MotivoPantalla,
+	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, ETIQUETA_POR_DEBAJO, FUENTE, type ClaveSinDato, type MotivoPantalla,
 	PRECIO_PEDIDO, QUE_PUEDES_HACER, SIN_DATO, TEXTO_OFICIAL_SIN_DATO
 } from './textos';
 import type { PantallaHabitacion } from './habitacion';
@@ -79,6 +80,8 @@ export interface PantallaResultado {
 	zona: ParametrosZona | null;
 	/** «Mi alquiler»: la lectura del inquilino; null en un anuncio */
 	inquilino: InfoInquilino | null;
+	/** «Lo que se pide»: los anuncios recientes del Ayuntamiento como segunda referencia; null con la flag apagada, sin dato de la zona o con menos de 30 m² */
+	oferta: PantallaOferta | null;
 }
 
 /** Entrada de «Tu zona»: el anuncio, la ubicación (el punto, o null si solo hay calle) y las zonas */
@@ -186,6 +189,8 @@ function desdeAnalisis(
 	const barrio = barrioDe(datos, r.seccion.cusec);
 	const barra = construirBarra(a.precio, an.secciones.map((x) => x.referencia));
 	const vista = construirVista({ anuncio: a, ubicacion: u, analisis: an, barra, barrio, ipcMes: datos.ipc.ultimo_mes });
+	// Dónde queda el precio frente a los contratos: por debajo de la parte baja, dentro de rango o por encima de la parte alta
+	const frenteAContratos = nivel.nivel !== 'dentro' ? 'encima' : vista.etiqueta === ETIQUETA_POR_DEBAJO ? 'debajo' : 'dentro';
 	return {
 		tipo: 'resultado',
 		ratioMin: an.pctMin + 1,
@@ -214,7 +219,8 @@ function desdeAnalisis(
 		enlaceOficial: ENLACE_OFICIAL,
 		zona: { precio: a.precio, superficie: a.superficie, origen: u.punto, cusecs: u.cusecs, clase: vista.clase, motivo: u.motivo },
 		registro: barrio ? { barrio: barrio.codigo, precio: Math.round(a.precio), m2: a.superficie, nivel: vista.clase } : null,
-		inquilino: null
+		inquilino: null,
+		oferta: construirOferta(a, cusecs, frenteAContratos, datos)
 	};
 }
 

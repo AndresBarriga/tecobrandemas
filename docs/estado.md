@@ -16,7 +16,7 @@ Lo que depende de un PR sin fusionar lleva su número. Producción: https://asup
 | R7 | Registro anónimo con consentimiento | Hecho con el PR #1 | Casilla desmarcada y POST solo si se marca: `e2e/consentimiento.spec.ts`. Se guarda barrio y mes, no sección ni fecha (desviación del diseño 5q) |
 | R8 | Metodología, fuentes, límites, quiénes somos, financiación | Hecho | `/como-calculamos` según el diseño 7a/7b: `e2e/como-calculamos.spec.ts`, `tests/metodologia.test.ts` (el ejemplo sale del motor y cambia con el IPC) |
 | R9 | Eventos del embudo sin cookies | Hecho (PostHog UE, sin cookies) | `e2e/analitica.spec.ts`; `tests/analitica.test.ts`; `tests/proxy.test.ts`; sin cookies: `npm run informe:lanzamiento` |
-| R10 | «Ya hemos analizado N pisos» (≥ 10) | Hecho | `tests/vista.test.ts` (contadores), `e2e/estados.spec.ts` («el contador del barrio no sale sin dato real») |
+| R10 | «Ya se han comprobado N pisos» (≥ 10) | Hecho | `tests/vista.test.ts` (contadores), `e2e/estados.spec.ts` («el contador del barrio no sale sin dato real») |
 | R11 | «¿Cuánto pagas tú?» | Hecho | `/cuanto-pagas`, `e2e/registro.spec.ts` 24-26 |
 | R12 | Evolución 2015-2024 | Hecho | Línea al pie de «Tu zona» según el diseño: `tests/resultado.test.ts` (evolución), `e2e/tu-zona.spec.ts`. El diseño es una frase con la variación, no un gráfico |
 | R13 | «¿Qué vas a hacer con este resultado?» (sustituye a «¿Te ha servido?») | Hecho | `e2e/analitica.spec.ts` |
@@ -55,3 +55,13 @@ Lo que depende de un PR sin fusionar lleva su número. Producción: https://asup
 | Métricas internas | PR #5 | `npm run metricas` |
 | Límite del geocodificador | PR #5 | 200 búsquedas por IP y día |
 | Revisión externa de privacidad | Falta | Decidido en el plan: sin consulta legal antes de lanzar |
+
+## «Lo que se pide» (anuncios recientes del Ayuntamiento), tras `PUBLIC_OFERTA_ENABLED`
+
+| Pieza | Estado | Nota |
+|---|---|---|
+| Datos, motor, resultado («Un anuncio» y «Mi alquiler»), tarjetas y analítica | PR 1 (esta rama) | `scripts/10_oferta.py`, `src/lib/motor/oferta.ts`, `src/lib/resultado/oferta.ts`; flag apagada por defecto |
+| Mapa: selector de fuente (Contratos \| Anuncios) | Falta (PR 2) | Paleta violeta y punteado en las zonas con valor del distrito |
+| Portada, «Cómo calculamos» y FAQ | Falta (PR 3) | Con la flag apagada la portada no cambia |
+| Licencia de la serie | Por confirmar | Ver `docs/operacion.md` |
+| Variable en el job `desplegar` de `ci.yml` | Pendiente de «ok» | Sin esa línea producción siempre sale con la flag apagada |
