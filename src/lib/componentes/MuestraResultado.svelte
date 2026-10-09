@@ -34,7 +34,7 @@
 			<p class="contexto">{muestra.contexto}</p>
 		</div>
 		<!-- El mismo diseño que el resultado, con valores reales del motor -->
-		<Comparativa comparativa={muestra.comparativa} />
+		<Comparativa comparativa={muestra.comparativa} conImpacto={false} />
 		<p class="pie">{MUESTRA.nota}</p>
 	</section>
 {/if}
