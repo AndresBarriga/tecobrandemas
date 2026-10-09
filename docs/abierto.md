@@ -57,7 +57,7 @@ Cómo proteger las aportaciones de alquiler y de habitaciones frente a datos fal
 **Decisión previa:** ¿las aportaciones serán solo contexto o algún día pesarán en el resultado? Si son solo contexto, bastan los puntos 1-3; si van a pesar, hace falta mucho más.
 
 ## Antes del lanzamiento
-- `noindex: false` (`config/indexacion.json`) y purga de los datos de prueba (`docs/operacion.md`).
+- `noindex: false` (`config/indexacion.json`): hecho en la rama `seo-indexacion`, se publica al fusionarla. Falta la purga de los datos de prueba (`docs/operacion.md`).
 - Probar a mano la ruta de escritura (compartir una tarjeta de verdad, `POST /api/tarjeta`, registro de análisis, «Aportar mi alquiler» y «Aportar mi habitación»), porque la prueba de humo es de solo lectura.
 - Decidir el plan de pago de Workers (unos 5 $ al mes).
 - Reimportar el callejero agota las escrituras de D1 (100.000 filas al día en el plan gratuito): hacerlo en tandas o con plan de pago.

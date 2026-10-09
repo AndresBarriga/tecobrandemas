@@ -154,11 +154,12 @@ La del mapa añade a `/mapa` el selector Contratos | Anuncios en «Referencia» 
 
 ## Antes del lanzamiento
 
-1. Quitar el `noindex`: `config/indexacion.json` → `"noindex": false`, y desplegar.
+1. Quitar el `noindex`: `config/indexacion.json` → `"noindex": false`, y desplegar. **Hecho en la rama `seo-indexacion` (09/10/2026)**: se publica al fusionarla en `main`. Las tarjetas `/t/:id` siguen con `noindex` (meta y cabecera). Después, en Google Search Console: verificar el dominio y enviar `https://asuprecio.com/sitemap.xml`.
 2. Borrar los datos de prueba de producción:
    ```sh
-   npx wrangler d1 execute a-su-precio-registro --remote --command "DELETE FROM tarjetas; DELETE FROM analisis; DELETE FROM aportaciones; DELETE FROM habitaciones; DELETE FROM limites; DELETE FROM dedupe;"
+   npx wrangler d1 execute a-su-precio-registro --remote --command "DELETE FROM tarjetas WHERE id <> 'pruebahumo'; DELETE FROM analisis; DELETE FROM aportaciones; DELETE FROM habitaciones; DELETE FROM limites; DELETE FROM dedupe;"
    ```
+   **Nunca borrar la tarjeta `pruebahumo`** (ni `og/pruebahumo.jpg` en R2): la prueba de humo de cada hora la lee y fallaría. Antes de borrar: recuento por tabla y por mes, y copia con `npx wrangler d1 export a-su-precio-registro --remote --output copia-registro.sql`.
    Las imágenes de las tarjetas viejas quedan en R2 sin referencia; se pueden dejar o borrar desde el panel.
 3. Probar la vista previa de `/t/:id` en WhatsApp y X desde un móvil.
 4. `npm run informe:lanzamiento` sin fallos (bloquea `/r7k` para no contar como visitas). El presupuesto «Bundle inicial» es de **165 KB gz** (era 150 KB; subido el 07/10/2026 al añadir PostHog, variante slim, +50 KB: se mide 161,9 KB).
