@@ -17,7 +17,7 @@
 	import { type TuZonaCargada, cargarTuZona } from '#lib/cliente/zona';
 	import {
 		AFINAR, DESCRIPCION, LEMA, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
-		construirTarjeta, construirTarjetaInquilino, textoCompartir, textosEnlace, textosInquilino, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, filaHistorial, interpretarNumero, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
+		construirTarjeta, textoCompartir, textosEnlace, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, filaHistorial, interpretarNumero, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
 		parecePrecioErroneo,
 		type Pantalla, type PantallaResultado, type SugerenciaZona, type Ubicacion
 	} from '#lib/resultado';
@@ -37,7 +37,7 @@
 	import { recuentos } from '#lib/cliente/contadores';
 	import { leerOrigenDeLaUrl } from '#lib/cliente/origen';
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
-	import { MAPA_REFERENCIA, TARJETA, urlAbsoluta } from '#lib/resultado';
+	import { COMPARATIVA, MAPA_REFERENCIA, TARJETA, urlAbsoluta } from '#lib/resultado';
 
 	type Fase = 'inicio' | 'buscando' | 'confirmar' | 'resultado' | 'negociar' | 'sin_conexion';
 
@@ -187,20 +187,9 @@
 	let compartiendo = $state(false);
 	let mensajeTarjeta = $state<string | null>(null);
 
-	// Tarjeta del inquilino: la persona elige uno de los tres textos de su posición
-	let textoTarjeta = $state<0 | 1 | 2 | 3>(0);
-	const textosInquilinoActuales = $derived(
-		resultado?.inquilino
-			? textosInquilino(
-					resultado.inquilino.pos === 'baja' || resultado.inquilino.pos === 'media' || resultado.inquilino.pos === 'alta' ? 'dentro' : resultado.inquilino.pos,
-					resultado.ratioCifra,
-					resultado.barra.horquilla
-				)
-			: []
-	);
 	/** Los datos de la tarjeta que se dibuja y se comparte (todos los niveles); null si no hay resultado */
 	const tarjetaActual = $derived(
-		!resultado ? null : resultado.inquilino ? construirTarjetaInquilino(resultado, textoTarjeta) : construirTarjeta(resultado)
+		!resultado ? null : construirTarjeta(resultado)
 	);
 
 	$effect(() => {
@@ -278,7 +267,6 @@
 		desdeLimites = false;
 		idTarjeta = p.tipo === 'resultado' ? idDeTarjeta() : null;
 		registro = 'no';
-		textoTarjeta = 0;
 		aporte = 'no';
 		aporteHab = 'no';
 		aportadosBarrio = null;
@@ -449,7 +437,6 @@
 		pantalla = p;
 		ubicacion = u;
 		idTarjeta = p.tipo === 'resultado' ? idDeTarjeta() : null;
-		textoTarjeta = 0;
 		mensajeTarjeta = null;
 		registro = 'no';
 		aporte = 'no';
@@ -531,14 +518,15 @@
 			{#if !hayResultado}<a class="enlace enlace-mapa" href="/mapa">{MAPA_REFERENCIA.enlacePortada}</a>{/if}
 			{#if !hayResultado}<MuestraResultado modo={esVivo ? 'vivo' : 'mirando'} alListo={() => (muestraLista = true)} />{/if}
 			<div class="fantasma" class:oculto={muestraLista && !hayResultado} aria-hidden="true">
-				<p>Aquí verás el precio frente a lo que pagan quienes ya viven en la zona.</p>
-				<div class="fantasma-barra">
-					<span class="f-anuncio">tu precio</span>
-					<span class="f-pista"></span>
-					<span class="f-ref">contratos de aquí</span>
-					<span class="f-punto"></span>
-					<span class="f-cero">0&nbsp;€</span>
-				</div>
+				<p>{COMPARATIVA.vacio}</p>
+				<!-- Las dos reglas, en gris: contratos vigentes y anuncios recientes, con el punto alineado -->
+				{#each ['contratos', 'anuncios'] as r (r)}
+					<div class="fantasma-regla">
+						<span class="f-titulo"></span>
+						<span class="f-pista"><span class="f-banda {r}"></span><span class="f-punto"></span></span>
+					</div>
+				{/each}
+				<span class="f-eje"></span>
 			</div>
 		</section>
 
@@ -592,9 +580,6 @@
 						otroPiso();
 					}}
 					alQueHaras={(r) => queHaras(modoActual, r, nivelAnalitica)}
-					textos={textosInquilinoActuales}
-					textoElegido={textoTarjeta}
-					alElegirTexto={(i) => (textoTarjeta = i as 0 | 1 | 2 | 3)}
 					{compartiendo}
 					{nativo}
 					{enlaces}
@@ -811,52 +796,53 @@
 		.fantasma p {
 			font: 600 17px/1.4 var(--f-texto);
 		}
-		.fantasma-barra {
-			position: relative;
-			height: 84px;
+		/* Dos reglas fantasma con el punto alineado: contratos (banda gris) y anuncios (banda rayada) */
+		.fantasma-regla {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
 		}
-		.fantasma-barra span {
-			position: absolute;
-			font: 500 13px/1.3 var(--f-semi);
-			color: var(--grafito);
-		}
-		.f-anuncio {
-			top: 0;
-			left: 78%;
-			transform: translateX(-50%);
-		}
-		.f-pista {
-			left: 0;
-			right: 0;
-			top: 24px;
-			height: 28px;
+		.f-titulo {
+			width: 46%;
+			height: 10px;
+			border-radius: 2px;
 			background: var(--pista);
 		}
-		.f-ref {
-			left: 42%;
-			width: 24%;
-			top: 24px;
-			height: 28px;
+		.f-pista {
+			position: relative;
+			height: 22px;
+			background: var(--pista);
+			border-radius: 2px;
+		}
+		.f-banda {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+		}
+		.f-banda.contratos {
+			left: 30%;
+			width: 26%;
 			border: 1.5px dashed var(--piedra);
-			display: flex !important;
-			align-items: center;
-			justify-content: center;
-			font-size: 12px !important;
-			font-weight: 600 !important;
+		}
+		.f-banda.anuncios {
+			left: 52%;
+			width: 22%;
+			background: repeating-linear-gradient(45deg, transparent 0 4px, var(--piedra) 4px 5px);
+			opacity: 0.6;
 		}
 		.f-punto {
-			left: 78%;
-			top: 24px;
-			width: 28px;
-			height: 28px;
-			margin-left: -14px;
+			position: absolute;
+			left: 66%;
+			top: 2px;
+			width: 18px;
+			height: 18px;
+			margin-left: -9px;
 			border-radius: 50%;
-			border: 1.5px dashed var(--piedra);
+			border: 1.5px dashed var(--tinta);
 		}
-		.f-cero {
-			left: 0;
-			top: 62px;
-			font-size: 12px !important;
+		.f-eje {
+			height: 1px;
+			background: var(--piedra);
 		}
 		/* El formulario siempre está; con resultado, el título deja su sitio al resultado */
 		.rejilla.hay-resultado .lado {

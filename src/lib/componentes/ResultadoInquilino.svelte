@@ -1,13 +1,12 @@
 <script lang="ts">
-	import Barra from './Barra.svelte';
 	import type { Snippet } from 'svelte';
 	import AfinarNumero from './AfinarNumero.svelte';
+	import Comparativa from './Comparativa.svelte';
 	import Compartir from './Compartir.svelte';
 	import Icono from './Icono.svelte';
 	import QueHaras from './QueHaras.svelte';
-	import { unaLinea } from '#lib/cliente/ajustar';
 	import {
-		ENLACE_OFICIAL, INQUILINO, OFERTA, TARJETA_INQUILINO, heroEnVeces, ALGO_NO_CUADRA, type RespuestaQueHaras, type Canal, type EnlacesCompartir, type PantallaResultado
+		ENLACE_OFICIAL, INQUILINO, OFERTA, TARJETA, TARJETA_INQUILINO, ALGO_NO_CUADRA, type RespuestaQueHaras, type Canal, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
 	export type EstadoAporte = 'no' | 'enviando' | 'hecho' | 'error' | 'limite';
@@ -21,9 +20,6 @@
 		alQueHaras,
 		alAfinar,
 		tarjeta,
-		textos = [],
-		textoElegido = 0,
-		alElegirTexto,
 		compartiendo = false,
 		nativo = false,
 		enlaces = null,
@@ -44,10 +40,6 @@
 		alAfinar?: (numero: string) => Promise<string | null>;
 		/** Miniatura de la tarjeta (canvas) que dibuja la página */
 		tarjeta?: Snippet;
-		/** Los tres textos de la tarjeta, de los que la persona elige uno */
-		textos?: string[];
-		textoElegido?: number;
-		alElegirTexto?: (i: number) => void;
 		compartiendo?: boolean;
 		nativo?: boolean;
 		enlaces?: EnlacesCompartir | null;
@@ -68,47 +60,21 @@
 			<p>{i.pagas}</p>
 		</div>
 
-		<p class="etiqueta"><Icono clase={i.icono} />{i.etiqueta}</p>
-
-		<div class="principal">
-			{#if i.cifra}
-				<p class="cifra" class:veces={heroEnVeces(i.cifra)} use:unaLinea={i.cifra} aria-label="{i.cifra} {i.nota}">{i.cifra}</p>
-			{:else}
-				<p class="titular">{i.titular}</p>
-			{/if}
-			<p class="nota">{i.nota}</p>
-		</div>
-
-		<p class="frase">{i.frase}</p>
-
-		{#if v.aclaracion}
-			<div class="aclaracion">
-				<p>{v.aclaracion}</p>
-				{#if alAfinar}<AfinarNumero {alAfinar} />{/if}
-			</div>
-		{/if}
-
-		{#if pantalla.oferta}
-			<!-- «Lo que se pide»: línea secundaria sin veredicto; el titular de arriba sigue siendo contra contratos -->
-			<div class="oferta">
-				<p class="oferta-linea">{pantalla.oferta.linea}</p>
-				<p class="oferta-pie">{pantalla.oferta.pie}</p>
-			</div>
-		{/if}
+		<Comparativa comparativa={pantalla.comparativa}>
+			{#snippet debajoTarjetas()}
+				{#if v.aclaracion}
+					<div class="aclaracion">
+						<p>{v.aclaracion}</p>
+						{#if alAfinar}<AfinarNumero {alAfinar} />{/if}
+					</div>
+				{/if}
+			{/snippet}
+		</Comparativa>
 	</div>
 
-	<div class="barra-caja"><Barra barra={pantalla.barra} vista={v} etiquetaPrecio="lo que pagas" /></div>
-
 	<div class="abajo">
-		{#if i.brecha}
-			<div class="caja">
-				<div class="importes">
-					<div><span class="et">{INQUILINO.alMes}</span><span class="importe">{i.brecha.mes}</span></div>
-					<div><span class="et">{INQUILINO.alAno}</span><span class="importe">{i.brecha.año}</span></div>
-				</div>
-			</div>
-		{/if}
-
+		<!-- El aviso de antigüedad, solo con un contrato de hace menos de un año -->
+		{#if i.firma.reciente}
 		<div class="contrato">
 			<svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true" style="flex: none; margin-top: 1px">
 				<circle cx="10" cy="10" r="8.5" stroke="var(--tinta)" stroke-width="1.5" fill="none" />
@@ -120,12 +86,9 @@
 				{#if i.contrato.cambio}<p class="cambio">{i.contrato.cambio}</p>{/if}
 			</div>
 		</div>
-
-		{#if pantalla.oferta}
-			<p class="fuente">{OFERTA.contratos} {v.fuente}</p>
-			<p class="fuente">{pantalla.oferta.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
-		{:else}
-			<p class="fuente">{v.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
+		{:else if i.contrato.cambio}
+			<!-- Contratos de más de un año: solo lo que pagaba al firmar, si lo ha escrito -->
+			<p class="cambio-firma">{i.contrato.cambio}</p>
 		{/if}
 
 		{#if i.tuParte}
@@ -164,17 +127,13 @@
 			<Compartir
 				{tarjeta}
 				titulo={TARJETA_INQUILINO.titulo}
-				detalle={TARJETA_INQUILINO.detalle}
+				detalle={TARJETA.detalle}
 				boton={INQUILINO.compartir}
 				principal={aporte === 'hecho'}
 				{compartiendo}
 				{nativo}
 				{enlaces}
 				mensaje={mensajeTarjeta}
-				{textos}
-				elegido={textoElegido}
-				etiquetaTextos={TARJETA_INQUILINO.elige}
-				{alElegirTexto}
 				{alCompartir}
 				{alCompartirPor}
 			/>
@@ -190,6 +149,13 @@
 				<span class="accion-titulo">{INQUILINO.acciones.mirando}</span>
 			</button>
 		</div>
+
+		{#if pantalla.oferta}
+			<p class="fuente">{OFERTA.contratos} {v.fuente}</p>
+			<p class="fuente">{pantalla.oferta.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
+		{:else}
+			<p class="fuente">{v.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
+		{/if}
 
 		<p class="no-cuadra"><a href="mailto:{ALGO_NO_CUADRA.correo}">{ALGO_NO_CUADRA.texto}</a></p>
 
@@ -229,48 +195,6 @@
 		border-radius: var(--radio);
 		font: 700 14px/1.25 var(--f-texto);
 	}
-	.principal {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		container-type: inline-size;
-	}
-	.cifra {
-		font: 900 clamp(100px, 37vw, 144px) / 0.82 var(--f-extra);
-		color: var(--acento);
-		letter-spacing: -0.01em;
-	}
-	.cifra.veces {
-		font-size: min(144px, 25cqw);
-	}
-	.titular {
-		font: 800 60px/0.88 var(--f-extra);
-		text-transform: uppercase;
-		color: var(--acento);
-	}
-	.nota {
-		font: 500 15px/1.4 var(--f-texto);
-		color: var(--grafito);
-	}
-	.frase {
-		font: 600 21px/1.3 var(--f-texto);
-		text-wrap: pretty;
-	}
-	.oferta {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		border-left: 3px solid var(--tinta);
-		padding-left: 10px;
-	}
-	.oferta-linea {
-		font: 500 15px/1.4 var(--f-texto);
-		text-wrap: pretty;
-	}
-	.oferta-pie {
-		font: 400 13px/1.4 var(--f-texto);
-		color: var(--grafito);
-	}
 	.aclaracion {
 		display: flex;
 		flex-direction: column;
@@ -281,36 +205,11 @@
 		color: var(--grafito);
 		text-wrap: pretty;
 	}
-	.barra-caja {
-		padding: 32px var(--margen) 0;
-	}
 	.abajo {
 		padding: 28px var(--margen) 0;
 		display: flex;
 		flex-direction: column;
 		gap: 20px;
-	}
-	.caja {
-		background: var(--superficie);
-		border-radius: var(--radio);
-		padding: 18px 16px;
-	}
-	.importes {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 12px;
-	}
-	.importes div {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-	.et {
-		font: 500 14px/1.3 var(--f-texto);
-		color: var(--grafito);
-	}
-	.importe {
-		font: 700 26px/1.1 var(--f-semi);
 	}
 	.contrato {
 		display: flex;
@@ -329,6 +228,9 @@
 	.detalle {
 		color: var(--grafito);
 		font-weight: 400;
+	}
+	.cambio-firma {
+		font: 500 16px/1.45 var(--f-texto);
 	}
 	.cambio {
 		font-weight: 500;
@@ -420,10 +322,6 @@
 		text-decoration-color: var(--paja);
 		text-decoration-thickness: 2px;
 		text-underline-offset: 4px;
-	}
-	.gracias {
-		font: 500 15px/1.3 var(--f-texto);
-		color: var(--grafito);
 	}
 	@media (min-width: 1024px) {
 		.arriba {

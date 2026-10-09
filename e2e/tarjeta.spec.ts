@@ -79,10 +79,15 @@ test.describe('tarjeta y /t/:id', () => {
 		expect(mala.status()).toBe(400);
 		const sinJpeg = await request.post('/api/tarjeta', {
 			multipart: {
+				// Una tarjeta v2 válida (con campos de más, que se descartan) y una imagen que no es JPEG
 				tarjeta: JSON.stringify({
-					clase: 'c', etiqueta: 'Se sale de lo habitual', hero: { tipo: 'cifra', texto: '+30 %' },
-					nota: 'x', frase: 'y', barrio: 'Goya', aproximada: false,
-					barra: { banda: { desde: 0.4, hasta: 0.6 }, incertidumbre: null, techo: { desde: 0.6, hasta: 0.7 }, punto: 0.8, tercio: null },
+					v: 2, modo: 'mirando', resumen: 'Por encima de los contratos.', barrio: 'Goya', aproximada: false,
+					contratos: { clase: 'c', icono: 'c', etiqueta: 'Se sale de lo habitual', cifra: '+30 %', nota: 'sobre la parte alta de la zona' },
+					anuncios: null,
+					reglas: {
+						marcas: [{ x: 0, texto: '750 €' }, { x: 1, texto: '3.000 €' }], punto: 0.8,
+						contratos: { banda: { desde: 0.4, hasta: 0.6 }, incertidumbre: null, parteAlta: 0.6, techo: 0.7 }, anuncios: null
+					},
 					precio: 2500, direccion: 'Calle X 3'
 				}),
 				og: { name: 'og.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('no soy un jpeg') }

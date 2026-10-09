@@ -11,11 +11,12 @@
 import { type Anuncio, type Analisis, type Nivel, type ResultadoSeccion, analizar } from '../motor';
 import { type DatosMadrid, barrioDe, datosSeccion } from './datos';
 import { type Barra, construirBarra, mostrarMedia, referenciaMedia } from './barra';
+import { type Comparativa, construirComparativa } from './comparativa';
 import { type Evolucion, evolucion } from './evolucion';
 import { euros, mesAnio, numero } from './formato';
 import { type PantallaOferta, construirOferta } from './oferta';
 import {
-	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, FUENTE, NIVEL_CONTRATOS, type ClaveSinDato, type MotivoPantalla,
+	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, ETIQUETA_POR_DEBAJO, FUENTE, NIVEL_CONTRATOS, type ClaveSinDato, type MotivoPantalla,
 	PRECIO_PEDIDO, QUE_PUEDES_HACER, SIN_DATO, TEXTO_OFICIAL_SIN_DATO
 } from './textos';
 import type { PantallaHabitacion } from './habitacion';
@@ -87,6 +88,8 @@ export interface PantallaResultado {
 	inquilino: InfoInquilino | null;
 	/** «Lo que se pide»: los anuncios recientes del Ayuntamiento como segunda referencia; null con la flag apagada, sin dato de la zona o con menos de 30 m² */
 	oferta: PantallaOferta | null;
+	/** El resultado con las dos referencias, como se pinta (rediseño): resumen, tarjetas, reglas e impacto */
+	comparativa: Comparativa;
 }
 
 /** Entrada de «Tu zona»: el anuncio, la ubicación (el punto, o null si solo hay calle) y las zonas */
@@ -195,6 +198,19 @@ function desdeAnalisis(
 	const oferta = construirOferta(a, cusecs, frenteAContratos, datos);
 	const conVeredicto = oferta?.veredicto === true;
 	const vista = construirVista({ anuncio: a, ubicacion: u, analisis: an, barra, barrio, ipcMes: datos.ipc.ultimo_mes, conVeredicto });
+	const comparativa = construirComparativa({
+		modo: 'mirando',
+		precio: a.precio,
+		barra,
+		parteAlta: media.sup,
+		frente: frenteAContratos,
+		clase: vista.clase,
+		etiqueta: vista.etiqueta,
+		porDebajo: vista.etiqueta === ETIQUETA_POR_DEBAJO,
+		// Con zonas en niveles distintos la cifra depende de la zona: va como intervalo
+		rango: an.horquilla && !usarMedia ? { min: an.pctMin + 1, max: an.pctMax + 1 } : null,
+		oferta
+	});
 	return {
 		tipo: 'resultado',
 		ratioMin: an.pctMin + 1,
@@ -225,7 +241,8 @@ function desdeAnalisis(
 		zona: { precio: a.precio, superficie: a.superficie, origen: u.punto, cusecs: u.cusecs, clase: vista.clase, motivo: u.motivo },
 		registro: barrio ? { barrio: barrio.codigo, precio: Math.round(a.precio), m2: a.superficie, nivel: vista.clase } : null,
 		inquilino: null,
-		oferta
+		oferta,
+		comparativa
 	};
 }
 

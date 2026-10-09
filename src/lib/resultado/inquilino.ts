@@ -8,6 +8,7 @@ import type { Anuncio } from '../motor';
 import type { AportacionPayload } from './aportacion';
 import { euros, numero } from './formato';
 import type { Firma } from './formulario';
+import { comparativaEnModo } from './comparativa';
 import { ofertaInquilino } from './oferta';
 import type { PantallaResultado } from './resultado';
 import { ETIQUETA_POR_DEBAJO, INQUILINO } from './textos';
@@ -34,7 +35,7 @@ export interface InfoInquilino {
 	cifra: string | null;
 	nota: string;
 	frase: string;
-	/** «Lo que pagas: 980 €/mes · 90 m² · contrato de 2016» */
+	/** «90 m² · 980 €/mes · lo que pagas · contrato de 2016» */
 	pagas: string;
 	/** Solo algo por encima o se sale de lo habitual: € sobre la parte alta, al mes y al año */
 	brecha: { mes: string; año: string } | null;
@@ -109,7 +110,7 @@ export function aInquilino(p: PantallaResultado, a: Anuncio, extra: ExtraInquili
 		cifra,
 		nota,
 		frase: INQUILINO.frase[pos],
-		pagas: INQUILINO.pagas(v.precio, v.m2, firma.reciente ? 'hace menos de un año' : `contrato de ${firma.ano}`),
+		pagas: INQUILINO.pagas(v.precio, v.m2, firma.reciente ? 'contrato de hace menos de un año' : `contrato de ${firma.ano}`),
 		brecha,
 		contrato: {
 			titulo: contratoTitulo,
@@ -142,5 +143,5 @@ export function aInquilino(p: PantallaResultado, a: Anuncio, extra: ExtraInquili
 	const vista = pos === 'debajo' ? { ...p.vista, barra: { ...p.vista.barra, tercio: null } } : p.vista;
 	// «Tu zona» también en «Mi alquiler», solo como contexto (sin lista de zonas). Con horquilla, las zonas afectadas llevan contorno grueso
 	const zona = p.zona ? { ...p.zona, clase: 'a' as const, inquilino: true } : null;
-	return { ...p, vista, registro: null, zona, inquilino: info, oferta: p.oferta ? ofertaInquilino(p.oferta) : null };
+	return { ...p, vista, registro: null, zona, inquilino: info, oferta: p.oferta ? ofertaInquilino(p.oferta) : null, comparativa: comparativaEnModo(p.comparativa, 'vivo') };
 }

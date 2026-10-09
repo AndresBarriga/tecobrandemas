@@ -3,7 +3,7 @@
  * barrio, frase y barra en fracciones) y la vista previa JPG: nunca precio, m² ni dirección.
  * Producción: D1 (tabla `tarjetas`) + R2 (vista previa). Desarrollo y tests: memoria.
  */
-import type { TarjetaDatos } from '../resultado';
+import { type TarjetaDatos, esV2 } from '../resultado';
 
 export interface TarjetaGuardada {
 	datos: TarjetaDatos;
@@ -74,7 +74,7 @@ export function almacenCloudflare(db: D1TarjetasMinimo, r2: R2Minimo, ahora: () 
 			const mes = ahora().toISOString().slice(0, 7);
 			await db
 				.prepare('INSERT INTO tarjetas (id, mes, barrio, nivel, datos) VALUES (?, ?, ?, ?, ?)')
-				.bind(id, mes, datos.barrio, datos.clase, JSON.stringify(datos))
+				.bind(id, mes, datos.barrio, esV2(datos) ? datos.contratos.clase : datos.clase, JSON.stringify(datos))
 				.run();
 			if (og) await r2.put(`og/${id}.jpg`, og, { httpMetadata: { contentType: 'image/jpeg' } });
 			return id;
