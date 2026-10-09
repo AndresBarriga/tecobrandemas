@@ -1,0 +1,3 @@
+# Los CSV de los tests se leen partiendo por «\n» (tests/fixture.ts): en Windows, con core.autocrlf, git los
+# dejaba en CRLF y fallaban 8 tests de «casos sin dato». Siempre LF.
+tests/fixtures/*.csv text eol=lf
