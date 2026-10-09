@@ -7,7 +7,7 @@ import type { MotivoSinDato } from '../motor';
 import { MINIMO_COMPARACION } from './habitacion';
 
 /** Lema bajo el logotipo (diseño: el nombre manda, el lema acompaña) */
-export const LEMA = 'Contratos reales, por zona.';
+export const LEMA = 'Que el precio no sea a ciegas.';
 
 export const ENLACE_OFICIAL = 'https://serpavi.mivau.gob.es';
 
@@ -19,6 +19,7 @@ export const ATRIBUCIONES = [
 	'Elaboración propia con datos extraídos del sitio web del INE: www.ine.es',
 	'CartoCiudad CC-BY 4.0 scne.es',
 	'Barrios: Ayuntamiento de Madrid',
+	'Anuncios recientes: Ayuntamiento de Madrid, Banco de Datos, serie 4.3.21.D (elaboración del Ayuntamiento a partir de datos de Idealista)',
 	'© OpenStreetMap contributors'
 ] as const;
 
@@ -144,10 +145,10 @@ export const AVISO_UBICACION = {
 
 export const NOMBRE = 'A su precio';
 export const DESCRIPCION =
-	'Compara tu alquiler, o el de un anuncio en Madrid, con lo que pagan quienes ya viven de alquiler en la zona.';
+	'Compara tu alquiler, o el de un anuncio en Madrid, con los contratos reales de tu zona y con los anuncios recientes.';
 
 export const TITULAR_INICIO = ['¿Cuánto pagan', 'los demás?'] as const;
-export const SUBTITULAR_INICIO = 'Compara tu alquiler, o el de un anuncio, con lo que pagan quienes ya viven de alquiler en la zona.';
+export const SUBTITULAR_INICIO = 'Compara tu alquiler o el de un anuncio con los contratos reales de tu zona y con los anuncios recientes';
 
 export const ETIQUETA_NIVEL = {
 	a: 'Dentro de rango',

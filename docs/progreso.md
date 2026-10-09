@@ -390,3 +390,11 @@ Detrás de `PUBLIC_OFERTA_ENABLED` y `PUBLIC_OFERTA_MAPA_ENABLED` (**activas por
 - **Tests:** ninguno nuevo; los existentes siguen pasando (362). El único ajuste fue evitar «hoy» en un texto nuevo (lo prohíben las reglas de copy).
 - **Sin cobertura en CI:** el job `pruebas` no corre ningún e2e del mapa (`e2e/mapa.spec.ts` es del mapa base del formulario y solo se ejecuta a mano) y el job de humo solo lee `/mapa/madrid.pmtiles`. Verificado en el navegador con las tres combinaciones de flags (ver el resumen de la PR).
 - **Activación por defecto (09/10/2026):** las dos flags se invierten (`schema: valor !== 'false'` en `src/env.ts`); `ci.yml` y `docs/operacion.md` actualizados; decisión y riesgo aceptado en `docs/decisiones.md`. No se añadieron tests.
+
+## «Lo que se pide»: textos (PR 3, 09/10/2026, rama `oferta-3-textos`)
+Sin flag: lo visible queda explicado en la web.
+- **Portada:** lema «Que el precio no sea a ciegas.» (`LEMA`, que también sale bajo el logotipo de todas las páginas, en el `<title>` y en las tarjetas compartibles), el titular no cambia, subtítulo «Compara tu alquiler o el de un anuncio con los contratos reales de tu zona y con los anuncios recientes» y la descripción (meta) alineada.
+- **«Cómo calculamos»:** sección nueva «Anuncios recientes» (`#anu`, entre «Contratos vigentes» y «El mapa»; `construirAnuncios` en `metodologia.ts`) con las dos fuentes y el mes (el de `oferta_madrid.json`, leído al prerenderizar), la estimación (€/m² × m², barrio con datos de los dos últimos meses o, si no, distrito; solo con m² ≥ 30), «en línea» (±10 %, leído de `config/oferta.json`), por qué contratos y anuncios difieren (sin cifra) y los límites (barrio/distrito, barrios sin dato, variación entre barrios y entre meses, derivada de Idealista, retraso de 3-4 meses, IPC nacional). También: resumen de 30 segundos, sección «El mapa» (selector y etiquetas), «Lo que no calculamos» y la tabla de Fuentes con la serie 4.3.21.D y su atribución.
+- **Pie:** nueva atribución «Anuncios recientes: Ayuntamiento de Madrid, Banco de Datos, serie 4.3.21.D (elaboración del Ayuntamiento a partir de datos de Idealista)» (`ATRIBUCIONES`; la tarjeta sigue usando solo las dos primeras).
+- **FAQ:** no existe en la web; no se ha creado.
+- **Tests:** ninguno nuevo ni cambiado; los existentes pasan (362).

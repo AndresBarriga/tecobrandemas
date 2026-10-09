@@ -155,6 +155,25 @@
 				<p class="claro">{p.precioPedido.parteAlta.texto}</p>
 			</section>
 
+			<section id="anu">
+				<h2>{p.anuncios.titulo}</h2>
+				<p class="lead">{p.anuncios.intro}</p>
+				<h3>{p.anuncios.fuentes.titulo}</h3>
+				<ul class="lista">
+					{#each p.anuncios.fuentes.items as t (t)}<li>{t}</li>{/each}
+				</ul>
+				<h3>{p.anuncios.estimacion.titulo}</h3>
+				{#each p.anuncios.estimacion.parrafos as t (t)}<p>{t}</p>{/each}
+				<h3>{p.anuncios.enLinea.titulo}</h3>
+				<p>{p.anuncios.enLinea.texto}</p>
+				<h3>{p.anuncios.diferencia.titulo}</h3>
+				<p>{p.anuncios.diferencia.texto}</p>
+				<h3>{p.anuncios.limites.titulo}</h3>
+				<ul class="lista">
+					{#each p.anuncios.limites.items as t (t)}<li>{t}</li>{/each}
+				</ul>
+			</section>
+
 			<section id="map">
 				<h2>El mapa</h2>
 				{#each p.mapa.parrafos as t (t)}<p>{t}</p>{/each}
@@ -534,6 +553,18 @@
 	}
 	.claro {
 		color: var(--pista);
+	}
+
+	/* Anuncios recientes: listas con viñeta */
+	.lista {
+		list-style: disc;
+		padding-left: 20px;
+		gap: 8px;
+		max-width: 70ch;
+		font: 400 16px/1.55 var(--f-texto);
+	}
+	h3 {
+		margin-top: 4px;
 	}
 
 	/* Datos */
