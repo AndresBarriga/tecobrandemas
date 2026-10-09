@@ -27,6 +27,8 @@ export const NIVELES_OFERTA = ['barrio', 'distrito'] as const;
 export const CANALES = ['whatsapp', 'x', 'copiar', 'descargar', 'nativo'] as const;
 /** Capas de /mapa (`mapa_capa.capa`): nunca la zona, el presupuesto ni los metros */
 export const CAPAS_MAPA = ['referencia', 'presupuesto', 'evolucion'] as const;
+/** `mapa_capa.fuente_mapa`: la fuente de la capa (solo con las dos flags de la oferta); nunca la zona, el barrio ni los importes */
+export const FUENTES_MAPA = ['contratos', 'anuncios'] as const;
 export const APPS = ['instagram', 'facebook', 'whatsapp', 'x', 'tiktok', 'otro', 'ninguno'] as const;
 export const MOTIVOS_SIN_DATO = [
 	'superficie_menor', 'superficie_mayor', 'obra_nueva', 'unifamiliar', 'temporal', 'testigos', 'sin_dato_seccion', 'fuera_de_madrid', 'habitacion'
@@ -66,6 +68,7 @@ const VALIDADORES: Record<string, Validador> = {
 	respuesta: enumerado(RESPUESTAS_QUE_HARAS),
 	canal: enumerado(CANALES),
 	capa: enumerado(CAPAS_MAPA),
+	fuente_mapa: enumerado(FUENTES_MAPA),
 	tarjeta_id: (v) => typeof v === 'string' && IDENTIFICADOR_TARJETA.test(v),
 	// Globales (se registran al cargar)
 	v: (v) => v === 1,
@@ -95,7 +98,7 @@ export const EVENTOS: Record<string, readonly string[]> = {
 	que_haras: ['modo', 'respuesta', 'resultado'],
 	comparte: ['modo', 'canal', 'tarjeta_id', 'resultado'],
 	aporta: ['tipo'],
-	mapa_capa: ['capa']
+	mapa_capa: ['capa', 'fuente_mapa']
 };
 
 export const EVENTOS_SDK = ['$pageview', '$pageleave'] as const;

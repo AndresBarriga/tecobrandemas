@@ -106,7 +106,7 @@ El mismo formato de campaña se exige a las propiedades `utm_*` de los eventos (
 
 ## «Lo que se pide» (anuncios recientes del Ayuntamiento)
 
-Segundo punto de referencia junto a los contratos SERPAVI: el €/m² de los anuncios recientes por barrio o distrito, × los m² de la persona. **Está apagado por defecto** (flag de compilación `PUBLIC_OFERTA_ENABLED`); con la flag apagada no cambia nada visible: ni el resultado, ni las tarjetas, ni la portada, y el navegador ni pide el fichero de datos. Se construye en tres PR apiladas (motor y resultado → mapa → textos de portada y «Cómo calculamos»); esta sección cubre la primera.
+Segundo punto de referencia junto a los contratos SERPAVI: el €/m² de los anuncios recientes por barrio o distrito, × los m² de la persona. **Está apagado por defecto** (flag de compilación `PUBLIC_OFERTA_ENABLED`); con la flag apagada no cambia nada visible: ni el resultado, ni las tarjetas, ni la portada, y el navegador ni pide el fichero de datos. Se construye en tres PR apiladas (motor y resultado → mapa → textos de portada y «Cómo calculamos»); la primera (resultado) y la segunda (mapa) están hechas; la tercera, no.
 
 **Cómo se enciende y se apaga**
 - **Local:** `PUBLIC_OFERTA_ENABLED=true npm run dev` (en PowerShell: `$env:PUBLIC_OFERTA_ENABLED='true'; npm run dev`). Sin la variable, apagada. Es una variable pública de compilación (`src/env.ts`, estática): se lee al construir, no al ejecutar.
@@ -116,6 +116,23 @@ Segundo punto de referencia junto a los contratos SERPAVI: el €/m² de los anu
   - **Más rápido aún (por verificar):** `npx wrangler rollback` vuelve a la versión anterior del Worker sin reconstruir, si esa versión se desplegó con la flag apagada.
 - **Vista previa:** no existe (no se activan URLs de vista previa por rama) y el job `pruebas` (PR y `main`) compila sin la variable, así que siempre sale apagada. Para verla encendida: en local (`PUBLIC_OFERTA_ENABLED=true npm run dev`). Si algún día hay vista previa, basta un entorno `preview` con su propia variable: las variables de un entorno de GitHub no se ven desde otro.
 - La prueba de humo no cambia: es de solo lectura y no depende de la flag.
+
+**Segunda flag: el mapa (`PUBLIC_OFERTA_MAPA_ENABLED`)**
+
+Añade a `/mapa` el selector Contratos | Anuncios en las capas «Referencia» y «Mi presupuesto». **Solo tiene efecto si `PUBLIC_OFERTA_ENABLED` también está encendida**; con la principal encendida y esta apagada, el mapa queda exactamente como antes (sin selector, sin rótulo, y `/mapa` no pide `oferta_madrid.json`). Con las dos encendidas el mapa pide el fichero y calcula las líneas de distrito.
+
+| `PUBLIC_OFERTA_ENABLED` | `PUBLIC_OFERTA_MAPA_ENABLED` | Resultado | Mapa |
+|---|---|---|---|
+| apagada | (cualquiera) | como antes | como antes |
+| encendida | apagada | línea de oferta en el resultado | como antes |
+| encendida | encendida | línea de oferta en el resultado | selector, rótulo, violeta y punteado |
+
+- **Local:** `PUBLIC_OFERTA_ENABLED=true PUBLIC_OFERTA_MAPA_ENABLED=true npm run dev` (PowerShell: `$env:PUBLIC_OFERTA_ENABLED='true'; $env:PUBLIC_OFERTA_MAPA_ENABLED='true'; npm run dev`). Los valores estáticos se escriben al arrancar en `.svelte-kit/`: **dos servidores de desarrollo con flags distintas a la vez se pisan** (todos leen las del último); para probar las tres combinaciones, una detrás de otra y parando el servidor entre medias.
+- **Producción:** el paso de build del job `desplegar` pasa `PUBLIC_OFERTA_MAPA_ENABLED: ${{ vars.PUBLIC_OFERTA_MAPA_ENABLED }}`; ausente o vacía = apagada. Variable del entorno `produccion`, igual que la principal.
+  - **Encender el mapa:** la principal en `true` (si no lo está) y esta en `true`, y relanzar el CI del último commit de `main` («Re-run all jobs»).
+  - **Apagar solo el mapa:** esta a `false` (o borrarla) y relanzar; el resultado conserva la línea de oferta.
+  - **Apagar todo:** la principal a `false` (o borrarla) y relanzar; basta con ella, la del mapa queda sin efecto.
+- La analítica de `/mapa` añade `fuente_mapa` (`contratos` o `anuncios`) a `mapa_capa` solo con las dos flags y solo en las capas con selector; sin las flags, el evento es el de siempre.
 
 **Datos: proceso mensual, a mano**
 1. Descargar del Banco de Datos del Ayuntamiento la serie «4.3.21.D. Evolución del precio de oferta de alquiler de la vivienda (€/m²) por Distrito, Barrio y Mes» (en el nombre del fichero descargado aparece `0504030000214`) y dejarla en `data/raw/` (no se sube a git) como `oferta_AAAA-MM.csv` o `.xlsx`, con el mes del último dato en el nombre. La URL estable de descarga no está verificada: el Banco de Datos necesita navegador.

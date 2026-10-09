@@ -61,7 +61,8 @@ Lo que depende de un PR sin fusionar lleva su número. Producción: https://asup
 | Pieza | Estado | Nota |
 |---|---|---|
 | Datos, motor, resultado («Un anuncio» y «Mi alquiler»), tarjetas y analítica | PR 1 (esta rama) | `scripts/10_oferta.py`, `src/lib/motor/oferta.ts`, `src/lib/resultado/oferta.ts`; flag apagada por defecto |
-| Mapa: selector de fuente (Contratos \| Anuncios) | Falta (PR 2) | Paleta violeta y punteado en las zonas con valor del distrito |
+| Mapa: selector de fuente (Contratos \| Anuncios) | PR 2 (rama `oferta-2-mapa`), tras `PUBLIC_OFERTA_MAPA_ENABLED` | «Referencia» y «Mi presupuesto»; «Evolución» sin cambios; paleta violeta, punteado en las zonas con valor del distrito y bordes de distrito más gruesos |
 | Portada, «Cómo calculamos» y FAQ | Falta (PR 3) | Con la flag apagada la portada no cambia |
 | Licencia de la serie | Por confirmar | Ver `docs/operacion.md` |
 | Variable en el job `desplegar` de `ci.yml` | Hecho (excepción puntual al CI) | La variable `PUBLIC_OFERTA_ENABLED` va en el entorno `produccion`; sin ella, apagada |
+| Segunda variable del mapa en `ci.yml` | Hecho (misma excepción, commit aparte) | `PUBLIC_OFERTA_MAPA_ENABLED`, entorno `produccion`; solo tiene efecto con la principal encendida |

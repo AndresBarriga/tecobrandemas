@@ -8,9 +8,11 @@
 	import Pie from '#lib/componentes/Pie.svelte';
 	import Segmentado from '#lib/componentes/Segmentado.svelte';
 	import {
-		MAPA_REFERENCIA as T, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, TONOS_MAPA, capaEvolucion, capaPresupuesto, capaReferencia,
-		distanciaCorta, extremoPresupuesto, hojaDeZona, numero, numeroDelCampo, superficieValida, zonasCercanas, zonasDelMapa, type CapaMapa, type SugerenciaVia, type SugerenciaZona
+		MAPA_REFERENCIA as T, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, TONOS_ANUNCIOS, TONOS_MAPA, capaEvolucion, capaPresupuesto, capaPresupuestoAnuncios, capaReferencia,
+		capaReferenciaAnuncios, distanciaCorta, extremoPresupuesto, hojaDeZona, mesAnio, numero, numeroDelCampo, posicionPresupuestoAnuncios, superficieValida, zonasCercanas, zonasDelMapa,
+		type CapaMapa, type FuenteMapa, type SugerenciaVia, type SugerenciaZona
 	} from '#lib/resultado';
+	import { MAPA_CON_ANUNCIOS } from '#lib/cliente/datos';
 	import { type Caja, type MadridCargado, cargarMadrid, unirCajas } from '#lib/cliente/mapa-madrid';
 	import { metrosAPunto } from '#lib/cliente/mapa';
 	import { mapaCapa } from '#lib/cliente/analitica';
@@ -19,12 +21,16 @@
 	import { zonasDeVia } from '#lib/cliente/vias';
 
 	const CAPAS: CapaMapa[] = ['referencia', 'presupuesto', 'evolucion'];
+	const TA = T.anuncios;
 
 	let estado = $state<'cargando' | 'listo' | 'fallo'>('cargando');
 	let madrid = $state<MadridCargado | null>(null);
 	let listo = $state(false);
 
 	let capa = $state<CapaMapa>('referencia');
+	// Fuente de cada capa (solo con las dos flags): «Referencia» empieza con los contratos y «Mi presupuesto» con los anuncios
+	let fuenteReferencia = $state<FuenteMapa>('contratos');
+	let fuentePresupuesto = $state<FuenteMapa>('anuncios');
 	let superficie = $state<number>(SUPERFICIE_MAPA_INICIAL);
 	let presupuestoTexto = $state('');
 	let metrosTexto = $state('');
@@ -65,6 +71,11 @@
 		const q = new URLSearchParams(location.search);
 		const c = q.get('capa') as CapaMapa | null;
 		if (c && CAPAS.includes(c)) capa = c;
+		const f = q.get('fuente');
+		if (MAPA_CON_ANUNCIOS && (f === 'contratos' || f === 'anuncios')) {
+			if (c === 'presupuesto') fuentePresupuesto = f;
+			else if (!c || c === 'referencia') fuenteReferencia = f;
+		}
 		const m2 = Number(q.get('m2'));
 		if (superficieValida(m2)) {
 			if (c === 'presupuesto') metrosTexto = String(Math.round(m2));
@@ -109,11 +120,14 @@
 		rellenar = { texto: b.nombre, vez: ++vezRelleno };
 	});
 	// Analítica: la capa inicial (ya leída de la URL, porque `listo` se pone al final de onMount) y cada cambio de capa
-	let capaEnviada: CapaMapa | null = null;
+	let capaEnviada: string | null = null;
 	$effect(() => {
-		if (!listo || capa === capaEnviada) return;
-		capaEnviada = capa;
-		mapaCapa(capa);
+		// Con las dos flags, y solo en las capas con selector, el evento lleva también la fuente (un enum)
+		const f = MAPA_CON_ANUNCIOS && capa !== 'evolucion' ? (capa === 'presupuesto' ? fuentePresupuesto : fuenteReferencia) : undefined;
+		const clave = `${capa}/${f ?? ''}`;
+		if (!listo || clave === capaEnviada) return;
+		capaEnviada = clave;
+		mapaCapa(capa, f);
 	});
 	$effect(() => {
 		if (!listo) return;
@@ -121,6 +135,7 @@
 		q.set('capa', capa);
 		if (capa === 'referencia') q.set('m2', String(superficie));
 		else if (capa === 'presupuesto' && metros !== null && superficieValida(metros)) q.set('m2', String(Math.round(metros)));
+		if (MAPA_CON_ANUNCIOS && capa !== 'evolucion') q.set('fuente', capa === 'presupuesto' ? fuentePresupuesto : fuenteReferencia);
 		if (barrioUrl) q.set('barrio', barrioUrl);
 		const url = `${location.pathname}?${q}`;
 		if (url !== location.pathname + location.search) {
@@ -132,6 +147,18 @@
 		}
 	});
 
+	// Si el fichero de anuncios no carga, el mapa sigue con los contratos y no se ofrece el selector
+	const sinOferta = $derived(estado === 'listo' && !madrid?.datos.oferta);
+	const conSelector = $derived(MAPA_CON_ANUNCIOS && capa !== 'evolucion' && !sinOferta);
+	const fuente = $derived<FuenteMapa>(!conSelector ? 'contratos' : capa === 'presupuesto' ? fuentePresupuesto : fuenteReferencia);
+	const anuncios = $derived(fuente === 'anuncios');
+	const mesOferta = $derived(madrid?.datos.oferta ? mesAnio(madrid.datos.oferta.mes) : '');
+	const tonosCapa = $derived(anuncios && capa !== 'evolucion' ? TONOS_ANUNCIOS[capa] : TONOS_MAPA[capa]);
+	const elegirFuente = (v: FuenteMapa) => {
+		if (capa === 'presupuesto') fuentePresupuesto = v;
+		else fuenteReferencia = v;
+	};
+
 	const presupuesto = $derived(numeroDelCampo(presupuestoTexto));
 	const metros = $derived(numeroDelCampo(metrosTexto));
 	const superficieCapa = $derived(capa === 'presupuesto' ? (metros ?? 0) : superficie);
@@ -139,30 +166,46 @@
 	const zonaPorCusec = $derived(new Map(zonas.map((z) => [z.cusec, z])));
 
 	const deMiPresupuesto = $derived(
-		capa === 'presupuesto' && presupuesto !== null && metros !== null && superficieValida(metros) ? capaPresupuesto(zonas, presupuesto) : null
+		capa === 'presupuesto' && presupuesto !== null && metros !== null && superficieValida(metros)
+			? (anuncios ? capaPresupuestoAnuncios(zonas, presupuesto, metros) : capaPresupuesto(zonas, presupuesto))
+			: null
 	);
-	const calculada = $derived(capa === 'evolucion' ? capaEvolucion(zonas) : capa === 'presupuesto' ? deMiPresupuesto : capaReferencia(zonas, superficie));
+	const calculada = $derived(
+		capa === 'evolucion' ? capaEvolucion(zonas)
+		: capa === 'presupuesto' ? deMiPresupuesto
+		: anuncios ? capaReferenciaAnuncios(zonas)
+		: capaReferencia(zonas, superficie)
+	);
 	const tonos = $derived(calculada?.tonos ?? new Map<string, number | null>());
 	const resumen = $derived(deMiPresupuesto?.resumen ?? null);
 	const centros = $derived(new Map((madrid?.celdas ?? []).map((c) => [c.cusec, c.centro] as const)));
 	const cercanas = $derived(
 		madrid && origen && presupuesto !== null && resumen && resumen.llega > 0
-			? zonasCercanas(zonas, presupuesto, origen.centro, centros).map((c) => ({
+			? zonasCercanas(zonas, presupuesto, origen.centro, centros, 5, anuncios && metros !== null ? (z) => posicionPresupuestoAnuncios(presupuesto, metros, z) : undefined).map((c) => ({
 				...c,
 				nombre: T.presupuesto.cercanas.zona(madrid!.datos.barrios[madrid!.datos.secciones[c.cusec]?.barrio ?? '']?.nombre ?? 'Madrid')
 			}))
 			: []
 	);
 
-	const intro = $derived(capa === 'presupuesto' ? T.introPresupuesto : capa === 'evolucion' ? T.introEvolucion : T.intro);
-	const tituloLeyenda = $derived(capa === 'presupuesto' ? T.leyendaPresupuesto : capa === 'evolucion' ? T.leyendaEvolucion : T.leyenda);
+	const intro = $derived(
+		capa === 'presupuesto' ? (anuncios ? TA.introPresupuesto : T.introPresupuesto) : capa === 'evolucion' ? T.introEvolucion : anuncios ? TA.intro : T.intro
+	);
+	const tituloLeyenda = $derived(
+		capa === 'presupuesto' ? (anuncios ? TA.leyendaPresupuesto(mesOferta) : T.leyendaPresupuesto)
+		: capa === 'evolucion' ? T.leyendaEvolucion
+		: anuncios ? TA.leyenda(mesOferta)
+		: T.leyenda
+	);
+	const textosPresupuesto = $derived(anuncios ? TA.presupuesto : T.presupuesto);
+	const rotulo = $derived(anuncios && capa !== 'evolucion' && mesOferta ? TA.rotulo(mesOferta) : null);
 	const errorMetros = $derived(capa === 'presupuesto' && metros !== null && !superficieValida(metros) ? T.presupuesto.metrosFuera : null);
 
 	const extremo = $derived(resumen ? extremoPresupuesto(resumen) : null);
 
 	const hoja = $derived.by(() => {
 		const z = seleccion ? zonaPorCusec.get(seleccion) : undefined;
-		return z && madrid ? hojaDeZona(z, madrid.datos, capa, superficieCapa, presupuesto) : null;
+		return z && madrid ? hojaDeZona(z, madrid.datos, capa, superficieCapa, presupuesto, fuente) : null;
 	});
 
 	async function elegirZona(cusec: string) {
@@ -288,7 +331,7 @@
 		<div class="muestras" style:--n={calculada.leyenda.length + 1}>
 			{#each calculada.leyenda as l (l.etiqueta)}
 				<div class="muestra">
-					<span class="color" style:background={l.tono === null ? undefined : TONOS_MAPA[capa][l.tono]}></span>
+					<span class="color" style:background={l.tono === null ? undefined : tonosCapa[l.tono]}></span>
 					<span class="etiqueta-l">{l.etiqueta}</span>
 				</div>
 			{/each}
@@ -297,21 +340,27 @@
 				<span class="etiqueta-l">{T.sinDato}</span>
 			</div>
 		</div>
+		{#if anuncios}
+			<div class="muestra-punteado">
+				<span class="color punteado"></span>
+				<span class="etiqueta-l">{TA.punteado}</span>
+			</div>
+		{/if}
 	{/if}
 {/snippet}
 
 <!-- Móvil, «Mi presupuesto»: los tres colores siempre a la vista, bajo el conmutador de capa -->
 {#snippet chipsPresupuesto()}
 	<ul class="chips-leyenda solo-movil" aria-label={T.leyendaPresupuesto}>
-		{#each [T.presupuesto.debajo, T.presupuesto.dentro, T.presupuesto.margen] as nombre, i (nombre)}
-			<li><span class="punto" style:background={TONOS_MAPA.presupuesto[i]}></span>{nombre}</li>
+		{#each [textosPresupuesto.debajo, textosPresupuesto.dentro, textosPresupuesto.margen] as nombre, i (nombre)}
+			<li><span class="punto" style:background={tonosCapa[i]}></span>{nombre}</li>
 		{/each}
 	</ul>
 {/snippet}
 
 {#snippet notas()}
 	{#if calculada}
-		<span class="nota">{calculada.nota} {T.notaSinDato}</span>
+		<span class="nota">{calculada.nota} {anuncios ? TA.notaSinDato : T.notaSinDato}</span>
 		{#if capa === 'evolucion'}<span class="nota">{T.avisoEvolucion}</span>{/if}
 	{/if}
 {/snippet}
@@ -319,7 +368,7 @@
 <div class="pagina" data-listo={listo} style:--vv-alto={movil && altoVisual ? `${altoVisual}px` : undefined} style:--vv-top="{movil ? topVisual : 0}px">
 	<Cabecera derecha="madrid" actual="mapa" />
 
-	<main class="rejilla" bind:clientHeight={altoRejilla} style:--hoja-alto={movil ? `${altoHoja}px` : '0px'}>
+	<main class="rejilla" class:con-fuente={conSelector} bind:clientHeight={altoRejilla} style:--hoja-alto={movil ? `${altoHoja}px` : '0px'}>
 		<section class="cabeza">
 			<h1>{T.titulo}</h1>
 			<p>{intro}</p>
@@ -337,13 +386,26 @@
 					{ valor: 'evolucion', etiqueta: T.capas.evolucion }
 				]}
 			/>
+			{#if conSelector}
+				<Segmentado
+					nombre="fuente"
+					etiqueta={TA.fuente.etiqueta}
+					valor={fuente}
+					onchange={elegirFuente}
+					opciones={[
+						{ valor: 'contratos', etiqueta: TA.fuente.contratos },
+						{ valor: 'anuncios', etiqueta: TA.fuente.anuncios }
+					]}
+				/>
+			{/if}
 		</div>
 
 		{#if capa === 'presupuesto'}{@render chipsPresupuesto()}{/if}
 
 		<section class="mapa" aria-label={T.mapa} aria-busy={estado === 'cargando'}>
 			{#if estado === 'listo' && madrid}
-				<MapaMadrid {madrid} {tonos} {capa} {seleccion} {resaltadas} {enfoque} margenInferior={movil ? altoHoja : 0} margenSuperior={movil ? (capa === 'presupuesto' ? 108 : 64) : 0} alElegir={elegirZona} />
+				<MapaMadrid {madrid} {tonos} {capa} {fuente} punteadas={calculada?.punteadas} {seleccion} {resaltadas} {enfoque} margenInferior={movil ? altoHoja : 0} margenSuperior={movil ? (capa === 'presupuesto' ? 108 : 64) + (conSelector ? 50 : 0) : 0} alElegir={elegirZona} />
+				{#if rotulo}<p class="rotulo" role="note">{rotulo}</p>{/if}
 				{#if errorMetros}
 					<div class="mapa-aviso" role="status">
 						<p>{errorMetros}</p>
@@ -361,17 +423,17 @@
 		</section>
 
 		<div class="panel" class:con-ficha={!!hoja}>
-			<HojaArrastrable bind:estado={hojaEstado} bind:altoVisible={altoHoja} alto={altoRejilla}>
+			<HojaArrastrable bind:estado={hojaEstado} bind:altoVisible={altoHoja} alto={altoRejilla} reservaSuperior={conSelector ? 114 : 64}>
 				{#snippet cabecera()}
 					<div class="cab-leyenda" aria-label={tituloLeyenda}>
-						<span class="leyenda-titulo">{calculada ? tituloLeyenda : T.presupuesto.pideDatos}</span>
+						<span class="leyenda-titulo">{calculada ? tituloLeyenda : textosPresupuesto.pideDatos}</span>
 						{@render muestras()}
 					</div>
 				{/snippet}
 
 				<div class="controles">
 					<section class="ajustes" aria-label="Qué mostrar">
-						{#if capa === 'referencia'}
+						{#if capa === 'referencia' && !anuncios}
 							<div class="superficie" role="group" aria-label={T.superficie.etiqueta}>
 								<span class="etiqueta">{T.superficie.etiqueta}</span>
 								<div class="chips">
@@ -393,26 +455,26 @@
 									</div>
 								</div>
 								{#if errorMetros}<p class="error" id="metros-error">{errorMetros}</p>{/if}
-								<p class="aviso destacado">{T.presupuesto.aviso}</p>
+								<p class="aviso destacado">{textosPresupuesto.aviso}</p>
 							</div>
 						{/if}
 
 						{#if capa === 'presupuesto'}
 							<div class="resumen" role="status">
 								{#if resumen && resumen.conDato > 0 && resumen.llega === 0}
-									<strong>{T.presupuesto.ninguna.titulo}</strong>
-									<span>{T.presupuesto.ninguna.texto}</span>
+									<strong>{textosPresupuesto.ninguna.titulo}</strong>
+									<span>{textosPresupuesto.ninguna.texto}</span>
 								{:else if resumen}
-									<strong>{T.presupuesto.resumen(String(resumen.porcentaje), numero(resumen.llega), numero(resumen.conDato))}</strong>
+									<strong>{textosPresupuesto.resumen(String(resumen.porcentaje), numero(resumen.llega), numero(resumen.conDato))}</strong>
 									{#if extremo}<span>{T.presupuesto.extremo[extremo]}</span>{/if}
 									<span class="nota">{T.presupuesto.notaPoblacion}</span>
 								{:else}
-									<span>{T.presupuesto.pideDatos}</span>
+									<span>{textosPresupuesto.pideDatos}</span>
 								{/if}
 							</div>
 							{#if cercanas.length && origen}
 								<div class="cercanas">
-									<h2 class="cercanas-titulo">{T.presupuesto.cercanas.titulo(origen.donde)}</h2>
+									<h2 class="cercanas-titulo">{anuncios ? TA.presupuesto.cercanas(origen.donde) : T.presupuesto.cercanas.titulo(origen.donde)}</h2>
 									<ul>
 										{#each cercanas as c (c.cusec)}
 											<li>
@@ -458,7 +520,7 @@
 						{#if hoja.procedencia}<p class="nota">{hoja.procedencia}</p>{/if}
 						<button type="button" class="boton-paja grande" onclick={comprobarAqui}>{T.hoja.comprobar}</button>
 					{:else}
-						<p class="nota solo-escritorio">{T.hoja.vacia}</p>
+						<p class="nota solo-escritorio">{anuncios && capa !== 'evolucion' ? TA.hoja.vacia : T.hoja.vacia}</p>
 					{/if}
 				</section>
 
@@ -791,6 +853,19 @@
 	.color.rayado {
 		background: repeating-linear-gradient(45deg, #dad5ca 0 3px, #857f74 3px 4.5px);
 	}
+	/* Fuente «Anuncios»: muestra del punteado (valor del distrito), en su propia línea */
+	.muestra-punteado {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.muestra-punteado .color {
+		width: 36px;
+		flex: none;
+	}
+	.color.punteado {
+		background: radial-gradient(circle, #5b3a7d 0.9px, transparent 1.2px) 0 0 / 5px 5px, #c9b1db;
+	}
 	.color.rayado.plano {
 		background: #efece4;
 	}
@@ -876,6 +951,9 @@
 		inset: 0;
 	}
 	.conmutador {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
 		position: absolute;
 		z-index: 3;
 		top: 10px;
@@ -888,6 +966,34 @@
 	}
 	.chips-leyenda ~ .mapa .mapa-aviso {
 		top: 108px;
+	}
+	/* Rótulo de la fuente «Anuncios» sobre el mapa: abajo a la izquierda, sobre la hoja y sin tapar los botones de zoom */
+	.rotulo {
+		position: absolute;
+		z-index: 2;
+		left: 10px;
+		right: 64px;
+		bottom: calc(var(--hoja-alto, 0px) + 10px);
+		max-width: 440px;
+		margin: 0;
+		padding: 6px 10px;
+		border-radius: var(--radio);
+		background: #f6f4ee;
+		border: 1.5px solid var(--tinta);
+		font: 600 12.5px/1.35 var(--f-texto);
+		pointer-events: none;
+	}
+	@media (max-width: 959px) {
+		/* Con el selector de fuente, el conmutador mide 50 px más: bajan las chips y el aviso */
+		.con-fuente .chips-leyenda {
+			top: 114px;
+		}
+		.con-fuente .mapa-aviso {
+			top: 114px;
+		}
+		.con-fuente .chips-leyenda ~ .mapa .mapa-aviso {
+			top: 158px;
+		}
 	}
 	.pie-hoja {
 		margin: 0 calc(-1 * var(--margen));

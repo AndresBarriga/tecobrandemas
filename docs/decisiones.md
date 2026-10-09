@@ -125,3 +125,11 @@ Decisiones del usuario para la serie del Ayuntamiento 4.3.21.D (PR 1 de 3: motor
 - [ ] **Consulta legal** sobre el registro de análisis.
 - [ ] **Decisiones de Andrés:** nombre, dominio, quién firma el proyecto y cómo se financia la prueba de anuncios.
 - [ ] **Empezar a construir** el motor con Claude Code a partir del PRD y de `tests_motor_serpavi.csv`.
+
+### PR 2: el mapa (09/10/2026)
+- **Segunda flag:** `PUBLIC_OFERTA_MAPA_ENABLED`, solo con efecto si `PUBLIC_OFERTA_ENABLED` está encendida. Con la principal sola, el mapa no cambia y `/mapa` no pide el fichero de oferta.
+- **Selector** Contratos | Anuncios en «Referencia» y «Mi presupuesto»; «Evolución» sin cambios. «Mi presupuesto» empieza con Anuncios; «Referencia», con Contratos. La URL lleva `fuente=` solo con las dos flags.
+- **Valor por zona:** el del barrio si tiene dato en los dos últimos meses; si no, el del distrito (el mapeo sección → barrio ya existente; sin geometría nueva ni pmtiles). Las zonas con valor del distrito se pintan punteadas con el color del tramo; los bordes de distrito son más gruesos que los de barrio.
+- **Presupuesto con anuncios:** €/m² × los metros de la persona frente al presupuesto, con las etiquetas de siempre (No llega, En línea, Te sobra) y la banda de `config/oferta.json`; resumen y zonas cercanas en términos de zonas.
+- **Regla fija:** el mapa muestra una fuente u otra, nunca las dos a la vez, ni superpuestas ni comparadas, y no hay ninguna cifra de diferencia entre contratos y anuncios; la ficha de una zona solo cita la fuente que se está viendo.
+- **Rótulo** sobre el mapa con la fuente, el mes y «No son contratos firmados».
