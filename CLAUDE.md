@@ -32,8 +32,8 @@ supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado
   geometría del mapa, en `src/lib/cliente/zona*.ts`. En «Tu zona» se dice «zona», nunca «sección».
 - Encuadre (08/10/2026, `docs/brief-cambio-de-encuadre.md`): la referencia son contratos vigentes, no precio de mercado. Nunca
   «techo», «lo que se paga aquí» ni «puedes respirar»: «lo habitual aquí», «dentro de rango», «fuera de rango». «Mi alquiler» (antes «Ya vivo aquí») es el modo por defecto; el otro es «Un anuncio».
-- Producción en Cloudflare (Worker + D1 + R2) con CI en GitHub, en el **plan gratuito**. Sin dominio propio y con
-  `noindex` en todo el sitio hasta el lanzamiento: `config/indexacion.json`.
+- Producción en Cloudflare (Worker + D1 + R2) con CI en GitHub, en el **plan gratuito**. Dominio asuprecio.com. Indexable
+  desde la rama `seo-indexacion` (`config/indexacion.json`, `noindex: false`); las tarjetas `/t/:id` siempre con `noindex`.
 - Se trabaja en ramas con PR; el CI despliega al fusionar en `main` y lanza después la prueba de humo (de solo
   lectura, con la tarjeta fija `pruebahumo`). Qué falta: `docs/abierto.md`; ideas sin empezar: `docs/ideas.md`.
 - Arquitectura: los componentes y las rutas no importan `src/lib/motor` ni `src/lib/ubicacion`

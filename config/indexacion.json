@@ -1,4 +1,4 @@
 {
-	"noindex": true,
+	"noindex": false,
 	"nota": "Una sola variable: true mientras no sea el lanzamiento. Poner false y desplegar para permitir la indexación (meta robots y X-Robots-Tag a la vez)."
 }

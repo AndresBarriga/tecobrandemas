@@ -154,7 +154,7 @@ La del mapa añade a `/mapa` el selector Contratos | Anuncios en «Referencia» 
 
 ## Antes del lanzamiento
 
-1. Quitar el `noindex`: `config/indexacion.json` → `"noindex": false`, y desplegar.
+1. Quitar el `noindex`: `config/indexacion.json` → `"noindex": false`, y desplegar. **Hecho en la rama `seo-indexacion` (09/10/2026)**: se publica al fusionarla en `main`. Las tarjetas `/t/:id` siguen con `noindex` (meta y cabecera). Después, en Google Search Console: verificar el dominio y enviar `https://asuprecio.com/sitemap.xml`.
 2. Borrar los datos de prueba de producción:
    ```sh
    npx wrangler d1 execute a-su-precio-registro --remote --command "DELETE FROM tarjetas; DELETE FROM analisis; DELETE FROM aportaciones; DELETE FROM habitaciones; DELETE FROM limites; DELETE FROM dedupe;"

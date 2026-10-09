@@ -46,12 +46,13 @@ test.describe('registro anónimo de análisis (R7)', () => {
 		await expect(page.getByRole('link', { name: 'hola@asuprecio.com' })).toHaveAttribute('href', 'mailto:hola@asuprecio.com');
 	});
 
-	test('noindex: meta robots en todo el sitio y la vista previa de /t/:id sigue completa', async ({ page, request }) => {
-		for (const ruta of ['/', '/como-calculamos', '/?modo=vivo']) {
+	test('indexación: las páginas públicas sin noindex; las tarjetas compartidas /t/:id, siempre con noindex', async ({ page, request }) => {
+		for (const ruta of ['/', '/mapa', '/como-calculamos', '/?modo=vivo']) {
 			await page.goto(ruta);
-			expect(await page.locator('meta[name="robots"]').first().getAttribute('content')).toContain('noindex');
+			await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
+			const r = await request.get(ruta);
+			expect(r.headers()['x-robots-tag'] ?? '').not.toContain('noindex');
 		}
-		const r = await request.get('/api/contadores');
-		expect(r.headers()['x-robots-tag']).toContain('noindex');
+		expect((await request.get('/t/abcdefghij')).headers()['x-robots-tag']).toContain('noindex');
 	});
 });
