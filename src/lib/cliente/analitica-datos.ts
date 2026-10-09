@@ -30,6 +30,8 @@ export function datosCompleta(p: Extract<Pantalla, { tipo: 'resultado' | 'habita
 		resultado: resultadoDeClase(r.vista.clase),
 		posicion: tercio === null ? null : POSICIONES[tercio],
 		brecha_tramo: tramoDeBrecha(r.ratioMin),
+		// Solo la categoría y el nivel del dato: nunca importes, €/m², m² ni la zona
+		...(r.oferta ? { resultado_oferta: r.oferta.contraOferta, nivel_oferta: r.oferta.nivel } : {}),
 		es_horquilla: r.horquilla,
 		distrito: distritoDeLugar(r.vista.lugar)
 	};

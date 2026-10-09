@@ -7,7 +7,7 @@
 	import QueHaras from './QueHaras.svelte';
 	import { unaLinea } from '#lib/cliente/ajustar';
 	import {
-		ENLACE_OFICIAL, INQUILINO, TARJETA_INQUILINO, heroEnVeces, ALGO_NO_CUADRA, type RespuestaQueHaras, type Canal, type EnlacesCompartir, type PantallaResultado
+		ENLACE_OFICIAL, INQUILINO, OFERTA, TARJETA_INQUILINO, heroEnVeces, ALGO_NO_CUADRA, type RespuestaQueHaras, type Canal, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
 	export type EstadoAporte = 'no' | 'enviando' | 'hecho' | 'error' | 'limite';
@@ -81,6 +81,14 @@
 
 		<p class="frase">{i.frase}</p>
 
+		{#if pantalla.oferta}
+			<!-- «Lo que se pide»: línea secundaria sin veredicto; el titular de arriba sigue siendo contra contratos -->
+			<div class="oferta">
+				<p class="oferta-linea">{pantalla.oferta.linea}</p>
+				<p class="oferta-pie">{pantalla.oferta.pie}</p>
+			</div>
+		{/if}
+
 		{#if v.aviso}
 			<div class="aviso">
 				<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="flex: none; margin-top: 1px">
@@ -119,7 +127,12 @@
 			</div>
 		</div>
 
-		<p class="fuente">{v.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
+		{#if pantalla.oferta}
+			<p class="fuente">{OFERTA.contratos} {v.fuente}</p>
+			<p class="fuente">{pantalla.oferta.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
+		{:else}
+			<p class="fuente">{v.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
+		{/if}
 
 		{#if i.tuParte}
 			<p class="tu-parte">Tu parte: <strong>{i.tuParte}</strong> al mes <span>(solo en tu pantalla)</span></p>
@@ -248,6 +261,21 @@
 	.frase {
 		font: 600 21px/1.3 var(--f-texto);
 		text-wrap: pretty;
+	}
+	.oferta {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		border-left: 3px solid var(--tinta);
+		padding-left: 10px;
+	}
+	.oferta-linea {
+		font: 500 15px/1.4 var(--f-texto);
+		text-wrap: pretty;
+	}
+	.oferta-pie {
+		font: 400 13px/1.4 var(--f-texto);
+		color: var(--grafito);
 	}
 	.aviso {
 		background: var(--superficie);

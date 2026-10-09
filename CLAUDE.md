@@ -19,7 +19,7 @@ supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado
 - Nada de scraping de portales: los datos del anuncio los teclea el usuario.
 - Nunca usar "ilegal" ni "abusivo" en textos. Tono sobrio, cifras con fuente y fecha.
 - No guardar direcciones exactas ni IP. Registro anónimo solo con consentimiento.
-- SERPAVI, anuncios analizados y aportaciones de residentes nunca se mezclan.
+- SERPAVI, pisos comprobados, aportaciones de residentes y la serie de anuncios recientes del Ayuntamiento nunca se mezclan.
 - Atribuciones obligatorias: "Origen de los datos: Ministerio de Vivienda y Agenda Urbana",
   "Elaboración propia con datos extraídos del sitio web del INE: www.ine.es",
   "CartoCiudad CC-BY 4.0 scne.es". Nunca sugerir respaldo oficial.

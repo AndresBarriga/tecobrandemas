@@ -380,6 +380,91 @@ export const INQUILINO = {
 	servido: '¿Te ha servido?'
 } as const;
 
+/**
+ * «Lo que se pide»: los anuncios recientes del Ayuntamiento junto a los contratos vigentes (solo con la flag de la
+ * oferta encendida). Sin %, un número por frase, nunca la diferencia entre las dos referencias y sin el nombre del
+ * barrio: el nivel (barrio o distrito) va siempre en la etiqueta. «Anuncios recientes» es solo esta serie.
+ */
+export const OFERTA = {
+	/** Atribución de la serie; el mes lo pone quien construye el texto. Va en un párrafo propio, aparte de la de los contratos */
+	fuente: (mes: string) =>
+		`Anuncios recientes: Ayuntamiento de Madrid, Banco de Datos, serie 4.3.21.D (elaboración del Ayuntamiento a partir de datos de Idealista), ${mes}.`,
+	/** Encabezado de la fuente de los contratos cuando la pantalla lleva también la de los anuncios (va delante de «Basado en N contratos…») */
+	contratos: 'Contratos: SERPAVI (Ministerio de Vivienda), 2024.',
+	/** Pie de la línea: de qué es media y de qué mes */
+	pie: (nivel: 'barrio' | 'distrito', mes: string) => `Media del ${nivel}, ${mes}.`,
+	/**
+	 * «Un anuncio»: el bloque de oferta habla solo de la oferta, en una línea con la cifra. El titular, la píldora y el
+	 * veredicto sobre los contratos los dice solo la parte de contratos. «Dentro» y «por debajo» solo informan.
+	 */
+	mirando: {
+		dentro: (nivel: 'barrio' | 'distrito', x: string) => `Anuncios recientes en el ${nivel}: ≈${x}.`,
+		debajo: (nivel: 'barrio' | 'distrito', x: string) => `Anuncios recientes en el ${nivel}: ≈${x}.`,
+		encima_en_linea: (nivel: 'barrio' | 'distrito', x: string) => `En línea con los anuncios recientes del ${nivel} (≈${x}).`,
+		encima_bajo_oferta: (nivel: 'barrio' | 'distrito', x: string) => `Por debajo de los anuncios recientes del ${nivel} (≈${x}).`,
+		encima_ambas: (nivel: 'barrio' | 'distrito', x: string) => `También por encima de los anuncios recientes del ${nivel} (≈${x}).`
+	},
+	/** «Mi alquiler»: la misma línea en los cinco casos, sin veredicto */
+	vivo: {
+		linea: (nivel: 'barrio' | 'distrito', x: string) => `Si buscaras en el ${nivel}, los anuncios recientes rondan ${x} para tu piso.`
+	},
+	/** Tarjetas de compartir: sin la línea de oferta, pero con el titular explícito (para no parecer el veredicto completo) */
+	tarjeta: {
+		frente: 'frente a los contratos vigentes de la zona',
+		nota: {
+			a: (barrio: string) => `frente a los contratos vigentes de la zona, en ${barrio}`,
+			b: (barrio: string) => `frente a los contratos vigentes de la zona, en ${barrio}`,
+			c: (barrio: string, aproximada: boolean, complemento = 'sobre la parte alta') =>
+				`${complemento} de los contratos vigentes de la zona, en ${barrio}` + (aproximada ? '. Ubicación aproximada.' : '')
+		},
+		habitual: (rango: string) => `Contratos vigentes de la zona: ${rango}.`,
+		og: (barrio: string | null) => `Un piso en ${barrio ?? 'Madrid'}: lo que piden frente a los contratos vigentes de la zona.`,
+		inquilino: {
+			debajo: 'frente a los contratos vigentes de la zona',
+			dentro: 'frente a los contratos vigentes de la zona',
+			limite: 'frente a los contratos vigentes de la zona',
+			encima: 'sobre la parte alta de los contratos vigentes de la zona',
+			veces: 'la parte alta de los contratos vigentes de la zona'
+		},
+		ogInquilino: {
+			debajo: (barrio: string) => `frente a los contratos vigentes de la zona, en ${barrio}`,
+			dentro: (barrio: string) => `frente a los contratos vigentes de la zona, en ${barrio}`,
+			encimab: (barrio: string) => `sobre la parte alta de los contratos vigentes de la zona, en ${barrio}`,
+			encima: (barrio: string) => `sobre la parte alta de los contratos vigentes de la zona, en ${barrio}`
+		}
+	}
+} as const;
+
+/**
+ * Textos de nivel de «Un anuncio» cuando el bloque de «Lo que se pide» lleva veredicto (el precio supera los contratos y la
+ * flag está encendida). «Aquí» se vuelve «en los contratos de la zona»: la pantalla ya habla de dos referencias y el nivel
+ * es solo el de los contratos. Con la flag apagada, o dentro y por debajo de contratos, valen los de siempre (MIRANDO, FRASE_NIVEL).
+ */
+export const NIVEL_CONTRATOS = {
+	/** Se sale de lo habitual: la frase bajo la cifra */
+	c: 'Ni para un piso excelente es habitual pagar esto en los contratos de la zona.',
+	/** Algo por encima: el matiz (con la cifra o el límite alto delante) */
+	b: 'Frente a los contratos, solo cuadra si el piso es excelente (ascensor, garaje, reforma reciente, piscina o vistas). Si no lo es, pregunta qué lo justifica.',
+	limiteAlto: 'En el límite alto de los contratos de la zona.',
+	algoPorEncima: (pct: string) => `Un ${pct} por encima de los contratos de la zona.`,
+	algoPorEncimaHorquilla: 'Algo por encima de los contratos de la zona.',
+	/** Título largo de la pantalla (`PantallaResultado.titular`) */
+	titular: {
+		b: 'Algo por encima de lo habitual: frente a los contratos, solo cuadra si el piso es excelente',
+		c: 'Se sale de lo habitual: ni para un piso excelente es habitual pagar esto en los contratos de la zona'
+	},
+	/** Tarjeta compartible */
+	tarjeta: {
+		b: 'Entrar aquí sale más caro que estar dentro. Frente a los contratos, solo cuadra si el piso es excelente.',
+		c: 'Ni para un piso excelente es habitual pagar esto en los contratos de la zona.'
+	},
+	/** «Negociar con el dato»: sin «hoy se pide más por entrar» (los anuncios recientes pueden estar al mismo nivel) */
+	negociar: {
+		tu: '¿Me podrías decir qué explica la diferencia, o si hay margen en el precio?',
+		usted: '¿Podría indicarme qué explica la diferencia, o si hay margen en el precio?'
+	}
+} as const;
+
 /** Habitaciones (F1): sin referencia oficial, sin nivel ni veredicto */
 export const HABITACION = {
 	insignia: 'Habitaciones: datos aportados por vecinos',

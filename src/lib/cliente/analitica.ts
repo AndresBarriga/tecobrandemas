@@ -9,7 +9,7 @@
  */
 import { PUBLIC_POSTHOG_ENABLED, PUBLIC_POSTHOG_KEY } from '$app/env/public';
 import {
-	type BRECHAS, type CANALES, type CAPAS_MAPA, type MODOS, type MOTIVOS_SIN_DATO, type RESPUESTAS_QUE_HARAS, type RESULTADOS,
+	type BRECHAS, type CANALES, type CAPAS_MAPA, type MODOS, type MOTIVOS_SIN_DATO, type NIVELES_OFERTA, type RESPUESTAS_QUE_HARAS, type RESULTADOS, type RESULTADOS_OFERTA,
 	campanaValida, dominioDelReferrer, filtrarEvento, navegadorApp
 } from './analitica-filtro';
 import { leerOrigenDeLaUrl, tarjetaOrigen } from './origen';
@@ -152,6 +152,9 @@ export interface DatosCompleta {
 	resultado: Resultado | null;
 	posicion: 'baja' | 'media' | 'alta' | null;
 	brecha_tramo: (typeof BRECHAS)[number] | null;
+	/** Solo con la oferta encendida y con dato de la zona; si no, la propiedad no sale */
+	resultado_oferta?: (typeof RESULTADOS_OFERTA)[number];
+	nivel_oferta?: (typeof NIVELES_OFERTA)[number];
 	es_horquilla: boolean;
 	distrito: string | null;
 }

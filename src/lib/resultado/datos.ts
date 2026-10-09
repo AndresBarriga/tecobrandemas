@@ -2,7 +2,7 @@
  * Datos que el navegador carga de data/processed/ y utilidades para consultarlos.
  * Los view-models reciben esto ya cargado: no hacen fetch ni leen ficheros.
  */
-import type { DatosSeccion } from '../motor';
+import type { DatosSeccion, TablaOferta } from '../motor';
 import type { Punto } from '../ubicacion/geocodificar';
 
 /** Una entrada de secciones_madrid.json */
@@ -33,10 +33,20 @@ export interface IpcJson {
 	ultimo_mes: string;
 }
 
+/** oferta_madrid.json: anuncios recientes (€/m²) del Ayuntamiento; solo se carga con la flag de la oferta encendida */
+export interface OfertaJson extends TablaOferta {
+	serie: string;
+	fuente: string;
+	/** AAAA-MM del último mes con dato */
+	mes: string;
+}
+
 export interface DatosMadrid {
 	secciones: Record<string, SeccionJson>;
 	barrios: Record<string, BarrioJson>;
 	ipc: IpcJson;
+	/** Sin esto (flag apagada, o el fichero no carga) no hay ninguna línea de oferta */
+	oferta?: OfertaJson;
 	/** Centroide de cada sección; llega con los polígonos (carga diferida) */
 	centros?: Map<string, Punto>;
 }

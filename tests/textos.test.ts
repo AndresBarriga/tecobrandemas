@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import type { Anuncio } from '../src/lib/motor';
 import * as textos from '../src/lib/resultado/textos';
 import {
-	type DatosMadrid, TU_ZONA, construirPantalla, construirTarjeta, construirTuZona, validarAportacion, validarFormulario, zona
+	type DatosMadrid, TU_ZONA, aInquilino, construirPantalla, construirTarjeta, construirTarjetaInquilino, construirTuZona, validarAportacion, validarFormulario, zona
 } from '../src/lib/resultado';
 
 const PROHIBIDAS = [
@@ -19,7 +19,9 @@ const PROHIBIDAS = [
 	// Encuadre de contratos vigentes (docs/brief-cambio-de-encuadre.md): la referencia no es un techo ni el precio de mercado
 	'techo', 'lo que se paga aquí', 'lo que se paga en tu zona', 'puedes respirar', 'dentro de lo razonable', 'como mucho',
 	// Nombres antiguos del selector y del lema
-	'ya vivo aquí', 'estoy mirando un piso', 'tiene sentido este precio'
+	'ya vivo aquí', 'estoy mirando un piso', 'tiene sentido este precio',
+	// «Lo que se pide»: los anuncios recientes no son el precio de mercado ni un veredicto de justicia
+	'precio justo', 'precio correcto', 'precio real', 'lo que vale', 'precio de mercado', 'razonable', 'normal', 'de hoy'
 ];
 const sinTildes = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 
@@ -33,8 +35,18 @@ function cadenas(v: unknown): string[] {
 const DATOS: DatosMadrid = {
 	secciones: { A: { cdis: '07', barrio: '071', smed: 70, p25: 12, p75: 20, n: 100, n_vu: 0, med2015: 10, med2024: 15 } },
 	barrios: { '071': { nombre: 'Almagro', cod_distrito: '07', distrito: 'Chamberí' } },
-	ipc: { factor: 1.05, ultimo_mes: '2026-08' }
+	ipc: { factor: 1.05, ultimo_mes: '2026-08' },
+	// Anuncios recientes: 24 €/m² en el barrio (en línea con 1.700 €) y 22 €/m² en el distrito
+	oferta: {
+		serie: '4.3.21.D', fuente: 'Ayuntamiento de Madrid', mes: '2026-06',
+		barrios: { '071': { v: 24, mes: '2026-06' } }, distritos: { '07': { v: 22, mes: '2026-06' } }
+	}
 };
+// Con 30 €/m² (2.100 €) los 1.700 € quedan por debajo de los anuncios y, con 12 €/m², por encima: salen los cinco casos
+const conOferta = (v: number, nivel: 'barrio' | 'distrito'): DatosMadrid => ({
+	...DATOS,
+	oferta: { ...DATOS.oferta!, barrios: nivel === 'barrio' ? { '071': { v, mes: '2026-06' } } : {}, distritos: { '07': { v, mes: '2026-06' } } }
+});
 const base: Anuncio = { precio: 1000, superficie: 70, obraNueva: false, tipo: 'piso', largaDuracion: true };
 const ubic = { cusecs: ['A'], aproximada: true, motivo: 'calle' as const, numerosUsados: [4], punto: null, via: 'Calle de Alcalá' };
 
@@ -42,7 +54,15 @@ describe('textos', () => {
 	// Todo lo que el producto puede decir: constantes, avisos con valores de ejemplo,
 	// y las pantallas generadas para cada nivel y cada motivo sin dato
 	const funciones = Object.values(textos.AVISO_UBICACION).flatMap((f) => [true, false].map((horquilla) => f({ n: 2, calle: 'Calle de Alcalá', usados: '4 y 6', horquilla })));
-	const pantallas = [200, 1300, 1700, 3000].map((precio) => construirPantalla({ ...base, precio }, ubic, DATOS));
+	const pantallas = [200, 1300, 1700, 3000].flatMap((precio) =>
+		[DATOS, conOferta(30, 'barrio'), conOferta(12, 'distrito')].map((d) => construirPantalla({ ...base, precio }, ubic, d))
+	);
+	// «Mi alquiler» con la oferta: la misma línea sin veredicto, y sus tarjetas
+	const inquilinos = pantallas.flatMap((p) =>
+		p.tipo === 'resultado'
+			? [aInquilino(p, { ...base, precio: 1700 }, { firma: { reciente: true, mes: null, ano: 2026 }, rentaFirma: null, somos: null })]
+			: []
+	);
 	const sinDato = Object.values(textos.SIN_DATO);
 	const dinamicos = [
 		textos.PAGINA_TARJETA.intro('Almagro'),
@@ -54,7 +74,12 @@ describe('textos', () => {
 		textos.NOTA_TARJETA.a('Almagro'),
 		textos.NOTA_TARJETA.b('Almagro'),
 		textos.NOTA_TARJETA.c('Almagro', true),
-		textos.NOTA_TARJETA.c('Almagro', false)
+		textos.NOTA_TARJETA.c('Almagro', false),
+		textos.OFERTA.tarjeta.og('Almagro'),
+		textos.OFERTA.tarjeta.og(null),
+		textos.OFERTA.tarjeta.nota.a('Almagro'),
+		textos.OFERTA.tarjeta.nota.c('Almagro', true, 'la parte alta'),
+		textos.OFERTA.tarjeta.habitual('de 588 a 767 €')
 	];
 	const todos = [
 		...cadenas({ ...textos, AVISO_UBICACION: undefined }),
@@ -62,6 +87,8 @@ describe('textos', () => {
 		...funciones,
 		...cadenas(pantallas),
 		...pantallas.flatMap((p) => (p.tipo === 'resultado' ? cadenas(construirTarjeta(p)) : [])),
+		...cadenas(inquilinos),
+		...inquilinos.flatMap((p) => cadenas(construirTarjetaInquilino(p, 0))),
 		...cadenas(sinDato),
 		...cadenas(validarFormulario({ precio: '', superficie: '', obraNueva: false, largaDuracion: true, tipo: 'piso' })),
 		...cadenas(validarAportacion({ precio: '', superficie: '', anioContrato: '', barrio: '', consentimiento: false }, [], 2026)),

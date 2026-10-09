@@ -4,7 +4,7 @@
 import { createHash } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 
-const ficheros = ['secciones_madrid.json', 'seccion_barrio.json', 'ipc_alquiler.json', 'secciones_madrid.topo.json', 'vecinas.json'];
+const ficheros = ['secciones_madrid.json', 'seccion_barrio.json', 'ipc_alquiler.json', 'secciones_madrid.topo.json', 'vecinas.json', 'oferta_madrid.json'];
 const conHash = ['viales_sugerencias', 'viales_zonas', 'viales_portales'];
 
 mkdirSync('static/data', { recursive: true });

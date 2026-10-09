@@ -32,6 +32,7 @@ python3.12 -m venv .venv && .venv/bin/pip install -e .
 .venv/bin/python scripts/02_serpavi_secciones.py
 .venv/bin/python scripts/03_callejero.py       # genera geocoder.sqlite
 .venv/bin/python scripts/04_ipc.py
+.venv/bin/python scripts/10_oferta.py        # anuncios recientes por distrito y barrio (ver docs/operacion.md); el Excel del Ayuntamiento va en data/raw/oferta_AAAA-MM.csv|xlsx
 .venv/bin/python scripts/05_verificar.py       # criterios de aceptación; sale con 1 si falla algo
 scripts/09_mapa_base.sh                        # data/processed/madrid.pmtiles (necesita la CLI de pmtiles)
 ```

@@ -104,6 +104,39 @@ El mismo formato de campaña se exige a las propiedades `utm_*` de los eventos (
 
 **Registros del Worker:** `wrangler.jsonc` pone `observability.logs.invocation_logs: false`. Los registros de invocación guardaban método y URL de cada petición (con `?barrio=` o el id de `/t/…`) durante 3 días (plan gratuito) o 7 (de pago); la documentación de Cloudflare no detalla si incluyen la IP o las cabeceras (no verificado). El código no escribe `console.*` en el servidor.
 
+## «Lo que se pide» (anuncios recientes del Ayuntamiento)
+
+Segundo punto de referencia junto a los contratos SERPAVI: el €/m² de los anuncios recientes por barrio o distrito, × los m² de la persona. **Está apagado por defecto** (flag de compilación `PUBLIC_OFERTA_ENABLED`); con la flag apagada no cambia nada visible: ni el resultado, ni las tarjetas, ni la portada, y el navegador ni pide el fichero de datos. Se construye en tres PR apiladas (motor y resultado → mapa → textos de portada y «Cómo calculamos»); esta sección cubre la primera.
+
+**Cómo se enciende y se apaga**
+- **Local:** `PUBLIC_OFERTA_ENABLED=true npm run dev` (en PowerShell: `$env:PUBLIC_OFERTA_ENABLED='true'; npm run dev`). Sin la variable, apagada. Es una variable pública de compilación (`src/env.ts`, estática): se lee al construir, no al ejecutar.
+- **Producción:** el paso de build del job `desplegar` (`ci.yml`) pasa `PUBLIC_OFERTA_ENABLED: ${{ vars.PUBLIC_OFERTA_ENABLED }}`; ausente o vacía = apagada. **Créala en el entorno `produccion`** (Settings → Environments → produccion → Environment variables), no como variable del repositorio: el job `desplegar` es el único que usa ese entorno, así que ninguna otra compilación la ve. La activación la decide quien lanza (licencia confirmada antes, ver abajo).
+  - **Encender:** variable `PUBLIC_OFERTA_ENABLED` = `true` en el entorno `produccion` y relanzar el CI del último commit de `main` (Actions → CI → «Re-run all jobs») para que vuelva a construir y desplegar.
+  - **Apagar el día del lanzamiento, rápido:** variable a `false` (o borrarla) y relanzar igual. El relanzamiento repite `pruebas` (instalar, `check`, tests, build), `desplegar` (instalar, build, `wrangler deploy`) y `humo`. **No he medido cuánto tarda:** `gh` no está en este equipo; anotar aquí la duración real de un despliegue (Actions → CI → «Total duration») antes del lanzamiento.
+  - **Más rápido aún (por verificar):** `npx wrangler rollback` vuelve a la versión anterior del Worker sin reconstruir, si esa versión se desplegó con la flag apagada.
+- **Vista previa:** no existe (no se activan URLs de vista previa por rama) y el job `pruebas` (PR y `main`) compila sin la variable, así que siempre sale apagada. Para verla encendida: en local (`PUBLIC_OFERTA_ENABLED=true npm run dev`). Si algún día hay vista previa, basta un entorno `preview` con su propia variable: las variables de un entorno de GitHub no se ven desde otro.
+- La prueba de humo no cambia: es de solo lectura y no depende de la flag.
+
+**Datos: proceso mensual, a mano**
+1. Descargar del Banco de Datos del Ayuntamiento la serie «4.3.21.D. Evolución del precio de oferta de alquiler de la vivienda (€/m²) por Distrito, Barrio y Mes» (en el nombre del fichero descargado aparece `0504030000214`) y dejarla en `data/raw/` (no se sube a git) como `oferta_AAAA-MM.csv` o `.xlsx`, con el mes del último dato en el nombre. La URL estable de descarga no está verificada: el Banco de Datos necesita navegador.
+2. `.venv/bin/python scripts/10_oferta.py` (sin argumentos usa el fichero más reciente) → `data/processed/oferta_madrid.json`; después `npm run datos`; subir el JSON en un PR.
+3. Reglas del script: el mes es el último con dato en algún distrito; «..» = sin dato; distrito = su último mes con dato; **barrio solo si tiene dato en el último mes y en el anterior** (con el valor del último); si no, el producto usa el distrito, nunca otro barrio. El script se detiene (nunca adivina) si un valor no se lee, está fuera de 5-60 €/m², faltan barrios oficiales o el mes del nombre no coincide con el último con dato. Las equivalencias de barrios de Idealista con los del BOAM (pie de la serie) ya vienen aplicadas en los códigos.
+4. Resultado de junio de 2026: 21 de 21 distritos con dato y 92 de 131 barrios con dato en mayo y junio (37 sin dato; Marroquina y Timón solo tienen junio y no se usan; Casco Histórico de Vallecas solo tiene mayo).
+
+**Reglas del producto**
+- Estimada = €/m² × m² de la persona, con m² ≥ 30 y zona con dato; si no, no hay línea y tampoco error. Sin línea en las pantallas «sin dato».
+- Banda de «en línea»: ±10 % de la estimada (`config/oferta.json`); límites incluidos. Se recalibra con `resultado_oferta` tras el soft launch.
+- Con varias zonas posibles (calle sin número): el barrio solo si es uno; si no, el distrito si es uno; si son de distritos distintos, no hay línea.
+- **Nunca** se muestra ni se calcula la diferencia entre las dos referencias: cada una se compara solo con el precio de la persona.
+- La línea de oferta no lleva el nombre del barrio («en el barrio» o «en el distrito»); las tarjetas de compartir no llevan la línea, pero su titular dice «frente a los contratos vigentes de la zona». El índice sigue siendo el IPC del alquiler (nacional), también para los contratos.
+
+**Licencia y atribución (por resolver antes de encender en producción)**
+- Aviso legal del Ayuntamiento (datos.madrid.es/pages/aviso-legal): «Las informaciones que contiene son de titularidad del Ayuntamiento de Madrid […] pueden ser utilizadas libremente, indicando la fuente y el nombre del autor. Este criterio de reutilización no se aplica, salvo que expresamente se establezca lo contrario, ni a imágenes, vídeos u otros contenidos multimedia, ni tampoco a las informaciones […] publicadas por el Ayuntamiento de Madrid procedentes de terceros que vayan firmados.»
+- **Riesgo:** la serie dice «elaboración propia a partir de los datos facilitados por Idealista». Hay que confirmar que cae en la reutilización libre y no en la excepción de terceros: comprobar si está en el portal de datos abiertos (CC BY 4.0) o consultar por el trámite «Procedimiento para la reutilización de documentos».
+- Atribución en pantalla: «Fuente: Ayuntamiento de Madrid, Banco de Datos, serie 4.3.21.D (elaboración del Ayuntamiento a partir de datos de Idealista), {mes año}.» Idealista no se usa directamente en el producto.
+
+**Analítica:** `completa` lleva además `resultado_oferta` (`por_debajo`, `en_linea`, `por_encima`) y `nivel_oferta` (`barrio`, `distrito`), solo cuando hay línea de oferta (si no, las propiedades no salen). Nunca importes, €/m², m², barrio ni la zona. Con `resultado` (contratos) y `modo` salen los cinco casos. Ojo: `completa` ya llevaba `distrito` y `brecha_tramo`; el distrito viaja ahora también junto a `resultado_oferta` (decisión pendiente, ver la PR).
+
 ## Antes del lanzamiento
 
 1. Quitar el `noindex`: `config/indexacion.json` → `"noindex": false`, y desplegar.
@@ -115,3 +148,4 @@ El mismo formato de campaña se exige a las propiedades `utm_*` de los eventos (
 3. Probar la vista previa de `/t/:id` en WhatsApp y X desde un móvil.
 4. `npm run informe:lanzamiento` sin fallos (bloquea `/r7k` para no contar como visitas). El presupuesto «Bundle inicial» es de **165 KB gz** (era 150 KB; subido el 07/10/2026 al añadir PostHog, variante slim, +50 KB: se mide 161,9 KB).
 5. Quitar los eventos de prueba en PostHog (filtro `interno = true`) o empezar el análisis desde la fecha del lanzamiento.
+6. «Lo que se pide»: decidir si se enciende. Antes, la licencia de la serie confirmada, la variable en el entorno `produccion` y la duración real del redeploy anotada.
