@@ -391,7 +391,7 @@ export const OFERTA = {
 		`Fuente: Ayuntamiento de Madrid, Banco de Datos, serie 4.3.21.D (elaboración del Ayuntamiento a partir de datos de Idealista), ${mes}.`,
 	/** Pie de las dos líneas: de qué es media y de qué mes */
 	pie: (nivel: 'barrio' | 'distrito', mes: string) => `Media del ${nivel}, ${mes}.`,
-	/** «Un anuncio»: el titular de cada caso y, en dos de ellos, la línea con la cifra */
+	/** «Un anuncio»: el titular de cada caso y la línea con la cifra (la misma en los cuatro casos de «dentro» y «por encima»; «por debajo» lleva la suya) */
 	mirando: {
 		dentro: {
 			titular: 'Dentro de rango frente a los contratos vigentes de la zona.',
@@ -400,17 +400,17 @@ export const OFERTA = {
 		encima_en_linea: {
 			titular: (nivel: 'barrio' | 'distrito') =>
 				`Por encima de los contratos vigentes de la zona, pero en línea con los anuncios recientes del ${nivel}.`,
-			linea: null
+			linea: (nivel: 'barrio' | 'distrito', x: string) => `Anuncios recientes en el ${nivel}: ≈${x}.`
 		},
 		encima_bajo_oferta: {
 			titular: (nivel: 'barrio' | 'distrito') =>
 				`Por encima de los contratos vigentes de la zona y por debajo de los anuncios recientes del ${nivel}.`,
-			linea: null
+			linea: (nivel: 'barrio' | 'distrito', x: string) => `Anuncios recientes en el ${nivel}: ≈${x}.`
 		},
 		encima_ambas: {
 			titular: (nivel: 'barrio' | 'distrito') =>
 				`Por encima de las dos referencias: los contratos vigentes de la zona y los anuncios recientes del ${nivel}.`,
-			linea: null
+			linea: (nivel: 'barrio' | 'distrito', x: string) => `Anuncios recientes en el ${nivel}: ≈${x}.`
 		},
 		debajo: {
 			titular: 'Por debajo del rango de los contratos vigentes de la zona.',

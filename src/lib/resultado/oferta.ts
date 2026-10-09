@@ -24,8 +24,8 @@ export interface PantallaOferta {
 	caso: CasoOferta | null;
 	/** Frase del caso; null en «Mi alquiler» (ahí manda el titular contra contratos) */
 	titular: string | null;
-	/** Línea con la cifra: «Anuncios recientes en el barrio: ≈1.028 €.»; null en los casos que ya van en el titular */
-	linea: string | null;
+	/** Línea con la cifra: «Anuncios recientes en el barrio: ≈1.028 €.» (en «por debajo», «Como referencia, …»; en «Mi alquiler», «Si buscaras…») */
+	linea: string;
 	/** «Media del barrio, junio de 2026.» */
 	pie: string;
 	/** «Fuente: Ayuntamiento de Madrid, Banco de Datos, serie 4.3.21.D (…), junio de 2026.» */
@@ -51,7 +51,8 @@ function textos(nivel: NivelOferta, mes: string, estimada: number, caso: CasoOfe
 	if (caso === null) return { titular: null, linea: OFERTA.vivo.linea(nivel, x), pie, fuente };
 	if (caso === 'dentro') return { titular: OFERTA.mirando.dentro.titular, linea: OFERTA.mirando.dentro.linea(nivel, x), pie, fuente };
 	if (caso === 'debajo') return { titular: OFERTA.mirando.debajo.titular, linea: OFERTA.mirando.debajo.linea(nivel, x), pie, fuente };
-	return { titular: OFERTA.mirando[caso].titular(nivel), linea: null, pie, fuente };
+	const c = OFERTA.mirando[caso];
+	return { titular: c.titular(nivel), linea: c.linea(nivel, x), pie, fuente };
 }
 
 /** «Un anuncio»: el caso según dónde queda el precio frente a los contratos y frente a la estimación */

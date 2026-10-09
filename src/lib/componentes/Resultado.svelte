@@ -90,7 +90,7 @@
 			<!-- «Lo que se pide»: dos líneas bajo el titular, sin barra ni diferencia entre las referencias -->
 			<div class="oferta">
 				<p class="oferta-titular">{pantalla.oferta.titular}</p>
-				{#if pantalla.oferta.linea}<p class="oferta-linea">{pantalla.oferta.linea}</p>{/if}
+				<p class="oferta-linea">{pantalla.oferta.linea}</p>
 				<p class="oferta-pie">{pantalla.oferta.pie}</p>
 			</div>
 		{/if}
