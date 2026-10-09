@@ -180,20 +180,26 @@ test.describe('vista previa para rastreadores (WhatsApp, Facebook, X)', () => {
 		await expect(page.getByRole('link', { name: 'A su precio, inicio' })).toBeVisible();
 	});
 
-	test('copiar el enlace avisa cuando la tarjeta ya está subida (si no, la vista previa saldría vacía)', async ({ page, context }) => {
-		await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+	test('WhatsApp y X se abren cuando la tarjeta ya está subida (si no, la vista previa sale vacía)', async ({ page, context }) => {
 		await sinCompartirNativo(page);
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		await expect(page.getByRole('group', { name: 'Compartir el resultado' })).toBeVisible();
 		await esperarAnimacion(page);
-		// La subida tarda: mientras tanto se avisa de que se está preparando
+		// La subida tarda: el canal no puede abrirse antes de que termine
+		let subidaTerminada = 0;
 		await page.route('**/api/tarjeta', async (ruta) => {
 			await new Promise((r) => setTimeout(r, 1200));
 			await ruta.continue();
+			subidaTerminada = Date.now();
 		});
-		await page.getByRole('button', { name: 'Copiar enlace' }).click();
-		await expect(page.getByText('Preparando la tarjeta…')).toBeVisible();
-		await expect(page.getByText('Enlace copiado.')).toBeVisible({ timeout: 5000 });
+		await context.route(/wa\.me|x\.com/, (r) => r.fulfill({ status: 200, body: 'ok' }));
+		const popup = context.waitForEvent('page');
+		await page.getByRole('link', { name: 'WhatsApp' }).click();
+		const nueva = await popup;
+		const abierta = Date.now();
+		expect(nueva.url()).toMatch(/wa\.me|about:blank/);
+		expect(subidaTerminada).toBeGreaterThan(0);
+		expect(abierta).toBeGreaterThanOrEqual(subidaTerminada - 50);
 	});
 });

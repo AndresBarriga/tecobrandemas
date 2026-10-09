@@ -708,8 +708,9 @@ export const TARJETA = {
 	detalle: 'La tarjeta muestra tu barrio y permite deducir tu precio.',
 	/** Cierre de la tarjeta: nunca «a su precio» como veredicto */
 	cierre: '¿Está a su precio? Compruébalo en asuprecio.com',
-	/** Fuentes de la tarjeta v2, en una sola línea: la atribución completa está en la página enlazada */
-	fuentes: 'Datos: SERPAVI (Ministerio de Vivienda) y Ayuntamiento de Madrid · detalle en asuprecio.com/como-calculamos',
+	/** Fuentes de la tarjeta v2: las atribuciones obligatorias tal cual, en una sola línea muy pequeña */
+	fuentes:
+		'Origen de los datos: Ministerio de Vivienda y Agenda Urbana · Elaboración propia con datos extraídos del sitio web del INE: www.ine.es · Ayuntamiento de Madrid, serie 4.3.21.D (elaboración a partir de datos de Idealista)',
 	pie: 'Estimación independiente. Origen de los datos: Ministerio de Vivienda y Agenda Urbana. Elaboración propia con datos extraídos del sitio web del INE: www.ine.es',
 	/** Dentro de la imagen: las capturas viajan sin enlace */
 	dominio: 'asuprecio.com',
@@ -719,7 +720,7 @@ export const TARJETA = {
 	enlaceCopiado: 'Enlace copiado.',
 	canales: { whatsapp: 'WhatsApp', x: 'X', copiar: 'Copiar enlace', descarga: 'Descargar imagen' },
 	canalesAviso:
-		'Al copiar el enlace se guarda la tarjeta (sin dirección ni precio exacto) para que el enlace funcione y se vea con su vista previa. «Descargar imagen» no guarda nada.',
+		'Al elegir WhatsApp, X o copiar el enlace se guarda la tarjeta (sin dirección ni precio exacto) para que el enlace funcione. En WhatsApp la imagen sale como vista previa del enlace; si prefieres adjuntarla tú, descárgala.',
 	descargaHecha: 'Imagen descargada. No se ha guardado nada.',
 	error: 'No hemos podido preparar la tarjeta. Inténtalo de nuevo.'
 } as const;

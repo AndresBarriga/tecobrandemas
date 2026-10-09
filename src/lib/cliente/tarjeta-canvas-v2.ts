@@ -73,7 +73,8 @@ function columnas(t: TarjetaV2): Columna[] {
 		titulo: COMPARATIVA.contratos.titulo.toUpperCase(),
 		sub: COMPARATIVA.contratos.sub,
 		cifra: c.cifra,
-		color: ACENTO[c.clase],
+		// Identidad de los contratos: tinta. El color del nivel queda solo en su chip
+		color: COLOR.tinta,
 		nota: c.nota,
 		pildora: { texto: c.etiqueta, fondo: TINTE[c.clase], color: ACENTO[c.clase], icono: c.icono }
 	};
@@ -88,6 +89,18 @@ function columnas(t: TarjetaV2): Columna[] {
 		pildora: { texto: a.veredicto, fondo: VIOLETA.tinte, color: VIOLETA.oscuro, icono: null }
 	};
 	return t.modo === 'mirando' ? [anuncios, contratos] : [contratos, anuncios];
+}
+
+/**
+ * Las atribuciones obligatorias en una sola línea muy pequeña, de lado a lado: la letra baja lo justo para caber.
+ * Devuelve el tamaño usado
+ */
+function lineaFuentes(ctx: Ctx, x: number, y: number, w: number, maxTam: number): number {
+	let tam = maxTam;
+	fuente(ctx, 500, tam, 'semi');
+	while (ancho(ctx, TARJETA.fuentes) > w && tam > 6) fuente(ctx, 500, --tam, 'semi');
+	linea(ctx, TARJETA.fuentes, x, y, tam * 1.3, { color: COLOR.tinta });
+	return tam;
 }
 
 /** El mismo tamaño para las dos cifras: el mayor con el que caben las dos en su columna */
@@ -212,7 +225,7 @@ export function dibujarTarjetaV2(canvas: HTMLCanvasElement, t: TarjetaV2): void 
 	const reglasH = reglas(ctx, t, 0, g, false, COLOR.papel);
 	fuente(ctx, 800, 36, 'texto');
 	const cierreH = 36 * 1.25;
-	const fuentesH = 20 * 1.35;
+	const fuentesH = 16 * 1.3;
 	const pieH = cierreH + 18 + fuentesH;
 	const ocupado = () => cabeceraH + resumen.length * tamResumen * 1.05 + colH + reglasH + pieH;
 	while (ABAJO - TOP - ocupado() < 120 && tamResumen > 44) {
@@ -275,11 +288,8 @@ export function dibujarTarjetaV2(canvas: HTMLCanvasElement, t: TarjetaV2): void 
 	fuente(ctx, 800, 36, 'texto');
 	linea(ctx, TARJETA.cierre, X0, y, cierreH, { color: COLOR.tinta });
 	y += cierreH + 18;
-	// Una sola línea: la letra baja lo justo para caber en el ancho
-	let tamF = 20;
-	fuente(ctx, 500, tamF, 'texto');
-	while (ancho(ctx, TARJETA.fuentes) > W && tamF > 14) fuente(ctx, 500, --tamF, 'texto');
-	linea(ctx, TARJETA.fuentes, X0, y, fuentesH, { color: COLOR.tinta });
+	// Atribuciones en una línea, de margen a margen de la tarjeta (más ancha que el contenido)
+	lineaFuentes(ctx, 40, y, TARJETA_ANCHO - 80, 16);
 }
 
 /** Vista previa del enlace de 1200×630 */
@@ -329,5 +339,7 @@ export function dibujarOgV2(canvas: HTMLCanvasElement, t: TarjetaV2): void {
 	const g: GeomReglas = { x: X0, w: W, barra: 22, punto: 24, tamTitulo: 17, tamEje: 17, sep: 16 };
 	reglas(ctx, t, yReglas, g, true, COLOR.pista);
 	fuente(ctx, 700, 26, 'texto');
-	linea(ctx, TARJETA.cierre, X0, OG_ALTO - 52 - 32, 32, { color: COLOR.tinta });
+	linea(ctx, TARJETA.cierre, X0, OG_ALTO - 52 - 40, 32, { color: COLOR.tinta });
+	// Atribuciones en una línea al pie, de lado a lado
+	lineaFuentes(ctx, 24, OG_ALTO - 26, OG_ANCHO - 48, 14);
 }

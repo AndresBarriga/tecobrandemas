@@ -86,6 +86,9 @@
 				{#if i.contrato.cambio}<p class="cambio">{i.contrato.cambio}</p>{/if}
 			</div>
 		</div>
+		{:else if i.contrato.cambio}
+			<!-- Contratos de más de un año: solo lo que pagaba al firmar, si lo ha escrito -->
+			<p class="cambio-firma">{i.contrato.cambio}</p>
 		{/if}
 
 		{#if i.tuParte}
@@ -225,6 +228,9 @@
 	.detalle {
 		color: var(--grafito);
 		font-weight: 400;
+	}
+	.cambio-firma {
+		font: 500 16px/1.45 var(--f-texto);
 	}
 	.cambio {
 		font-weight: 500;

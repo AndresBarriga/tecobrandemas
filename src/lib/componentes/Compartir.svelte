@@ -5,7 +5,7 @@
 
 	/**
 	 * Compartir la tarjeta (los dos modos). En el móvil con hoja de compartir, un botón que abre la hoja nativa con la
-	 * imagen y el enlace. En escritorio, «Copiar enlace» (con vista previa al pegarlo) y «Descargar imagen».
+	 * imagen y el enlace. En escritorio, WhatsApp, X, «Copiar enlace» y «Descargar imagen».
 	 */
 	let {
 		tarjeta,
@@ -46,7 +46,9 @@
 		<button type="button" class={clase} onclick={alCompartir} disabled={compartiendo}>{compartiendo ? TARJETA.generando : boton}</button>
 	{:else if enlaces}
 		<div class="canales" role="group" aria-label={boton}>
-			<button type="button" class="{clase} canal" onclick={() => alCompartirPor('copiar')}>{TARJETA.canales.copiar}</button>
+			<a class="{clase} canal" href={enlaces.whatsapp} target="_blank" rel="noopener noreferrer" onclick={(e) => { e.preventDefault(); alCompartirPor('whatsapp'); }}>{TARJETA.canales.whatsapp}</a>
+			<a class="{clase} canal" href={enlaces.x} target="_blank" rel="noopener noreferrer" onclick={(e) => { e.preventDefault(); alCompartirPor('x'); }}>{TARJETA.canales.x}</a>
+			<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor('copiar')}>{TARJETA.canales.copiar}</button>
 			<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor('descarga')}>{TARJETA.canales.descarga}</button>
 		</div>
 		<p class="mensaje">{TARJETA.canalesAviso}</p>

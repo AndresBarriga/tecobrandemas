@@ -91,7 +91,7 @@
 		padding: 14px 14px 16px;
 		border-radius: var(--radio);
 		background: var(--blanco);
-		border-top: 4px solid var(--acento);
+		border-top: 4px solid var(--tinta);
 		min-width: 0;
 	}
 	.tarjeta.anuncios {
@@ -134,8 +134,9 @@
 		font-size: 44px;
 		line-height: 1;
 	}
+	/* Identidad de cada referencia: tinta para los contratos, violeta para los anuncios; el color del nivel solo en su chip */
 	.contratos .cifra {
-		color: var(--acento);
+		color: var(--tinta);
 	}
 	.anuncios .cifra {
 		color: var(--acento-anuncios);
