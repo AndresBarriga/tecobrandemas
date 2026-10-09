@@ -6,7 +6,7 @@
 	import QueHaras from './QueHaras.svelte';
 	import TarjetaAmpliable from './TarjetaAmpliable.svelte';
 	import {
-		AVISO_APROXIMADA_TITULO, BOTON_COMPARTIR, ENLACE_OFICIAL, ETIQUETA_POR_DEBAJO, OFERTA, REGISTRO, TARJETA, heroEnVeces, ALGO_NO_CUADRA, type RespuestaQueHaras,
+		BOTON_COMPARTIR, ENLACE_OFICIAL, ETIQUETA_POR_DEBAJO, OFERTA, REGISTRO, TARJETA, heroEnVeces, ALGO_NO_CUADRA, type RespuestaQueHaras,
 		type Canal, type Contador, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
@@ -96,15 +96,10 @@
 		<!-- Con veredicto de oferta (por encima de contratos), el bloque ya cuantifica lo que este aviso dice y en «por encima de las dos» lo desmentiría -->
 		{#if !pantalla.oferta?.veredicto}<p class="contratos">{v.avisoContratos}</p>{/if}
 
-		{#if v.aviso}
-			<div class="aviso">
-				<div class="aviso-texto">
-					<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="flex: none; margin-top: 1px">
-						<circle cx="10" cy="10" r="8.5" stroke="var(--tinta)" stroke-width="1.5" fill="none" />
-						<path d="M10 9v5M10 6v.5" stroke="var(--tinta)" stroke-width="2" />
-					</svg>
-					<p><strong>{AVISO_APROXIMADA_TITULO}</strong> {v.aviso}</p>
-				</div>
+		<!-- Con varias zonas que difieren: la cifra es la media; esto dice entre qué valores se mueve. «Añade el número» solo con calle sin número -->
+		{#if v.aclaracion}
+			<div class="aclaracion">
+				<p>{v.aclaracion}</p>
 				{#if alAfinar}<AfinarNumero {alAfinar} />{/if}
 			</div>
 		{/if}
@@ -349,22 +344,15 @@
 		font: 400 13px/1.4 var(--f-texto);
 		color: var(--grafito);
 	}
-	.aviso {
-		background: var(--superficie);
-		border-radius: var(--radio);
-		padding: 16px;
+	.aclaracion {
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
-	}
-	.aviso-texto {
-		display: flex;
 		gap: 10px;
-		align-items: flex-start;
-		font: 400 15px/1.45 var(--f-texto);
 	}
-	.aviso-texto strong {
-		font-weight: 700;
+	.aclaracion p {
+		font: 400 14px/1.45 var(--f-texto);
+		color: var(--grafito);
+		text-wrap: pretty;
 	}
 	.barra-caja {
 		padding: 32px var(--margen) 0;

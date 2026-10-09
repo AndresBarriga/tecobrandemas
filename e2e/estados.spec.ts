@@ -37,8 +37,9 @@ test.describe('niveles', () => {
 	test('06-horquilla: calle sin número', async ({ page }) => {
 		await abrir(page);
 		await comprobar(page, { direccion: 'Calle Sabadell', precio: '1400', superficie: '58' });
-		await expect(page.getByText('Ubicación aproximada.')).toBeVisible();
-		await expect(page.locator('main')).toContainText(/entre\s*\+\d+/);
+		// Una sola cifra y, debajo, la aclaración de la media (ya no hay caja de «Ubicación aproximada»)
+		await expect(page.getByText(/Media de las zonas cercanas; según la zona exacta, de \+\d/)).toBeVisible();
+		await expect(page.locator('main')).not.toContainText(/entre\s*\+\d+/);
 		await expect(page.getByLabel('Añade el número para afinar')).toBeVisible();
 		await esperarAnimacion(page);
 		await captura(page, '06-horquilla');

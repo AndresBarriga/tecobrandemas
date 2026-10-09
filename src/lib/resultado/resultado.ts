@@ -6,11 +6,11 @@
  *  - nivel «por encima»: la cifra principal es el % sobre R_sup y debajo van los € al mes y al año;
  *  - nivel «explicable»: sin porcentaje; se dice hasta dónde llegaría un piso de máxima calidad (R_max);
  *  - nivel «dentro»: sin porcentaje, con la posición (baja, media o alta);
- *  - con horquilla, la cifra es el intervalo entre secciones y el nivel es el más prudente.
+ *  - con horquilla, el nivel es el de la zona más prudente y las cifras salen de la media de las zonas posibles.
  */
 import { type Anuncio, type Analisis, type Nivel, type ResultadoSeccion, analizar } from '../motor';
 import { type DatosMadrid, barrioDe, datosSeccion } from './datos';
-import { type Barra, construirBarra } from './barra';
+import { type Barra, construirBarra, mostrarMedia, referenciaMedia } from './barra';
 import { type Evolucion, evolucion } from './evolucion';
 import { euros, mesAnio, numero } from './formato';
 import { type PantallaOferta, construirOferta } from './oferta';
@@ -42,16 +42,21 @@ export interface PantallaSinDato {
 
 export interface PantallaResultado {
 	tipo: 'resultado';
-	/** Precio / R_sup en el caso más prudente (el menor de las zonas posibles); para avisar de un posible error al teclear */
+	/** Precio / R_sup en el caso más prudente (el menor de las zonas posibles); para avisar de un posible error al teclear y para la analítica */
 	ratioMin: number;
+	/**
+	 * Precio / R_sup de la cifra de pantalla: el de la referencia media si hay varias zonas en el mismo nivel; si no (una sola zona
+	 * o zonas en niveles distintos, que se muestran como rango) es `ratioMin`
+	 */
+	ratioCifra: number;
 	nivel: Nivel;
 	/** Frase del nivel: «Dentro de la referencia, en la parte media» … */
 	titular: string;
 	/** Solo en «por encima»: «Cuánto más te piden» */
 	etiquetaBrecha: string | null;
-	/** Solo en «por encima»: «+47 %» o «entre +47 % y +55 %» */
+	/** Solo en «por encima»: «+47 %» */
 	brechaPct: string | null;
-	/** Solo en «por encima»: «+689 €/mes · +8.267 €/año» */
+	/** Solo en «por encima»: «+689 €/mes · +8.267 €/año» (con varias zonas, de la media) */
 	brechaEuros: string | null;
 	/** Solo en «explicable»: hasta dónde llegaría un piso de máxima calidad */
 	textoMaximo: string | null;
@@ -161,33 +166,29 @@ function titularNivel(n: Nivel, conVeredicto = false): string {
 	return conVeredicto ? NIVEL_CONTRATOS.titular.c : 'Se sale de lo habitual: ni para un piso excelente es habitual pagar esto aquí';
 }
 
-function intervalo(a: number, b: number, formato: (x: number) => string): string {
-	return formato(a) === formato(b) ? formato(a) : `entre ${formato(a)} y ${formato(b)}`;
-}
-
 function desdeAnalisis(
 	a: Anuncio, u: Ubicacion, an: Extract<Analisis, { tipo: 'resultado' }>, datos: DatosMadrid
 ): PantallaResultado {
 	const { prudente } = an;
 	const r: ResultadoSeccion = prudente;
 	const nivel = r.nivel;
-	const conBrecha = an.secciones.filter((s) => s.brecha !== null);
 
+	// Con varias zonas en el mismo nivel las cifras salen de la media de sus referencias, para que % y € cuadren entre sí
+	const usarMedia = mostrarMedia(an);
+	const media = usarMedia ? referenciaMedia(an.secciones.map((x) => x.referencia)) : r.referencia;
+	const ratioCifra = usarMedia || !an.horquilla ? a.precio / media.sup : an.pctMin + 1;
 	let brechaPct: string | null = null;
 	let brechaEuros: string | null = null;
 	if (nivel.nivel === 'por_encima') {
-		const cifra = principalPorEncima(an.horquilla ? an.pctMin + 1 : r.pct + 1, an.horquilla ? an.pctMax + 1 : null, '');
-		brechaPct = cifra.tipo === 'cifra' ? cifra.texto : cifra.tipo === 'rango' ? `entre ${cifra.desde} y ${cifra.hasta}` : null;
-		const mes = conBrecha.map((s) => s.brecha!.euroMes);
-		const año = conBrecha.map((s) => s.brecha!.euroAño);
-		brechaEuros = an.horquilla
-			? `${intervalo(Math.min(...mes), Math.max(...mes), (x) => `${numero(x)}\u00A0€/mes`)} · ${intervalo(Math.min(...año), Math.max(...año), (x) => `${numero(x)}\u00A0€/año`)}`
-			: `+${numero(r.brecha!.euroMes)}\u00A0€/mes · +${numero(r.brecha!.euroAño)}\u00A0€/año`;
+		const cifra = principalPorEncima(ratioCifra, null, '', an.horquilla);
+		brechaPct = cifra.tipo === 'cifra' ? cifra.texto : null;
+		const mes = a.precio - media.sup;
+		brechaEuros = `+${numero(mes)} €/mes · +${numero(mes * 12)} €/año`;
 	}
 
 	const cusecs = an.secciones.map((s) => s.seccion.cusec);
 	const barrio = barrioDe(datos, r.seccion.cusec);
-	const barra = construirBarra(a.precio, an.secciones.map((x) => x.referencia));
+	const barra = construirBarra(a.precio, usarMedia ? [media] : an.secciones.map((x) => x.referencia));
 	// Dónde queda el precio frente a los contratos: por debajo de la parte baja de todas las zonas, dentro de rango o por encima de la parte alta
 	const frenteAContratos =
 		nivel.nivel !== 'dentro' ? 'encima' : a.precio < Math.min(...an.secciones.map((x) => x.referencia.inf)) ? 'debajo' : 'dentro';
@@ -197,6 +198,7 @@ function desdeAnalisis(
 	return {
 		tipo: 'resultado',
 		ratioMin: an.pctMin + 1,
+		ratioCifra,
 		nivel,
 		titular: titularNivel(nivel, conVeredicto),
 		etiquetaBrecha: nivel.nivel === 'por_encima' ? ETIQUETA_BRECHA : null,
@@ -204,9 +206,9 @@ function desdeAnalisis(
 		brechaEuros,
 		textoMaximo:
 			nivel.nivel === 'explicable'
-				? `Si fuera un piso excelente, lo habitual llegaría a ${euros(r.referencia.max)} al mes en ${an.horquilla ? 'estas zonas' : 'esta zona'}.`
+				? `Si fuera un piso excelente, lo habitual llegaría a ${euros(media.max)} al mes en ${an.horquilla ? 'estas zonas' : 'esta zona'}.`
 				: null,
-		rango: `Lo habitual aquí: ${numero(r.referencia.inf)} – ${euros(r.referencia.sup)} al mes`,
+		rango: `Lo habitual aquí: ${numero(media.inf)} – ${euros(media.sup)} al mes`,
 		base: FUENTE.una(numero(r.seccion.n), mesAnio(datos.ipc.ultimo_mes)),
 		avisoUbicacion: vista.aviso,
 		horquilla: an.horquilla,

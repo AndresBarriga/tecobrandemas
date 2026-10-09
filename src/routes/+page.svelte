@@ -193,8 +193,8 @@
 		resultado?.inquilino
 			? textosInquilino(
 					resultado.inquilino.pos === 'baja' || resultado.inquilino.pos === 'media' || resultado.inquilino.pos === 'alta' ? 'dentro' : resultado.inquilino.pos,
-					resultado.ratioMin,
-					resultado.horquilla
+					resultado.ratioCifra,
+					resultado.barra.horquilla
 				)
 			: []
 	);

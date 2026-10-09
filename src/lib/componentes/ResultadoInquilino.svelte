@@ -81,24 +81,18 @@
 
 		<p class="frase">{i.frase}</p>
 
+		{#if v.aclaracion}
+			<div class="aclaracion">
+				<p>{v.aclaracion}</p>
+				{#if alAfinar}<AfinarNumero {alAfinar} />{/if}
+			</div>
+		{/if}
+
 		{#if pantalla.oferta}
 			<!-- «Lo que se pide»: línea secundaria sin veredicto; el titular de arriba sigue siendo contra contratos -->
 			<div class="oferta">
 				<p class="oferta-linea">{pantalla.oferta.linea}</p>
 				<p class="oferta-pie">{pantalla.oferta.pie}</p>
-			</div>
-		{/if}
-
-		{#if v.aviso}
-			<div class="aviso">
-				<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="flex: none; margin-top: 1px">
-					<circle cx="10" cy="10" r="8.5" stroke="var(--tinta)" stroke-width="1.5" fill="none" />
-					<path d="M10 9v5M10 6v.5" stroke="var(--tinta)" stroke-width="2" />
-				</svg>
-				<div class="aviso-cuerpo">
-					<p>{v.aviso}</p>
-					{#if alAfinar}<AfinarNumero {alAfinar} />{/if}
-				</div>
 			</div>
 		{/if}
 	</div>
@@ -277,20 +271,15 @@
 		font: 400 13px/1.4 var(--f-texto);
 		color: var(--grafito);
 	}
-	.aviso {
-		background: var(--superficie);
-		border-radius: var(--radio);
-		padding: 16px;
-		display: flex;
-		gap: 10px;
-		align-items: flex-start;
-		font: 400 15px/1.45 var(--f-texto);
-	}
-	.aviso-cuerpo {
-		flex: 1;
+	.aclaracion {
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		gap: 10px;
+	}
+	.aclaracion p {
+		font: 400 14px/1.45 var(--f-texto);
+		color: var(--grafito);
+		text-wrap: pretty;
 	}
 	.barra-caja {
 		padding: 32px var(--margen) 0;
