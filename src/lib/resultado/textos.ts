@@ -19,7 +19,7 @@ export const ATRIBUCIONES = [
 	'Elaboración propia con datos extraídos del sitio web del INE: www.ine.es',
 	'CartoCiudad CC-BY 4.0 scne.es',
 	'Barrios: Ayuntamiento de Madrid',
-	'Anuncios recientes: Ayuntamiento de Madrid, Banco de Datos, serie 4.3.21.D (elaboración del Ayuntamiento a partir de datos de Idealista)',
+	'Anuncios recientes: Ayuntamiento de Madrid, serie 4.3.21.D (elaboración a partir de datos de Idealista)',
 	'© OpenStreetMap contributors'
 ] as const;
 
@@ -142,6 +142,9 @@ export const AVISO_UBICACION = {
 } as const;
 
 // ——— Marca y pantallas (diseño de 05/10/2026) ———
+
+/** Año de los contratos de SERPAVI en los que se basa la referencia */
+export const ANIO_SERPAVI = 2024;
 
 export const NOMBRE = 'A su precio';
 export const DESCRIPCION =

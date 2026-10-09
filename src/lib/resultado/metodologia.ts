@@ -10,7 +10,7 @@
 import { type Anuncio, BANDA_EN_LINEA, type Referencia, clasificar, referencia, tieneDato } from '../motor';
 import { type DatosMadrid, type IpcJson, datosSeccion } from './datos';
 import { euros, mesAnio, numero, porcentaje } from './formato';
-import { ATRIBUCIONES, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_NIVEL, ETIQUETA_POR_DEBAJO, OFERTA, type ClaveSinDato, NOMBRE } from './textos';
+import { ATRIBUCIONES, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_NIVEL, ETIQUETA_POR_DEBAJO, ANIO_SERPAVI, OFERTA, type ClaveSinDato, NOMBRE } from './textos';
 
 const NB = ' ';
 export const CORREO = 'hola@asuprecio.com';
@@ -88,14 +88,13 @@ export interface Metodologia {
 	ejemplo: Ejemplo | null;
 	niveles: { intro: string | null; items: NivelMetodologia[]; mini: { banda: TramoEscala; techo: TramoEscala } } | null;
 	precioPedido: { titulo: string; destacado: string; cuerpo: string; incluye: { titulo: string; items: string[] }; parteAlta: { titulo: string; texto: string } };
-	/** Los anuncios recientes (serie 4.3.21.D) como segunda referencia: de dónde salen, cómo se estima y hasta dónde llegan */
+	/** Los anuncios recientes (serie 4.3.21.D) como segunda referencia: tabla de las dos fuentes y dos desplegables */
 	anuncios: {
 		titulo: string;
 		intro: string;
-		fuentes: { titulo: string; items: string[] };
-		estimacion: { titulo: string; parrafos: string[] };
-		enLinea: { titulo: string; texto: string };
-		diferencia: { titulo: string; texto: string };
+		tabla: { columnas: [string, string]; filas: { etiqueta: string; contratos: string; anuncios: string }[] };
+		enLinea: string;
+		estimacion: { titulo: string; texto: string };
 		limites: { titulo: string; items: string[] };
 	};
 	mapa: { parrafos: string[]; muestra: string[]; noMuestra: string[] };
@@ -215,44 +214,43 @@ function construirEjemplo(datos: DatosMadrid): Ejemplo | null {
 	};
 }
 
-/** «Anuncios recientes»: el mes sale de oferta_madrid.json (sin el fichero, se habla del último mes publicado) y la banda, de config/oferta.json */
+const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
+/**
+ * «Anuncios recientes»: el mes y la serie salen de oferta_madrid.json y los del IPC de ipc_alquiler.json; la banda de
+ * «en línea», de config/oferta.json. Sin el fichero de oferta (solo en pruebas) se habla del último mes publicado.
+ */
 function construirAnuncios(datos: DatosMadrid | undefined, mesIpc: string): Metodologia['anuncios'] {
-	const mes = datos?.oferta ? mesAnio(datos.oferta.mes) : null;
+	const mes = datos?.oferta ? mayuscula(mesAnio(datos.oferta.mes)) : 'El último mes publicado';
+	const serie = datos?.oferta?.serie ?? '4.3.21.D';
 	const banda = numero(BANDA_EN_LINEA * 100);
 	return {
 		titulo: 'Anuncios recientes',
-		intro: 'Junto a los contratos mostramos lo que se pide en los anuncios recientes de la zona. Son dos referencias distintas y cada una se compara solo con tu precio. Los anuncios recientes no son contratos firmados.',
-		fuentes: {
-			titulo: 'De dónde sale cada una',
-			items: [
-				`Contratos: SERPAVI 2024 (Ministerio de Vivienda y Agenda Urbana, con datos de Hacienda; propietarios particulares), puestos al día con el IPC del alquiler del INE hasta ${mesIpc}.`,
-				`Anuncios recientes: serie 4.3.21.D del Banco de Datos del Ayuntamiento de Madrid, que el Ayuntamiento elabora a partir de datos de Idealista${mes ? `. Datos de ${mes}` : ''}. No usamos Idealista directamente.`
+		intro: 'Junto a los contratos mostramos lo que se pide en anuncios recientes. Son dos referencias distintas y cada una se compara solo con tu precio.',
+		tabla: {
+			columnas: ['Contratos', 'Anuncios recientes'],
+			filas: [
+				{ etiqueta: 'Qué mide', contratos: 'Lo que paga quien ya vive de alquiler, con contratos firmados en distintos años', anuncios: 'Lo que se pide por pisos anunciados, antes de cerrar el precio' },
+				{
+					etiqueta: 'Fuente',
+					contratos: `SERPAVI ${ANIO_SERPAVI} (Ministerio de Vivienda y Agenda Urbana, con datos de Hacienda)`,
+					anuncios: `Serie ${serie} del Ayuntamiento de Madrid, elaborada a partir de Idealista`
+				},
+				{ etiqueta: 'Datos de', contratos: `${ANIO_SERPAVI}, puestos al día con el IPC del alquiler hasta ${mesIpc}`, anuncios: mes },
+				{ etiqueta: 'Ten en cuenta', contratos: 'Solo propietarios particulares', anuncios: 'Es lo que se anuncia, no lo que se firma' }
 			]
 		},
+		enLinea: `«En línea» significa que tu precio queda dentro de ±${banda}\u00A0% de la estimación de anuncios.`,
 		estimacion: {
 			titulo: 'Cómo calculamos la estimación',
-			parrafos: [
-				'Multiplicamos el €/m² de la zona por tus metros cuadrados. Usamos la media del barrio si tiene datos en los dos últimos meses; si no, la media del distrito. Solo lo calculamos con 30\u00A0m² o más.',
-				'Si la dirección cae en varias zonas posibles, solo damos la cifra cuando todas son del mismo barrio o, si no, del mismo distrito.'
-			]
-		},
-		enLinea: {
-			titulo: 'Qué significa «en línea»',
-			texto: `Tu precio está «en línea» si queda dentro de ±${banda}\u00A0% de la estimación de los anuncios recientes. Por debajo o por encima de esa banda, lo decimos así.`
-		},
-		diferencia: {
-			titulo: 'Por qué los contratos y los anuncios difieren',
-			texto: 'Miden cosas distintas. Los contratos recogen lo que paga quien ya vive de alquiler, firmado en distintos años. Los anuncios recientes recogen lo que se pide ahora por un piso en el mercado, antes de cerrar el precio. Por eso no restamos una referencia de la otra ni las comparamos entre sí: cada una se compara solo con tu precio.'
+			texto: 'Multiplicamos el €/m² de la zona por tus metros cuadrados. Usamos la media del barrio si tiene datos en los dos últimos meses; si no, la del distrito. Solo lo calculamos con 30\u00A0m² o más. Si tu dirección cae en varias zonas posibles, solo damos la cifra cuando todas son del mismo barrio o distrito.'
 		},
 		limites: {
-			titulo: 'Hasta dónde llegan los anuncios recientes',
+			titulo: 'Límites de los anuncios recientes',
 			items: [
-				'La resolución es de barrio o de distrito, no de calle ni de zona: dentro de cada uno, los precios pueden variar mucho.',
-				'Hay barrios sin datos suficientes; en ese caso usamos la media de su distrito y lo indicamos (en el mapa, con punteado).',
-				'Dentro de un distrito los barrios varían bastante: la media del distrito puede quedar lejos de la de tu barrio.',
-				'El dato de un barrio varía más de un mes a otro que el de un distrito, porque se apoya en menos anuncios.',
-				'La serie deriva de Idealista: refleja lo que se anuncia allí, no todo el mercado.',
-				'Se publica con un retraso de unos 3-4 meses.',
+				'La resolución es de barrio o distrito: dentro de cada uno, los precios pueden variar mucho. El dato de un barrio cambia más de un mes a otro que el de un distrito.',
+				'Si un barrio no tiene datos suficientes, usamos la media de su distrito y lo marcamos con punteado en el mapa.',
+				'La serie viene de Idealista: refleja lo que se anuncia allí, no todo el mercado. Se publica con unos 3-4 meses de retraso.',
 				'El IPC con el que ajustamos los contratos es nacional, no de Madrid, y no se aplica a los anuncios.'
 			]
 		}
@@ -301,9 +299,9 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 		ejemplo,
 		niveles,
 		precioPedido: {
-			titulo: 'Contratos vigentes, no anuncios',
+			titulo: 'Contratos vigentes',
 			destacado:
-				'La referencia sale de contratos vigentes: lo que paga hoy quien ya vive de alquiler, con contratos firmados en distintos años. Un anuncio muestra lo que se pide hoy por entrar.',
+				'La referencia principal sale de contratos vigentes: lo que paga quien ya vive de alquiler, con contratos firmados en distintos años. Un anuncio muestra lo que se pide por entrar.',
 			cuerpo: 'Que un anuncio salga por encima no lo hace incorrecto: mide cuánto más se pide por entrar que lo que pagan quienes ya están dentro. Por eso nunca hablamos de precios correctos o incorrectos.',
 			incluye: {
 				titulo: 'Qué incluye la referencia',
