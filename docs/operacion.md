@@ -106,33 +106,31 @@ El mismo formato de campaña se exige a las propiedades `utm_*` de los eventos (
 
 ## «Lo que se pide» (anuncios recientes del Ayuntamiento)
 
-Segundo punto de referencia junto a los contratos SERPAVI: el €/m² de los anuncios recientes por barrio o distrito, × los m² de la persona. **Está apagado por defecto** (flag de compilación `PUBLIC_OFERTA_ENABLED`); con la flag apagada no cambia nada visible: ni el resultado, ni las tarjetas, ni la portada, y el navegador ni pide el fichero de datos. Se construye en tres PR apiladas (motor y resultado → mapa → textos de portada y «Cómo calculamos»); la primera (resultado) y la segunda (mapa) están hechas; la tercera, no.
+Segundo punto de referencia junto a los contratos SERPAVI: el €/m² de los anuncios recientes por barrio o distrito, × los m² de la persona. **Está ACTIVO por defecto** (decisión del 09/10/2026, ver `docs/decisiones.md`): no hay que configurar nada en Cloudflare. Las dos flags de compilación se conservan como **interruptor de emergencia**: solo el valor exacto `false` apaga (ausente o vacío = activo); apagar exige un redeploy. Se construye en tres PR apiladas (motor y resultado → mapa → textos de portada y «Cómo calculamos»); la primera (resultado) y la segunda (mapa) están hechas; la tercera, no, y ya no irá tras flag.
 
-**Cómo se enciende y se apaga**
-- **Local:** `PUBLIC_OFERTA_ENABLED=true npm run dev` (en PowerShell: `$env:PUBLIC_OFERTA_ENABLED='true'; npm run dev`). Sin la variable, apagada. Es una variable pública de compilación (`src/env.ts`, estática): se lee al construir, no al ejecutar.
-- **Producción:** el paso de build del job `desplegar` (`ci.yml`) pasa `PUBLIC_OFERTA_ENABLED: ${{ vars.PUBLIC_OFERTA_ENABLED }}`; ausente o vacía = apagada. **Créala en el entorno `produccion`** (Settings → Environments → produccion → Environment variables), no como variable del repositorio: el job `desplegar` es el único que usa ese entorno, así que ninguna otra compilación la ve. La activación la decide quien lanza (licencia confirmada antes, ver abajo).
-  - **Encender:** variable `PUBLIC_OFERTA_ENABLED` = `true` en el entorno `produccion` y relanzar el CI del último commit de `main` (Actions → CI → «Re-run all jobs») para que vuelva a construir y desplegar.
-  - **Apagar el día del lanzamiento, rápido:** variable a `false` (o borrarla) y relanzar igual. El relanzamiento repite `pruebas` (instalar, `check`, tests, build), `desplegar` (instalar, build, `wrangler deploy`) y `humo`. **No he medido cuánto tarda:** `gh` no está en este equipo; anotar aquí la duración real de un despliegue (Actions → CI → «Total duration») antes del lanzamiento.
-  - **Más rápido aún (por verificar):** `npx wrangler rollback` vuelve a la versión anterior del Worker sin reconstruir, si esa versión se desplegó con la flag apagada.
-- **Vista previa:** no existe (no se activan URLs de vista previa por rama) y el job `pruebas` (PR y `main`) compila sin la variable, así que siempre sale apagada. Para verla encendida: en local (`PUBLIC_OFERTA_ENABLED=true npm run dev`). Si algún día hay vista previa, basta un entorno `preview` con su propia variable: las variables de un entorno de GitHub no se ven desde otro.
-- La prueba de humo no cambia: es de solo lectura y no depende de la flag.
+**Cómo se apaga (y se vuelve a encender)**
+- **Local:** `PUBLIC_OFERTA_ENABLED=false npm run dev` (PowerShell: `$env:PUBLIC_OFERTA_ENABLED='false'; npm run dev`). Sin la variable, activo. Es una variable pública de compilación (`src/env.ts`, estática): se lee al construir, no al ejecutar.
+- **Producción:** el paso de build del job `desplegar` (`ci.yml`) pasa `PUBLIC_OFERTA_ENABLED: ${{ vars.PUBLIC_OFERTA_ENABLED }}` y `PUBLIC_OFERTA_MAPA_ENABLED: ${{ vars.PUBLIC_OFERTA_MAPA_ENABLED }}`; ausente o vacía = activa. Si algún día se crean, van en el entorno `produccion` (Settings → Environments → produccion → Environment variables), no en el repositorio.
+  - **Apagar todo (emergencia):** variable `PUBLIC_OFERTA_ENABLED` = `false` en el entorno `produccion` y relanzar el CI del último commit de `main` (Actions → CI → «Re-run all jobs»). Basta con ella: la del mapa depende de la principal.
+  - **Apagar solo el mapa:** `PUBLIC_OFERTA_MAPA_ENABLED` = `false` y relanzar; el resultado conserva la línea de oferta.
+  - **Volver a encender:** borrar la variable (o ponerla a `true`) y relanzar.
+  - **Duración del redeploy:** el relanzamiento repite `pruebas`, `desplegar` y `humo`. **No la he medido** (`gh` no está en este equipo): anotar aquí la duración real (Actions → CI → «Total duration»).
+  - **Más rápido aún (por verificar):** `npx wrangler rollback` vuelve a la versión anterior del Worker sin reconstruir, pero solo sirve si esa versión no llevaba la oferta.
+- **Vista previa:** no existe (no se activan URLs de vista previa por rama). El job `pruebas` compila sin variables, es decir, con la oferta activa.
+- La prueba de humo no cambia: es de solo lectura y no depende de las flags.
 
-**Segunda flag: el mapa (`PUBLIC_OFERTA_MAPA_ENABLED`)**
+**Las dos flags (`PUBLIC_OFERTA_ENABLED`, `PUBLIC_OFERTA_MAPA_ENABLED`)**
 
-Añade a `/mapa` el selector Contratos | Anuncios en las capas «Referencia» y «Mi presupuesto». **Solo tiene efecto si `PUBLIC_OFERTA_ENABLED` también está encendida**; con la principal encendida y esta apagada, el mapa queda exactamente como antes (sin selector, sin rótulo, y `/mapa` no pide `oferta_madrid.json`). Con las dos encendidas el mapa pide el fichero y calcula las líneas de distrito.
+La del mapa añade a `/mapa` el selector Contratos | Anuncios en «Referencia» y «Mi presupuesto», y **solo tiene efecto si la principal está activa**. Con el mapa apagado y la principal activa, el mapa queda como antes (sin selector, sin rótulo, y `/mapa` no pide `oferta_madrid.json`).
 
 | `PUBLIC_OFERTA_ENABLED` | `PUBLIC_OFERTA_MAPA_ENABLED` | Resultado | Mapa |
 |---|---|---|---|
-| apagada | (cualquiera) | como antes | como antes |
-| encendida | apagada | línea de oferta en el resultado | como antes |
-| encendida | encendida | línea de oferta en el resultado | selector, rótulo, violeta y punteado |
+| ausente, vacía o `true` (**por defecto**) | ausente, vacía o `true` (**por defecto**) | línea de oferta en el resultado | selector, rótulo, violeta y punteado |
+| ausente, vacía o `true` | `false` | línea de oferta en el resultado | como antes |
+| `false` | (cualquiera) | como antes | como antes |
 
-- **Local:** `PUBLIC_OFERTA_ENABLED=true PUBLIC_OFERTA_MAPA_ENABLED=true npm run dev` (PowerShell: `$env:PUBLIC_OFERTA_ENABLED='true'; $env:PUBLIC_OFERTA_MAPA_ENABLED='true'; npm run dev`). Los valores estáticos se escriben al arrancar en `.svelte-kit/`: **dos servidores de desarrollo con flags distintas a la vez se pisan** (todos leen las del último); para probar las tres combinaciones, una detrás de otra y parando el servidor entre medias.
-- **Producción:** el paso de build del job `desplegar` pasa `PUBLIC_OFERTA_MAPA_ENABLED: ${{ vars.PUBLIC_OFERTA_MAPA_ENABLED }}`; ausente o vacía = apagada. Variable del entorno `produccion`, igual que la principal.
-  - **Encender el mapa:** la principal en `true` (si no lo está) y esta en `true`, y relanzar el CI del último commit de `main` («Re-run all jobs»).
-  - **Apagar solo el mapa:** esta a `false` (o borrarla) y relanzar; el resultado conserva la línea de oferta.
-  - **Apagar todo:** la principal a `false` (o borrarla) y relanzar; basta con ella, la del mapa queda sin efecto.
-- La analítica de `/mapa` añade `fuente_mapa` (`contratos` o `anuncios`) a `mapa_capa` solo con las dos flags y solo en las capas con selector; sin las flags, el evento es el de siempre.
+- **Probar las tres combinaciones en local:** los valores estáticos se escriben al arrancar en `.svelte-kit/`, así que **dos servidores de desarrollo con flags distintas a la vez se pisan** (todos leen las del último): una combinación detrás de otra, parando el servidor entre medias.
+- La analítica de `/mapa` añade `fuente_mapa` (`contratos` o `anuncios`) a `mapa_capa` con el selector y solo en las capas que lo tienen; con el mapa apagado, el evento es el de siempre.
 
 **Datos: proceso mensual, a mano**
 1. Descargar del Banco de Datos del Ayuntamiento la serie «4.3.21.D. Evolución del precio de oferta de alquiler de la vivienda (€/m²) por Distrito, Barrio y Mes» (en el nombre del fichero descargado aparece `0504030000214`) y dejarla en `data/raw/` (no se sube a git) como `oferta_AAAA-MM.csv` o `.xlsx`, con el mes del último dato en el nombre. La URL estable de descarga no está verificada: el Banco de Datos necesita navegador.
@@ -147,9 +145,9 @@ Añade a `/mapa` el selector Contratos | Anuncios en las capas «Referencia» y 
 - **Nunca** se muestra ni se calcula la diferencia entre las dos referencias: cada una se compara solo con el precio de la persona.
 - La línea de oferta no lleva el nombre del barrio («en el barrio» o «en el distrito»); las tarjetas de compartir no llevan la línea, pero su titular dice «frente a los contratos vigentes de la zona». El índice sigue siendo el IPC del alquiler (nacional), también para los contratos.
 
-**Licencia y atribución (por resolver antes de encender en producción)**
+**Licencia y atribución (riesgo aceptado, 09/10/2026)**
 - Aviso legal del Ayuntamiento (datos.madrid.es/pages/aviso-legal): «Las informaciones que contiene son de titularidad del Ayuntamiento de Madrid […] pueden ser utilizadas libremente, indicando la fuente y el nombre del autor. Este criterio de reutilización no se aplica, salvo que expresamente se establezca lo contrario, ni a imágenes, vídeos u otros contenidos multimedia, ni tampoco a las informaciones […] publicadas por el Ayuntamiento de Madrid procedentes de terceros que vayan firmados.»
-- **Riesgo:** la serie dice «elaboración propia a partir de los datos facilitados por Idealista». Hay que confirmar que cae en la reutilización libre y no en la excepción de terceros: comprobar si está en el portal de datos abiertos (CC BY 4.0) o consultar por el trámite «Procedimiento para la reutilización de documentos».
+- **Riesgo aceptado:** la serie dice «elaboración propia a partir de los datos facilitados por Idealista» y no hay confirmación escrita de que caiga en la reutilización libre y no en la excepción de terceros. El dato es público y se cita la fuente. Si el Ayuntamiento lo discute, el interruptor de arriba apaga la oferta con un redeploy. Confirmarlo (portal de datos abiertos, CC BY 4.0, o el trámite «Procedimiento para la reutilización de documentos») sigue siendo recomendable.
 - Atribución en pantalla: «Fuente: Ayuntamiento de Madrid, Banco de Datos, serie 4.3.21.D (elaboración del Ayuntamiento a partir de datos de Idealista), {mes año}.» Idealista no se usa directamente en el producto.
 
 **Analítica:** `completa` lleva además `resultado_oferta` (`por_debajo`, `en_linea`, `por_encima`) y `nivel_oferta` (`barrio`, `distrito`), solo cuando hay línea de oferta (si no, las propiedades no salen). Nunca importes, €/m², m², barrio ni la zona. Con `resultado` (contratos) y `modo` salen los cinco casos. Ojo: `completa` ya llevaba `distrito` y `brecha_tramo`; el distrito viaja ahora también junto a `resultado_oferta` (decisión pendiente, ver la PR).

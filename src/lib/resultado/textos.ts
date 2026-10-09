@@ -934,7 +934,7 @@ export const MAPA_REFERENCIA = {
 		vacia: 'Toca una zona para ver lo que pagan quienes ya viven allí.',
 		comprobar: 'Comprueba un anuncio aquí'
 	},
-	/** Fuente «Anuncios» (solo con PUBLIC_OFERTA_MAPA_ENABLED): anuncios recientes del Ayuntamiento por barrio o distrito */
+	/** Fuente «Anuncios» (salvo PUBLIC_OFERTA_MAPA_ENABLED=false): anuncios recientes del Ayuntamiento por barrio o distrito */
 	anuncios: {
 		fuente: { etiqueta: 'Fuente', contratos: 'Contratos', anuncios: 'Anuncios' },
 		intro: 'Lo que se pide en los anuncios recientes de cada barrio o distrito de Madrid.',

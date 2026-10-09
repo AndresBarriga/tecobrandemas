@@ -19,7 +19,7 @@ function leer(conOferta: boolean): Promise<DatosMadrid> {
 		json<Record<string, SeccionJson>>('/data/secciones_madrid.json'),
 		json<{ barrios: Record<string, BarrioJson> }>('/data/seccion_barrio.json'),
 		json<IpcJson>('/data/ipc_alquiler.json'),
-		// Con la flag apagada no se pide el fichero. Si falla, no hay línea de oferta: el resto funciona igual
+		// Con la flag apagada (PUBLIC_OFERTA_ENABLED=false) no se pide el fichero. Si falla, no hay línea de oferta: el resto funciona igual
 		conOferta ? json<OfertaJson>('/data/oferta_madrid.json').catch(() => undefined) : Promise.resolve(undefined)
 	]).then(([secciones, b, ipc, oferta]) => ({ secciones, barrios: b.barrios, ipc, ...(oferta ? { oferta } : {}) }));
 }
@@ -33,7 +33,7 @@ export function cargarDatos(): Promise<DatosMadrid> {
 }
 
 /**
- * Datos para /mapa: el fichero de oferta solo se pide si están encendidas las dos flags. Con solo la principal, el mapa
+ * Datos para /mapa: el fichero de oferta solo se pide si están activas las dos flags (por defecto lo están). Con solo la principal, el mapa
  * no lo necesita (lo usa el resultado): si ya está cargado se reutiliza, pero /mapa no lo pide y el mapa no lo usa.
  */
 export function cargarDatosMapa(): Promise<DatosMadrid> {
