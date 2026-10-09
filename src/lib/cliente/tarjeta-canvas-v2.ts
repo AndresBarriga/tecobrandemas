@@ -9,24 +9,6 @@ import { ACENTO, COLOR, type Ctx, ICONO, TINTE, ancho, circulo, envolver, fuente
 /** Violeta de los anuncios recientes (el mismo que el mapa) */
 const VIOLETA = { fuerte: '#6A4392', claro: '#B79AD0', tinte: '#EDE3F2', oscuro: '#4B2E70' } as const;
 
-function rayado(ctx: Ctx, paso: number): CanvasPattern | string {
-	const c = document.createElement('canvas');
-	c.width = c.height = paso * 2;
-	const p = c.getContext('2d');
-	if (!p) return VIOLETA.fuerte;
-	p.fillStyle = VIOLETA.claro;
-	p.fillRect(0, 0, paso * 2, paso * 2);
-	p.strokeStyle = VIOLETA.fuerte;
-	p.lineWidth = paso * 0.7;
-	for (const d of [-paso * 2, 0, paso * 2]) {
-		p.beginPath();
-		p.moveTo(d, paso * 2);
-		p.lineTo(d + paso * 2, 0);
-		p.stroke();
-	}
-	return ctx.createPattern(c, 'repeat') ?? VIOLETA.fuerte;
-}
-
 /** Píldora (nivel de contratos o veredicto de anuncios); con icono si se le pasa. Devuelve su tamaño */
 function pildora(ctx: Ctx, texto: string, x: number, y: number, tam: number, fondo: string, color: string, icono: keyof typeof ICONO | null, dibujar = true): { w: number; h: number } {
 	fuente(ctx, 700, tam, 'texto');
@@ -160,8 +142,9 @@ function reglas(ctx: Ctx, t: TarjetaV2, y0: number, g: GeomReglas, dibujar: bool
 				ctx.lineTo(X(c.parteAlta), y + g.barra - grosor / 2);
 				ctx.stroke();
 			} else if (r.anuncios) {
-				banda(r.anuncios.banda.desde, r.anuncios.banda.hasta, rayado(ctx, Math.max(4, g.barra * 0.18)));
-				rect(ctx, X(r.anuncios.media) - 1.5, y - g.barra * 0.12, 3, g.barra * 1.24, VIOLETA.oscuro);
+				// La oferta estimada: una marca vertical violeta (la banda de ±10 % no se dibuja: solo clasifica)
+				const grosor = Math.max(4, g.barra * 0.14);
+				rect(ctx, X(r.anuncios.media) - grosor / 2, y - g.barra * 0.22, grosor, g.barra * 1.44, VIOLETA.fuerte, grosor / 2);
 			}
 		}
 		yPuntos.push(y + g.barra / 2);

@@ -592,7 +592,7 @@
 					{/snippet}
 				</ResultadoInquilino>
 				{#if resultado?.zona}
-					<TuZona estado={tuZona.estado} vista={tuZona.datos?.vista} geom={tuZona.datos?.geom} />
+					<TuZona estado={tuZona.estado} vista={tuZona.datos?.vista} geom={tuZona.datos?.geom} modo={resultado?.inquilino ? 'vivo' : 'mirando'} />
 				{/if}
 			{:else if pantalla?.tipo === 'resultado'}
 				<Resultado
@@ -619,7 +619,7 @@
 					{/snippet}
 				</Resultado>
 				{#if resultado?.zona}
-					<TuZona estado={tuZona.estado} vista={tuZona.datos?.vista} geom={tuZona.datos?.geom} />
+					<TuZona estado={tuZona.estado} vista={tuZona.datos?.vista} geom={tuZona.datos?.geom} modo={resultado?.inquilino ? 'vivo' : 'mirando'} />
 				{/if}
 			{:else if pantalla?.tipo === 'habitacion'}
 				{#key pantalla}

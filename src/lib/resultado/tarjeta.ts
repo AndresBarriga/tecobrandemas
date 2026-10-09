@@ -94,7 +94,7 @@ export function construirTarjeta(p: PantallaResultado): TarjetaV2 {
 		barrio: p.barrio,
 		aproximada: p.horquilla,
 		contratos: { ...c.contratos },
-		anuncios: c.anuncios ? { lugar: c.anuncios.lugar, cifra: c.anuncios.cifra, nota: c.anuncios.nota, veredicto: c.anuncios.veredicto } : null,
+		anuncios: c.anuncios ? { lugar: c.anuncios.lugar, cifra: c.anuncios.cifra, nota: c.anuncios.notaCorta, veredicto: c.anuncios.veredicto } : null,
 		reglas: {
 			marcas: r.eje.marcas.map((m) => ({ x: m.x, texto: m.texto })),
 			punto: r.punto,
@@ -184,7 +184,7 @@ const RESUMENES = new Set(
 const NOTAS_CONTRATOS = new Set<string>(
 	[COMPARATIVA.contratos.notaSobre, COMPARATIVA.contratos.notaVeces, COMPARATIVA.contratos.notaBajo, COMPARATIVA.contratos.notaRango]
 );
-const NOTAS_ANUNCIOS = new Set<string>([COMPARATIVA.anuncios.nota('barrio'), COMPARATIVA.anuncios.nota('distrito')]);
+const NOTAS_ANUNCIOS = new Set<string>([COMPARATIVA.anuncios.notaCorta('barrio'), COMPARATIVA.anuncios.notaCorta('distrito')]);
 const VEREDICTOS = new Set<string>(Object.values(COMPARATIVA.veredicto));
 const ETIQUETAS = new Set<string>([...Object.values(ETIQUETA_NIVEL), ETIQUETA_POR_DEBAJO]);
 const PCT = '[+−]?\\d{1,4}(?:,\\d)? %';

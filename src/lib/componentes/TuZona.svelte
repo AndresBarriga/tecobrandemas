@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { MAPA_REFERENCIA, TONOS_ZONA, TU_ZONA, type VistaTuZona } from '#lib/resultado';
+	import Segmentado from './Segmentado.svelte';
+	import { MAPA_REFERENCIA, TONOS_ANUNCIOS, TONOS_ZONA, TU_ZONA, colorPunteado, type VistaTuZona } from '#lib/resultado';
 	import {
 		type Caja, type GeometriaZona, aPx, cajaDe, colocarNombres, proyeccion, trazado, trazadoLineas
 	} from '#lib/cliente/zona-mapa';
@@ -7,10 +8,35 @@
 	/**
 	 * «Tu zona» (diseño 6a-6f). `estado`: «cargando» mientras llegan los polígonos y los datos, «fallo» si no
 	 * se pudieron cargar (la sección se omite sin más). El mapa es un SVG proyectado al ancho real.
+	 * Con los anuncios recientes cargados, un selector cambia lo que colorea el mapa: «Contratos» (lo de siempre) u
+	 * «Oferta» (el €/m² de oferta del barrio o, si no tiene dato, del distrito). Nunca las dos a la vez. La capa por
+	 * defecto depende del modo: «Mi alquiler», contratos; «Un anuncio», oferta. La persona puede cambiarla después.
 	 */
 	let {
-		estado, vista = null, geom = null
-	}: { estado: 'cargando' | 'listo' | 'fallo'; vista?: VistaTuZona | null; geom?: GeometriaZona | null } = $props();
+		estado, vista = null, geom = null, modo = 'mirando'
+	}: { estado: 'cargando' | 'listo' | 'fallo'; vista?: VistaTuZona | null; geom?: GeometriaZona | null; modo?: 'mirando' | 'vivo' } = $props();
+
+	type Capa = 'contratos' | 'oferta';
+	const porDefecto = (m: 'mirando' | 'vivo'): Capa => (m === 'vivo' ? 'contratos' : 'oferta');
+	let capaElegida = $state<Capa>('contratos');
+	// Al empezar y al cambiar de modo, la capa por defecto de ese modo (solo entonces: elegir otro resultado no la reinicia)
+	let modoAnterior: string | null = null;
+	$effect.pre(() => {
+		if (modo !== modoAnterior) {
+			modoAnterior = modo;
+			capaElegida = porDefecto(modo);
+		}
+	});
+	const oferta = $derived(vista?.oferta ?? null);
+	const capa = $derived<Capa>(capaElegida === 'oferta' && oferta ? 'oferta' : 'contratos');
+	const tonosOferta = TONOS_ANUNCIOS.referencia;
+	const relleno = (cusec: string, tono: number | 'fuera' | null) => {
+		if (tono === 'fuera') return '#ECEAE5';
+		if (capa === 'contratos' || !oferta) return tono === null ? 'url(#tz-rayado)' : TONOS_ZONA[tono];
+		const t = oferta.tonos.get(cusec);
+		if (t === null || t === undefined) return 'url(#tz-rayado)';
+		return oferta.punteadas.has(cusec) ? `url(#tz-punto-${t})` : tonosOferta[t]!;
+	};
 
 	let ancho = $state(350);
 	let sel = $state(-1);
@@ -87,7 +113,32 @@
 	<section class="zona" aria-label={TU_ZONA.titulo} aria-busy={estado === 'cargando'}>
 		<div class="cabeza">
 			<h2>{TU_ZONA.titulo}</h2>
-			<p>{vista?.intro ?? TU_ZONA.intro}</p>
+			<!-- La explicación justo debajo del título, según la capa: qué colorea el mapa, la fuente y el periodo -->
+			{#if capa === 'oferta' && oferta}
+				<p>{TU_ZONA.capas.introOferta}</p>
+				<p class="fuente">{oferta.fuente}</p>
+			{:else}
+				<p>{TU_ZONA.capas.introContratos}{vista?.lista ? ` ${TU_ZONA.introNumeros}` : ''}</p>
+				{#if vista}<p class="fuente">{vista.fuenteContratos}</p>{/if}
+				{#if estado === 'listo' && vista?.evolucion}
+					<div class="evolucion">
+						<svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true" style="flex: none"><path d={iconoTendencia} stroke="var(--tinta)" stroke-width="2" fill="none" /></svg>
+						<span class="evolucion-texto">{#each vista.evolucion.partes as t (t.texto)}{#if t.fuerte}<strong>{t.texto}</strong>{:else}{t.texto}{/if}{/each}</span>
+					</div>
+				{/if}
+			{/if}
+			{#if oferta}
+				<Segmentado
+					nombre="capa-tu-zona"
+					etiqueta={TU_ZONA.capas.etiqueta}
+					valor={capa}
+					onchange={(v) => (capaElegida = v)}
+					opciones={[
+						{ valor: 'contratos', etiqueta: TU_ZONA.capas.contratos },
+						{ valor: 'oferta', etiqueta: TU_ZONA.capas.oferta }
+					]}
+				/>
+			{/if}
 		</div>
 
 		<div class="cuerpo" bind:clientWidth={ancho}>
@@ -99,6 +150,12 @@
 								<rect width="6" height="6" fill="#DAD5CA" />
 								<line x1="0" y1="0" x2="0" y2="6" stroke="#857F74" stroke-width="1.5" />
 							</pattern>
+							{#each tonosOferta as color, i (i)}
+								<pattern id="tz-punto-{i}" width="5" height="5" patternUnits="userSpaceOnUse">
+									<rect width="5" height="5" fill={color} />
+									<circle cx="2.5" cy="2.5" r="0.9" fill={colorPunteado(color)} />
+								</pattern>
+							{/each}
 							<clipPath id="tz-recorte"><rect x="0" y="0" width={w} height={alto} rx="8" /></clipPath>
 						</defs>
 						<g clip-path="url(#tz-recorte)">
@@ -107,7 +164,7 @@
 								<path
 									d={c.d}
 									fill-rule="evenodd"
-									fill={c.tono === 'fuera' ? '#ECEAE5' : c.tono === null ? 'url(#tz-rayado)' : TONOS_ZONA[c.tono]}
+									fill={relleno(c.cusec, c.tono)}
 									stroke={c.tono === 'fuera' ? '#DDD9D1' : '#857F74'}
 									stroke-width="1"
 									stroke-linejoin="round"
@@ -149,7 +206,24 @@
 				<p class="cruce" role="status">{vista.cruce}</p>
 			{/if}
 
-			{#if estado === 'listo' && vista}
+			{#if estado === 'listo' && vista && capa === 'oferta' && oferta}
+				<div class="leyenda">
+					<span class="leyenda-titulo">{TU_ZONA.capas.leyendaOferta}</span>
+					<div class="muestras">
+						{#each oferta.leyenda as l (l.etiqueta)}
+							<div class="muestra">
+								<span class="color" style:background={l.tono === null ? undefined : tonosOferta[l.tono]}></span>
+								<span class="etiqueta">{l.etiqueta}</span>
+							</div>
+						{/each}
+						<div class="muestra">
+							<span class="color rayado"></span>
+							<span class="etiqueta">{TU_ZONA.sinDato}</span>
+						</div>
+					</div>
+					<span class="nota">{TU_ZONA.capas.notaOferta}</span>
+				</div>
+			{:else if estado === 'listo' && vista}
 				<div class="leyenda">
 					<span class="leyenda-titulo">{TU_ZONA.leyenda}</span>
 					<div class="escala">
@@ -216,12 +290,6 @@
 			<a class="enlace" href="/mapa">{MAPA_REFERENCIA.enlaceTuZona}</a>
 		{/if}
 
-		{#if estado === 'listo' && vista?.evolucion}
-			<div class="evolucion">
-				<svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true" style="flex: none"><path d={iconoTendencia} stroke="var(--tinta)" stroke-width="2" fill="none" /></svg>
-				<span class="evolucion-texto">{#each vista.evolucion.partes as t (t.texto)}{#if t.fuerte}<strong>{t.texto}</strong>{:else}{t.texto}{/if}{/each}</span>
-			</div>
-		{/if}
 	</section>
 {/if}
 
@@ -252,6 +320,10 @@
 		font: 400 16px/1.5 var(--f-texto);
 		max-width: 620px;
 		text-wrap: pretty;
+	}
+	.cabeza p.fuente {
+		font: 400 13px/1.45 var(--f-texto);
+		color: var(--grafito);
 	}
 	.cuerpo {
 		display: flex;

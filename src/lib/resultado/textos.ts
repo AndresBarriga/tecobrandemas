@@ -419,7 +419,10 @@ export const COMPARATIVA = {
 	anuncios: {
 		titulo: 'Anuncios recientes',
 		sub: { mirando: 'lo que se pide', vivo: 'si te mudaras' },
-		nota: (nivel: 'barrio' | 'distrito') => `frente a la media del ${nivel}`
+		/** Una estimación (€/m² de oferta × los m²), no una valoración del piso */
+		nota: (m2: string, lugar: string) => `Frente a la oferta estimada para una vivienda de ${m2} m² en el ${lugar}.`,
+		/** En la tarjeta compartible, sin los m² */
+		notaCorta: (nivel: 'barrio' | 'distrito') => `frente a la oferta estimada del ${nivel}`
 	},
 	/** Una línea por modo bajo las tarjetas: sustituye a las explicaciones anteriores */
 	explicacion: {
@@ -431,10 +434,15 @@ export const COMPARATIVA = {
 		anuncios: (lugar: string) => `Anuncios recientes · ${lugar}`,
 		parteAlta: 'parte alta',
 		techo: 'si fuera piso excelente',
+		/** Regla de anuncios: el precio (círculo amarillo) y la oferta estimada (marca violeta), con sus importes */
+		tuPrecio: { mirando: (e: string) => `Tu anuncio · ${e}`, vivo: (e: string) => `Tu alquiler · ${e}` },
+		oferta: (e: string) => `Oferta estimada · ${e}`,
+		estimacion: (m2: string, lugar: string) => `Estimación para una vivienda de ${m2} m² en el ${lugar}.`,
+		fuenteOferta: (mes: string) => `Ayuntamiento de Madrid · ${mes}`,
 		aria: {
 			contratos: (parteAlta: string, techo: string) =>
 				`Contratos vigentes de la zona: parte alta ${parteAlta}; si fuera un piso excelente, ${techo}. El punto marca tu precio.`,
-			anuncios: (lugar: string, media: string) => `Anuncios recientes del ${lugar}: media ${media}, con la banda «en línea» alrededor.`
+			anuncios: (lugar: string, media: string) => `Anuncios recientes del ${lugar}: ${media}.`
 		}
 	},
 	/** Impacto en euros: una sola vez y solo frente a los contratos */
@@ -919,7 +927,20 @@ export const TU_ZONA = {
 	contexto: 'Tu precio está dentro de lo habitual aquí. Aquí ves cómo es en las zonas de alrededor.',
 	contextoInquilino: 'Así es lo habitual en las zonas que te rodean.',
 	contextoInquilinoVarias: 'Así es lo habitual en las zonas que te rodean. Las zonas con contorno grueso son las que puede ocupar tu vivienda.',
-	fallo: 'No hemos podido cargar el mapa de la zona.'
+	fallo: 'No hemos podido cargar el mapa de la zona.',
+	/** Selector de capa de «Tu zona»: «Mi alquiler» empieza con contratos y «Un anuncio» con oferta */
+	capas: {
+		etiqueta: 'Qué colorea el mapa',
+		contratos: 'Contratos',
+		oferta: 'Oferta',
+		introContratos: 'Tu zona y las cercanas (hasta 1,5 km), coloreadas según la parte alta de los alquileres registrados en cada una, en €/m².',
+		/** El dato es del barrio si lo tiene y, si no, del distrito: el texto lo dice así */
+		introOferta: 'Las zonas se colorean según el precio de oferta de alquiler publicado para su barrio o, si el barrio no tiene dato, para su distrito, en €/m².',
+		fuenteContratos: (mes: string) =>
+			`Contratos: SERPAVI (Ministerio de Vivienda y Agenda Urbana), propietarios particulares declarados a Hacienda (2024), ajustados por el IPC del alquiler hasta ${mes}.`,
+		leyendaOferta: 'Precio de oferta del barrio o del distrito, en €/m² al mes',
+		notaOferta: 'Punteado: valor del distrito (el barrio no tiene dato propio). Cortes iguales para toda la ciudad. Las líneas gruesas separan barrios.'
+	}
 } as const;
 
 /** Página /mapa: Madrid entera por zonas. Tono neutral: nada ordena barrios en mejores o peores */

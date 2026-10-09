@@ -3,8 +3,9 @@
 
 	/**
 	 * Las dos reglas del resultado con el MISMO eje, una debajo de la otra: contratos vigentes (banda negra, parte alta y
-	 * «si fuera piso excelente») y anuncios recientes (banda violeta rayada de ±10 % con la media). El punto del precio va
-	 * alineado en las dos. Los importes en euros del resultado solo aparecen aquí. Solo pinta: todo llega calculado.
+	 * «si fuera piso excelente») y anuncios recientes (la oferta estimada como marca vertical violeta y el precio como
+	 * círculo amarillo, cada uno con su etiqueta). La banda de ±10 % no se dibuja: solo sirve para clasificar «en línea» y
+	 * no es un intervalo de precios. El punto del precio va alineado en las dos. Solo pinta: todo llega calculado.
 	 */
 	let { comparativa }: { comparativa: Comparativa } = $props();
 
@@ -15,6 +16,7 @@
 	let wParte = $state(0);
 	let wTecho = $state(0);
 	let wMedia = $state(0);
+	let wPrecio = $state(0);
 	const marcasAncho = $state<number[]>([]);
 
 	const X = (f: number) => Math.min(Math.max(f, 0), 1) * W;
@@ -26,7 +28,6 @@
 	};
 	const bc = $derived(banda(r.contratos.banda.desde, r.contratos.banda.hasta));
 	const bi = $derived(r.contratos.incertidumbre ? banda(r.contratos.incertidumbre.desde, r.contratos.incertidumbre.hasta) : null);
-	const ba = $derived(r.anuncios ? banda(r.anuncios.banda.desde, r.anuncios.banda.hasta) : null);
 	const xParte = $derived(X(r.contratos.parteAlta.x));
 	const xTecho = $derived(X(r.contratos.techo.x));
 	const xPunto = $derived(X(r.punto));
@@ -35,7 +36,10 @@
 	const izqParte = $derived(colocarEtiqueta(xParte, wParte, W));
 	const izqTecho = $derived(Math.min(Math.max(xTecho - 4, 0), Math.max(W - wTecho, 0)));
 	const techoAbajo = $derived(izqTecho < izqParte + wParte + 10);
-	const izqMedia = $derived(r.anuncios ? Math.min(Math.max(X(r.anuncios.media.x) - wMedia / 2, 0), Math.max(W - wMedia, 0)) : 0);
+	// Cada etiqueta centrada en su marca y dentro del ancho: la del precio encima de la regla, la de la oferta debajo
+	const centrada = (x: number, w: number) => Math.min(Math.max(x - w / 2, 0), Math.max(W - w, 0));
+	const izqMedia = $derived(r.anuncios ? centrada(X(r.anuncios.media.x), wMedia) : 0);
+	const izqPrecio = $derived(centrada(xPunto, wPrecio));
 	const izqMarca = (i: number, x: number) => {
 		const w = marcasAncho[i] ?? 0;
 		if (i === 0) return 0;
@@ -60,17 +64,21 @@
 					<span class="et" class:abajo={techoAbajo} bind:offsetWidth={wTecho} style:left="{izqTecho}px">{T.reglas.techo} <strong>{r.contratos.techo.texto}</strong></span>
 				</div>
 			</div>
-		{:else if r.anuncios && ba && comparativa.anuncios}
+		{:else if r.anuncios && comparativa.anuncios}
 			<div class="regla">
 				<p class="titulo">{T.reglas.anuncios(comparativa.anuncios.lugar)}</p>
+				<div class="etiquetas">
+					<span class="et precio" bind:offsetWidth={wPrecio} style:left="{izqPrecio}px"><strong>{r.anuncios.precio}</strong></span>
+				</div>
 				<div class="pista">
-					<span class="banda anuncios" style:left="{ba.izq}px" style:width="{ba.ancho}px"></span>
 					<span class="media" style:left="{X(r.anuncios.media.x)}px"></span>
 					<span class="punto" style:left="{xPunto}px"></span>
 				</div>
 				<div class="etiquetas">
-					<span class="et" bind:offsetWidth={wMedia} style:left="{izqMedia}px"><strong>{r.anuncios.media.texto}</strong></span>
+					<span class="et oferta" bind:offsetWidth={wMedia} style:left="{izqMedia}px"><strong>{r.anuncios.media.texto}</strong></span>
 				</div>
+				<p class="estimacion">{r.anuncios.estimacion}</p>
+				<p class="fuente-oferta">{r.anuncios.fuente}</p>
 			</div>
 		{/if}
 	{/each}
@@ -122,24 +130,37 @@
 		border-left: 0;
 		box-sizing: border-box;
 	}
-	/* Anuncios: violeta rayado (la banda de ±10 %) */
-	.banda.anuncios {
-		background: repeating-linear-gradient(45deg, #6a4392 0 4px, #b79ad0 4px 8px);
+	/* Anuncios: la oferta estimada, una marca vertical violeta que sobresale de la pista */
+	.pista > .media {
+		top: -5px;
+		height: calc(100% + 10px);
+		width: 4px;
+		margin-left: -2px;
+		border-radius: 2px;
+		background: #6a4392;
 	}
-	.media {
-		width: 2px;
-		margin-left: -1px;
-		background: #2c1a45;
-	}
-	.punto {
+	/* El precio: círculo amarillo de verdad (ancho y alto fijos; la regla general de la pista no lo estira) */
+	.pista > .punto {
+		top: 2px;
 		width: 18px;
 		height: 18px;
-		top: 2px !important;
 		margin-left: -9px;
 		border-radius: 50%;
 		background: var(--paja);
 		border: 2.5px solid var(--tinta);
 		box-sizing: border-box;
+		flex: none;
+	}
+	.et.oferta strong {
+		color: #4b2e70;
+	}
+	.estimacion {
+		font: 500 13px/1.4 var(--f-texto);
+		margin-top: 2px;
+	}
+	.fuente-oferta {
+		font: 400 12px/1.4 var(--f-texto);
+		color: var(--grafito);
 	}
 	.etiquetas {
 		position: relative;

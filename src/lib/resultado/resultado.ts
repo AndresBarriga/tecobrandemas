@@ -201,6 +201,7 @@ function desdeAnalisis(
 	const comparativa = construirComparativa({
 		modo: 'mirando',
 		precio: a.precio,
+		superficie: a.superficie,
 		barra,
 		parteAlta: media.sup,
 		frente: frenteAContratos,
