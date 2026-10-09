@@ -46,6 +46,8 @@ jobs:
           PUBLIC_POSTHOG_KEY: ${{ vars.PUBLIC_POSTHOG_KEY }}
           # «Lo que se pide» (anuncios recientes): ausente o vacía = apagada. Variable del entorno `produccion`, no del repositorio
           PUBLIC_OFERTA_ENABLED: ${{ vars.PUBLIC_OFERTA_ENABLED }}
+          # Selector Contratos | Anuncios en /mapa: solo tiene efecto con la anterior encendida; ausente o vacía = apagada
+          PUBLIC_OFERTA_MAPA_ENABLED: ${{ vars.PUBLIC_OFERTA_MAPA_ENABLED }}
       - run: npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
