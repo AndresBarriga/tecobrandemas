@@ -13,13 +13,8 @@ export function textoNegociar(p: PantallaResultado, tratamiento: Tratamiento): s
 	const lugar = p.barrio ?? 'Madrid';
 	// Con horquilla la parte alta es «entre 947 y 995 €»
 	const hasta = v.barra.parteAlta.startsWith('entre') ? `una cifra ${v.barra.parteAlta}` : v.barra.parteAlta;
-	// Con «Lo que se pide» y el precio por encima de los contratos no se dice «hoy se pide más por entrar»: los anuncios recientes pueden estar al mismo nivel
-	const diferencia =
-		p.oferta?.veredicto === true
-			? NIVEL_CONTRATOS.negociar[tratamiento]
-			: tratamiento === 'usted'
-				? 'Entiendo que hoy se pide más por entrar. ¿Podría indicarme qué explica la diferencia, o si hay margen en el precio?'
-				: 'Entiendo que hoy se pide más por entrar. ¿Me podrías decir qué explica la diferencia, o si hay margen en el precio?';
+	// Nunca se dice «se pide más por entrar»: los anuncios recientes pueden estar al mismo nivel que el precio
+	const diferencia = NIVEL_CONTRATOS.negociar[tratamiento];
 	return [
 		'Hola:',
 		`Me interesa la vivienda de ${v.m2} en ${lugar} que anuncian por ${v.precio} al mes.`,

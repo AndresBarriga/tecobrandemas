@@ -894,7 +894,7 @@ export const MAPA_REFERENCIA = {
 		dentro: 'Dentro',
 		margen: 'Te sobra',
 		nota: 'No llega: menos que la parte baja de lo habitual. Dentro: entre la parte baja y la parte alta. Te sobra: más que la parte alta.',
-		aviso: 'Son contratos vigentes, no anuncios ni pisos disponibles. Hoy se suele pedir más.',
+		aviso: 'Son contratos vigentes, no anuncios ni pisos disponibles.',
 		resumen: (porcentaje: string, llega: string, conDato: string) =>
 			`En el ${porcentaje}\u00A0% de las zonas con dato (${llega} de ${conDato}) tu presupuesto llega a lo que paga la gente de la zona.`,
 		notaPoblacion: 'Ojo: las zonas grandes de la periferia ocupan más espacio en el mapa, pero cada zona cuenta igual en el porcentaje.',
@@ -906,7 +906,7 @@ export const MAPA_REFERENCIA = {
 			metros: (m: string) => `${m}\u00A0m`,
 			km: (km: string) => `${km}\u00A0km`
 		},
-		pideDatos: 'Escribe tu presupuesto y mira en qué zonas queda dentro de lo que pagan hoy los inquilinos.',
+		pideDatos: 'Escribe tu presupuesto y mira en qué zonas queda dentro de lo que pagan los inquilinos con contrato vigente.',
 		metrosFuera: 'Los metros tienen que estar entre 30 y 150.',
 		metrosFueraMapa: 'Con otros metros, el mapa no tiene referencia: la calculamos entre 30 y 150\u00A0m².',
 		ninguna: {
@@ -959,7 +959,7 @@ export const MAPA_REFERENCIA = {
 			aviso: 'Son anuncios recientes, no contratos firmados ni pisos disponibles: la media de cada barrio o distrito.',
 			resumen: (porcentaje: string, llega: string, conDato: string) =>
 				`En el ${porcentaje}\u00A0% de las zonas con dato (${llega} de ${conDato}) tu presupuesto llega a lo que se pide en los anuncios recientes.`,
-			pideDatos: 'Escribe tu presupuesto y mira en qué zonas queda en línea con lo que se pide en los anuncios recientes.',
+			pideDatos: 'Escribe tu presupuesto y mira en qué zonas queda en línea con lo que se pide en anuncios recientes.',
 			ninguna: {
 				titulo: 'Tu presupuesto no llega a lo que se pide en ninguna zona.',
 				texto: 'Con estos metros, lo que se pide en los anuncios recientes es mayor en todas las zonas. Prueba con menos metros o con otro presupuesto.'

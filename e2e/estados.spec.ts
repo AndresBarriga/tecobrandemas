@@ -141,7 +141,7 @@ test.describe('otras pantallas', () => {
 		await expect(page.getByRole('heading', { level: 1, name: /Negociar con el dato/i })).toBeVisible();
 		await expect(page.getByLabel(/Tu mensaje/)).toHaveValue(/2\.500 € al mes/);
 		await page.getByRole('radio', { name: 'Tú' }).check();
-		await expect(page.getByLabel(/Tu mensaje/)).toHaveValue(/Entiendo que hoy se pide más por entrar/);
+		await expect(page.getByLabel(/Tu mensaje/)).toHaveValue(/¿Me podrías decir qué explica la diferencia/);
 		await page.getByRole('radio', { name: 'Usted' }).check();
 		await captura(page, '19-negociar');
 		await page.getByRole('button', { name: 'Copiar el texto' }).click();
