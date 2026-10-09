@@ -4,6 +4,7 @@
  * diseño: cambian si cambia el IPC. Sigue a la pestaña activa: «Un anuncio» o «Mi alquiler».
  */
 import type { DatosMadrid } from './datos';
+import type { PantallaOferta } from './oferta';
 import { ANUNCIO_EJEMPLO, CUSEC_EJEMPLO } from './metodologia';
 import { aInquilino } from './inquilino';
 import { construirPantalla } from './resultado';
@@ -24,6 +25,8 @@ export interface Muestra {
 	etiqueta: string;
 	principal: { tipo: 'cifra'; texto: string; nota: string } | { tipo: 'titular'; texto: string; nota: string };
 	frase: string;
+	/** La línea de anuncios recientes tal como la genera el motor para este caso; null si la zona no tiene dato */
+	oferta: PantallaOferta | null;
 	vista: Vista;
 	barra: Barra;
 	/** Rótulo del punto de la barra: «tu anuncio» o «lo que pagas» */
@@ -39,16 +42,17 @@ export function construirMuestra(datos: DatosMadrid, modo: ModoMuestra = 'mirand
 	if (p.tipo !== 'resultado') return null;
 	const v = p.vista;
 	if (modo === 'vivo') {
-		const t = aInquilino(p, ANUNCIO_EJEMPLO, { firma: { reciente: false, mes: 1, ano: 2020 }, rentaFirma: null, somos: null }).inquilino!;
+		const q = aInquilino(p, ANUNCIO_EJEMPLO, { firma: { reciente: false, mes: 1, ano: 2020 }, rentaFirma: null, somos: null });
+		const t = q.inquilino!;
 		return {
 			modo, lugar: v.lugar, contexto: `${v.contexto} · contrato de ${t.firma.ano}`, clase: t.clase, icono: t.icono, etiqueta: t.etiqueta,
 			principal: t.cifra ? { tipo: 'cifra', texto: t.cifra, nota: t.nota } : { tipo: 'titular', texto: t.titular, nota: t.nota },
-			frase: t.frase, vista: v, barra: p.barra, etiquetaPrecio: 'lo que pagas'
+			frase: t.frase, oferta: q.oferta, vista: v, barra: p.barra, etiquetaPrecio: 'lo que pagas'
 		};
 	}
 	return {
 		modo, lugar: v.lugar, contexto: `${v.contexto} · precio del anuncio`, clase: v.clase, icono: v.clase, etiqueta: v.etiqueta,
 		principal: v.principal.tipo === 'cifra' ? { tipo: 'cifra', texto: v.principal.texto, nota: v.principal.nota } : v.principal.tipo === 'titular' ? { tipo: 'titular', texto: v.principal.texto, nota: v.principal.nota } : { tipo: 'titular', texto: `${v.principal.desde} a ${v.principal.hasta}`, nota: v.principal.nota },
-		frase: v.frase, vista: v, barra: p.barra, etiquetaPrecio: 'tu anuncio'
+		frase: v.frase, oferta: p.oferta, vista: v, barra: p.barra, etiquetaPrecio: 'tu anuncio'
 	};
 }

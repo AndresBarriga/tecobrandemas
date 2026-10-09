@@ -7,7 +7,7 @@ import type { MotivoSinDato } from '../motor';
 import { MINIMO_COMPARACION } from './habitacion';
 
 /** Lema bajo el logotipo (diseño: el nombre manda, el lema acompaña) */
-export const LEMA = 'Contratos reales, por zona.';
+export const LEMA = 'Que el precio no sea a ciegas.';
 
 export const ENLACE_OFICIAL = 'https://serpavi.mivau.gob.es';
 
@@ -19,6 +19,7 @@ export const ATRIBUCIONES = [
 	'Elaboración propia con datos extraídos del sitio web del INE: www.ine.es',
 	'CartoCiudad CC-BY 4.0 scne.es',
 	'Barrios: Ayuntamiento de Madrid',
+	'Anuncios recientes: Ayuntamiento de Madrid, serie 4.3.21.D (elaboración a partir de datos de Idealista)',
 	'© OpenStreetMap contributors'
 ] as const;
 
@@ -142,12 +143,15 @@ export const AVISO_UBICACION = {
 
 // ——— Marca y pantallas (diseño de 05/10/2026) ———
 
+/** Año de los contratos de SERPAVI en los que se basa la referencia */
+export const ANIO_SERPAVI = 2024;
+
 export const NOMBRE = 'A su precio';
 export const DESCRIPCION =
-	'Compara tu alquiler, o el de un anuncio en Madrid, con lo que pagan quienes ya viven de alquiler en la zona.';
+	'Compara tu alquiler, o el de un anuncio en Madrid, con los contratos reales de tu zona y con los anuncios recientes.';
 
 export const TITULAR_INICIO = ['¿Cuánto pagan', 'los demás?'] as const;
-export const SUBTITULAR_INICIO = 'Compara tu alquiler, o el de un anuncio, con lo que pagan quienes ya viven de alquiler en la zona.';
+export const SUBTITULAR_INICIO = 'Compara tu alquiler o el de un anuncio con los contratos reales de tu zona y con los anuncios recientes';
 
 export const ETIQUETA_NIVEL = {
 	a: 'Dentro de rango',
@@ -890,7 +894,7 @@ export const MAPA_REFERENCIA = {
 		dentro: 'Dentro',
 		margen: 'Te sobra',
 		nota: 'No llega: menos que la parte baja de lo habitual. Dentro: entre la parte baja y la parte alta. Te sobra: más que la parte alta.',
-		aviso: 'Son contratos vigentes, no anuncios ni pisos disponibles. Hoy se suele pedir más.',
+		aviso: 'Son contratos vigentes, no anuncios ni pisos disponibles.',
 		resumen: (porcentaje: string, llega: string, conDato: string) =>
 			`En el ${porcentaje}\u00A0% de las zonas con dato (${llega} de ${conDato}) tu presupuesto llega a lo que paga la gente de la zona.`,
 		notaPoblacion: 'Ojo: las zonas grandes de la periferia ocupan más espacio en el mapa, pero cada zona cuenta igual en el porcentaje.',
@@ -902,7 +906,7 @@ export const MAPA_REFERENCIA = {
 			metros: (m: string) => `${m}\u00A0m`,
 			km: (km: string) => `${km}\u00A0km`
 		},
-		pideDatos: 'Escribe tu presupuesto y mira en qué zonas queda dentro de lo que pagan hoy los inquilinos.',
+		pideDatos: 'Escribe tu presupuesto y mira en qué zonas queda dentro de lo que pagan los inquilinos con contrato vigente.',
 		metrosFuera: 'Los metros tienen que estar entre 30 y 150.',
 		metrosFueraMapa: 'Con otros metros, el mapa no tiene referencia: la calculamos entre 30 y 150\u00A0m².',
 		ninguna: {
@@ -933,6 +937,49 @@ export const MAPA_REFERENCIA = {
 		sinDatoSuperficie: 'La referencia solo se calcula entre 30 y 150\u00A0m².',
 		vacia: 'Toca una zona para ver lo que pagan quienes ya viven allí.',
 		comprobar: 'Comprueba un anuncio aquí'
+	},
+	/** Fuente «Anuncios» (salvo PUBLIC_OFERTA_MAPA_ENABLED=false): anuncios recientes del Ayuntamiento por barrio o distrito */
+	anuncios: {
+		fuente: { etiqueta: 'Fuente', contratos: 'Contratos', anuncios: 'Anuncios' },
+		intro: 'Lo que se pide en los anuncios recientes de cada barrio o distrito de Madrid.',
+		introPresupuesto: 'Madrid por zonas, según cómo queda tu presupuesto frente a lo que se pide en los anuncios recientes.',
+		/** Rótulo sobre el mapa */
+		rotulo: (mes: string) => `Según anuncios recientes (media del barrio/distrito, ${mes}). No son contratos firmados.`,
+		leyenda: (mes: string) => `Anuncios recientes de ${mes}: media del barrio o distrito, en €/m² al mes`,
+		leyendaPresupuesto: (mes: string) => `Tu presupuesto frente a los anuncios recientes de ${mes}`,
+		punteado: 'Punteado: valor del distrito',
+		notaCortes: 'Cortes iguales para toda la ciudad. Las líneas más gruesas separan distritos; las finas, barrios.',
+		notaSinDato: 'Sin dato: zonas sin dato de anuncios recientes.',
+		presupuesto: {
+			debajo: 'No llega',
+			dentro: 'En línea',
+			margen: 'Te sobra',
+			nota: (debajo: string, banda: string, sobra: string) =>
+				`No llega: menos del ${debajo}\u00A0% de la estimación (€/m² de anuncios × tus metros). En línea: dentro de ±${banda}\u00A0%. Te sobra: más del ${sobra}\u00A0%.`,
+			aviso: 'Son anuncios recientes, no contratos firmados ni pisos disponibles: la media de cada barrio o distrito.',
+			resumen: (porcentaje: string, llega: string, conDato: string) =>
+				`En el ${porcentaje}\u00A0% de las zonas con dato (${llega} de ${conDato}) tu presupuesto llega a lo que se pide en los anuncios recientes.`,
+			pideDatos: 'Escribe tu presupuesto y mira en qué zonas queda en línea con lo que se pide en anuncios recientes.',
+			ninguna: {
+				titulo: 'Tu presupuesto no llega a lo que se pide en ninguna zona.',
+				texto: 'Con estos metros, lo que se pide en los anuncios recientes es mayor en todas las zonas. Prueba con menos metros o con otro presupuesto.'
+			},
+			cercanas: (donde: string) => `Las 5 zonas más cercanas ${donde} donde tu presupuesto llega a lo que se pide`
+		},
+		hoja: {
+			barrio: (x: string) => `Anuncios recientes en el barrio: ${x}\u00A0€/m² al mes`,
+			distrito: (distrito: string, x: string) => `Anuncios recientes en el distrito de ${distrito}: ${x}\u00A0€/m² al mes (el barrio no tiene dato propio)`,
+			estimada: (m2: string, x: string) => `Para ${m2}: unos ${x} al mes`,
+			presupuesto: {
+				debajo: (e: string) => `Tu presupuesto (${e} al mes) queda por debajo de lo que se pide en los anuncios recientes de esta zona.`,
+				dentro: (e: string) => `Tu presupuesto (${e} al mes) queda en línea con lo que se pide en los anuncios recientes de esta zona. No significa que haya pisos a ese precio.`,
+				margen: (e: string) => `Tu presupuesto (${e} al mes) supera lo que se pide en los anuncios recientes de esta zona. No significa que haya pisos a ese precio.`
+			},
+			procedencia: (mes: string) =>
+				`Media de los anuncios recientes del barrio o distrito, ${mes}. Ayuntamiento de Madrid, serie 4.3.21.D (elaboración a partir de datos de Idealista). No son contratos firmados.`,
+			sinDato: 'Esta zona no tiene dato de anuncios recientes.',
+			vacia: 'Toca una zona para ver lo que se pide en los anuncios recientes de su barrio o distrito.'
+		}
 	},
 	enlaceTuZona: 'Ver el mapa de Madrid',
 	enlacePortada: 'Mapa de Madrid'

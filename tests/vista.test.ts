@@ -164,7 +164,7 @@ describe('negociar con el dato', () => {
 		const usted = textoNegociar(p, 'usted');
 		expect(tu).toContain(`vivienda de 70${NB}m² en Almagro que anuncian por 2.500${NB}€ al mes`);
 		expect(tu).toContain(p.vista.barra.parteAlta);
-		expect(tu).toContain('Entiendo que hoy se pide más por entrar.');
+		expect(tu).not.toContain('se pide más por entrar');
 		expect(tu).toContain('¿Me podrías decir qué explica la diferencia');
 		expect(usted).toContain('¿Podría indicarme qué explica la diferencia');
 		expect(tu).not.toMatch(/techo/i);

@@ -82,7 +82,7 @@ La brecha depende del anuncio, no del barrio: su correlación con el precio por 
 
 ## «Lo que se pide»: anuncios recientes como segunda referencia (09/10/2026)
 
-Decisiones del usuario para la serie del Ayuntamiento 4.3.21.D (PR 1 de 3: motor y resultado; PR 2: mapa; PR 3: portada y «Cómo calculamos»). Todo tras `PUBLIC_OFERTA_ENABLED`, apagada por defecto.
+Decisiones del usuario para la serie del Ayuntamiento 4.3.21.D (PR 1 de 3: motor y resultado; PR 2: mapa; PR 3: portada y «Cómo calculamos»). Todo tras `PUBLIC_OFERTA_ENABLED`; **desde el 09/10/2026 activa por defecto** (ver «Activación» abajo).
 
 - **Fuente única de oferta:** la serie del Ayuntamiento de Madrid (elaboración propia a partir de datos de Idealista). No se usa Idealista directamente ni se cotejan sus cifras en el producto. Los niveles contra contratos (SERPAVI) no cambian; el índice sigue siendo el IPC del alquiler nacional.
 - **Nivel de la referencia:** el barrio si tiene dato en el último mes y en el anterior (se usa el valor del último); si no, el distrito, nunca otro barrio. Con varias zonas posibles: el barrio solo si es uno; si no, el distrito si es uno; si son de distritos distintos, sin línea. La etiqueta dice siempre el nivel usado («barrio» o «distrito»).
@@ -125,3 +125,18 @@ Decisiones del usuario para la serie del Ayuntamiento 4.3.21.D (PR 1 de 3: motor
 - [ ] **Consulta legal** sobre el registro de análisis.
 - [ ] **Decisiones de Andrés:** nombre, dominio, quién firma el proyecto y cómo se financia la prueba de anuncios.
 - [ ] **Empezar a construir** el motor con Claude Code a partir del PRD y de `tests_motor_serpavi.csv`.
+
+### PR 2: el mapa (09/10/2026)
+- **Segunda flag:** `PUBLIC_OFERTA_MAPA_ENABLED`, solo con efecto si `PUBLIC_OFERTA_ENABLED` está encendida. Con la principal sola, el mapa no cambia y `/mapa` no pide el fichero de oferta.
+- **Selector** Contratos | Anuncios en «Referencia» y «Mi presupuesto»; «Evolución» sin cambios. «Mi presupuesto» empieza con Anuncios; «Referencia», con Contratos. La URL lleva `fuente=` solo con las dos flags.
+- **Valor por zona:** el del barrio si tiene dato en los dos últimos meses; si no, el del distrito (el mapeo sección → barrio ya existente; sin geometría nueva ni pmtiles). Las zonas con valor del distrito se pintan punteadas con el color del tramo; los bordes de distrito son más gruesos que los de barrio.
+- **Presupuesto con anuncios:** €/m² × los metros de la persona frente al presupuesto, con las etiquetas de siempre (No llega, En línea, Te sobra) y la banda de `config/oferta.json`; resumen y zonas cercanas en términos de zonas.
+- **Regla fija:** el mapa muestra una fuente u otra, nunca las dos a la vez, ni superpuestas ni comparadas, y no hay ninguna cifra de diferencia entre contratos y anuncios; la ficha de una zona solo cita la fuente que se está viendo.
+- **Rótulo** sobre el mapa con la fuente, el mes y «No son contratos firmados».
+
+### Activación para todos (09/10/2026)
+- **Decisión:** la oferta (resultado, tarjetas y mapa con anuncios) se activa para todos **sin protocolo de neutralidad adicional** y sin configurar nada en Cloudflare. `PUBLIC_OFERTA_ENABLED` y `PUBLIC_OFERTA_MAPA_ENABLED` siguen existiendo, pero invertidas: activas salvo que el valor sea exactamente `false` (ausente o vacío = activo). La del mapa sigue dependiendo de la principal. Son un interruptor de emergencia que exige un redeploy (`docs/operacion.md`).
+- **Riesgo aceptado:** licencia de reutilización de la serie 4.3.21.D sin confirmación escrita. El dato es público y se cita la fuente (la serie es «elaboración a partir de datos de Idealista»; el aviso legal del Ayuntamiento deja fuera lo procedente de terceros firmado).
+- **Se conservan** las etiquetas «anuncios recientes» y «no son contratos firmados», el mes y la fuente en pantalla.
+- **Sigue vigente:** no mostrar ni calcular la diferencia entre ambas referencias, ni la razón interna de ~1,2× entre ellas.
+- **PR 3:** ya no va tras flag; todo lo visible tiene que quedar explicado en la web (portada, «Cómo calculamos», FAQ y atribución).

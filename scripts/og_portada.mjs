@@ -24,7 +24,7 @@ body{width:1200px;height:630px;background:#F6F4EE;color:#1C1B19;display:flex;fon
 .izq{flex:none;width:500px;height:630px;background:#EBC85A;padding:56px 48px;display:flex;flex-direction:column;justify-content:space-between}
 .icono{width:200px;height:200px;border-radius:22%;box-shadow:0 0 0 6px #1C1B19}
 .nombre{font:800 96px/0.9 Extra;text-transform:uppercase;letter-spacing:.01em}
-.lema{font:600 34px/1.2 Texto;margin-top:14px}
+.lema{font:600 29px/1.2 Texto;margin-top:14px;white-space:nowrap}
 .der{flex:1;min-width:0;padding:56px 48px;display:flex;flex-direction:column;justify-content:center;gap:36px}
 h1{font:800 76px/0.95 Extra;text-transform:uppercase;white-space:nowrap}
 h1 span{display:block}

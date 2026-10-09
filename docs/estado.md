@@ -56,12 +56,13 @@ Lo que depende de un PR sin fusionar lleva su número. Producción: https://asup
 | Límite del geocodificador | PR #5 | 200 búsquedas por IP y día |
 | Revisión externa de privacidad | Falta | Decidido en el plan: sin consulta legal antes de lanzar |
 
-## «Lo que se pide» (anuncios recientes del Ayuntamiento), tras `PUBLIC_OFERTA_ENABLED`
+## «Lo que se pide» (anuncios recientes del Ayuntamiento), activo por defecto (interruptor `PUBLIC_OFERTA_ENABLED=false`)
 
 | Pieza | Estado | Nota |
 |---|---|---|
 | Datos, motor, resultado («Un anuncio» y «Mi alquiler»), tarjetas y analítica | PR 1 (esta rama) | `scripts/10_oferta.py`, `src/lib/motor/oferta.ts`, `src/lib/resultado/oferta.ts`; flag apagada por defecto |
-| Mapa: selector de fuente (Contratos \| Anuncios) | Falta (PR 2) | Paleta violeta y punteado en las zonas con valor del distrito |
-| Portada, «Cómo calculamos» y FAQ | Falta (PR 3) | Con la flag apagada la portada no cambia |
-| Licencia de la serie | Por confirmar | Ver `docs/operacion.md` |
-| Variable en el job `desplegar` de `ci.yml` | Hecho (excepción puntual al CI) | La variable `PUBLIC_OFERTA_ENABLED` va en el entorno `produccion`; sin ella, apagada |
+| Mapa: selector de fuente (Contratos \| Anuncios) | PR 2 (rama `oferta-2-mapa`), activo por defecto (interruptor `PUBLIC_OFERTA_MAPA_ENABLED=false`) | «Referencia» y «Mi presupuesto»; «Evolución» sin cambios; paleta violeta, punteado en las zonas con valor del distrito y bordes de distrito más gruesos |
+| Portada y «Cómo calculamos» | PR 3 (rama `oferta-3-textos`), sin flag | Lema, subtítulo, sección «Anuncios recientes», fuentes y atribución en el pie. FAQ: no existe en la web; pendiente de decidir |
+| Licencia de la serie | Riesgo aceptado (09/10/2026), sin confirmación escrita | Ver `docs/operacion.md` |
+| Variable en el job `desplegar` de `ci.yml` | Hecho (excepción puntual al CI) | `PUBLIC_OFERTA_ENABLED`, entorno `produccion`; sin ella, ACTIVA; solo `false` apaga |
+| Segunda variable del mapa en `ci.yml` | Hecho (misma excepción, commit aparte) | `PUBLIC_OFERTA_MAPA_ENABLED`, entorno `produccion`; sin ella, ACTIVO; solo `false` apaga; depende de la principal |

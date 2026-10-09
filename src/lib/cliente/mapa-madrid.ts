@@ -4,9 +4,9 @@
  * vez por visita; el color sale de resultado/mapa.ts y cambia sin recalcular nada de esto.
  */
 import type { DatosMadrid } from '#lib/resultado';
-import { cargarDatos } from './datos';
+import { MAPA_CON_ANUNCIOS, cargarDatosMapa } from './datos';
 import { cargarMapa, puntoAMetros } from './mapa';
-import { contornoMunicipio, lineasEntreBarrios } from './zona';
+import { contornoMunicipio, lineasEntreBarrios, lineasEntreDistritos } from './zona';
 
 export type Caja = [x0: number, y0: number, x1: number, y1: number];
 
@@ -26,6 +26,8 @@ export interface MadridCargado {
 	porCusec: Map<string, CeldaMadrid>;
 	/** Líneas entre barrios, un solo trazado */
 	lineasBarrio: string;
+	/** Líneas entre distritos, un solo trazado; vacío si el mapa no muestra los anuncios (no se calculan) */
+	lineasDistrito: string;
 	/** Contorno del municipio, un solo trazado */
 	contorno: string;
 	/** Caja de cada barrio (para centrar la vista) y su nombre */
@@ -43,7 +45,7 @@ const r1 = (n: number) => Math.round(n * 10) / 10;
 
 export function cargarMadrid(): Promise<MadridCargado> {
 	cargado ??= (async () => {
-		const [datos, mapa] = await Promise.all([cargarDatos(), cargarMapa()]);
+		const [datos, mapa] = await Promise.all([cargarDatosMapa(), cargarMapa()]);
 		const celdas: CeldaMadrid[] = [];
 		for (const pol of mapa.poligonos.values()) {
 			const d = pol.anillos.map((a) => 'M' + a.map(([x, y]) => `${r1(x)},${r1(-y)}`).join('L') + 'Z').join('');
@@ -85,12 +87,15 @@ export function cargarMadrid(): Promise<MadridCargado> {
 		for (const d of distritos.values()) d.centro = [d.centro[0] / d.n, d.centro[1] / d.n];
 		const lineas = await lineasEntreBarrios(mapa, datos);
 		const lineasBarrio = lineas.map((l) => 'M' + l.map(([x, y]) => `${r1(x)},${r1(-y)}`).join('L')).join('');
+		const lineasDistrito = MAPA_CON_ANUNCIOS
+			? (await lineasEntreDistritos(mapa, datos)).map((l) => 'M' + l.map(([x, y]) => `${r1(x)},${r1(-y)}`).join('L')).join('')
+			: '';
 		const contorno = (await contornoMunicipio(mapa)).map((l) => 'M' + l.map(([x, y]) => `${r1(x)},${r1(-y)}`).join('L')).join('');
 		const extension: Caja = [
 			Math.min(...celdas.map((c) => c.caja[0])), Math.min(...celdas.map((c) => c.caja[1])),
 			Math.max(...celdas.map((c) => c.caja[2])), Math.max(...celdas.map((c) => c.caja[3]))
 		];
-		return { datos, celdas, porCusec: new Map(celdas.map((c) => [c.cusec, c])), lineasBarrio, contorno, barrios, distritos, extension, extensionUrbana: areaUrbana(celdas, extension) };
+		return { datos, celdas, porCusec: new Map(celdas.map((c) => [c.cusec, c])), lineasBarrio, lineasDistrito, contorno, barrios, distritos, extension, extensionUrbana: areaUrbana(celdas, extension) };
 	})().catch((e) => {
 		cargado = null;
 		throw e;

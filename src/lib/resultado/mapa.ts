@@ -6,12 +6,17 @@
  *  - «Mi presupuesto»: lo que se puede pagar al mes frente al rango completo de la superficie elegida:
  *    «No llega» (< R_inf), «Dentro» (R_inf a R_sup) o «Te sobra» (> R_sup);
  *  - «Evolución 2015-2024»: subida de la mediana registrada, sin descontar la inflación.
+ * Con la flag de «Lo que se pide» en el mapa, «Referencia» y «Mi presupuesto» tienen además la fuente «Anuncios»: el €/m² de los
+ * anuncios recientes del barrio de cada zona (o el de su distrito, si el barrio no tiene dato en los dos últimos meses). Una fuente
+ * u otra, nunca las dos a la vez ni la diferencia entre ellas.
  * Sin dato: 20 testigos o menos, sin datos de la zona o superficie fuera de 30-150 m². En los textos, «zona».
  */
-import { SUPERFICIE_MAX, SUPERFICIE_MIN, motivoSeccion, rangoInicial, tieneDato } from '../motor';
+import { BANDA_EN_LINEA, type DatoOferta, SUPERFICIE_MAX, SUPERFICIE_MIN, compararConOferta, motivoSeccion, ofertaDeZonas, rangoInicial, tieneDato } from '../motor';
 import { type DatosMadrid, barrioDe, datosSeccion } from './datos';
 import { euros, mesAnio, numero } from './formato';
 import { MAPA_REFERENCIA as T } from './textos';
+
+const A = T.anuncios;
 
 const NB = ' ';
 
@@ -20,6 +25,8 @@ export const SUPERFICIE_MAPA_INICIAL = 70;
 export const N_TONOS = 5;
 
 export type CapaMapa = 'referencia' | 'presupuesto' | 'evolucion';
+/** Fuente de «Referencia» y «Mi presupuesto»: los contratos de siempre o los anuncios recientes (solo con la flag del mapa) */
+export type FuenteMapa = 'contratos' | 'anuncios';
 /** Posición del presupuesto frente al rango de la zona */
 export type PosicionPresupuesto = 'debajo' | 'dentro' | 'margen';
 
@@ -36,6 +43,8 @@ export interface ZonaMapa {
 	refSup: number | null;
 	/** Alquileres registrados en la zona */
 	n: number | null;
+	/** Anuncios recientes: el €/m² del barrio de la zona o, si no tiene dato, el de su distrito; null = sin dato o sin la flag */
+	oferta: DatoOferta | null;
 	/** Subida de la mediana registrada 2015-2024 (fracción); null = sin dato o con 20 testigos o menos */
 	evolucion: number | null;
 	med2015: number | null;
@@ -49,6 +58,8 @@ export function zonasDelMapa(datos: DatosMadrid, superficie: number): ZonaMapa[]
 		const d = datosSeccion(datos, cusec);
 		const conDato = valida && motivoSeccion(d) === null && tieneDato(d);
 		const r = conDato ? rangoInicial(superficie, d, datos.ipc.factor) : null;
+		const distrito = s.barrio ? datos.barrios[s.barrio]?.cod_distrito : undefined;
+		const oferta = datos.oferta && s.barrio && distrito ? ofertaDeZonas([{ barrio: s.barrio, distrito }], datos.oferta) : null;
 		const testigosOk = s.n !== null && s.n >= 21;
 		const conEvolucion = testigosOk && s.med2015 !== null && s.med2024 !== null && s.med2015 > 0;
 		return {
@@ -58,6 +69,7 @@ export function zonasDelMapa(datos: DatosMadrid, superficie: number): ZonaMapa[]
 			refInf: r ? r.inf : null,
 			refSup: r ? r.sup : null,
 			n: s.n,
+			oferta,
 			evolucion: conEvolucion ? s.med2024! / s.med2015! - 1 : null,
 			med2015: s.med2015,
 			med2024: s.med2024
@@ -107,6 +119,8 @@ export interface CapaCalculada {
 	leyenda: EtiquetaEscala[];
 	/** Nota bajo la leyenda */
 	nota: string;
+	/** Anuncios: las zonas cuyo valor es el de su distrito (el barrio no tiene dato); se pintan punteadas */
+	punteadas?: Set<string>;
 }
 
 const fmtM2 = (n: number) => numero(n, 1);
@@ -191,6 +205,44 @@ export function capaPresupuesto(zonas: ZonaMapa[], presupuesto: number): CapaCal
 	};
 }
 
+const POSICION_ANUNCIOS = { por_debajo: 'debajo', en_linea: 'dentro', por_encima: 'margen' } as const;
+
+/** Presupuesto frente a la estimación de anuncios de la zona (€/m² × metros), con la banda de config/oferta.json */
+export function posicionPresupuestoAnuncios(presupuesto: number, metros: number, z: Pick<ZonaMapa, 'oferta'>): PosicionPresupuesto | null {
+	const r = compararConOferta(presupuesto, metros, z.oferta);
+	return r ? POSICION_ANUNCIOS[r.contraOferta] : null;
+}
+
+const punteadasDe = (zonas: ZonaMapa[]) => new Set(zonas.filter((z) => z.oferta?.nivel === 'distrito').map((z) => z.cusec));
+
+/** «Referencia» con anuncios: quintiles del €/m² de anuncios entre las zonas con dato; iguales para toda la ciudad */
+export function capaReferenciaAnuncios(zonas: ZonaMapa[]): CapaCalculada {
+	const valores = zonas.map((z) => (z.oferta ? Math.round(z.oferta.eurosM2 * 10) / 10 : null));
+	const cortes = quintiles(valores.flatMap((v) => (v === null ? [] : [v])), 1);
+	return {
+		tonos: new Map(zonas.map((z, i) => [z.cusec, claseCortes(valores[i]!, cortes)])),
+		leyenda: etiquetasEscala(cortes, fmtM2),
+		nota: A.notaCortes,
+		punteadas: punteadasDe(zonas)
+	};
+}
+
+/** «Mi presupuesto» con anuncios: «No llega» (< 90 %), «En línea» (±10 %) o «Te sobra» (> 110 % de la estimación) */
+export function capaPresupuestoAnuncios(zonas: ZonaMapa[], presupuesto: number, metros: number): CapaCalculada & { resumen: ResumenPresupuesto } {
+	const pos = new Map(zonas.map((z) => [z.cusec, posicionPresupuestoAnuncios(presupuesto, metros, z)]));
+	return {
+		tonos: new Map([...pos].map(([c, p]) => [c, p === null ? null : INDICE_POSICION[p]])),
+		leyenda: [
+			{ tono: 0, etiqueta: A.presupuesto.debajo },
+			{ tono: 1, etiqueta: A.presupuesto.dentro },
+			{ tono: 2, etiqueta: A.presupuesto.margen }
+		],
+		nota: A.presupuesto.nota(String(Math.round((1 - BANDA_EN_LINEA) * 100)), String(Math.round(BANDA_EN_LINEA * 100)), String(Math.round((1 + BANDA_EN_LINEA) * 100))),
+		punteadas: punteadasDe(zonas),
+		resumen: resumenPresupuesto(pos.values())
+	};
+}
+
 export interface ZonaCercana {
 	cusec: string;
 	/** Distancia en metros entre el origen y el centro de la zona */
@@ -202,11 +254,12 @@ export interface ZonaCercana {
  * `centros` son los centros de las zonas en metros (el mismo sistema que el origen).
  */
 export function zonasCercanas(
-	zonas: readonly ZonaMapa[], presupuesto: number, origen: readonly [number, number], centros: ReadonlyMap<string, readonly [number, number]>, n = 5
+	zonas: readonly ZonaMapa[], presupuesto: number, origen: readonly [number, number], centros: ReadonlyMap<string, readonly [number, number]>, n = 5,
+	posicion: (z: ZonaMapa) => PosicionPresupuesto | null = (z) => posicionPresupuesto(presupuesto, z)
 ): ZonaCercana[] {
 	const llega: ZonaCercana[] = [];
 	for (const z of zonas) {
-		const p = posicionPresupuesto(presupuesto, z);
+		const p = posicion(z);
 		const c = centros.get(z.cusec);
 		if (p === null || p === 'debajo' || !c) continue;
 		llega.push({ cusec: z.cusec, metros: Math.hypot(c[0] - origen[0], c[1] - origen[1]) });
@@ -236,12 +289,31 @@ export interface HojaZona {
 
 /** Lo que dice la hoja al tocar una zona, según la capa */
 export function hojaDeZona(
-	z: ZonaMapa, datos: DatosMadrid, capa: CapaMapa, superficie: number, presupuesto: number | null
+	z: ZonaMapa, datos: DatosMadrid, capa: CapaMapa, superficie: number, presupuesto: number | null, fuente: FuenteMapa = 'contratos'
 ): HojaZona {
 	const barrio = barrioDe(datos, z.cusec);
 	const titulo = `${T.hoja.zonaDe} ${barrio?.nombre ?? 'Madrid'}`;
 	const m2 = `${numero(superficie)}${NB}m²`;
 	const hoja: HojaZona = { titulo, referencia: null, parteAlta: null, procedencia: null, presupuesto: null, evolucion: null, sinDato: null };
+
+	if (capa !== 'evolucion' && fuente === 'anuncios') {
+		// Solo la fuente que se está viendo: aquí no se cita ninguna cifra de contratos
+		const o = z.oferta;
+		if (!o) {
+			hoja.sinDato = A.hoja.sinDato;
+			return hoja;
+		}
+		const mes = mesAnio(o.mes);
+		const distrito = z.barrio ? datos.barrios[z.barrio]?.distrito : undefined;
+		hoja.referencia = o.nivel === 'barrio' ? A.hoja.barrio(numero(o.eurosM2, 1)) : A.hoja.distrito(distrito ?? 'Madrid', numero(o.eurosM2, 1));
+		if (capa === 'presupuesto' && presupuesto !== null && superficieValida(superficie)) {
+			hoja.parteAlta = A.hoja.estimada(m2, euros(Math.round(o.eurosM2 * superficie)));
+			const p = posicionPresupuestoAnuncios(presupuesto, superficie, z);
+			if (p) hoja.presupuesto = A.hoja.presupuesto[p](euros(presupuesto));
+		}
+		hoja.procedencia = A.hoja.procedencia(mes);
+		return hoja;
+	}
 
 	if (capa !== 'evolucion' && z.refInf !== null && z.refSup !== null && z.supM2 !== null) {
 		hoja.referencia = T.hoja.referencia(m2, numero(z.refInf), euros(z.refSup));
@@ -288,6 +360,23 @@ export const TONOS_MAPA: Record<CapaMapa, readonly string[]> = {
 	evolucion: ['#E3ECF4', '#B5CADD', '#86A9C9', '#5384B0', '#2F5B8A'],
 	presupuesto: ['#E8E3D8', '#84B598', '#3A7A5D']
 };
+
+/**
+ * Fuente «Anuncios» (violeta, otra familia que Paja y Acero). Referencia: cinco tonos; presupuesto: No llega (gris cálido,
+ * el mismo que con contratos), En línea y Te sobra. Contrastes entre tonos vecinos en docs/progreso.md.
+ */
+export const TONOS_ANUNCIOS: Record<'referencia' | 'presupuesto', readonly string[]> = {
+	referencia: ['#EDE3F2', '#C9B1DB', '#A27FC0', '#7550A0', '#4B2E70'],
+	presupuesto: ['#E8E3D8', '#B79AD0', '#6A4392']
+};
+
+/** Color de los puntos de una zona con el valor del distrito: el del tramo, más oscuro si es claro y más claro si es oscuro */
+export function colorPunteado(hex: string): string {
+	const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+	const lum = (0.2126 * c[0]! + 0.7152 * c[1]! + 0.0722 * c[2]!) / 255;
+	const mezcla = (a: number) => (lum > 0.5 ? Math.round(a * 0.6) : Math.round(a + (255 - a) * 0.5));
+	return '#' + c.map((v) => mezcla(v).toString(16).padStart(2, '0')).join('');
+}
 
 /** «Sin dato» en «Mi presupuesto»: relleno plano; el rayado tenue (#CFC9BA, 1 px cada 8 px) solo con zoom ≥ 12 */
 export const SIN_DATO_PRESUPUESTO = { relleno: '#EFECE4', rayado: '#CFC9BA' } as const;

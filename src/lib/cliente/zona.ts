@@ -32,6 +32,22 @@ export function lineasEntreBarrios(mapa: DatosMapa, datos: DatosMadrid): Promise
 	return lineas;
 }
 
+let lineasDistritos: Promise<[number, number][][]> | null = null;
+
+/** Líneas entre distritos: las aristas que separan dos zonas de distritos distintos (solo las pide /mapa con los anuncios) */
+export function lineasEntreDistritos(mapa: DatosMapa, datos: DatosMadrid): Promise<[number, number][][]> {
+	lineasDistritos ??= Promise.resolve().then(() => {
+		const distrito = (g: GeometryObject) => {
+			const barrio = datos.secciones[(g.properties as { cusec: string } | undefined)?.cusec ?? '']?.barrio;
+			return barrio ? datos.barrios[barrio]?.cod_distrito : undefined;
+		};
+		const capa = mapa.topo.objects.secciones as GeometryCollection;
+		const m = mesh(mapa.topo, capa, (a, b) => a !== b && distrito(a) !== distrito(b));
+		return m.coordinates.map((l) => l.map(([lon, lat]) => puntoAMetros({ lon: lon!, lat: lat! })));
+	});
+	return lineasDistritos;
+}
+
 let contorno: Promise<[number, number][][]> | null = null;
 
 /** Contorno del municipio: las aristas que solo tienen una zona a un lado (una sola vez por visita) */

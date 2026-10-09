@@ -9,7 +9,7 @@
  */
 import { PUBLIC_POSTHOG_ENABLED, PUBLIC_POSTHOG_KEY } from '$app/env/public';
 import {
-	type BRECHAS, type CANALES, type CAPAS_MAPA, type MODOS, type MOTIVOS_SIN_DATO, type NIVELES_OFERTA, type RESPUESTAS_QUE_HARAS, type RESULTADOS, type RESULTADOS_OFERTA,
+	type BRECHAS, type CANALES, type CAPAS_MAPA, type FUENTES_MAPA, type MODOS, type MOTIVOS_SIN_DATO, type NIVELES_OFERTA, type RESPUESTAS_QUE_HARAS, type RESULTADOS, type RESULTADOS_OFERTA,
 	campanaValida, dominioDelReferrer, filtrarEvento, navegadorApp
 } from './analitica-filtro';
 import { leerOrigenDeLaUrl, tarjetaOrigen } from './origen';
@@ -189,7 +189,8 @@ export function aporta(tipo: 'alquiler' | 'habitacion'): void {
 	enviar('aporta', { tipo });
 }
 
-/** /mapa: la capa que se ve al cargar y cada vez que se cambia. Solo el nombre de la capa: nada de la zona, el presupuesto ni los metros */
-export function mapaCapa(capa: (typeof CAPAS_MAPA)[number]): void {
-	enviar('mapa_capa', { capa });
+/** /mapa: la capa (y su fuente) que se ve al cargar y cada vez que se cambia. Solo enums: nada de la zona, el barrio, el presupuesto ni los metros */
+export function mapaCapa(capa: (typeof CAPAS_MAPA)[number], fuente?: (typeof FUENTES_MAPA)[number]): void {
+	// `fuente_mapa` solo existe con las dos flags de la oferta y en las capas con selector de fuente; sin ella, el evento es el de siempre
+	enviar('mapa_capa', fuente ? { capa, fuente_mapa: fuente } : { capa });
 }

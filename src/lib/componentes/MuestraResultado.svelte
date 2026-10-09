@@ -49,6 +49,12 @@
 			</div>
 		{/if}
 		{#if muestra.frase}<p class="frase">{muestra.frase}</p>{/if}
+		{#if muestra.oferta}
+			<div class="oferta">
+				<p class="oferta-linea">{muestra.oferta.linea}</p>
+				<p class="oferta-pie">{muestra.oferta.pie}</p>
+			</div>
+		{/if}
 		<div class="barra"><Barra barra={muestra.barra} vista={v} etiquetaPrecio={muestra.etiquetaPrecio} /></div>
 		<p class="pie">{MUESTRA.nota}</p>
 	</section>
@@ -128,6 +134,21 @@
 	}
 	.frase {
 		font: 500 19px/1.3 var(--f-texto);
+	}
+	.oferta {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		border-left: 3px solid var(--tinta);
+		padding-left: 10px;
+	}
+	.oferta-linea {
+		font: 600 16px/1.4 var(--f-texto);
+		text-wrap: pretty;
+	}
+	.oferta-pie {
+		font: 400 13px/1.4 var(--f-texto);
+		color: var(--grafito);
 	}
 	.pie {
 		font: 400 14px/1.4 var(--f-texto);

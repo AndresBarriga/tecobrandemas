@@ -44,8 +44,10 @@ jobs:
           # Analítica de uso (PostHog UE, sin cookies): solo en la compilación que se despliega a producción
           PUBLIC_POSTHOG_ENABLED: 'true'
           PUBLIC_POSTHOG_KEY: ${{ vars.PUBLIC_POSTHOG_KEY }}
-          # «Lo que se pide» (anuncios recientes): ausente o vacía = apagada. Variable del entorno `produccion`, no del repositorio
+          # «Lo que se pide» (anuncios recientes): ausente o vacía = ACTIVA; solo el valor exacto `false` la apaga (interruptor de emergencia, con redeploy). Variable del entorno `produccion`, no del repositorio
           PUBLIC_OFERTA_ENABLED: ${{ vars.PUBLIC_OFERTA_ENABLED }}
+          # Selector Contratos | Anuncios en /mapa: solo tiene efecto con la anterior activa; ausente o vacía = ACTIVO; solo `false` lo apaga
+          PUBLIC_OFERTA_MAPA_ENABLED: ${{ vars.PUBLIC_OFERTA_MAPA_ENABLED }}
       - run: npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

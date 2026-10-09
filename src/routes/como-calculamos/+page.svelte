@@ -155,6 +155,37 @@
 				<p class="claro">{p.precioPedido.parteAlta.texto}</p>
 			</section>
 
+			<section id="anu">
+				<h2>{p.anuncios.titulo}</h2>
+				<p class="lead">{p.anuncios.intro}</p>
+				<table class="comparativa">
+					<caption class="solo-lectores">Contratos y anuncios recientes, lado a lado</caption>
+					<thead>
+						<tr><td></td><th scope="col">{p.anuncios.tabla.columnas[0]}</th><th scope="col">{p.anuncios.tabla.columnas[1]}</th></tr>
+					</thead>
+					<tbody>
+						{#each p.anuncios.tabla.filas as f (f.etiqueta)}
+							<tr>
+								<th scope="row">{f.etiqueta}</th>
+								<td data-columna={p.anuncios.tabla.columnas[0]}>{f.contratos}</td>
+								<td data-columna={p.anuncios.tabla.columnas[1]}>{f.anuncios}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+				<p>{p.anuncios.enLinea}</p>
+				<details>
+					<summary>{p.anuncios.estimacion.titulo}</summary>
+					<p>{p.anuncios.estimacion.texto}</p>
+				</details>
+				<details>
+					<summary>{p.anuncios.limites.titulo}</summary>
+					<ul class="lista">
+						{#each p.anuncios.limites.items as t (t)}<li>{t}</li>{/each}
+					</ul>
+				</details>
+			</section>
+
 			<section id="map">
 				<h2>El mapa</h2>
 				{#each p.mapa.parrafos as t (t)}<p>{t}</p>{/each}
@@ -534,6 +565,121 @@
 	}
 	.claro {
 		color: var(--pista);
+	}
+
+	/* Anuncios recientes: listas con viñeta, tabla comparativa y desplegables nativos */
+	.lista {
+		list-style: disc;
+		padding-left: 20px;
+		gap: 8px;
+		max-width: 70ch;
+		font: 400 16px/1.55 var(--f-texto);
+	}
+	.comparativa {
+		width: 100%;
+		border-collapse: separate;
+		border-spacing: 0;
+		background: var(--blanco);
+		border-radius: var(--radio);
+		font: 400 15px/1.45 var(--f-texto);
+		text-align: left;
+	}
+	.comparativa th,
+	.comparativa td {
+		padding: 12px 14px;
+		vertical-align: top;
+		border-top: 1px solid var(--pista);
+	}
+	.comparativa thead th,
+	.comparativa thead td {
+		font: 700 15px/1.3 var(--f-texto);
+		border-top: 0;
+	}
+	.comparativa tbody th {
+		font: 700 14px/1.4 var(--f-texto);
+		width: 22%;
+	}
+	@media (max-width: 639px) {
+		/* En móvil cada fila pasa a bloque y cada celda lleva su columna delante */
+		.comparativa,
+		.comparativa tbody,
+		.comparativa tr,
+		.comparativa th,
+		.comparativa td {
+			display: block;
+		}
+		.comparativa thead {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+		}
+		.comparativa tbody tr {
+			padding: 6px 0;
+			border-top: 1px solid var(--pista);
+		}
+		.comparativa tbody tr:first-child {
+			border-top: 0;
+		}
+		.comparativa tbody th {
+			width: auto;
+			padding: 8px 14px 2px;
+			border-top: 0;
+		}
+		.comparativa td {
+			padding: 4px 14px;
+			border-top: 0;
+		}
+		.comparativa td::before {
+			content: attr(data-columna) ': ';
+			font-weight: 700;
+		}
+	}
+	details {
+		background: var(--blanco);
+		border-radius: var(--radio);
+	}
+	summary {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		min-height: 48px;
+		padding: 10px 16px;
+		font: 700 16px/1.3 var(--f-texto);
+		cursor: pointer;
+		list-style: none;
+	}
+	summary::-webkit-details-marker {
+		display: none;
+	}
+	summary::after {
+		content: '';
+		flex: none;
+		width: 8px;
+		height: 8px;
+		border-right: 2px solid currentColor;
+		border-bottom: 2px solid currentColor;
+		transform: rotate(45deg);
+		margin-top: -4px;
+	}
+	details[open] summary::after {
+		transform: rotate(-135deg);
+		margin-top: 4px;
+	}
+	summary:focus-visible {
+		outline: 2px solid var(--tinta);
+		outline-offset: 2px;
+		border-radius: var(--radio);
+	}
+	details > p,
+	details > .lista {
+		margin: 0;
+		padding: 0 16px 16px;
+	}
+	details > .lista {
+		padding-left: 36px;
 	}
 
 	/* Datos */
