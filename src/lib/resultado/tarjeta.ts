@@ -67,7 +67,7 @@ export interface TarjetaDatos {
 	/** Fracciones de la escala de la barra; la escala no se guarda */
 	barra: {
 		banda: Tramo01;
-		/** Tramo de incertidumbre de la parte alta (solo con horquilla) */
+		/** Tramo de incertidumbre de la parte alta (solo con varias zonas en niveles distintos, que se muestran como rango) */
 		incertidumbre: Tramo01 | null;
 		techo: Tramo01;
 		/** Posición del punto «tu anuncio» en la escala; es una fracción, no un importe */
@@ -157,12 +157,12 @@ export function construirTarjetaInquilino(p: PantallaResultado, texto: 0 | 1 | 2
 	const i = p.inquilino!;
 	const base = construirTarjeta(p);
 	const posicion = posicionDeTarjeta(i.pos);
-	const tramo = tramoDeTarjeta(posicion, p.ratioMin);
+	const tramo = tramoDeTarjeta(posicion, p.ratioCifra);
 	let hero: Hero;
 	if (tramo === 'encima' || tramo === 'doble' || tramo === 'veces') {
 		// La cifra va por la razón sobre la parte alta, también en el tramo que el motor llama «explicable»
-		const ratioMax = p.barra.horquilla ? p.ratioMin * (p.barra.sup.max / p.barra.sup.min) : null;
-		const c = principalPorEncima(p.ratioMin, ratioMax, p.vista.m2);
+		const ratioMax = p.barra.horquilla ? p.ratioCifra * (p.barra.sup.max / p.barra.sup.min) : null;
+		const c = principalPorEncima(p.ratioCifra, ratioMax, p.vista.m2, p.horquilla);
 		hero = c.tipo === 'rango' ? { tipo: 'rango', desde: c.desde, hasta: c.hasta } : c.tipo === 'cifra' ? { tipo: 'cifra', texto: c.texto } : base.hero;
 	} else if (tramo === 'limite') hero = { tipo: 'titular', texto: TARJETA_INQUILINO.tituloLimite };
 	else hero = { tipo: 'titular', texto: i.titular };
@@ -176,7 +176,8 @@ export function construirTarjetaInquilino(p: PantallaResultado, texto: 0 | 1 | 2
 		hero,
 		nota: tramo === 'debajo' || tramo === 'dentro' || tramo === 'limite' ? notas[tramo] : enVeces ? notas.veces : notas.encima,
 		// «Por encima» tiene dos textos: un índice que no existe cae en el factual
-		frase: textosInquilino(posicion, p.ratioMin, p.horquilla)[texto] ?? textosInquilino(posicion, p.ratioMin, p.horquilla)[0]!
+		// Con una sola cifra (una zona, o la media de varias en el mismo nivel) sin «al menos»; con rango, «al menos» el menor
+		frase: textosInquilino(posicion, p.ratioCifra, p.barra.horquilla)[texto] ?? textosInquilino(posicion, p.ratioCifra, p.barra.horquilla)[0]!
 	};
 }
 

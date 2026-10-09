@@ -181,7 +181,15 @@ export const MIRANDO = {
 	/** Algo por encima: hasta ~3 % solo el titular; más, una línea con el % y la frase del piso excelente */
 	limiteAlto: 'En el límite alto de lo habitual aquí.',
 	algoPorEncima: (pct: string) => `Un ${pct} por encima de lo habitual aquí.`,
+	/** Algo por encima con zonas en niveles distintos: la cifra depende de la zona y no se da */
 	algoPorEncimaHorquilla: 'Algo por encima de lo habitual aquí.',
+	/**
+	 * Bajo el titular, con varias zonas posibles: la cifra es la media de las referencias de las zonas cercanas y esto
+	 * dice entre qué valores se mueve según la zona exacta. Solo sale si las zonas difieren de verdad (vista.ts)
+	 */
+	aclaracion: (rango: string) => `Media de las zonas cercanas; según la zona exacta, ${rango}.`,
+	/** Bajo el titular, con zonas en niveles distintos (se muestra el rango): por qué no hay una sola cifra */
+	aclaracionRango: 'Punto cerca de zonas con referencias distintas: la cifra depende de cuál sea la tuya.',
 	/** Dentro de rango y por debajo */
 	dentro: 'Entrar aquí sale por lo mismo que estar dentro.',
 	porDebajo: 'Entrar aquí sale más barato que estar dentro.',
@@ -223,7 +231,7 @@ export const FORMULARIO = {
 		quitar: (calle: string) => `Quitar ${calle}`,
 		fijada: (calle: string) => `Calle elegida: ${calle}`,
 		/** Línea de confirmación bajo los campos */
-		entera: 'Calle entera: te daremos una horquilla.',
+		entera: 'Calle entera: usaremos la media de las zonas que cruza.',
 		portal: (calle: string, n: string, barrio: string, cp: string) => `${calle} ${n} · ${barrio} · ${cp}`,
 		portalAprox: (calle: string, n: string, cercano: string, barrio: string, cp: string) =>
 			`${calle} ${n}: no tiene ese número; usamos el ${cercano} (aproximado) · ${barrio} · ${cp}`,
@@ -287,7 +295,7 @@ export const UBICACION_ACTUAL = {
 	baja: (m: number) => `La ubicación es poco precisa (±${m}\u00A0m).`,
 	bajaEscribir: 'Escribir la dirección',
 	bajaMapa: 'Colocar en el mapa',
-	bajaIgualmente: 'Usarla igualmente: te daremos una horquilla'
+	bajaIgualmente: 'Usarla igualmente: usaremos la media de las zonas cercanas'
 } as const;
 
 export const MUESTRA = {

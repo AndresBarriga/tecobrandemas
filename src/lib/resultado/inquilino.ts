@@ -10,7 +10,7 @@ import { euros, numero } from './formato';
 import type { Firma } from './formulario';
 import { ofertaInquilino } from './oferta';
 import type { PantallaResultado } from './resultado';
-import { INQUILINO } from './textos';
+import { ETIQUETA_POR_DEBAJO, INQUILINO } from './textos';
 import { principalPorEncima, type Clase } from './vista';
 
 export type PosicionInquilino = 'debajo' | 'baja' | 'media' | 'alta' | 'encimab' | 'encima';
@@ -62,8 +62,8 @@ export function posicionInquilino(p: PantallaResultado, precio: number): Posicio
 	const n = p.nivel;
 	if (n.nivel === 'por_encima') return 'encima';
 	if (n.nivel === 'explicable') return 'encimab';
-	// «Por debajo»: bajo la parte baja de la referencia en todas las zonas posibles
-	if (precio < p.barra.inf.min) return 'debajo';
+	// «Por debajo»: bajo la parte baja de la referencia en todas las zonas posibles (lo dice el nivel de la pantalla, no la media)
+	if (p.vista.etiqueta === ETIQUETA_POR_DEBAJO) return 'debajo';
 	return n.posicion === 'baja' ? 'baja' : n.posicion === 'media' ? 'media' : 'alta';
 }
 
@@ -80,8 +80,9 @@ export function aInquilino(p: PantallaResultado, a: Anuncio, extra: ExtraInquili
 	if (pos === 'encimab' || pos === 'encima') {
 		const mes = [Math.max(0, a.precio - p.barra.sup.max), Math.max(0, a.precio - p.barra.sup.min)];
 		brecha = { mes: intervalo(mes[0]!, mes[1]!), año: intervalo(mes[0]! * 12, mes[1]! * 12) };
+		// Con zonas en niveles distintos (barra con tramos) la cifra sigue siendo un rango
 		const ratioMax = p.barra.horquilla ? a.precio / p.barra.sup.min : null;
-		const principal = principalPorEncima(p.ratioMin, ratioMax, v.m2);
+		const principal = principalPorEncima(p.ratioCifra, ratioMax, v.m2, p.horquilla);
 		if (pos === 'encima') {
 			cifra = principal.tipo === 'cifra' ? principal.texto : principal.tipo === 'rango' ? `${principal.desde} a ${principal.hasta}` : null;
 			nota = principal.nota;

@@ -11,7 +11,7 @@ export type Tratamiento = 'tu' | 'usted';
 export function textoNegociar(p: PantallaResultado, tratamiento: Tratamiento): string {
 	const v = p.vista;
 	const lugar = p.barrio ?? 'Madrid';
-	// Con horquilla la parte alta es «entre 947 y 995 €»
+	// Con zonas en niveles distintos la parte alta es «entre 947 y 995 €»; con varias en el mismo nivel, su media
 	const hasta = v.barra.parteAlta.startsWith('entre') ? `una cifra ${v.barra.parteAlta}` : v.barra.parteAlta;
 	// Nunca se dice «se pide más por entrar»: los anuncios recientes pueden estar al mismo nivel que el precio
 	const diferencia = NIVEL_CONTRATOS.negociar[tratamiento];

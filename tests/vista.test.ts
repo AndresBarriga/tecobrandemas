@@ -114,18 +114,26 @@ describe('vista del resultado', () => {
 		expect(lejos.pidenFrase).toBe('Piden 3,4\u00A0veces el tramo alto de los contratos actuales de la zona');
 	});
 
-	it('horquilla: intervalo, fuente con la suma de alquileres y aviso con la calle', () => {
+	it('horquilla: una sola cifra (la media), su aclaración, la fuente con la suma de alquileres y el aviso con la calle', () => {
 		const u = ubic(['A', 'B'], { aproximada: true, motivo: 'calle', via: 'Calle de Alcalá' });
 		const p = resultado(4000, u);
-		expect(p.vista.principal.tipo).toBe('rango');
-		expect(p.vista.brecha!.mes.startsWith('de +')).toBe(true);
-		expect(p.vista.meses!.extra.startsWith('al menos')).toBe(true);
+		expect(p.vista.principal.tipo).toBe('cifra');
+		expect(p.vista.brecha!.mes.startsWith('+')).toBe(true);
+		expect(p.vista.meses!.extra.startsWith('+')).toBe(true);
+		expect(p.vista.aclaracion).toBe('Media de las zonas cercanas; según la zona exacta, de 2,7 a 3,4 veces.');
 		expect(p.vista.fuente).toContain('Basado en 180 contratos vigentes en las zonas que cruza la calle');
-		expect(p.vista.fuente).toContain('La parte baja de lo habitual va de');
+		expect(p.vista.fuente).not.toContain('La parte baja de lo habitual va de');
 		expect(p.vista.aviso).toBe(
 			'Calle de Alcalá, sin número, cruza 2 zonas con referencias distintas. Por eso te damos una horquilla.'
 		);
-		expect(p.vista.barra.parteAlta).toMatch(/^entre [\d.]+ y [\d.]+ €$/);
+		expect(p.vista.barra.parteAlta).toMatch(/^[\d.]+ €$/);
+
+		// Zonas en niveles distintos (una por encima, otra dentro): no se promedia, se muestra el rango con el nivel prudente
+		const mixto = resultado(1300, u);
+		expect(mixto.barra.horquilla).toBe(true);
+		expect(mixto.vista.aclaracion).toBe('Punto cerca de zonas con referencias distintas: la cifra depende de cuál sea la tuya.');
+		expect(mixto.vista.barra.parteAlta).toMatch(/^entre [\d.]+ y [\d.]+ €$/);
+		expect(resultado(1500, u).vista.principal).toMatchObject({ tipo: 'titular', texto: 'En el límite alto de lo habitual aquí.' });
 	});
 
 	it('sin dato: lugar, contexto y variante según el lado del límite de superficie', () => {

@@ -154,14 +154,19 @@ describe('pantalla de resultado', () => {
 		expect(p.avisoUbicacion).toBeNull();
 	});
 
-	it('horquilla: nivel más prudente e intervalo de %', () => {
+	it('horquilla: nivel más prudente y una sola cifra (la media de las zonas)', () => {
 		const u = ubic(['A', 'B'], { aproximada: true, motivo: 'calle' });
-		// Supera el máximo de las dos: por encima en ambas, intervalo de %
+		// Supera el máximo de las dos: por encima en ambas; % y € salen de la media de las dos referencias
 		const p = construirPantalla(anuncio(Math.max(refDe('A').max, refDe('B').max) + 300), u, DATOS);
 		if (p.tipo !== 'resultado') throw new Error('esperaba resultado');
 		expect(p.horquilla).toBe(true);
-		expect(p.brechaPct).toMatch(/^entre \+\d+\u00A0% y \+\d+\u00A0%$/);
-		expect(p.brechaEuros).toMatch(/^entre .*\u00A0€\/mes · entre .*\u00A0€\/año$/);
+		expect(p.brechaPct).toMatch(/^\+\d+\u00A0%$/);
+		const media = (refDe('A').sup + refDe('B').sup) / 2;
+		const precio = Math.max(refDe('A').max, refDe('B').max) + 300;
+		expect(p.ratioCifra).toBeCloseTo(precio / media);
+		expect(p.brechaEuros).toBe(`+${numero(precio - media)}\u00A0€/mes · +${numero((precio - media) * 12)}\u00A0€/año`);
+		// La analítica sigue con la cifra más prudente (la zona de menor %): no cambia
+		expect(p.ratioMin).toBeLessThanOrEqual(p.ratioCifra);
 		expect(p.avisoUbicacion).toContain('2 zonas');
 		expect(p.cusecs).toHaveLength(2);
 
@@ -170,6 +175,10 @@ describe('pantalla de resultado', () => {
 		if (q.tipo !== 'resultado') throw new Error('esperaba resultado');
 		expect(q.nivel.nivel).not.toBe('por_encima');
 		expect(q.brechaPct).toBeNull();
+		// Con zonas en niveles distintos no se promedia: la barra conserva los tramos y no hay aclaración
+		expect(q.barra.horquilla).toBe(true);
+		expect(q.vista.aclaracion).toBe('Punto cerca de zonas con referencias distintas: la cifra depende de cuál sea la tuya.');
+		expect(construirTarjeta(q).barra.incertidumbre).not.toBeNull();
 	});
 
 	it('avisos de ubicación aproximada', () => {
@@ -475,14 +484,14 @@ describe('tarjeta', () => {
 		}
 	});
 
-	it('con horquilla, la barra lleva el tramo de incertidumbre', () => {
+	it('con horquilla, la tarjeta lleva una sola cifra y sin tramo de incertidumbre', () => {
 		const u = ubic(['A', 'B'], { aproximada: true, motivo: 'calle' });
 		const p = construirPantalla(anuncio(Math.max(refDe('A').max, refDe('B').max) + 300), u, DATOS);
 		if (p.tipo !== 'resultado') throw new Error('esperaba resultado');
 		const t = construirTarjeta(p);
 		expect(t.aproximada).toBe(true);
-		expect(t.hero.tipo).toBe('rango');
-		expect(t.barra.incertidumbre).not.toBeNull();
+		expect(t.hero.tipo).toBe('cifra');
+		expect(t.barra.incertidumbre).toBeNull();
 	});
 });
 

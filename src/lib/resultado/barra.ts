@@ -6,7 +6,7 @@
  * referencia es lo que todas las secciones comparten: de la mayor R_inf a la menor R_sup.
  * Todo en €/mes y en fracciones de la escala [0, 1]; el componente solo pinta.
  */
-import type { Referencia } from '../motor';
+import type { Analisis, Referencia } from '../motor';
 
 export interface Tramo {
 	min: number;
@@ -53,4 +53,23 @@ export function construirBarra(precio: number, referencias: Referencia[]): Barra
 		banda: { desde: f(inf.max), hasta: f(Math.max(inf.max, sup.min)) },
 		horquilla: referencias.length > 1
 	};
+}
+
+/**
+ * La referencia de las zonas candidatas como UNA sola: la media simple de R_inf, R_sup y R_max (el motor no pondera por
+ * cercanía). Con una sola zona es esa misma referencia. Las cifras de pantalla salen de aquí para que cuadren entre sí
+ * (%, €, meses); el nivel sigue saliendo del motor, con la zona más prudente.
+ */
+export function referenciaMedia(referencias: Referencia[]): Referencia {
+	const media = (f: (r: Referencia) => number) => referencias.reduce((t, r) => t + f(r), 0) / referencias.length;
+	return { inf: media((r) => r.inf), sup: media((r) => r.sup), max: media((r) => r.max) };
+}
+
+/**
+ * ¿Se muestra la media de las zonas posibles como una sola cifra? Solo si TODAS las zonas caen en el mismo nivel
+ * (dentro, algo por encima o se sale de lo habitual). Si caen en niveles distintos, la cifra depende de la zona y
+ * se muestra el rango, como antes, con el nivel de la zona más prudente. Con una sola zona no hay nada que promediar.
+ */
+export function mostrarMedia(an: Extract<Analisis, { tipo: 'resultado' }>): boolean {
+	return an.horquilla && new Set(an.secciones.map((s) => s.nivel.nivel)).size === 1;
 }
