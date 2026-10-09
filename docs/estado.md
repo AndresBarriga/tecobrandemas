@@ -64,4 +64,4 @@ Lo que depende de un PR sin fusionar lleva su número. Producción: https://asup
 | Mapa: selector de fuente (Contratos \| Anuncios) | Falta (PR 2) | Paleta violeta y punteado en las zonas con valor del distrito |
 | Portada, «Cómo calculamos» y FAQ | Falta (PR 3) | Con la flag apagada la portada no cambia |
 | Licencia de la serie | Por confirmar | Ver `docs/operacion.md` |
-| Variable en el job `desplegar` de `ci.yml` | Pendiente de «ok» | Sin esa línea producción siempre sale con la flag apagada |
+| Variable en el job `desplegar` de `ci.yml` | Hecho (excepción puntual al CI) | La variable `PUBLIC_OFERTA_ENABLED` va en el entorno `produccion`; sin ella, apagada |

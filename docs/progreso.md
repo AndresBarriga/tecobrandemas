@@ -376,4 +376,5 @@ Tras `PUBLIC_OFERTA_ENABLED` (apagada por defecto; ver `docs/operacion.md`). Dec
 - **Tests:** solo se actualizó `tests/textos.test.ts` (datos con oferta, los cinco casos, «Mi alquiler» y las tarjetas pasan por las reglas de copy, y las frases nuevas prohibidas); no se añadió ninguno. Comprobado a mano en local con la flag encendida y apagada (modo mapa, «Un anuncio» y «Mi alquiler»).
 - **Desviación:** la analítica `mapa_capa` + `fuente_mapa` pasa a la PR 2, con el selector de fuente.
 - **Entorno Windows:** `tests/motor.test.ts` («casos sin dato», 8 tests) falla en esta máquina porque `git` convierte el CSV de `tests/fixtures` a CRLF y `tests/fixture.ts` parte por `\n`; con LF pasan los 106. No lo causa esta PR y el CI (Linux) no lo ve.
-- **Pendiente:** confirmar la licencia de la serie, la línea de `ci.yml` para la variable y la duración del redeploy (`docs/operacion.md`).
+- **Revisión del 09/10/2026:** la misma línea con la cifra en los cuatro primeros casos; `ci.yml` pasa la variable (commit aparte); `CLAUDE.md` incluye la serie en la regla de no mezclar datos; las tarjetas ya guardadas, sin `contratos`, se validan y se muestran como antes (comprobado).
+- **Pendiente:** confirmar la licencia de la serie (la activación la decide el usuario) y anotar la duración del redeploy (`docs/operacion.md`).

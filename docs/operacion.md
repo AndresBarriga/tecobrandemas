@@ -110,10 +110,11 @@ Segundo punto de referencia junto a los contratos SERPAVI: el €/m² de los anu
 
 **Cómo se enciende y se apaga**
 - **Local:** `PUBLIC_OFERTA_ENABLED=true npm run dev` (en PowerShell: `$env:PUBLIC_OFERTA_ENABLED='true'; npm run dev`). Sin la variable, apagada. Es una variable pública de compilación (`src/env.ts`, estática): se lee al construir, no al ejecutar.
-- **Producción — hoy no hay forma de encenderla:** el job `desplegar` de `ci.yml` no la pasa a `npm run build`, así que producción siempre sale con la flag apagada. Para poder encenderla y apagarla desde la configuración del repositorio, hay que añadir al `env` de ese paso `PUBLIC_OFERTA_ENABLED: ${{ vars.PUBLIC_OFERTA_ENABLED }}` (una línea; **pendiente del «ok»**: `CLAUDE.md` dice que no se toca el CI). Con esa línea:
-  - **Encender:** variable del repositorio `PUBLIC_OFERTA_ENABLED` = `true` (Settings → Secrets and variables → Actions → Variables) y relanzar el CI del último commit de `main` (Actions → CI → «Re-run all jobs») para que vuelva a construir y desplegar.
-  - **Apagar el día del lanzamiento, rápido:** variable a `false` (o borrarla) y relanzar el CI igual. El relanzamiento repite `pruebas` (instalar, `check`, tests, build), `desplegar` (instalar, build, `wrangler deploy`) y `humo`. **No he medido cuánto tarda:** la herramienta `gh` no está en este equipo; anotar aquí la duración real de un despliegue (Actions → CI → «Total duration») antes del lanzamiento.
+- **Producción:** el paso de build del job `desplegar` (`ci.yml`) pasa `PUBLIC_OFERTA_ENABLED: ${{ vars.PUBLIC_OFERTA_ENABLED }}`; ausente o vacía = apagada. **Créala en el entorno `produccion`** (Settings → Environments → produccion → Environment variables), no como variable del repositorio: el job `desplegar` es el único que usa ese entorno, así que ninguna otra compilación la ve. La activación la decide quien lanza (licencia confirmada antes, ver abajo).
+  - **Encender:** variable `PUBLIC_OFERTA_ENABLED` = `true` en el entorno `produccion` y relanzar el CI del último commit de `main` (Actions → CI → «Re-run all jobs») para que vuelva a construir y desplegar.
+  - **Apagar el día del lanzamiento, rápido:** variable a `false` (o borrarla) y relanzar igual. El relanzamiento repite `pruebas` (instalar, `check`, tests, build), `desplegar` (instalar, build, `wrangler deploy`) y `humo`. **No he medido cuánto tarda:** `gh` no está en este equipo; anotar aquí la duración real de un despliegue (Actions → CI → «Total duration») antes del lanzamiento.
   - **Más rápido aún (por verificar):** `npx wrangler rollback` vuelve a la versión anterior del Worker sin reconstruir, si esa versión se desplegó con la flag apagada.
+- **Vista previa:** no existe (no se activan URLs de vista previa por rama) y el job `pruebas` (PR y `main`) compila sin la variable, así que siempre sale apagada. Para verla encendida: en local (`PUBLIC_OFERTA_ENABLED=true npm run dev`). Si algún día hay vista previa, basta un entorno `preview` con su propia variable: las variables de un entorno de GitHub no se ven desde otro.
 - La prueba de humo no cambia: es de solo lectura y no depende de la flag.
 
 **Datos: proceso mensual, a mano**
@@ -147,4 +148,4 @@ Segundo punto de referencia junto a los contratos SERPAVI: el €/m² de los anu
 3. Probar la vista previa de `/t/:id` en WhatsApp y X desde un móvil.
 4. `npm run informe:lanzamiento` sin fallos (bloquea `/r7k` para no contar como visitas). El presupuesto «Bundle inicial» es de **165 KB gz** (era 150 KB; subido el 07/10/2026 al añadir PostHog, variante slim, +50 KB: se mide 161,9 KB).
 5. Quitar los eventos de prueba en PostHog (filtro `interno = true`) o empezar el análisis desde la fecha del lanzamiento.
-6. «Lo que se pide»: decidir si se enciende. Antes, la licencia de la serie confirmada, la línea del CI para la variable (ver la sección anterior) y la duración real del redeploy anotada.
+6. «Lo que se pide»: decidir si se enciende. Antes, la licencia de la serie confirmada, la variable en el entorno `produccion` y la duración real del redeploy anotada.
