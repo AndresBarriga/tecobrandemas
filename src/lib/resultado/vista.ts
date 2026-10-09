@@ -16,7 +16,7 @@ import type { BarrioDeSeccion } from './datos';
 import { euros, mesAnio, numero, porcentaje } from './formato';
 import { partesRatio, UMBRAL_VECES } from './ratio';
 import {
-	ETIQUETA_NIVEL, ETIQUETA_POR_DEBAJO, FRASE_NIVEL, FUENTE, MIRANDO, type ContextoAviso, AVISO_UBICACION
+	ETIQUETA_NIVEL, ETIQUETA_POR_DEBAJO, FRASE_NIVEL, FUENTE, MIRANDO, NIVEL_CONTRATOS, type ContextoAviso, AVISO_UBICACION
 } from './textos';
 import type { Ubicacion } from './ubicacion';
 
@@ -149,9 +149,11 @@ export interface EntradaVista {
 	barrio: BarrioDeSeccion | null;
 	/** AAAA-MM del último dato del IPC */
 	ipcMes: string;
+	/** El bloque de «Lo que se pide» lleva veredicto: los textos de nivel hablan expresamente de los contratos de la zona */
+	conVeredicto?: boolean;
 }
 
-export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ipcMes }: EntradaVista): Vista {
+export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ipcMes, conVeredicto = false }: EntradaVista): Vista {
 	const { prudente, secciones, horquilla } = analisis;
 	const nivel = prudente.nivel;
 	const clase = claseDe(nivel);
@@ -164,7 +166,7 @@ export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ip
 	const porDebajo = nivel.nivel === 'dentro' && anuncio.precio < barra.inf.min;
 
 	let principal: Principal;
-	let frase: string = FRASE_NIVEL[clase];
+	let frase: string = clase === 'c' && conVeredicto ? NIVEL_CONTRATOS.c : FRASE_NIVEL[clase];
 	let matiz: string | null = null;
 	let encuadre: string | null = null;
 	let pidenFraseCaja: string | null = null;
@@ -197,18 +199,20 @@ export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ip
 		// Sin rango ni «+1 €»: «algo por encima» no debe leerse como fuera de la franja ni repetir la cifra
 		const limiteAlto = prudente.brecha!.pct <= UMBRAL_LIMITE_ALTO;
 		if (limiteAlto) {
-			principal = { tipo: 'titular', texto: MIRANDO.limiteAlto, nota: '', enFrase: true };
+			principal = { tipo: 'titular', texto: conVeredicto ? NIVEL_CONTRATOS.limiteAlto : MIRANDO.limiteAlto, nota: '', enFrase: true };
 			frase = '';
 			tituloCorto = 'Límite alto';
 		} else {
 			principal = {
 				tipo: 'titular',
-				texto: horquilla ? MIRANDO.algoPorEncimaHorquilla : MIRANDO.algoPorEncima(porcentaje(prudente.brecha!.pct)),
+				texto: horquilla
+					? (conVeredicto ? NIVEL_CONTRATOS : MIRANDO).algoPorEncimaHorquilla
+					: (conVeredicto ? NIVEL_CONTRATOS : MIRANDO).algoPorEncima(porcentaje(prudente.brecha!.pct)),
 				nota: '',
 				enFrase: true
 			};
 			frase = '';
-			matiz = FRASE_NIVEL.b;
+			matiz = conVeredicto ? NIVEL_CONTRATOS.b : FRASE_NIVEL.b;
 			tituloCorto = 'Sobre la parte alta';
 		}
 	} else {

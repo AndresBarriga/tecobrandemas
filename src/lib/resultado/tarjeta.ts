@@ -9,7 +9,7 @@ import { heroEnVeces, partesRatio } from './ratio';
 import { principalPorEncima } from './vista';
 import type { PantallaResultado } from './resultado';
 import {
-	ATRIBUCIONES, ETIQUETA_NIVEL, ETIQUETA_OG, ETIQUETA_POR_DEBAJO, FRASE_TARJETA, FRASE_TARJETA_LIMITE, FRASE_TARJETA_POR_DEBAJO, INQUILINO, MIRANDO, NOMBRE, NOTA_TARJETA, OFERTA, OG, TARJETA,
+	ATRIBUCIONES, ETIQUETA_NIVEL, ETIQUETA_OG, ETIQUETA_POR_DEBAJO, FRASE_TARJETA, FRASE_TARJETA_LIMITE, FRASE_TARJETA_POR_DEBAJO, INQUILINO, MIRANDO, NIVEL_CONTRATOS, NOMBRE, NOTA_TARJETA, OFERTA, OG, TARJETA,
 	TARJETA_INQUILINO
 } from './textos';
 import type { Clase, Vista } from './vista';
@@ -84,10 +84,11 @@ const notaPorEncima = (h: Hero): string =>
 	(h.tipo === 'cifra' ? heroEnVeces(h.texto) : h.tipo === 'rango' && heroEnVeces(h.hasta)) ? 'la parte alta' : 'sobre la parte alta';
 
 /** La frase de la tarjeta del anuncio, por nivel: dentro, por debajo, límite alto, algo por encima y se sale de lo habitual */
-function fraseDeTarjeta(v: Vista): string {
+function fraseDeTarjeta(v: Vista, conVeredicto: boolean): string {
+	const t = conVeredicto ? NIVEL_CONTRATOS.tarjeta : FRASE_TARJETA;
 	if (v.clase === 'a') return v.etiqueta === ETIQUETA_POR_DEBAJO ? FRASE_TARJETA_POR_DEBAJO : FRASE_TARJETA.a;
-	if (v.clase === 'b') return v.limiteAlto ? FRASE_TARJETA_LIMITE : FRASE_TARJETA.b;
-	return FRASE_TARJETA.c;
+	if (v.clase === 'b') return v.limiteAlto ? FRASE_TARJETA_LIMITE : t.b;
+	return t.c;
 }
 
 export function construirTarjeta(p: PantallaResultado): TarjetaDatos {
@@ -114,7 +115,7 @@ export function construirTarjeta(p: PantallaResultado): TarjetaDatos {
 			vista.clase === 'c'
 				? notas.c(lugar, aproximada, notaPorEncima(hero))
 				: notas[vista.clase](lugar),
-		frase: `${contratos ? OFERTA.tarjeta.habitual(vista.habitual) : MIRANDO.habitual(vista.habitual)} ${fraseDeTarjeta(vista)}`,
+		frase: `${contratos ? OFERTA.tarjeta.habitual(vista.habitual) : MIRANDO.habitual(vista.habitual)} ${fraseDeTarjeta(vista, p.oferta?.veredicto === true)}`,
 		barrio,
 		aproximada,
 		barra: {

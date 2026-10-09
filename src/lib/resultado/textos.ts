@@ -435,6 +435,36 @@ export const OFERTA = {
 	}
 } as const;
 
+/**
+ * Textos de nivel de «Un anuncio» cuando el bloque de «Lo que se pide» lleva veredicto (el precio supera los contratos y la
+ * flag está encendida). «Aquí» se vuelve «en los contratos de la zona»: la pantalla ya habla de dos referencias y el nivel
+ * es solo el de los contratos. Con la flag apagada, o dentro y por debajo de contratos, valen los de siempre (MIRANDO, FRASE_NIVEL).
+ */
+export const NIVEL_CONTRATOS = {
+	/** Se sale de lo habitual: la frase bajo la cifra */
+	c: 'Ni para un piso excelente es habitual pagar esto en los contratos de la zona.',
+	/** Algo por encima: el matiz (con la cifra o el límite alto delante) */
+	b: 'Frente a los contratos, solo cuadra si el piso es excelente (ascensor, garaje, reforma reciente, piscina o vistas). Si no lo es, pregunta qué lo justifica.',
+	limiteAlto: 'En el límite alto de los contratos de la zona.',
+	algoPorEncima: (pct: string) => `Un ${pct} por encima de los contratos de la zona.`,
+	algoPorEncimaHorquilla: 'Algo por encima de los contratos de la zona.',
+	/** Título largo de la pantalla (`PantallaResultado.titular`) */
+	titular: {
+		b: 'Algo por encima de lo habitual: frente a los contratos, solo cuadra si el piso es excelente',
+		c: 'Se sale de lo habitual: ni para un piso excelente es habitual pagar esto en los contratos de la zona'
+	},
+	/** Tarjeta compartible */
+	tarjeta: {
+		b: 'Entrar aquí sale más caro que estar dentro. Frente a los contratos, solo cuadra si el piso es excelente.',
+		c: 'Ni para un piso excelente es habitual pagar esto en los contratos de la zona.'
+	},
+	/** «Negociar con el dato»: sin «hoy se pide más por entrar» (los anuncios recientes pueden estar al mismo nivel) */
+	negociar: {
+		tu: '¿Me podrías decir qué explica la diferencia, o si hay margen en el precio?',
+		usted: '¿Podría indicarme qué explica la diferencia, o si hay margen en el precio?'
+	}
+} as const;
+
 /** Habitaciones (F1): sin referencia oficial, sin nivel ni veredicto */
 export const HABITACION = {
 	insignia: 'Habitaciones: datos aportados por vecinos',

@@ -15,7 +15,7 @@ import { type Evolucion, evolucion } from './evolucion';
 import { euros, mesAnio, numero } from './formato';
 import { type PantallaOferta, construirOferta } from './oferta';
 import {
-	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, ETIQUETA_POR_DEBAJO, FUENTE, type ClaveSinDato, type MotivoPantalla,
+	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, FUENTE, NIVEL_CONTRATOS, type ClaveSinDato, type MotivoPantalla,
 	PRECIO_PEDIDO, QUE_PUEDES_HACER, SIN_DATO, TEXTO_OFICIAL_SIN_DATO
 } from './textos';
 import type { PantallaHabitacion } from './habitacion';
@@ -150,15 +150,15 @@ export function pantallaSinDatoDeClave(clave: string): PantallaSinDato | null {
 	return { ...pantallaSinDato(motivo), ...SIN_DATO[k] };
 }
 
-function titularNivel(n: Nivel): string {
+function titularNivel(n: Nivel, conVeredicto = false): string {
 	if (n.nivel === 'dentro') {
 		const parte = { baja: 'baja', media: 'media', alta: 'alta' }[n.posicion];
 		return `Dentro de rango, en la parte ${parte}`;
 	}
 	if (n.nivel === 'explicable') {
-		return 'Algo por encima de lo habitual: solo cuadra si el piso es excelente';
+		return conVeredicto ? NIVEL_CONTRATOS.titular.b : 'Algo por encima de lo habitual: solo cuadra si el piso es excelente';
 	}
-	return 'Se sale de lo habitual: ni para un piso excelente es habitual pagar esto aquí';
+	return conVeredicto ? NIVEL_CONTRATOS.titular.c : 'Se sale de lo habitual: ni para un piso excelente es habitual pagar esto aquí';
 }
 
 function intervalo(a: number, b: number, formato: (x: number) => string): string {
@@ -188,14 +188,17 @@ function desdeAnalisis(
 	const cusecs = an.secciones.map((s) => s.seccion.cusec);
 	const barrio = barrioDe(datos, r.seccion.cusec);
 	const barra = construirBarra(a.precio, an.secciones.map((x) => x.referencia));
-	const vista = construirVista({ anuncio: a, ubicacion: u, analisis: an, barra, barrio, ipcMes: datos.ipc.ultimo_mes });
-	// Dónde queda el precio frente a los contratos: por debajo de la parte baja, dentro de rango o por encima de la parte alta
-	const frenteAContratos = nivel.nivel !== 'dentro' ? 'encima' : vista.etiqueta === ETIQUETA_POR_DEBAJO ? 'debajo' : 'dentro';
+	// Dónde queda el precio frente a los contratos: por debajo de la parte baja de todas las zonas, dentro de rango o por encima de la parte alta
+	const frenteAContratos =
+		nivel.nivel !== 'dentro' ? 'encima' : a.precio < Math.min(...an.secciones.map((x) => x.referencia.inf)) ? 'debajo' : 'dentro';
+	const oferta = construirOferta(a, cusecs, frenteAContratos, datos);
+	const conVeredicto = oferta?.veredicto === true;
+	const vista = construirVista({ anuncio: a, ubicacion: u, analisis: an, barra, barrio, ipcMes: datos.ipc.ultimo_mes, conVeredicto });
 	return {
 		tipo: 'resultado',
 		ratioMin: an.pctMin + 1,
 		nivel,
-		titular: titularNivel(nivel),
+		titular: titularNivel(nivel, conVeredicto),
 		etiquetaBrecha: nivel.nivel === 'por_encima' ? ETIQUETA_BRECHA : null,
 		brechaPct,
 		brechaEuros,
@@ -220,7 +223,7 @@ function desdeAnalisis(
 		zona: { precio: a.precio, superficie: a.superficie, origen: u.punto, cusecs: u.cusecs, clase: vista.clase, motivo: u.motivo },
 		registro: barrio ? { barrio: barrio.codigo, precio: Math.round(a.precio), m2: a.superficie, nivel: vista.clase } : null,
 		inquilino: null,
-		oferta: construirOferta(a, cusecs, frenteAContratos, datos)
+		oferta
 	};
 }
 
