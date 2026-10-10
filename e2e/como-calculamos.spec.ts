@@ -18,7 +18,7 @@ test.describe('Cómo calculamos', () => {
 		await expect(barras.nth(1)).toHaveAttribute('aria-label', /Referencia ajustada, de [\d.]+ a [\d.]+/);
 		await expect(page.locator('#ej')).toContainText('Con el ajuste del IPC (×1,054)');
 
-		await expect(page.locator('#dat')).toContainText('Qué guardamos (solo si marcas la casilla)');
+		await expect(page.locator('#tus-datos')).toContainText('Qué guardamos (solo si marcas la casilla)');
 		await expect(page.locator('#lo-que-no-calculamos a')).toHaveCount(7);
 		await expect(page.getByRole('link', { name: 'hola@asuprecio.com' })).toHaveAttribute('href', 'mailto:hola@asuprecio.com');
 		await expect(page.getByRole('table', { name: 'Fuentes de datos' })).toBeVisible();

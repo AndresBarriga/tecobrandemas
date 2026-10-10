@@ -162,48 +162,43 @@
 				{/if}
 			</section>
 
-			<section id="ped" class="oscura">
-				<h2>{p.precioPedido.titulo}</h2>
-				<p class="lead">{p.precioPedido.destacado}</p>
-				<p class="claro">{p.precioPedido.cuerpo}</p>
-				<h3>{p.precioPedido.incluye.titulo}</h3>
-				<ul class="claro">
-					{#each p.precioPedido.incluye.items as t (t)}<li>{t}</li>{/each}
-				</ul>
-				{#each p.precioPedido.tramos as t (t.titulo)}
-					<h3>{t.titulo}</h3>
-					<p class="claro">{t.texto}</p>
-				{/each}
-			</section>
-
-			<section id="anu">
-				<h2>{p.anuncios.titulo}</h2>
-				<p class="lead">{p.anuncios.intro}</p>
-				<table class="comparativa">
-					<caption class="solo-lectores">Contratos y oferta, lado a lado</caption>
-					<thead>
-						<tr><td></td><th scope="col">{p.anuncios.tabla.columnas[0]}</th><th scope="col">{p.anuncios.tabla.columnas[1]}</th></tr>
-					</thead>
-					<tbody>
-						{#each p.anuncios.tabla.filas as f (f.etiqueta)}
-							<tr>
-								<th scope="row">{f.etiqueta}</th>
-								<td data-columna={p.anuncios.tabla.columnas[0]}>{f.contratos}</td>
-								<td data-columna={p.anuncios.tabla.columnas[1]}>{f.anuncios}</td>
-							</tr>
+			<!-- Las dos referencias: dos tarjetas con las mismas filas (negra y clara, unidas en móvil como la costura) -->
+			<section id="ref">
+				<h2>{p.referencias.titulo}</h2>
+				<p>{p.referencias.intro}</p>
+				<div class="referencias">
+					{#each p.referencias.tarjetas as t (t.fuente)}
+						<div class="referencia {t.fuente}">
+							<div class="grupo-cab">
+								<span class="sello">{t.etiqueta}</span>
+								<span class="grupo-pregunta">{t.pregunta}</span>
+							</div>
+							<dl class="filas-ref">
+								{#each t.filas as f (f.etiqueta)}
+									<div><dt>{f.etiqueta}</dt><dd>{f.texto}</dd></div>
+								{/each}
+							</dl>
+							<dl class="terminos">
+								{#each t.terminos as f (f.titulo)}
+									<div><dt>{f.titulo}</dt><dd>{f.texto}</dd></div>
+								{/each}
+							</dl>
+						</div>
+					{/each}
+				</div>
+				{#each p.referencias.cierre as t (t)}<p class="cierre-ref">{t}</p>{/each}
+				<details>
+					<summary>{p.referencias.limites.titulo}</summary>
+					<div class="limites-ref">
+						{#each p.referencias.limites.grupos as g (g.titulo)}
+							<div>
+								<h3>{g.titulo}</h3>
+								<ul class="lista">
+									{#each g.items as t (t)}<li>{t}</li>{/each}
+								</ul>
+							</div>
 						{/each}
-					</tbody>
-				</table>
-				<p>{p.anuncios.enLinea}</p>
-				<details>
-					<summary>{p.anuncios.estimacion.titulo}</summary>
-					<p>{p.anuncios.estimacion.texto}</p>
-				</details>
-				<details>
-					<summary>{p.anuncios.limites.titulo}</summary>
-					<ul class="lista">
-						{#each p.anuncios.limites.items as t (t)}<li>{t}</li>{/each}
-					</ul>
+					</div>
 				</details>
 			</section>
 
@@ -233,7 +228,7 @@
 				<a class="enlace" href="/mapa">Ver el mapa de Madrid</a>
 			</section>
 
-			<section id="dat">
+			<section id="tus-datos">
 				<h2>Tus datos</h2>
 				{#each p.datos.parrafos as t (t)}<p>{t}</p>{/each}
 				<div class="dos">
@@ -653,103 +648,99 @@
 		min-width: 0;
 	}
 
-	/* Precio pedido */
-	.oscura {
-		background: var(--tinta);
-		color: var(--papel);
+	/* —— Las dos referencias —— */
+	.referencias {
+		--negro: #0b0a0a;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		border-radius: var(--radio);
+		overflow: hidden;
+	}
+	.referencia {
 		padding: 20px 18px;
-		gap: 12px;
-	}
-	.oscura h2 {
-		color: var(--paja);
-	}
-	.oscura .lead {
-		color: var(--papel);
-	}
-	.oscura h3 {
-		color: var(--paja);
-		margin-top: 4px;
-	}
-	.oscura ul {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
-		padding-left: 18px;
-		list-style: disc;
+		gap: 14px;
 	}
-	.claro {
-		color: var(--pista);
+	.referencia.contratos {
+		background: var(--negro);
+		color: var(--papel);
+	}
+	.referencia.oferta {
+		background: var(--superficie);
+	}
+	.filas-ref {
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+	}
+	.filas-ref div {
+		display: grid;
+		grid-template-columns: 76px minmax(0, 1fr);
+		gap: 12px;
+		padding: 9px 0;
+		border-top: 1px solid #2a2926;
+	}
+	.oferta .filas-ref div {
+		border-top-color: #d6d1c6;
+	}
+	.filas-ref dt {
+		font: 700 13px/1.45 var(--f-semi);
+		letter-spacing: 0.02em;
+	}
+	.contratos .filas-ref dt {
+		color: var(--paja);
+	}
+	.oferta .filas-ref dt {
+		color: var(--ciruela);
+	}
+	.filas-ref dd,
+	.terminos dd {
+		margin: 0;
+		font: 400 15px/1.45 var(--f-texto);
+		text-wrap: pretty;
+	}
+	.contratos .filas-ref dd,
+	.contratos .terminos dd {
+		color: #d6d1c6;
+	}
+	.terminos {
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding-top: 14px;
+		border-top: 2px solid #2a2926;
+	}
+	.oferta .terminos {
+		border-top-color: #d6d1c6;
+	}
+	.terminos dt {
+		font: 700 16px/1.3 var(--f-texto);
+	}
+	.oferta .terminos dt {
+		color: var(--ciruela);
+	}
+	.cierre-ref {
+		font-weight: 500;
+	}
+	.limites-ref {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding: 0 16px 16px;
+	}
+	.limites-ref .lista {
+		padding-left: 20px;
 	}
 
-	/* Anuncios recientes: listas con viñeta, tabla comparativa y desplegables nativos */
+	/* Anuncios recientes: listas con viñeta y desplegables nativos */
 	.lista {
 		list-style: disc;
 		padding-left: 20px;
 		gap: 8px;
 		max-width: 70ch;
 		font: 400 16px/1.55 var(--f-texto);
-	}
-	.comparativa {
-		width: 100%;
-		border-collapse: separate;
-		border-spacing: 0;
-		background: var(--blanco);
-		border-radius: var(--radio);
-		font: 400 15px/1.45 var(--f-texto);
-		text-align: left;
-	}
-	.comparativa th,
-	.comparativa td {
-		padding: 12px 14px;
-		vertical-align: top;
-		border-top: 1px solid var(--pista);
-	}
-	.comparativa thead th,
-	.comparativa thead td {
-		font: 700 15px/1.3 var(--f-texto);
-		border-top: 0;
-	}
-	.comparativa tbody th {
-		font: 700 14px/1.4 var(--f-texto);
-		width: 22%;
-	}
-	@media (max-width: 639px) {
-		/* En móvil cada fila pasa a bloque y cada celda lleva su columna delante */
-		.comparativa,
-		.comparativa tbody,
-		.comparativa tr,
-		.comparativa th,
-		.comparativa td {
-			display: block;
-		}
-		.comparativa thead {
-			position: absolute;
-			width: 1px;
-			height: 1px;
-			overflow: hidden;
-			clip-path: inset(50%);
-		}
-		.comparativa tbody tr {
-			padding: 6px 0;
-			border-top: 1px solid var(--pista);
-		}
-		.comparativa tbody tr:first-child {
-			border-top: 0;
-		}
-		.comparativa tbody th {
-			width: auto;
-			padding: 8px 14px 2px;
-			border-top: 0;
-		}
-		.comparativa td {
-			padding: 4px 14px;
-			border-top: 0;
-		}
-		.comparativa td::before {
-			content: attr(data-columna) ': ';
-			font-weight: 700;
-		}
 	}
 	details {
 		background: var(--blanco);
@@ -787,14 +778,6 @@
 		outline: 2px solid var(--tinta);
 		outline-offset: 2px;
 		border-radius: var(--radio);
-	}
-	details > p,
-	details > .lista {
-		margin: 0;
-		padding: 0 16px 16px;
-	}
-	details > .lista {
-		padding-left: 36px;
 	}
 
 	/* Datos */
@@ -1021,8 +1004,11 @@
 		.caja-blanca {
 			padding: 28px 32px;
 		}
-		.oscura {
-			padding: 28px 32px;
+		.referencias {
+			grid-template-columns: 1fr 1fr;
+		}
+		.referencia {
+			padding: 26px 24px;
 		}
 		.paso {
 			padding: 22px 24px 20px;

@@ -100,6 +100,15 @@ export interface Lectura {
 	asuPrecio: { titulo: string; texto: string };
 }
 
+/** Una referencia: qué mide, de dónde sale, de cuándo es y qué tener en cuenta, más sus dos términos */
+export interface TarjetaReferencia {
+	fuente: 'contratos' | 'oferta';
+	etiqueta: string;
+	pregunta: string;
+	filas: { etiqueta: string; texto: string }[];
+	terminos: { titulo: string; texto: string }[];
+}
+
 export interface LimiteMetodologia {
 	clave: ClaveSinDato;
 	titulo: string;
@@ -122,15 +131,13 @@ export interface Metodologia {
 	/** null sin datos de la zona del ejemplo */
 	lectura: Lectura | null;
 	ejemplo: Ejemplo | null;
-	precioPedido: { titulo: string; destacado: string; cuerpo: string; incluye: { titulo: string; items: string[] }; tramos: { titulo: string; texto: string }[] };
-	/** La oferta (serie 4.3.21.D) como segunda referencia: tabla de las dos fuentes y dos desplegables */
-	anuncios: {
+	/** Contratos y oferta, en dos tarjetas con las mismas filas; lo común y los límites, debajo */
+	referencias: {
 		titulo: string;
 		intro: string;
-		tabla: { columnas: [string, string]; filas: { etiqueta: string; contratos: string; anuncios: string }[] };
-		enLinea: string;
-		estimacion: { titulo: string; texto: string };
-		limites: { titulo: string; items: string[] };
+		tarjetas: TarjetaReferencia[];
+		cierre: string[];
+		limites: { titulo: string; grupos: { titulo: string; items: string[] }[] };
 	};
 	mapa: { titulo: string; parrafos: string[]; tuZona: { titulo: string; parrafos: string[] }; muestra: string[]; noMuestra: string[] };
 	datos: { parrafos: string[]; guardamos: string[]; noGuardamos: string[]; notas: { titulo: string; texto: string[]; ancha?: boolean }[] };
@@ -147,10 +154,9 @@ export const INDICE = [
 	{ id: 'resumen', titulo: 'En 30 segundos' },
 	{ id: 'leer', titulo: 'Cómo se lee el resultado' },
 	{ id: 'ej', titulo: 'Paso a paso' },
-	{ id: 'ped', titulo: 'Contratos' },
-	{ id: 'anu', titulo: 'Oferta' },
+	{ id: 'ref', titulo: 'Las dos referencias' },
 	{ id: 'map', titulo: 'El mapa y Tu zona' },
-	{ id: 'dat', titulo: 'Tus datos' },
+	{ id: 'tus-datos', titulo: 'Tus datos' },
 	{ id: 'lo-que-no-calculamos', titulo: 'Lo que no calculamos' },
 	{ id: 'fue', titulo: 'Fuentes' },
 	{ id: 'qui', titulo: 'Quiénes somos' },
@@ -311,41 +317,68 @@ function construirLectura(b: Base): Lectura {
 const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 /**
- * «Anuncios recientes»: el mes y la serie salen de oferta_madrid.json y los del IPC de ipc_alquiler.json; la banda de
- * «en línea», de config/oferta.json. Sin el fichero de oferta (solo en pruebas) se habla del último mes publicado.
+ * «Las dos referencias»: el mes y la serie de la oferta salen de oferta_madrid.json y los del IPC de ipc_alquiler.json; la
+ * banda de «en línea», de config/oferta.json. Sin el fichero de oferta (solo en pruebas) se habla del último mes publicado.
  */
-function construirAnuncios(datos: DatosMadrid | undefined, mesIpc: string): Metodologia['anuncios'] {
+function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): Metodologia['referencias'] {
 	const mes = datos?.oferta ? mayuscula(mesAnio(datos.oferta.mes)) : 'El último mes publicado';
 	const serie = datos?.oferta?.serie ?? '4.3.21.D';
 	const banda = numero(BANDA_EN_LINEA * 100);
 	return {
-		titulo: 'Oferta',
-		intro: 'Junto a los contratos mostramos lo que se pide ahora en los anuncios del barrio o del distrito: la oferta. Son dos referencias distintas y cada una se compara solo con tu precio.',
-		tabla: {
-			columnas: ['Contratos', 'Oferta'],
-			filas: [
-				{ etiqueta: 'Qué mide', contratos: 'Lo que paga quien ya vive de alquiler, con contratos firmados en distintos años', anuncios: 'Lo que se pide por pisos anunciados, antes de cerrar el precio' },
-				{
-					etiqueta: 'Fuente',
-					contratos: `SERPAVI ${ANIO_SERPAVI} (Ministerio de Vivienda y Agenda Urbana, con datos de Hacienda)`,
-					anuncios: `Serie ${serie} del Ayuntamiento de Madrid, elaborada a partir de Idealista`
-				},
-				{ etiqueta: 'Datos de', contratos: `${ANIO_SERPAVI}, puestos al día con el IPC del alquiler hasta ${mesIpc}`, anuncios: mes },
-				{ etiqueta: 'Ten en cuenta', contratos: 'Solo propietarios particulares', anuncios: 'Es lo que se anuncia, no lo que se firma' }
-			]
-		},
-		enLinea: `«En línea» significa que tu precio queda dentro de ±${banda}\u00A0% de la estimación: lo que se pide de media por un piso de tus metros.`,
-		estimacion: {
-			titulo: 'Cómo calculamos la estimación',
-			texto: 'Multiplicamos el €/m² de la zona por tus metros cuadrados. Usamos la media del barrio si tiene datos en los dos últimos meses; si no, la del distrito. Solo lo calculamos con 30\u00A0m² o más. Si tu dirección cae en varias zonas posibles, solo damos la cifra cuando todas son del mismo barrio o distrito.'
-		},
+		titulo: 'Las dos referencias',
+		intro: 'Cada resultado compara tu precio con dos cosas distintas: lo que pagan quienes ya viven de alquiler y lo que se pide ahora por entrar.',
+		tarjetas: [
+			{
+				fuente: 'contratos', etiqueta: 'Contratos', pregunta: COSTURA.contratos.pregunta,
+				filas: [
+					{ etiqueta: 'Qué mide', texto: 'Rentas ya firmadas, de contratos de distintos años' },
+					{ etiqueta: 'Fuente', texto: `SERPAVI ${ANIO_SERPAVI}, del Ministerio de Vivienda y Agenda Urbana, con datos de Hacienda` },
+					{ etiqueta: 'Al día', texto: `Con el IPC del alquiler hasta ${mesIpc}` },
+					{ etiqueta: 'Ojo', texto: 'Solo propietarios particulares: no incluye empresas, fondos ni contratos no declarados' }
+				],
+				terminos: [
+					{ titulo: 'Lo habitual', texto: 'La franja de la mayoría de los contratos de pisos como el tuyo, ajustada a la superficie.' },
+					{ titulo: 'Máximo si fuera un piso excelente', texto: 'El margen para las mejores características. Es el máximo de la referencia, no del mercado.' }
+				]
+			},
+			{
+				fuente: 'oferta', etiqueta: 'Oferta', pregunta: '¿Cuánto se pide ahora por entrar?',
+				filas: [
+					{ etiqueta: 'Qué mide', texto: 'Precios pedidos en anuncios, antes de cerrar el precio' },
+					{ etiqueta: 'Fuente', texto: `Serie ${serie} del Ayuntamiento de Madrid, elaborada a partir de Idealista` },
+					{ etiqueta: 'Al día', texto: `${mes}, sin ajustar: ya es reciente` },
+					{ etiqueta: 'Ojo', texto: 'Es lo que se anuncia, no lo que se firma' }
+				],
+				terminos: [
+					{ titulo: 'Estimación', texto: 'El €/m² del barrio (o del distrito, si el barrio no tiene dato) por tus metros.' },
+					{ titulo: 'En línea', texto: `Tu precio queda a ±${banda}\u00A0% o menos de la estimación.` }
+				]
+			}
+		],
+		cierre: [
+			'Miden cosas distintas, así que pueden no coincidir: cada una se compara solo con tu precio, nunca una con otra.',
+			'Que un precio salga por encima no lo hace incorrecto: dice cuánto más se pide, o se paga, que la referencia. Nunca hablamos de precios correctos o incorrectos.'
+		],
 		limites: {
-			titulo: 'Límites de la oferta',
-			items: [
-				'La resolución es de barrio o distrito: dentro de cada uno, los precios pueden variar mucho. El dato de un barrio cambia más de un mes a otro que el de un distrito.',
-				'Si un barrio no tiene datos suficientes, usamos la media de su distrito y lo marcamos con punteado en el mapa.',
-				'La serie viene de Idealista: refleja lo que se anuncia allí, no todo el mercado. Se publica con unos 3-4 meses de retraso.',
-				'El IPC con el que ajustamos los contratos es nacional, no de Madrid, y no se aplica a los anuncios.'
+			titulo: 'Límites de cada referencia',
+			grupos: [
+				{
+					titulo: 'Contratos',
+					items: [
+						`Son datos de ${ANIO_SERPAVI}: el IPC con el que los ponemos al día es nacional, no de Madrid.`,
+						'Mezclan contratos de distintos años; los más antiguos suelen tener rentas más bajas.',
+						'Con pocos contratos en la zona no damos cifra (ver «Lo que no calculamos»).'
+					]
+				},
+				{
+					titulo: 'Oferta',
+					items: [
+						'La resolución es de barrio o distrito: dentro de cada uno, los precios pueden variar mucho. El dato de un barrio cambia más de un mes a otro que el de un distrito.',
+						'Usamos la media del barrio si tiene datos en los dos últimos meses; si no, la del distrito (punteada en el mapa).',
+						'Solo la calculamos con 30\u00A0m² o más, y si tu dirección cae en varias zonas, solo cuando todas son del mismo barrio o distrito.',
+						'La serie viene de Idealista: refleja lo que se anuncia allí, no todo el mercado. Se publica con unos 3-4 meses de retraso.'
+					]
+				}
 			]
 		}
 	};
@@ -374,30 +407,7 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 		],
 		lectura,
 		ejemplo,
-		precioPedido: {
-			titulo: 'Contratos vigentes',
-			destacado:
-				'Lo que paga quien ya vive de alquiler en la zona, con contratos firmados en distintos años. Los datos son del sistema de referencia del Ministerio de Vivienda y Agenda Urbana (SERPAVI), con datos de Hacienda; el cálculo es nuestro.',
-			cuerpo: 'Que un anuncio salga por encima no lo hace incorrecto: mide cuánto más se pide por entrar que lo que pagan quienes ya están dentro. Por eso nunca hablamos de precios correctos o incorrectos.',
-			incluye: {
-				titulo: 'Qué incluye la referencia',
-				items: [
-					'Contratos de alquiler de propietarios particulares, declarados en el IRPF de 2024.',
-					'No incluye empresas, fondos ni contratos no declarados.'
-				]
-			},
-			tramos: [
-				{
-					titulo: 'Lo habitual y lo más alto de lo habitual',
-					texto: 'Lo habitual es la franja en la que está la mayoría de los contratos de pisos como el tuyo, ajustada a la superficie: va de la parte baja a lo más alto de lo habitual.'
-				},
-				{
-					titulo: 'Máximo si fuera un piso excelente',
-					texto: 'El margen que da la referencia a los pisos con las mejores características: ascensor, garaje, reforma reciente, piscina o vistas. Es el máximo de la referencia, no del mercado: hay contratos por encima.'
-				}
-			]
-		},
-		anuncios: construirAnuncios(datos, mes),
+		referencias: construirReferencias(datos, mes),
 		mapa: {
 			titulo: 'El mapa y Tu zona',
 			parrafos: [
