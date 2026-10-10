@@ -2,15 +2,14 @@
  * Resultado de muestra de la portada («Así se ve un resultado», marcado EJEMPLO): un caso real de un barrio
  * cercano (Embajadores, 1.400 €, 45 m²) calculado por el motor con el último IPC y los anuncios recientes. No son
  * cifras del diseño: cambian si cambian los datos. Usa el mismo diseño que el resultado y sigue a la pestaña activa:
- * «Un anuncio» o «Mi alquiler». El ejemplo de «Cómo calculamos» es otro (metodologia.ts).
+ * «Un anuncio» o «Mi alquiler». Es el mismo ejemplo de «Cómo calculamos» (metodologia.ts).
  */
 import type { Comparativa } from './comparativa';
 import type { Costura } from './costura';
 import type { DatosMadrid } from './datos';
-import type { Anuncio } from '../motor';
+import { ANUNCIO_EJEMPLO as ANUNCIO_MUESTRA, UBICACION_EJEMPLO as UBICACION } from './metodologia';
 import { aInquilino } from './inquilino';
 import { construirPantalla } from './resultado';
-import type { Ubicacion } from './ubicacion';
 import { COMPARATIVA } from './textos';
 import type { Clase } from './vista';
 
@@ -25,13 +24,6 @@ export interface Muestra {
 	comparativa: Comparativa;
 	costura: Costura;
 }
-
-/** Una zona de Embajadores (Centro): más cercana para la mayoría que un piso grande en Salamanca */
-const CUSEC_MUESTRA = '2807901040';
-const ANUNCIO_MUESTRA: Anuncio = { precio: 1400, superficie: 45, obraNueva: false, tipo: 'piso', largaDuracion: true };
-const UBICACION: Ubicacion = {
-	cusecs: [CUSEC_MUESTRA], aproximada: false, motivo: null, numerosUsados: [], punto: { lon: -3.703, lat: 40.406 }, via: null
-};
 
 export function construirMuestra(datos: DatosMadrid, modo: ModoMuestra = 'mirando'): Muestra | null {
 	const p = construirPantalla(ANUNCIO_MUESTRA, UBICACION, datos);

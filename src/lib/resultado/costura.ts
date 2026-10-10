@@ -144,6 +144,16 @@ function veredictoOferta(e: EntradaCostura, o: PantallaOferta): Veredicto {
 	return { clave, palabra: T.palabras[clave === 'enlinea' ? 'enLinea' : clave], cifra, texto: T.oferta.texto };
 }
 
+/**
+ * La escala de la costura (y del «Paso a paso» de «Cómo calculamos»): de 0,85 × el valor más bajo a 1,10 × el más alto,
+ * redondeada a 100 €. `X` pasa euros a fracción de la escala (0-1).
+ */
+export function escalaCostura(valores: number[]): { min: number; max: number; X: (v: number) => number } {
+	const min = Math.max(0, Math.floor((Math.min(...valores) * 0.85) / 100) * 100);
+	const max = Math.ceil((Math.max(...valores) * 1.1) / 100) * 100;
+	return { min, max, X: (v: number) => Math.min(1, Math.max(0, (v - min) / (max - min))) };
+}
+
 export function construirCostura(e: EntradaCostura): Costura {
 	const { barra, precio, modo } = e;
 	const o = e.oferta;
@@ -184,10 +194,7 @@ export function construirCostura(e: EntradaCostura): Costura {
 	const hi = barra.sup.min;
 	const hiMax = barra.sup.max;
 	const techo = barra.techo.max;
-	const valores = [barra.inf.min, precio, techo, ...(o ? [o.estimada * (1 - o.banda), o.estimada * (1 + o.banda)] : [])];
-	const min = Math.max(0, Math.floor((Math.min(...valores) * 0.85) / 100) * 100);
-	const max = Math.ceil((Math.max(...valores) * 1.1) / 100) * 100;
-	const X = (v: number) => Math.min(1, Math.max(0, (v - min) / (max - min)));
+	const { X } = escalaCostura([barra.inf.min, precio, techo, ...(o ? [o.estimada * (1 - o.banda), o.estimada * (1 + o.banda)] : [])]);
 
 	const contratos: CarrilContratos = {
 		banda: { desde: X(lo), hasta: X(Math.max(lo, hi)) },

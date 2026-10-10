@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-	type BarrioJson, type DatosMadrid, type IpcJson, type SeccionJson, CUSEC_EJEMPLO, construirMetodologia
+	type BarrioJson, type DatosMadrid, type IpcJson, type OfertaJson, type SeccionJson, CUSEC_EJEMPLO, construirMetodologia
 } from '../src/lib/resultado';
 
 const leer = <T>(f: string) => JSON.parse(readFileSync(`data/processed/${f}`, 'utf8')) as T;
@@ -9,7 +9,8 @@ const ipc = leer<IpcJson>('ipc_alquiler.json');
 const datos: DatosMadrid = {
 	secciones: leer<Record<string, SeccionJson>>('secciones_madrid.json'),
 	barrios: leer<{ barrios: Record<string, BarrioJson> }>('seccion_barrio.json').barrios,
-	ipc
+	ipc,
+	oferta: leer<OfertaJson>('oferta_madrid.json')
 };
 const m = construirMetodologia(ipc, datos);
 const texto = JSON.stringify(m);
@@ -29,27 +30,38 @@ describe('página «Cómo calculamos»', () => {
 		expect(otro.fuentes.ipc).toContain('factor 1,1');
 		expect(otro.treintaSegundos[1]).toContain('enero de 2027');
 		expect(otro.ejemplo!.pasos[1]!.titulo).toBe('Con el ajuste del IPC (×1,100)');
-		expect(otro.ejemplo!.pasos[1]!.banda.hasta).toBeGreaterThan(m.ejemplo!.pasos[1]!.banda.hasta);
+		expect(otro.ejemplo!.pasos[1]!.carril!.banda!.hasta).toBeGreaterThan(m.ejemplo!.pasos[1]!.carril!.banda!.hasta);
 	});
 
-	it('el ejemplo sale del motor con los datos de la sección: cuatro pasos, misma escala, referencia ajustada = sin ajustar × factor', () => {
+	it('el ejemplo sale del motor con los datos de la zona: tres pasos de contratos, uno de oferta y el resultado, en la misma escala', () => {
 		const e = m.ejemplo!;
-		expect(e.pasos).toHaveLength(4);
-		const s = datos.secciones[CUSEC_EJEMPLO]!;
-		expect(s).toBeTruthy();
-		const [sin, con] = [e.pasos[0]!, e.pasos[1]!];
-		expect(sin.banda.hasta * e.escalaMax * ipc.factor).toBeCloseTo(con.banda.hasta * e.escalaMax, 0);
-		expect(con.anterior).toEqual(sin.banda);
-		expect(e.pasos[2]!.techo!.desde).toBeCloseTo(con.banda.hasta, 6);
-		expect(e.pasos[3]!.punto!.x).toBeCloseTo(2690 / e.escalaMax, 6);
-		for (const p of e.pasos) for (const x of [p.banda.desde, p.banda.hasta]) expect(x).toBeGreaterThanOrEqual(0), expect(x).toBeLessThanOrEqual(1);
+		expect(e.pasos.map((p) => p.fuente)).toEqual(['contratos', 'contratos', 'contratos', 'oferta', 'precio']);
+		expect(datos.secciones[CUSEC_EJEMPLO]).toBeTruthy();
+		const [sin, con, exc, ofe] = e.pasos.map((p) => p.carril);
+		// La referencia ajustada es la sin ajustar × factor, y el paso 2 marca la de antes
+		expect(con!.anterior).toEqual(sin!.banda);
+		expect(con!.banda!.hasta).toBeGreaterThan(sin!.banda!.hasta);
+		expect(exc!.excelente!.desde).toBeCloseTo(con!.banda!.hasta, 6);
+		// La oferta: la marca en el centro de su margen «en línea»
+		expect(ofe!.marca!).toBeCloseTo((ofe!.margen!.desde + ofe!.margen!.hasta) / 2, 2);
+		for (const c of [sin, con, exc]) for (const x of [c!.banda!.desde, c!.banda!.hasta]) expect(x).toBeGreaterThanOrEqual(0), expect(x).toBeLessThanOrEqual(1);
+		// El último paso es el resultado tal cual: «Un anuncio», con las dos mitades
+		expect(e.pasos.at(-1)!.carril).toBeNull();
+		expect(e.costura.modo).toBe('mirando');
+		expect(e.costura.mitades.map((x) => x.fuente)).toEqual(['oferta', 'contratos']);
+		expect(e.intro).toContain('Embajadores');
 	});
 
-	it('los niveles (por debajo, dentro, algo por encima, se sale de lo habitual) tienen su punto dentro de la escala y en orden', () => {
-		expect(m.niveles!.items.map((n) => n.etiqueta)).toEqual(['Por debajo', 'Dentro de rango', 'Algo por encima', 'Se sale de lo habitual']);
-		const xs = m.niveles!.items.map((n) => n.x);
+	it('cómo se lee: las palabras del resultado, con su punto dentro de la escala y en orden', () => {
+		const [c, o] = m.lectura!.grupos;
+		expect(c!.items.map((n) => n.palabra)).toEqual(['POR DEBAJO', 'DENTRO', 'ALGO POR ENCIMA', 'POR ENCIMA']);
+		expect(o!.items.map((n) => n.palabra)).toEqual(['EN LÍNEA', 'POR ENCIMA', 'POR DEBAJO', 'PIDEN MÁS']);
+		const xs = c!.items.map((n) => n.carril.punto!);
 		expect(xs).toEqual([...xs].sort((a, b) => a - b));
 		expect(xs.every((x) => x > 0 && x < 1)).toBe(true);
+		expect(m.lectura!.asuPrecio.titulo).toBe('A su precio.');
+		// Nada de las etiquetas de antes
+		expect(texto).not.toMatch(/Se sale de lo habitual|Dentro de rango|parte alta»/);
 	});
 
 	it('Tus datos refleja lo que se guarda, y no más', () => {
@@ -87,9 +99,9 @@ describe('página «Cómo calculamos»', () => {
 		expect(texto).toContain('CartoCiudad CC-BY 4.0 scne.es');
 	});
 
-	it('sin datos de la sección, la página se ve igual pero sin ejemplo ni niveles dibujados', () => {
+	it('sin datos de la sección, la página se ve igual pero sin ejemplo ni «cómo se lee» dibujados', () => {
 		const vacia = construirMetodologia(ipc, { ...datos, secciones: {} });
 		expect(vacia.ejemplo).toBeNull();
-		expect(vacia.niveles).toBeNull();
+		expect(vacia.lectura).toBeNull();
 	});
 });

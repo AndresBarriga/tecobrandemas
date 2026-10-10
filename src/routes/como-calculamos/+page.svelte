@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import BarraEjemplo from '#lib/componentes/BarraEjemplo.svelte';
 	import Cabecera from '#lib/componentes/Cabecera.svelte';
-	import Icono from '#lib/componentes/Icono.svelte';
+	import CarrilMini from '#lib/componentes/CarrilMini.svelte';
+	import Costura from '#lib/componentes/Costura.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
-	import { ETIQUETA_NIVEL } from '#lib/resultado';
 
 	let { data } = $props();
 	const p = $derived(data.pagina);
@@ -97,13 +96,47 @@
 				</ol>
 			</section>
 
+			<!-- Cómo se lee: las dos mitades del resultado, cada palabra con su línea y dónde caería el precio -->
+			<section id="leer">
+				<h2>Cómo se lee el resultado</h2>
+				{#if p.lectura}
+					<p>{p.lectura.intro}</p>
+					<div class="lectura">
+						{#each p.lectura.grupos as g (g.fuente)}
+							<div class="grupo {g.fuente}">
+								<div class="grupo-cab">
+									<span class="sello">{g.etiqueta}</span>
+									<span class="grupo-pregunta">{g.pregunta}</span>
+								</div>
+								<dl>
+									{#each g.items as it (it.palabra)}
+										<div class="palabra-fila">
+											<div class="palabra-texto">
+												<dt class="palabra">{it.palabra}</dt>
+												<dd>{it.texto}</dd>
+											</div>
+											<div class="palabra-carril" aria-hidden="true"><CarrilMini carril={it.carril} alto={16} /></div>
+										</div>
+									{/each}
+								</dl>
+							</div>
+						{/each}
+					</div>
+					<div class="asu">
+						<span class="asu-titulo">{p.lectura.asuPrecio.titulo}</span>
+						<p>{p.lectura.asuPrecio.texto}</p>
+					</div>
+					<p class="nota-color">{p.lectura.color}</p>
+				{/if}
+			</section>
+
 			<section id="ej">
-				<h2>Un ejemplo, paso a paso</h2>
+				<h2>Paso a paso</h2>
 				{#if p.ejemplo}
 					<p>{p.ejemplo.intro}</p>
 					<ol class="pasos">
 						{#each p.ejemplo.pasos as paso (paso.n)}
-							<li>
+							<li class="paso {paso.fuente}">
 								<div class="paso-cab">
 									<span class="num-paso">{paso.n}</span>
 									<div>
@@ -111,35 +144,21 @@
 										<span class="paso-texto">{paso.descripcion}</span>
 									</div>
 								</div>
-								<div class="barra-caja"><BarraEjemplo {paso} precio={p.ejemplo.precio} /></div>
-								{#if paso.nivel}
-									<span class="etiqueta nivel-{paso.nivel}"><Icono clase={paso.nivel} />{ETIQUETA_NIVEL[paso.nivel]}</span>
+								{#if paso.carril}
+									<div class="tira {paso.carril.fuente}">
+										<div role="img" aria-label={paso.aria}><CarrilMini carril={paso.carril} /></div>
+										<ul class="leyenda">
+											{#each paso.leyenda as l (l.clave)}
+												<li><span class="muestra-l {l.clave}" aria-hidden="true"></span>{l.texto} <strong>{l.valor}</strong></li>
+											{/each}
+										</ul>
+									</div>
+								{:else}
+									<div class="resultado-ej"><Costura costura={p.ejemplo.costura} demo /></div>
 								{/if}
 							</li>
 						{/each}
 					</ol>
-				{/if}
-			</section>
-
-			<section id="niv">
-				<h2>Los niveles</h2>
-				{#if p.niveles}
-					<div class="niveles">
-						{#each p.niveles.items as n (n.etiqueta)}
-							<div class="nivel">
-								<div class="nivel-texto">
-									<span class="etiqueta nivel-{n.clase}"><Icono clase={n.icono ?? n.clase} />{n.etiqueta}</span>
-									<span class="nivel-desc">{n.descripcion}</span>
-								</div>
-								<div class="mini nivel-{n.clase}" aria-hidden="true">
-									<div class="mini-pista"></div>
-									<div class="mini-banda" style:left="{p.niveles.mini.banda.desde * 100}%" style:width="{(p.niveles.mini.banda.hasta - p.niveles.mini.banda.desde) * 100}%"></div>
-									<div class="mini-techo" style:left="{p.niveles.mini.techo.desde * 100}%" style:width="{(p.niveles.mini.techo.hasta - p.niveles.mini.techo.desde) * 100}%"></div>
-									<div class="mini-punto" style:left="{n.x * 100}%"></div>
-								</div>
-							</div>
-						{/each}
-					</div>
 				{/if}
 			</section>
 
@@ -151,15 +170,17 @@
 				<ul class="claro">
 					{#each p.precioPedido.incluye.items as t (t)}<li>{t}</li>{/each}
 				</ul>
-				<h3>{p.precioPedido.parteAlta.titulo}</h3>
-				<p class="claro">{p.precioPedido.parteAlta.texto}</p>
+				{#each p.precioPedido.tramos as t (t.titulo)}
+					<h3>{t.titulo}</h3>
+					<p class="claro">{t.texto}</p>
+				{/each}
 			</section>
 
 			<section id="anu">
 				<h2>{p.anuncios.titulo}</h2>
 				<p class="lead">{p.anuncios.intro}</p>
 				<table class="comparativa">
-					<caption class="solo-lectores">Contratos y anuncios recientes, lado a lado</caption>
+					<caption class="solo-lectores">Contratos y oferta, lado a lado</caption>
 					<thead>
 						<tr><td></td><th scope="col">{p.anuncios.tabla.columnas[0]}</th><th scope="col">{p.anuncios.tabla.columnas[1]}</th></tr>
 					</thead>
@@ -187,8 +208,10 @@
 			</section>
 
 			<section id="map">
-				<h2>El mapa</h2>
+				<h2>{p.mapa.titulo}</h2>
 				{#each p.mapa.parrafos as t (t)}<p>{t}</p>{/each}
+				<h3>{p.mapa.tuZona.titulo}</h3>
+				{#each p.mapa.tuZona.parrafos as t (t)}<p>{t}</p>{/each}
 				<div class="dos">
 					<div class="caja-blanca chica">
 						<h3>Qué muestra</h3>
@@ -423,7 +446,104 @@
 		font: 800 24px/1 var(--f-extra);
 	}
 
-	/* Ejemplo */
+	/* —— Cómo se lee: dos tarjetas unidas, como la costura —— */
+	.lectura {
+		--negro: #0b0a0a;
+		border-radius: var(--radio);
+		overflow: hidden;
+	}
+	.grupo {
+		padding: 20px 18px 8px;
+	}
+	.grupo.contratos {
+		background: var(--negro);
+		color: var(--papel);
+	}
+	.grupo.oferta {
+		background: var(--superficie);
+	}
+	.grupo-cab {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding-bottom: 6px;
+	}
+	.sello {
+		align-self: flex-start;
+		font: 700 12px/1 var(--f-semi);
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		padding: 5px 8px;
+		border-radius: 4px;
+	}
+	.contratos .sello {
+		background: #2a2926;
+		color: var(--papel);
+	}
+	.oferta .sello {
+		background: var(--ciruela-tinte);
+		color: var(--ciruela);
+	}
+	.grupo-pregunta {
+		font: 600 17px/1.3 var(--f-texto);
+	}
+	dl {
+		margin: 0;
+	}
+	.palabra-fila {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 10px;
+		padding: 16px 0;
+		border-top: 1px solid #2a2926;
+	}
+	.oferta .palabra-fila {
+		border-top-color: #d6d1c6;
+	}
+	.palabra-fila:first-child {
+		border-top: 0;
+	}
+	.palabra-texto {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	.palabra {
+		font: 800 32px/0.9 var(--f-extra);
+	}
+	.oferta .palabra {
+		color: var(--ciruela);
+	}
+	dd {
+		margin: 0;
+		font: 400 15px/1.45 var(--f-texto);
+		text-wrap: pretty;
+	}
+	.contratos dd {
+		color: #d6d1c6;
+	}
+	.oferta dd {
+		color: #3a3935;
+	}
+	.palabra-carril {
+		min-width: 0;
+	}
+	.asu {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		border-left: 4px solid var(--paja);
+		padding: 2px 0 2px 16px;
+	}
+	.asu-titulo {
+		font: 800 34px/0.95 var(--f-extra);
+	}
+	.nota-color {
+		font-size: 15px;
+		color: var(--grafito);
+	}
+
+	/* —— Paso a paso: cada paso, con la tira de su referencia —— */
 	.pasos {
 		list-style: none;
 		padding: 0;
@@ -431,11 +551,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
+		counter-reset: none;
 	}
-	.pasos li {
-		background: var(--superficie);
+	.paso {
+		background: var(--blanco);
 		border-radius: var(--radio);
-		padding: 16px 16px 14px;
+		padding: 18px 16px 16px;
 		display: flex;
 		flex-direction: column;
 		gap: 14px;
@@ -443,7 +564,7 @@
 	}
 	.paso-cab {
 		display: grid;
-		grid-template-columns: 36px minmax(0, 1fr);
+		grid-template-columns: 34px minmax(0, 1fr);
 		gap: 10px;
 		align-items: baseline;
 		max-width: 70ch;
@@ -456,6 +577,9 @@
 	.num-paso {
 		font: 800 32px/1 var(--f-extra);
 	}
+	.paso.oferta .num-paso {
+		color: var(--ciruela);
+	}
 	.paso-titulo {
 		font: 700 16px/1.35 var(--f-texto);
 	}
@@ -463,79 +587,70 @@
 		font: 400 16px/1.55 var(--f-texto);
 		text-wrap: pretty;
 	}
-	.barra-caja {
-		min-width: 0;
-		overflow: hidden;
-	}
-	.etiqueta {
-		display: inline-flex;
-		align-self: flex-start;
-		align-items: center;
-		gap: 8px;
-		min-height: 32px;
-		padding: 4px 12px 4px 8px;
-		background: var(--tinte);
-		color: var(--acento);
-		border-radius: var(--radio);
-		font: 700 14px/1.25 var(--f-texto);
-	}
-
-	/* Niveles */
-	.niveles {
-		display: flex;
-		flex-direction: column;
-		gap: 20px;
-	}
-	.nivel {
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: 12px 24px;
-		align-items: center;
-	}
-	.nivel-texto {
+	.tira {
+		border-radius: 6px;
+		padding: 14px 16px 12px;
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
 	}
-	.nivel-desc {
-		font: 400 16px/1.5 var(--f-texto);
-		max-width: 60ch;
-		text-wrap: pretty;
+	.tira.contratos {
+		background: #0b0a0a;
+		color: var(--papel);
 	}
-	.mini {
-		position: relative;
-		height: 24px;
-		width: 100%;
+	.tira.oferta {
+		background: var(--superficie);
 	}
-	.mini > div {
-		position: absolute;
+	.leyenda {
+		display: flex;
+		flex-flow: row wrap;
+		gap: 6px 18px;
+		font: 500 13px/1.3 var(--f-semi);
 	}
-	.mini-pista {
-		left: 0;
-		right: 0;
-		top: 7px;
+	.tira.contratos .leyenda {
+		color: #d6d1c6;
+	}
+	.leyenda strong {
+		font-weight: 700;
+		color: var(--tinta);
+	}
+	.tira.contratos .leyenda strong {
+		color: var(--papel);
+	}
+	.leyenda li {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.muestra-l {
+		flex: none;
+		width: 14px;
 		height: 10px;
-		background: #e0dace;
+		border-radius: 2px;
 	}
-	.mini-banda {
-		top: 7px;
-		height: 10px;
-		background: var(--tinta);
+	.muestra-l.banda {
+		background: #f6f4ee;
 	}
-	.mini-techo {
-		top: 7px;
-		height: 10px;
-		background: var(--piedra);
-	}
-	.mini-punto {
-		top: 2px;
-		width: 20px;
-		height: 20px;
-		margin-left: -10px;
+	.muestra-l.anterior {
+		border: 1.5px dashed #d6d1c6;
 		box-sizing: border-box;
-		border-radius: 50%;
-		border: 3px solid var(--papel);
-		background: var(--acento);
+	}
+	.muestra-l.excelente {
+		background: #857f74;
+	}
+	.muestra-l.marca {
+		width: 3px;
+		height: 14px;
+		background: var(--ciruela);
+		border-radius: 0;
+	}
+	.muestra-l.margen {
+		height: 2px;
+		background: var(--ciruela);
+		opacity: 0.55;
+	}
+	.resultado-ej {
+		min-width: 0;
 	}
 
 	/* Precio pedido */
@@ -894,8 +1009,7 @@
 			font-size: 44px;
 		}
 		p,
-		.paso-texto,
-		.nivel-desc {
+		.paso-texto {
 			font-size: 17px;
 		}
 		.lead {
@@ -910,11 +1024,28 @@
 		.oscura {
 			padding: 28px 32px;
 		}
-		.pasos li {
-			padding: 20px 24px 18px;
+		.paso {
+			padding: 22px 24px 20px;
 		}
-		.nivel {
-			grid-template-columns: minmax(0, 1fr) 260px;
+		.tira {
+			margin-left: 44px;
+		}
+		.resultado-ej {
+			margin-left: 44px;
+		}
+		.grupo {
+			padding: 26px 28px 10px;
+		}
+		.palabra-fila {
+			grid-template-columns: minmax(0, 1fr) 220px;
+			gap: 28px;
+			align-items: center;
+		}
+		.palabra {
+			font-size: 38px;
+		}
+		.asu-titulo {
+			font-size: 42px;
 		}
 		.chica {
 			padding: 18px 20px;
