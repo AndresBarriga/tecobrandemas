@@ -33,7 +33,8 @@ test.describe('Tu zona', () => {
 			await zona.getByRole('button', { name: /^Zona 1, una zona de/ }).click();
 			await expect(filas.first()).toHaveAttribute('aria-pressed', 'true');
 		} else {
-			await expect(zona.getByText('Zonas cercanas donde este precio es habitual: ninguna')).toBeVisible();
+			// Sin zonas cercanas donde el precio sea habitual no se enseña la lista ni el «ninguna»
+			await expect(zona.getByText(/Zonas cercanas donde este precio es habitual/)).toHaveCount(0);
 		}
 		await expect(zona.getByText(/La renta registrada en esta zona ha (subido|bajado) un \d+\s%/)).toBeVisible();
 		await zona.scrollIntoViewIfNeeded();

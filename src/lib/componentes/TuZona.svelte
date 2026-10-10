@@ -103,6 +103,16 @@
 
 	const elegir = (i: number) => (sel = sel === i ? -1 : i);
 	const rotuloX = $derived(Math.min(Math.max(xUsuario - 36, 0), w - 72));
+	// «círculo: 1,5 km» va a la derecha; si el rótulo «tu zona» llegaría a pisarlo (móvil), pasa a la izquierda
+	const circuloIzquierda = $derived.by(() => {
+		lienzo ??= document.createElement('canvas').getContext('2d');
+		let anchoCirculo = TU_ZONA.circulo.length * 6.5;
+		if (lienzo) {
+			lienzo.font = '600 12px "Sofia Sans Semi Condensed", sans-serif';
+			anchoCirculo = lienzo.measureText(TU_ZONA.circulo).width;
+		}
+		return rotuloX + 72 + 8 > w - anchoCirculo;
+	});
 	const iconoTendencia = $derived(vista?.evolucion?.tendencia === 'baja' ? 'M3 6l5 5 3-3 6 6M17 9v5h-5' : 'M3 14l5-5 3 3 6-6M17 11V6h-5');
 	const muescaDesplazamiento = $derived(
 		vista?.muesca.alineada === 'derecha' ? 'calc(-100% + 10px)' : vista?.muesca.alineada === 'izquierda' ? '-10px' : '-50%'
@@ -178,7 +188,7 @@
 						<line x1={xUsuario} y1={yUsuario} x2={xUsuario} y2={alto + 8} stroke="#1C1B19" stroke-width="1.5" />
 						<rect x={rotuloX} y={alto + 8} width="72" height="22" rx="4" fill="#1C1B19" />
 						<text x={rotuloX + 36} y={alto + 23.5} text-anchor="middle" font-family="Sofia Sans, sans-serif" font-weight="700" font-size="13" fill="#F6F4EE">{usuario.length > 1 ? TU_ZONA.tusZonas : TU_ZONA.tuZona}</text>
-						<text x={w} y={alto + 23.5} text-anchor="end" font-family="Sofia Sans Semi Condensed, sans-serif" font-weight="600" font-size="12" fill="#5A5750">{TU_ZONA.circulo}</text>
+						<text x={circuloIzquierda ? 0 : w} y={alto + 23.5} text-anchor={circuloIzquierda ? 'start' : 'end'} font-family="Sofia Sans Semi Condensed, sans-serif" font-weight="600" font-size="12" fill="#5A5750">{TU_ZONA.circulo}</text>
 					</svg>
 					{#each nombres as n (n.texto)}
 						<span class="nombre" style:left="{n.x}px" style:top="{n.y}px" style:font-size="{n.cuerpo}px">{n.texto}</span>
@@ -243,6 +253,8 @@
 				</div>
 			{/if}
 
+			<!-- Sin zonas cercanas donde el precio sea habitual («ninguna»), no se enseña nada -->
+			{#if estado === 'cargando' || vista?.lista || vista?.contexto}
 			<div class="lista">
 				{#if estado === 'cargando'}
 					<span class="fantasma titulo-f"></span>
@@ -275,15 +287,11 @@
 						{/each}
 					</div>
 					<span class="nota">{vista.lista.pie}</span>
-				{:else if vista?.vacia}
-					<div class="vacia">
-						<span class="vacia-titulo">{vista.vacia.titulo}</span>
-						<span class="vacia-texto">{vista.vacia.texto}</span>
-					</div>
 				{:else if vista?.contexto}
 					<p class="contexto">{vista.contexto}</p>
 				{/if}
 			</div>
+			{/if}
 		</div>
 
 		{#if estado === 'listo'}
@@ -557,21 +565,6 @@
 		flex: none;
 		font: 600 14px/1 var(--f-semi);
 		color: var(--grafito);
-	}
-	.vacia {
-		background: var(--superficie);
-		border-radius: var(--radio);
-		padding: 16px;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-	.vacia-titulo {
-		font: 700 16px/1.3 var(--f-texto);
-	}
-	.vacia-texto {
-		font: 400 15px/1.5 var(--f-texto);
-		text-wrap: pretty;
 	}
 	.contexto {
 		font: 400 15px/1.5 var(--f-texto);
