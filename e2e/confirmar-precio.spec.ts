@@ -4,8 +4,8 @@ import { abrir, comprobar, esperarAnimacion, sinCompartirNativo } from './ayudas
 async function parteAlta(page: import('@playwright/test').Page): Promise<number> {
 	await abrir(page);
 	await comprobar(page, { precio: '2500', superficie: '90' });
-	const aria = (await page.locator('.reglas[role="img"]').first().getAttribute('aria-label')) ?? '';
-	return Number(aria.match(/parte alta ([\d.]+)/)![1]!.replace('.', ''));
+	const aria = (await page.locator('.panel[role="img"]').first().getAttribute('aria-label')) ?? '';
+	return Number(aria.match(/lo habitual de [\d.]+\s€ a ([\d.]+)/)![1]!.replace('.', ''));
 }
 
 test.describe('aviso de posible error al teclear', () => {

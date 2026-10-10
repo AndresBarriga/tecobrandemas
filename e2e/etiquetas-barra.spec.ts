@@ -8,8 +8,8 @@ const carpeta = () => `e2e/capturas/${test.info().project.name}`;
 async function parteAlta(page: Page): Promise<number> {
 	await abrir(page);
 	await comprobar(page, { precio: '2500', superficie: '90' });
-	const aria = (await page.locator('.reglas[role="img"]').first().getAttribute('aria-label')) ?? '';
-	const m = aria.match(/parte alta ([\d.]+)/);
+	const aria = (await page.locator('.panel[role="img"]').first().getAttribute('aria-label')) ?? '';
+	const m = aria.match(/lo habitual de [\d.]+\s€ a ([\d.]+)/);
 	if (!m) throw new Error(`sin parte alta en «${aria}»`);
 	return Number(m[1]!.replace('.', ''));
 }
@@ -23,7 +23,7 @@ interface Caja {
 }
 
 async function cajas(page: Page): Promise<{ barra: Caja; etiquetas: Caja[] }> {
-	return page.locator('.reglas[role="img"]').first().evaluate((el) => {
+	return page.locator('.panel[role="img"]').first().evaluate((el) => {
 		const r = el.getBoundingClientRect();
 		const c = (e: Element, nombre: string) => {
 			const b = e.getBoundingClientRect();
@@ -31,7 +31,7 @@ async function cajas(page: Page): Promise<{ barra: Caja; etiquetas: Caja[] }> {
 		};
 		return {
 			barra: c(el, 'barra'),
-			etiquetas: [...el.querySelectorAll('.et, .valor')].map((e) => c(e, (e.textContent ?? '').trim().replace(/\s+/g, ' ')))
+			etiquetas: [...el.querySelectorAll('.valor, .maximo, .pastilla')].map((e) => c(e, (e.textContent ?? '').trim().replace(/\s+/g, ' ')))
 		};
 	});
 }
@@ -62,7 +62,7 @@ for (const [pct, ratio] of [[100, 2], [240, 3.4], [400, 5]] as const) {
 				expect(solapa, `«${a.nombre}» pisa «${b.nombre}»`).toBe(false);
 			}
 		}
-		await page.locator('.reglas[role="img"]').first().screenshot({ path: `${carpeta()}/33-barra-mas${pct}.png` });
+		await page.locator('.panel[role="img"]').first().screenshot({ path: `${carpeta()}/33-barra-mas${pct}.png` });
 
 		// La cifra grande («5,0 veces») cabe entera en el ancho de la pantalla
 		const cifra = await page.locator('main .cifra').first().evaluate((e) => {

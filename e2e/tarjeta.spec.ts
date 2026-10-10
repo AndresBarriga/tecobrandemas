@@ -79,7 +79,33 @@ test.describe('tarjeta y /t/:id', () => {
 		expect(mala.status()).toBe(400);
 		const sinJpeg = await request.post('/api/tarjeta', {
 			multipart: {
-				// Una tarjeta v2 válida (con campos de más, que se descartan) y una imagen que no es JPEG
+				// Una tarjeta v3 válida (con campos de más, que se descartan) y una imagen que no es JPEG
+				tarjeta: JSON.stringify({
+					v: 3, modo: 'mirando', tipo: 'veredictos', lugar: 'Goya, Salamanca', barrio: 'Goya', aproximada: false,
+					contratos: { clave: 'encima', palabra: 'POR ENCIMA', cifra: '+30 %', texto: 'sobre lo más alto de lo habitual' },
+					oferta: null,
+					carriles: { punto: 0.8, contratos: { banda: { desde: 0.4, hasta: 0.6 }, incertidumbre: null, excelente: { desde: 0.6, hasta: 0.7 } }, oferta: null },
+					precio: 2500, direccion: 'Calle X 3'
+				}),
+				og: { name: 'og.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('no soy un jpeg') }
+			}
+		});
+		expect(sinJpeg.status()).toBe(400);
+		// La misma tarjeta, sin imagen, sí se guarda: el 400 de arriba era por la imagen
+		const sinImagen = await request.post('/api/tarjeta', {
+			multipart: {
+				tarjeta: JSON.stringify({
+					v: 3, modo: 'mirando', tipo: 'veredictos', lugar: 'Goya, Salamanca', barrio: 'Goya', aproximada: false,
+					contratos: { clave: 'encima', palabra: 'POR ENCIMA', cifra: '+30 %', texto: 'sobre lo más alto de lo habitual' },
+					oferta: null,
+					carriles: { punto: 0.8, contratos: { banda: { desde: 0.4, hasta: 0.6 }, incertidumbre: null, excelente: { desde: 0.6, hasta: 0.7 } }, oferta: null }
+				})
+			}
+		});
+		expect(sinImagen.status()).toBe(201);
+		const viejo = await request.post('/api/tarjeta', {
+			multipart: {
+				// Una tarjeta v2 (del rediseño anterior): ya no se aceptan para guardar
 				tarjeta: JSON.stringify({
 					v: 2, modo: 'mirando', resumen: 'Por encima de los contratos.', barrio: 'Goya', aproximada: false,
 					contratos: { clase: 'c', icono: 'c', etiqueta: 'Se sale de lo habitual', cifra: '+30 %', nota: 'sobre la parte alta de la zona' },
@@ -89,11 +115,10 @@ test.describe('tarjeta y /t/:id', () => {
 						contratos: { banda: { desde: 0.4, hasta: 0.6 }, incertidumbre: null, parteAlta: 0.6, techo: 0.7 }, anuncios: null
 					},
 					precio: 2500, direccion: 'Calle X 3'
-				}),
-				og: { name: 'og.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('no soy un jpeg') }
+				})
 			}
 		});
-		expect(sinJpeg.status()).toBe(400);
+		expect(viejo.status()).toBe(400);
 	});
 
 	test('una tarjeta que no existe da una página con salida', async ({ page }) => {

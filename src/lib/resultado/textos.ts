@@ -301,7 +301,7 @@ export const UBICACION_ACTUAL = {
 export const MUESTRA = {
 	titulo: 'Así se ve un resultado',
 	ejemplo: 'Ejemplo',
-	nota: 'Es un ejemplo con datos de una zona real. Al comprobar, tu resultado sustituye a este.'
+	nota: 'Datos de una zona real. Al comprobar, tu resultado sustituye a este.'
 } as const;
 
 export const TIPO_VIVIENDA = {
@@ -394,6 +394,77 @@ export const INQUILINO = {
 } as const;
 
 /**
+ * Resultado «La costura» (handoff de 10/10/2026, docs/design/new design handoff): contratos en negro y oferta en claro, con
+ * la misma escala. «Ahora» en lugar de «hoy»; la oferta es del barrio o del distrito, nunca «zona».
+ */
+export const COSTURA = {
+	contexto: { mirando: 'Un anuncio', vivo: 'Mi alquiler' },
+	palabras: { debajo: 'POR DEBAJO', dentro: 'DENTRO', algo: 'ALGO POR ENCIMA', encima: 'POR ENCIMA', enLinea: 'EN LÍNEA', pidenMas: 'PIDEN MÁS' },
+	titular: {
+		asuPrecio: 'A su precio.',
+		contratos: {
+			mirando: {
+				debajo: 'Menos de lo que pagan quienes ya viven aquí.',
+				dentro: 'Lo habitual entre quienes ya viven aquí.',
+				algo: 'Algo más de lo que pagan quienes ya viven aquí.',
+				encima: 'Más de lo que pagan quienes ya viven aquí.'
+			},
+			vivo: { debajo: 'Pagas menos que tus vecinos.', dentro: 'Pagas lo habitual en tu zona.', algo: 'Pagas algo más que tus vecinos.', encima: 'Pagas más que tus vecinos.' }
+		},
+		oferta: {
+			mirando: (clave: 'enlinea' | 'encima' | 'debajo' | 'pidenmas', nivel: 'barrio' | 'distrito') =>
+				`${clave === 'enlinea' ? 'En línea con' : clave === 'encima' ? 'Por encima de' : 'Por debajo de'} lo que se pide ahora en el ${nivel}.`,
+			vivo: (clave: 'enlinea' | 'encima' | 'debajo' | 'pidenmas', _nivel: 'barrio' | 'distrito') =>
+				clave === 'enlinea' ? 'En línea con lo que se pide ahora por entrar.' : clave === 'encima' ? 'Más de lo que se pide ahora por entrar.' : 'Si buscaras piso ahora, te pedirían más.'
+		}
+	},
+	contratos: {
+		pregunta: '¿Cuánto pagan quienes ya viven aquí?',
+		aclaracion: (m2: string, modo: 'mirando' | 'vivo') =>
+			`Lo habitual en los contratos de alquiler firmados en ${modo === 'vivo' ? 'tu zona' : 'la zona'}, para pisos de ${m2}.`,
+		notaReciente: 'Contrato de hace menos de un año: lo habitual mezcla contratos de distintas fechas, y los más antiguos suelen tener rentas más bajas.',
+		debajo: { mirando: 'de lo habitual en la zona', vivo: 'de lo habitual en tu zona' },
+		dentro: (parte: string) => `en la parte ${parte} de lo habitual`,
+		sobreLoMasAlto: 'sobre lo más alto de lo habitual',
+		vecesLoMasAlto: 'lo más alto de lo habitual',
+		excelente: '. Puede cuadrar si el piso es excelente.',
+		banda: 'lo habitual',
+		maximo: 'máximo si fuera un piso excelente: '
+	},
+	oferta: {
+		pregunta: (m2: string) => `¿Cuánto se pide ahora por entrar en un piso de ${m2}?`,
+		aclaracion: (nivel: 'barrio' | 'distrito') => `Según los anuncios del ${nivel}. Solo cuenta el tamaño, no cómo es el piso.`,
+		texto: 'frente a lo que se pide en anuncios',
+		estimacion: (eurosM2: string, nivel: 'barrio' | 'distrito', m2: string, modo: 'mirando' | 'vivo') =>
+			`≈ Estimación: ${eurosM2} €/m² del ${nivel} × ${modo === 'vivo' ? 'tus' : 'los'} ${m2}. No es el precio de pisos como ${modo === 'vivo' ? 'el tuyo' : 'este'}.`,
+		marca: (e: string) => `se pide ≈${e}`,
+		sinDato: 'Sin dato de oferta este mes',
+		sinDatoTexto: 'El Ayuntamiento no ha publicado precio de oferta para esta zona en el último mes disponible. Solo comparamos con los contratos.'
+	},
+	pastilla: { mirando: (e: string) => `Tu anuncio · ${e}`, vivo: (e: string) => `Tu alquiler · ${e}` },
+	porque: {
+		titulo: '¿Por qué no coinciden?',
+		distintas:
+			'Los contratos recogen rentas ya firmadas, algunas de hace años. Lo que se pide es el precio de los anuncios recientes, para quien llega. Miden cosas distintas, así que pueden no coincidir.',
+		margen: (pct: string, nivel: 'barrio' | 'distrito') =>
+			`La línea morada bajo lo que se pide marca el margen «en línea»: ±${pct} %. Es una estimación del ${nivel}, no un precio exacto.`
+	},
+	datos: {
+		titulo: 'De dónde salen los datos',
+		calculo: (eurosM2: string, m2: string, nivel: 'barrio' | 'distrito') =>
+			`Cálculo: ${eurosM2} €/m² × ${m2}. Precio de oferta agregado del ${nivel}, no una media observada de pisos de ${m2}.`
+	},
+	/** Siempre visible bajo el bloque: la fuente y la fecha de cada cifra */
+	fuentesCortas: (mesOferta: string | null) =>
+		`Contratos: SERPAVI (Ministerio de Vivienda), 2024${mesOferta ? ` · Anuncios: Ayuntamiento de Madrid, ${mesOferta}` : ''}`,
+	aria: {
+		contratos: (bajo: string, alto: string, maximo: string) =>
+			`Contratos vigentes de la zona: lo habitual de ${bajo} a ${alto}; máximo si fuera un piso excelente, ${maximo}.`,
+		oferta: (marca: string) => `Anuncios recientes: ${marca}.`
+	}
+} as const;
+
+/**
  * Resultado con dos referencias (rediseño del 09/10/2026): «Contratos vigentes» (lo que se paga, «zona») y «Anuncios
  * recientes» (lo que se pide, «barrio de X» o «distrito de Y», nunca «zona»). Cada cifra, una sola vez por pantalla.
  */
@@ -419,7 +490,10 @@ export const COMPARATIVA = {
 	anuncios: {
 		titulo: 'Anuncios recientes',
 		sub: { mirando: 'lo que se pide', vivo: 'si te mudaras' },
-		nota: (nivel: 'barrio' | 'distrito') => `frente a la media del ${nivel}`
+		/** Una estimación (€/m² de oferta × los m²), no una valoración del piso */
+		nota: (m2: string, lugar: string) => `Frente a la oferta estimada para una vivienda de ${m2} m² en el ${lugar}.`,
+		/** En la tarjeta compartible, sin los m² */
+		notaCorta: (nivel: 'barrio' | 'distrito') => `frente a la oferta estimada del ${nivel}`
 	},
 	/** Una línea por modo bajo las tarjetas: sustituye a las explicaciones anteriores */
 	explicacion: {
@@ -431,10 +505,15 @@ export const COMPARATIVA = {
 		anuncios: (lugar: string) => `Anuncios recientes · ${lugar}`,
 		parteAlta: 'parte alta',
 		techo: 'si fuera piso excelente',
+		/** Regla de anuncios: el precio (círculo amarillo) y la oferta estimada (marca violeta), con sus importes */
+		tuPrecio: { mirando: (e: string) => `Tu anuncio · ${e}`, vivo: (e: string) => `Tu alquiler · ${e}` },
+		oferta: (e: string) => `Oferta estimada · ${e}`,
+		estimacion: (m2: string, lugar: string) => `Estimación para una vivienda de ${m2} m² en el ${lugar}.`,
+		fuenteOferta: (mes: string) => `Ayuntamiento de Madrid · ${mes}`,
 		aria: {
 			contratos: (parteAlta: string, techo: string) =>
 				`Contratos vigentes de la zona: parte alta ${parteAlta}; si fuera un piso excelente, ${techo}. El punto marca tu precio.`,
-			anuncios: (lugar: string, media: string) => `Anuncios recientes del ${lugar}: media ${media}, con la banda «en línea» alrededor.`
+			anuncios: (lugar: string, media: string) => `Anuncios recientes del ${lugar}: ${media}.`
 		}
 	},
 	/** Impacto en euros: una sola vez y solo frente a los contratos */
@@ -704,8 +783,8 @@ export const TARJETA = {
 	ampliar: 'Ver en grande',
 	ampliadaTitulo: 'Tu tarjeta, en grande',
 	cerrar: 'Cerrar',
-	/** Junto a la miniatura y en el diálogo: el eje lleva euros, así que el punto deja deducir el precio */
-	detalle: 'La tarjeta muestra tu barrio y permite deducir tu precio.',
+	/** Junto al selector y en el diálogo: las tarjetas de la costura no llevan euros */
+	detalle: 'La tarjeta muestra tu barrio y tus porcentajes, pero no tu precio ni tu dirección.',
 	/** Cierre de la tarjeta: nunca «a su precio» como veredicto */
 	cierre: '¿Está a su precio? Compruébalo en asuprecio.com',
 	/** Fuentes de la tarjeta v2: las atribuciones obligatorias tal cual, en una sola línea muy pequeña */
@@ -723,6 +802,44 @@ export const TARJETA = {
 		'Al elegir WhatsApp, X o copiar el enlace se guarda la tarjeta (sin dirección ni precio exacto) para que el enlace funcione. En WhatsApp la imagen sale como vista previa del enlace; si prefieres adjuntarla tú, descárgala.',
 	descargaHecha: 'Imagen descargada. No se ha guardado nada.',
 	error: 'No hemos podido preparar la tarjeta. Inténtalo de nuevo.'
+} as const;
+
+/**
+ * Tarjetas de «La costura» (v3): tres formatos que elige la persona, siempre sin euros, renta, dirección ni fecha.
+ * La vista previa del enlace es siempre «Dos veredictos». Las atribuciones van literales, en dos líneas pequeñas al pie
+ * (es lo único por debajo de 30 px).
+ */
+export const TARJETA_COSTURA = {
+	elegir: 'Elige tu tarjeta',
+	tipos: { veredictos: 'Dos veredictos', costura: 'La costura', cifra: 'La cifra' },
+	contexto: { mirando: 'Un anuncio', vivo: 'Mi alquiler' },
+	frenteContratos: 'Frente a quienes ya viven aquí',
+	frenteOferta: 'Frente a lo que se pide por entrar',
+	contratos: {
+		debajo: 'por debajo de lo habitual',
+		dentro: (parte: string) => `en la parte ${parte} de lo habitual`,
+		sobre: 'sobre lo más alto de lo habitual',
+		veces: 'lo más alto de lo habitual'
+	},
+	oferta: (nivel: 'barrio' | 'distrito') => `frente a lo que se pide en el ${nivel}`,
+	sinOferta: 'Sin dato de oferta este mes',
+	/** En la costura de la tarjeta, sobre el precio */
+	punto: { mirando: 'el anuncio', vivo: 'yo' },
+	habitual: 'lo habitual',
+	sePide: 'lo que se pide',
+	/** «La cifra»: el % frente a los contratos, en grande */
+	cifra: {
+		texto: (veces: boolean, modo: 'mirando' | 'vivo') =>
+			`${veces ? '' : 'sobre '}lo más alto de lo habitual entre quienes ya viven en ${modo === 'vivo' ? 'mi' : 'la'} zona.`,
+		oferta: (nivel: 'barrio' | 'distrito') => `Frente a lo que se pide ahora en el ${nivel}: `,
+		pidenMas: (pct: string) => `pago un ${pct} menos`
+	},
+	pie: '¿Y EL TUYO?',
+	dominio: 'asuprecio.com',
+	fuentes: [
+		'Origen de los datos: Ministerio de Vivienda y Agenda Urbana · Elaboración propia con datos extraídos del sitio web del INE: www.ine.es',
+		'Oferta: Ayuntamiento de Madrid, serie 4.3.21.D (elaboración a partir de datos de Idealista) · asuprecio.com'
+	]
 } as const;
 
 /** Tarjeta del inquilino (F1e): tres o cuatro textos por posición (dos en «por encima»); la persona elige uno. Nunca lleva la renta. */
@@ -890,9 +1007,9 @@ export const APORTACION = {
 /** «Tu zona» (diseño 6a-6f). En todos los textos, «zona»; nunca «sección» */
 export const TU_ZONA = {
 	titulo: 'Tu zona',
-	intro: 'Tu zona y las que están a 1,5 km o menos, coloreadas por la parte alta de lo que pagan quienes ya viven en cada una, en €/m².',
+	intro: 'Tu zona y las que están a 1,5 km o menos, coloreadas por lo más alto de lo habitual entre quienes ya viven en cada una, en €/m².',
 	introNumeros: 'Los números señalan dónde este precio es habitual.',
-	mapa: 'Mapa de tu zona y las zonas a 1,5 km o menos, coloreadas por la parte alta de lo que pagan quienes ya viven en cada una',
+	mapa: 'Mapa de tu zona y las zonas a 1,5 km o menos, coloreadas por lo más alto de lo habitual entre quienes ya viven en cada una',
 	cargando: 'Cargando el mapa de la zona…',
 	circulo: 'círculo: 1,5 km',
 	tuZona: 'tu zona',
@@ -903,7 +1020,7 @@ export const TU_ZONA = {
 		pin: (n: number) => `Tu ubicación toca ${n} zonas`,
 		otro: (n: number) => `Tu dirección puede estar en ${n} zonas`
 	},
-	leyenda: 'Parte alta de lo que pagan quienes ya viven aquí, en €/m² al mes',
+	leyenda: 'Lo más alto de lo habitual entre quienes ya viven aquí, en €/m² al mes',
 	notaLeyenda: 'Sin dato: zonas con pocos contratos. Cortes iguales para toda la ciudad. Las líneas gruesas separan barrios.',
 	sinDato: 'Sin dato',
 	lista: {
@@ -919,7 +1036,20 @@ export const TU_ZONA = {
 	contexto: 'Tu precio está dentro de lo habitual aquí. Aquí ves cómo es en las zonas de alrededor.',
 	contextoInquilino: 'Así es lo habitual en las zonas que te rodean.',
 	contextoInquilinoVarias: 'Así es lo habitual en las zonas que te rodean. Las zonas con contorno grueso son las que puede ocupar tu vivienda.',
-	fallo: 'No hemos podido cargar el mapa de la zona.'
+	fallo: 'No hemos podido cargar el mapa de la zona.',
+	/** Selector de capa de «Tu zona»: «Mi alquiler» empieza con contratos y «Un anuncio» con oferta */
+	capas: {
+		etiqueta: 'Qué colorea el mapa',
+		contratos: 'Contratos',
+		oferta: 'Oferta',
+		introContratos: 'Tu zona y las cercanas (hasta 1,5 km), coloreadas según lo más alto de lo habitual en los alquileres registrados en cada una, en €/m².',
+		/** El dato es del barrio si lo tiene y, si no, del distrito: el texto lo dice así */
+		introOferta: 'Las zonas se colorean según el precio de oferta de alquiler publicado para su barrio o, si el barrio no tiene dato, para su distrito, en €/m².',
+		fuenteContratos: (mes: string) =>
+			`Contratos: SERPAVI (Ministerio de Vivienda y Agenda Urbana), propietarios particulares declarados a Hacienda (2024), ajustados por el IPC del alquiler hasta ${mes}.`,
+		leyendaOferta: 'Precio de oferta del barrio o del distrito, en €/m² al mes',
+		notaOferta: 'Punteado: valor del distrito (el barrio no tiene dato propio). Cortes iguales para toda la ciudad. Las líneas gruesas separan barrios.'
+	}
 } as const;
 
 /** Página /mapa: Madrid entera por zonas. Tono neutral: nada ordena barrios en mejores o peores */
@@ -934,7 +1064,7 @@ export const MAPA_REFERENCIA = {
 	reintentar: 'Reintentar',
 	capas: { etiqueta: 'Qué mostrar', referencia: 'Referencia', presupuesto: 'Mi presupuesto', evolucion: 'Evolución' },
 	superficie: { etiqueta: 'Superficie', unidad: 'm²' },
-	leyenda: 'Parte alta de lo que pagan quienes ya viven aquí, en €/m² al mes',
+	leyenda: 'Lo más alto de lo habitual entre quienes ya viven aquí, en €/m² al mes',
 	leyendaEvolucion: 'Subida de la mediana de contratos vigentes 2015-2024',
 	leyendaPresupuesto: 'Tu presupuesto frente a lo que pagan quienes ya viven aquí',
 	notaCortes: (m2: string) => `Cortes calculados para ${m2}\u00A0m²; iguales para toda la ciudad. Las líneas gruesas separan barrios.`,
@@ -966,7 +1096,7 @@ export const MAPA_REFERENCIA = {
 		debajo: 'No llega',
 		dentro: 'Dentro',
 		margen: 'Te sobra',
-		nota: 'No llega: menos que la parte baja de lo habitual. Dentro: entre la parte baja y la parte alta. Te sobra: más que la parte alta.',
+		nota: 'No llega: menos que la parte baja de lo habitual. Dentro: dentro de lo habitual. Te sobra: más que lo más alto de lo habitual.',
 		aviso: 'Son contratos vigentes, no anuncios ni pisos disponibles.',
 		resumen: (porcentaje: string, llega: string, conDato: string) =>
 			`En el ${porcentaje}\u00A0% de las zonas con dato (${llega} de ${conDato}) tu presupuesto llega a lo que paga la gente de la zona.`,
@@ -995,13 +1125,13 @@ export const MAPA_REFERENCIA = {
 		cerrar: 'Cerrar',
 		zonaDe: 'Una zona de',
 		referencia: (m2: string, inf: string, sup: string) => `Lo habitual para ${m2}: de ${inf} a ${sup} al mes`,
-		parteAlta: (m2: string) => `Parte alta: ${m2}\u00A0€/m² al mes`,
+		parteAlta: (m2: string) => `Lo más alto de lo habitual: ${m2}\u00A0€/m² al mes`,
 		procedencia: (n: string, mes: string) =>
 			`${n} contratos vigentes de distintas fechas · propietarios particulares declarados a Hacienda (2024), sin empresas ni fondos · ajustado por el IPC hasta ${mes}`,
 		presupuesto: {
 			debajo: (e: string) => `Tu presupuesto (${e} al mes) no llega a lo que pagan los contratos vigentes de esta zona.`,
 			dentro: (e: string) => `Tu presupuesto (${e} al mes) queda dentro de lo que pagan los contratos vigentes de esta zona. No significa que haya pisos a ese precio.`,
-			margen: (e: string) => `Tu presupuesto (${e} al mes) supera la parte alta de lo que pagan los contratos vigentes de esta zona. No significa que haya pisos a ese precio.`
+			margen: (e: string) => `Tu presupuesto (${e} al mes) supera lo más alto de lo habitual en los contratos vigentes de esta zona. No significa que haya pisos a ese precio.`
 		},
 		evolucion: (antes: string, despues: string, variacion: string) =>
 			`Mediana de contratos vigentes: de ${antes}\u00A0€/m² en 2015 a ${despues}\u00A0€/m² en 2024 (${variacion}). Sin descontar la inflación.`,
@@ -1011,9 +1141,9 @@ export const MAPA_REFERENCIA = {
 		vacia: 'Toca una zona para ver lo que pagan quienes ya viven allí.',
 		comprobar: 'Comprueba un anuncio aquí'
 	},
-	/** Fuente «Anuncios» (salvo PUBLIC_OFERTA_MAPA_ENABLED=false): anuncios recientes del Ayuntamiento por barrio o distrito */
+	/** Fuente «Oferta» (salvo PUBLIC_OFERTA_MAPA_ENABLED=false): anuncios recientes del Ayuntamiento por barrio o distrito */
 	anuncios: {
-		fuente: { etiqueta: 'Fuente', contratos: 'Contratos', anuncios: 'Anuncios' },
+		fuente: { etiqueta: 'Fuente', contratos: 'Contratos', anuncios: 'Oferta' },
 		intro: 'Lo que se pide en los anuncios recientes de cada barrio o distrito de Madrid.',
 		introPresupuesto: 'Madrid por zonas, según cómo queda tu presupuesto frente a lo que se pide en los anuncios recientes.',
 		/** Rótulo sobre el mapa */

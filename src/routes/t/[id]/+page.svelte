@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import Cabecera from '#lib/componentes/Cabecera.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
-	import { NOMBRE, PAGINA_TARJETA, TARJETA_INQUILINO, esDeInquilino, esV2, textosEnlace, urlAbsoluta } from '#lib/resultado';
+	import { NOMBRE, PAGINA_TARJETA, TARJETA_INQUILINO, esDeInquilino, esV2, esV3, textosEnlace, urlAbsoluta } from '#lib/resultado';
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
 
 	let { data } = $props();
@@ -12,7 +12,7 @@
 	const direccion = $derived(urlAbsoluta(page.url.pathname, page.url.origin));
 	const inquilino = $derived(esDeInquilino(data.tarjeta));
 	const explicacion = $derived(
-		esV2(data.tarjeta) ? PAGINA_TARJETA.explicacionDos[data.tarjeta.modo] : inquilino ? PAGINA_TARJETA.explicacionInquilino : PAGINA_TARJETA.explicacion
+		esV2(data.tarjeta) || esV3(data.tarjeta) ? PAGINA_TARJETA.explicacionDos[data.tarjeta.modo] : inquilino ? PAGINA_TARJETA.explicacionInquilino : PAGINA_TARJETA.explicacion
 	);
 
 	let canvas: HTMLCanvasElement;

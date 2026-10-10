@@ -10,13 +10,15 @@ test.describe('Cómo calculamos', () => {
 		await expect(page.getByRole('heading', { name: 'En 30 segundos' })).toBeVisible();
 		await expect(page.locator('#resumen')).toContainText(/\+5,4\s%/);
 
-		// El ejemplo: cuatro barras con su descripción accesible y la misma escala
-		const barras = page.locator('#ej [role="img"]');
+		// El ejemplo: cuatro carriles con su descripción accesible (tres de contratos y uno de oferta) y el resultado
+		const barras = page.locator('#ej .tira [role="img"]');
 		await expect(barras).toHaveCount(4);
+		await expect(page.locator('#ej .panel[role="img"]')).toHaveCount(1);
+		await expect(page.locator('#leer')).toContainText('PIDEN MÁS');
 		await expect(barras.nth(1)).toHaveAttribute('aria-label', /Referencia ajustada, de [\d.]+ a [\d.]+/);
 		await expect(page.locator('#ej')).toContainText('Con el ajuste del IPC (×1,054)');
 
-		await expect(page.locator('#dat')).toContainText('Qué guardamos (solo si marcas la casilla)');
+		await expect(page.locator('#tus-datos')).toContainText('Qué guardamos (solo si marcas la casilla)');
 		await expect(page.locator('#lo-que-no-calculamos a')).toHaveCount(7);
 		await expect(page.getByRole('link', { name: 'hola@asuprecio.com' })).toHaveAttribute('href', 'mailto:hola@asuprecio.com');
 		await expect(page.getByRole('table', { name: 'Fuentes de datos' })).toBeVisible();

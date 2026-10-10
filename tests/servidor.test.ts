@@ -92,7 +92,7 @@ describe('almacén de tarjetas', () => {
 		}
 
 		const fila = db.prepare('SELECT * FROM tarjetas WHERE id = ?').get(id) as Record<string, string>;
-		expect(fila).toMatchObject({ mes: '2026-10', barrio: 'Almagro', nivel: 'c' });
+		expect(fila).toMatchObject({ mes: '2026-10', barrio: 'Almagro', nivel: 'encima' });
 		expect(fila.datos).not.toMatch(/2500|2\.500/);
 
 		expect((await a.leer(id))?.datos).toEqual(tarjeta());

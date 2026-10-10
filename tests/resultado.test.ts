@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { type Anuncio, type SeccionConDato, referencia } from '../src/lib/motor';
 import {
 	type DatosMadrid, type SeccionJson, aquiEstariasDentro, barriosDe, claseZona, construirTuZona, construirBarra, construirPantalla,
-	construirTarjeta, distancia, euros, evolucion, interpretarNumero, mesAnio, numero, porcentaje,
+	construirTarjeta, tiposDe, distancia, euros, evolucion, interpretarNumero, mesAnio, numero, porcentaje,
 	resolverDireccion, ubicacionDesdePin, validarAportacion, validarFormulario, zona
 } from '../src/lib/resultado';
 import type { Punto } from '../src/lib/ubicacion/geocodificar';
@@ -178,7 +178,7 @@ describe('pantalla de resultado', () => {
 		// Con zonas en niveles distintos no se promedia: la barra conserva los tramos y no hay aclaración
 		expect(q.barra.horquilla).toBe(true);
 		expect(q.vista.aclaracion).toBe('Punto cerca de zonas con referencias distintas: la cifra depende de cuál sea la tuya.');
-		expect(construirTarjeta(q).reglas.contratos.incertidumbre).not.toBeNull();
+		expect(construirTarjeta(q).carriles.contratos.incertidumbre).not.toBeNull();
 	});
 
 	it('avisos de ubicación aproximada', () => {
@@ -457,32 +457,40 @@ describe('evolución', () => {
 // ——— Tarjeta ———
 
 describe('tarjeta', () => {
-	it('lleva resumen, cifra, nivel, barrio y reglas en fracciones; nunca el precio exacto ni los m²', () => {
+	it('lleva palabras, cifra, lugar y carriles en fracciones; nunca euros, el precio exacto ni los m²', () => {
 		const r = refDe('A');
 		const precio = Math.round(r.max + 237);
 		const p = construirPantalla(anuncio(precio), ubic(['A']), DATOS);
 		if (p.tipo !== 'resultado') throw new Error('esperaba resultado');
 		const t = construirTarjeta(p);
-		expect(t).toMatchObject({ v: 2, modo: 'mirando', contratos: { clase: 'c', cifra: p.brechaPct }, barrio: 'Almagro', aproximada: false });
-		expect(t.resumen).toBe(p.comparativa.resumen);
+		expect(t).toMatchObject({ v: 3, modo: 'mirando', tipo: 'veredictos', contratos: { clave: 'encima', palabra: 'POR ENCIMA', cifra: p.brechaPct }, barrio: 'Almagro', aproximada: false });
+		expect(t.lugar).toBe(p.costura.lugar);
 		const texto = JSON.stringify(t);
 		expect(texto).not.toContain(String(precio));
-		expect(texto).not.toContain('€/mes');
-		// El punto va en fracción del eje y el eje solo lleva euros redondeados a 50
-		expect(t.reglas.punto).toBeGreaterThan(0);
-		expect(t.reglas.punto).toBeLessThan(1);
-		for (const m of t.reglas.marcas) expect(m.texto).toMatch(/[05]0 €$/);
-		expect(t.reglas.contratos.techo).toBeLessThan(t.reglas.punto);
+		expect(texto).not.toMatch(/€/);
+		// El punto va en fracción de una escala sin rotular, más allá del máximo si fuera un piso excelente
+		expect(t.carriles.punto).toBeGreaterThan(0);
+		expect(t.carriles.punto).toBeLessThan(1);
+		expect(t.carriles.contratos.excelente.hasta).toBeLessThan(t.carriles.punto);
+		// Con %, se ofrecen los tres formatos
+		expect(tiposDe(t)).toEqual(['veredictos', 'costura', 'cifra']);
+		expect(construirTarjeta(p, 'cifra').tipo).toBe('cifra');
 	});
 
-	it('dentro de rango y algo por encima: el nivel y la cifra frente a la parte alta, con su signo', () => {
+	it('dentro y algo por encima: la palabra y su texto; «La cifra» solo con %', () => {
 		const r = refDe('A');
-		for (const [precio, clase, signo] of [[r.inf + 1, 'a', '−'], [(r.sup + r.max) / 2, 'b', '+']] as const) {
+		for (const [precio, clave] of [[r.inf + 1, 'dentro'], [(r.sup + r.max) / 2, 'algo']] as const) {
 			const p = construirPantalla(anuncio(precio), ubic(['A']), DATOS);
 			if (p.tipo !== 'resultado') throw new Error('esperaba resultado');
-			const t = construirTarjeta(p);
-			expect(t.contratos.clase).toBe(clase);
-			expect(t.contratos.cifra.startsWith(signo)).toBe(true);
+			const t = construirTarjeta(p, 'cifra');
+			expect(t.contratos.clave).toBe(clave);
+			if (clave === 'dentro') {
+				expect(t.contratos.cifra).toBe('');
+				expect(t.contratos.texto).toMatch(/^en la parte (baja|media|alta) de lo habitual$/);
+				// Sin %, «La cifra» no se ofrece y queda «Dos veredictos»
+				expect(t.tipo).toBe('veredictos');
+				expect(tiposDe(t)).toEqual(['veredictos', 'costura']);
+			} else expect(t.contratos.cifra.startsWith('+')).toBe(true);
 		}
 	});
 
@@ -493,7 +501,7 @@ describe('tarjeta', () => {
 		const t = construirTarjeta(p);
 		expect(t.aproximada).toBe(true);
 		expect(t.contratos.cifra).not.toContain(' a ');
-		expect(t.reglas.contratos.incertidumbre).toBeNull();
+		expect(t.carriles.contratos.incertidumbre).toBeNull();
 	});
 });
 

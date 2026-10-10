@@ -47,7 +47,7 @@ test.describe('aportaciones y recuentos', () => {
 		page.on('request', (r) => r.method() === 'POST' && r.url().endsWith('/api/analisis') && analisis.push(r.postData() ?? ''));
 		await abrir(page, '/?t=abcdefghij');
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
+		await expect(page.getByText('POR ENCIMA', { exact: true }).first()).toBeVisible();
 		expect(analisis).toHaveLength(0);
 		await page.getByRole('checkbox', { name: /Suma este piso/ }).check();
 		await expect.poll(() => analisis.length).toBe(1);

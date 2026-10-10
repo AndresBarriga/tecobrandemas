@@ -47,7 +47,7 @@ test.describe('analítica sin cookies', () => {
 		});
 		await abrir(page, URL_PRUEBA);
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
+		await expect(page.getByText('POR ENCIMA', { exact: true }).first()).toBeVisible();
 		await page.getByRole('button', { name: 'Intentar negociar el precio' }).click();
 		await esperar(ev, 'que_haras');
 		await esperar(ev, '$pageview');
@@ -65,7 +65,7 @@ test.describe('analítica sin cookies', () => {
 		const ev = await escuchar(context);
 		await abrir(page, URL_PRUEBA);
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
+		await expect(page.getByText('POR ENCIMA', { exact: true }).first()).toBeVisible();
 		await page.getByRole('button', { name: 'Intentar negociar el precio' }).click();
 		await esperar(ev, 'que_haras');
 
@@ -253,7 +253,7 @@ test.describe('analítica sin cookies', () => {
 		const ev = await escuchar(context);
 		await abrir(page, '/');
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
+		await expect(page.getByText('POR ENCIMA', { exact: true }).first()).toBeVisible();
 		await page.waitForTimeout(3500);
 		expect(ev).toEqual([]);
 	});

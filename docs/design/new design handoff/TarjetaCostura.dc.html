@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@400;500;600;700;800&family=Sofia+Sans+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@700;800;900&display=swap" rel="stylesheet">
+<script src="./costura.js"></script>
+<style>body{margin:0}a{color:#1C1B19}a:hover{color:#5A5750}</style>
+</helmet>
+<div style="{{ root }}">
+  <sc-if value="{{ isVer }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;top:0;left:0;width:1080px;height:675px;background:#0B0A0A"></div>
+    <div data-logo="true" style="position:absolute;top:64px;left:72px;display:flex;gap:20px;align-items:center;color:#F6F4EE"><div style="width:80px;height:80px;background:#EBC85A;color:#1C1B19;border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:40px">AsP</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:44px;line-height:1">A SU PRECIO</div></div>
+    <div style="position:absolute;top:214px;left:72px;font-size:38px;font-weight:600;color:#F6F4EE">Frente a quienes ya viven aquí</div>
+    <div style="{{ v.topWord }}">{{ v.wC }}</div>
+    <div style="position:absolute;top:458px;left:72px;width:936px;display:flex;gap:28px;align-items:baseline;color:#F6F4EE"><div style="font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:120px;line-height:1;flex:none">{{ v.nC }}</div><div style="font-size:38px;font-weight:600;line-height:1.15">{{ v.tC }}</div></div>
+    <div style="position:absolute;top:640px;left:50%;transform:translateX(-50%);background:#F6F4EE;border-radius:999px;padding:12px 36px;font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:34px;white-space:nowrap">{{ lugar }}</div>
+    <div style="position:absolute;top:764px;left:72px;font-size:38px;font-weight:600">Frente a lo que se pide por entrar</div>
+    <div style="{{ v.botWord }}">{{ v.wO }}</div>
+    <div style="position:absolute;top:1008px;left:72px;width:936px;display:flex;gap:28px;align-items:baseline"><div style="font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:120px;line-height:1;flex:none">{{ v.nO }}</div><div style="font-size:38px;font-weight:600;line-height:1.15">{{ v.tO }}</div></div>
+  </sc-if>
+  <sc-if value="{{ isCos }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;top:0;left:0;width:1080px;height:700px;background:#0B0A0A"></div>
+    <div data-logo="true" style="position:absolute;top:64px;left:72px;display:flex;gap:20px;align-items:center;color:#F6F4EE"><div style="width:80px;height:80px;background:#EBC85A;color:#1C1B19;border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:40px">AsP</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:44px;line-height:1">A SU PRECIO</div></div>
+    <div style="position:absolute;top:212px;left:72px;font-size:36px;font-weight:600;color:#F6F4EE">Frente a quienes ya viven aquí</div>
+    <div style="{{ v.cosTop }}">{{ v.wC }}</div>
+    <sc-for list="{{ v.rects }}" as="r"><div style="{{ r }}"></div></sc-for>
+    <sc-for list="{{ v.labels }}" as="l"><div style="{{ l.st }}">{{ l.t }}</div></sc-for>
+    <div style="{{ v.cosBot }}">{{ v.wO }}</div>
+    <div style="position:absolute;top:1100px;left:72px;width:936px;font-size:36px;font-weight:600">Frente a lo que se pide por entrar · {{ zona }}</div>
+  </sc-if>
+  <sc-if value="{{ isCif }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;top:0;left:0;width:1080px;height:860px;background:#0B0A0A"></div>
+    <div data-logo="true" style="position:absolute;top:64px;left:72px;display:flex;gap:20px;align-items:center;color:#F6F4EE"><div style="width:80px;height:80px;background:#EBC85A;color:#1C1B19;border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:40px">AsP</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:44px;line-height:1">A SU PRECIO</div></div>
+    <div style="position:absolute;top:212px;left:72px;font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:38px;color:#F6F4EE">{{ lugar }}</div>
+    <div style="{{ v.cifNum }}">{{ v.nC }}</div>
+    <div style="position:absolute;top:620px;left:72px;width:900px;font-size:52px;font-weight:700;line-height:1.15;color:#F6F4EE">{{ v.cifTxt }}</div>
+    <div style="position:absolute;top:920px;left:72px;width:900px;font-size:42px;font-weight:600;line-height:1.25">Frente a lo que se pide hoy en el distrito: <b>{{ v.cifOf }}</b>.</div>
+  </sc-if>
+  <sc-if value="{{ isFoot }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;top:1200px;left:72px;width:936px;display:flex;justify-content:space-between;align-items:flex-end;gap:32px"><div style="font-size:30px;line-height:1.25;max-width:600px">Datos: SERPAVI y Ayuntamiento de Madrid (Idealista). Oferta: estimación del distrito.</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:48px;line-height:1;white-space:nowrap">¿Y EL TUYO?</div></div>
+  </sc-if>
+  <sc-if value="{{ isOg }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr">
+      <div style="background:#0B0A0A;color:#F6F4EE;padding:56px 52px;display:flex;flex-direction:column;justify-content:flex-end;gap:10px"><div style="font-size:28px;font-weight:600">Frente a quienes ya viven aquí</div><div style="{{ v.ogWordC }}">{{ v.wC }}</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:64px;line-height:1">{{ v.ogNC }}</div></div>
+      <div style="background:#EBC85A;padding:56px 52px;display:flex;flex-direction:column;justify-content:flex-end;gap:10px"><div style="font-size:28px;font-weight:600">Frente a lo que se pide por entrar</div><div style="{{ v.ogWordO }}">{{ v.wO }}</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:64px;line-height:1">{{ v.nO }}</div></div>
+    </div>
+    <div data-logo="true" style="position:absolute;top:48px;left:52px;display:flex;gap:16px;align-items:center;color:#F6F4EE"><div style="width:64px;height:64px;background:#EBC85A;color:#1C1B19;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:32px">AsP</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:36px">A SU PRECIO</div></div>
+    <div style="position:absolute;top:58px;left:652px;font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:30px">{{ zona }}</div>
+  </sc-if>
+  <sc-if value="{{ noCif }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:120px;text-align:center;font-size:44px;line-height:1.3;color:#5A5750;background:#EDE9E0">«La cifra» no se ofrece en este caso: no hay % frente a los contratos.</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1080,&quot;height&quot;:1350},&quot;caso&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;principal&quot;,&quot;dentro&quot;,&quot;algo&quot;,&quot;ambos&quot;,&quot;antiguo&quot;],&quot;default&quot;:&quot;principal&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;tipo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;veredictos&quot;,&quot;costura&quot;,&quot;cifra&quot;,&quot;og&quot;],&quot;default&quot;:&quot;veredictos&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;modo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;alquiler&quot;,&quot;anuncio&quot;],&quot;default&quot;:&quot;alquiler&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  componentDidMount() {
+    if (!window.Costura) this._t = setInterval(() => { if (window.Costura) { clearInterval(this._t); this.forceUpdate(); } }, 40);
+  }
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    const K = window.Costura;
+    const tipo = this.props.tipo || 'veredictos';
+    const og = tipo === 'og';
+    const root = { position: 'relative', overflow: 'hidden', width: og ? 1200 : 1080, height: og ? 630 : 1350, background: '#EBC85A', fontFamily: "'Sofia Sans',sans-serif", color: '#1C1B19', fontVariantNumeric: 'tabular-nums' };
+    if (!K) return { root, v: {} };
+    const r = K.calc(this.props.caso || 'principal', this.props.modo || 'alquiler');
+    const c = r.c, XC = "'Sofia Sans Extra Condensed'", SC = "'Sofia Sans Semi Condensed'";
+    const vO = r.vO || { word: 'SIN DATO', num: '', card: 'no hay oferta publicada este mes', low: 'sin dato' };
+    const wf = (w, big, small) => w.length > 10 ? small : big;
+    const word = (top, fs, color) => ({ position: 'absolute', top, left: 66, fontFamily: XC, fontWeight: 800, fontSize: fs, lineHeight: .86, color, whiteSpace: 'nowrap' });
+    const noCif = tipo === 'cifra' && !r.vC.num;
+    const v = {
+      wC: r.vC.word, nC: r.vC.num, tC: r.vC.card, wO: vO.word, nO: vO.num, tO: vO.card,
+      topWord: word(272, wf(r.vC.word, 200, 128), '#F6F4EE'), botWord: word(822, wf(vO.word, 200, 128), '#1C1B19'),
+      cosTop: word(266, wf(r.vC.word, 170, 120), '#F6F4EE'), cosBot: word(948, wf(vO.word, 170, 120), '#1C1B19'),
+      cifNum: { position: 'absolute', top: 250, left: 52, fontFamily: XC, fontWeight: 900, fontSize: r.vC.num.length > 7 ? 240 : 380, lineHeight: .9, color: '#F6F4EE', whiteSpace: 'nowrap' },
+      cifTxt: 'más que lo más alto de lo habitual entre quienes ya viven en mi zona.',
+      cifOf: vO.cifra || vO.low,
+      ogWordC: { fontFamily: XC, fontWeight: 800, fontSize: wf(r.vC.word, 112, 76), lineHeight: .86, whiteSpace: 'nowrap' },
+      ogWordO: { fontFamily: XC, fontWeight: 800, fontSize: wf(vO.word, 112, 76), lineHeight: .86, whiteSpace: 'nowrap' },
+      ogNC: r.vC.num || r.vC.card, rects: [], labels: []
+    };
+    if (tipo === 'costura') {
+      const W = 936, x0 = 72, X = val => x0 + Math.max(0, Math.min(W, (val - r.min) / (r.max - r.min) * W));
+      const ux = X(r.p), lo = X(c.lo), hi = X(c.hi), hm = X(r.hiMax), te = X(r.techoMax);
+      const R = (top, left, width, height, bg, extra) => Object.assign({ position: 'absolute', top, left, width, height, background: bg }, extra || {});
+      v.rects = [
+        R(540, x0, W, 56, '#5A5750', { borderRadius: 8 }), R(540, lo, hi - lo, 56, '#F6F4EE'),
+        R(540, hi, Math.max(0, hm - hi), 56, '#D6D1C6'), R(540, hm, Math.max(0, te - hm), 56, '#857F74'),
+        R(568, ux - 4, 8, 132, '#EBC85A'), R(540, ux - 28, 56, 56, '#EBC85A', { borderRadius: '50%', boxSizing: 'border-box', border: '7px solid #0B0A0A', zIndex: 2 }),
+        R(700, ux - 4, 8, 112, '#1C1B19')
+      ];
+      if (r.oferta) {
+        const ox = X(r.oferta);
+        const b0 = X(r.oferta * (1 - r.U)), b1 = X(r.oferta * (1 + r.U));
+        v.rects.push(R(784, x0, W, 56, '#D8B44A', { borderRadius: 8 }), R(784, b0, b1 - b0, 56, '#E9DFF1', { boxShadow: 'inset 0 0 0 3px #6A3A8C' }), R(764, ox - 6, 12, 96, '#6A3A8C', { zIndex: 1 }));
+        v.labels.push({ st: { position: 'absolute', top: 870, left: ox, transform: ox > 540 ? 'translateX(-100%)' : 'none', fontSize: 30, fontWeight: 600, whiteSpace: 'nowrap' }, t: 'lo que se pide' });
+      }
+      v.rects.push(R(784, ux - 28, 56, 56, '#F6F4EE', { borderRadius: '50%', boxSizing: 'border-box', border: '7px solid #1C1B19', zIndex: 2 }));
+      if (hi - lo >= 200) v.labels.push({ st: { position: 'absolute', top: 540, left: lo, width: hi - lo, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SC, fontSize: 30, fontWeight: 700, color: '#1C1B19' }, t: 'lo habitual' });
+      else v.labels.push({ st: { position: 'absolute', top: 610, left: lo, fontSize: 30, fontWeight: 600, color: '#D6D1C6', whiteSpace: 'nowrap' }, t: 'lo habitual' });
+      v.labels.push({ st: { position: 'absolute', top: 656, left: Math.max(130, Math.min(950, ux)), transform: 'translateX(-50%)', zIndex: 3, background: '#F6F4EE', borderRadius: 999, padding: '10px 32px', fontFamily: SC, fontWeight: 700, fontSize: 36, whiteSpace: 'nowrap' }, t: r.anuncio ? 'el anuncio' : 'yo' });
+    }
+    return {
+      root, v, zona: c.zona + ', ' + c.distrito,
+      lugar: (r.anuncio ? 'Un anuncio · ' : 'Mi alquiler · ') + c.zona + ', ' + c.distrito,
+      isVer: tipo === 'veredictos', isCos: tipo === 'costura', isCif: tipo === 'cifra' && !noCif, isOg: og,
+      isFoot: !og && !noCif, noCif
+    };
+  }
+}
+</script>
+</body>
+</html>

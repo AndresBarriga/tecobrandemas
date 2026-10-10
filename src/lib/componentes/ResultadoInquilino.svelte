@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import AfinarNumero from './AfinarNumero.svelte';
-	import Comparativa from './Comparativa.svelte';
-	import Compartir from './Compartir.svelte';
+	import Costura from './Costura.svelte';
+	import Compartir, { type SelectorTarjeta } from './Compartir.svelte';
 	import Icono from './Icono.svelte';
 	import QueHaras from './QueHaras.svelte';
 	import {
-		ENLACE_OFICIAL, INQUILINO, OFERTA, TARJETA, TARJETA_INQUILINO, ALGO_NO_CUADRA, type RespuestaQueHaras, type Canal, type EnlacesCompartir, type PantallaResultado
+		ENLACE_OFICIAL, INQUILINO, TARJETA, TARJETA_INQUILINO, ALGO_NO_CUADRA, type RespuestaQueHaras, type Canal, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
 	export type EstadoAporte = 'no' | 'enviando' | 'hecho' | 'error' | 'limite';
@@ -25,7 +25,8 @@
 		enlaces = null,
 		mensajeTarjeta = null,
 		alCompartir,
-		alCompartirPor
+		alCompartirPor,
+		selector = null
 	}: {
 		pantalla: PantallaResultado;
 		/** Alquileres aportados en el barrio: solo llega si es real y de 10 o más */
@@ -46,6 +47,8 @@
 		mensajeTarjeta?: string | null;
 		alCompartir?: () => void;
 		alCompartirPor?: (canal: Canal) => void;
+		/** Las tres tarjetas de «La costura», para elegir cuál se comparte */
+		selector?: SelectorTarjeta | null;
 	} = $props();
 
 	const v = $derived(pantalla.vista);
@@ -55,13 +58,9 @@
 
 <article class="resultado nivel-{i.clase}">
 	<div class="arriba">
-		<div class="lugar">
-			<h1>{v.lugar}</h1>
-			<p>{i.pagas}</p>
-		</div>
-
-		<Comparativa comparativa={pantalla.comparativa}>
-			{#snippet debajoTarjetas()}
+		<Costura costura={pantalla.costura}>
+			{#snippet bajoContexto()}
+				<!-- Con varias zonas posibles: la cifra es la media (o un rango); esto lo explica. «Añade el número» solo con calle sin número -->
 				{#if v.aclaracion}
 					<div class="aclaracion">
 						<p>{v.aclaracion}</p>
@@ -69,7 +68,7 @@
 					</div>
 				{/if}
 			{/snippet}
-		</Comparativa>
+		</Costura>
 	</div>
 
 	<div class="abajo">
@@ -136,6 +135,7 @@
 				mensaje={mensajeTarjeta}
 				{alCompartir}
 				{alCompartirPor}
+				{selector}
 			/>
 		{/if}
 
@@ -149,13 +149,6 @@
 				<span class="accion-titulo">{INQUILINO.acciones.mirando}</span>
 			</button>
 		</div>
-
-		{#if pantalla.oferta}
-			<p class="fuente">{OFERTA.contratos} {v.fuente}</p>
-			<p class="fuente">{pantalla.oferta.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
-		{:else}
-			<p class="fuente">{v.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
-		{/if}
 
 		<p class="no-cuadra"><a href="mailto:{ALGO_NO_CUADRA.correo}">{ALGO_NO_CUADRA.texto}</a></p>
 
@@ -175,13 +168,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 18px;
-	}
-	.lugar h1 {
-		font: 700 17px/1.3 var(--f-texto);
-	}
-	.lugar p {
-		font: 400 15px/1.4 var(--f-texto);
-		color: var(--grafito);
 	}
 	.etiqueta {
 		display: inline-flex;
@@ -234,10 +220,6 @@
 	}
 	.cambio {
 		font-weight: 500;
-	}
-	.fuente {
-		font: 400 13px/1.45 var(--f-texto);
-		color: var(--grafito);
 	}
 	.tu-parte {
 		font: 500 16px/1.3 var(--f-texto);

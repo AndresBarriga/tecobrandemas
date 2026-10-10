@@ -11,8 +11,9 @@ import type { Punto } from '../ubicacion/geocodificar';
 import { aquiEstariasDentro } from './aqui';
 import { type DatosMadrid } from './datos';
 import { type Evolucion, evolucion } from './evolucion';
-import { euros, numero } from './formato';
-import { TU_ZONA } from './textos';
+import { euros, mesAnio, numero } from './formato';
+import { type EtiquetaEscala, capaReferenciaAnuncios, zonasDelMapa } from './mapa';
+import { OFERTA, TU_ZONA } from './textos';
 import { type CeldaZona, claseZona, CORTES_ZONA, zona } from './zona';
 
 const NB = ' ';
@@ -50,6 +51,13 @@ export interface VistaTuZona {
 	/** Con horquilla: «Tu calle cruza 2 zonas» (todas las zonas afectadas van con contorno grueso) */
 	cruce: string | null;
 	evolucion: Evolucion | null;
+	/** Fuente y periodo de la capa de contratos (SERPAVI, ajustado por el IPC) */
+	fuenteContratos: string;
+	/**
+	 * Capa «Oferta» (solo con los anuncios recientes cargados): cada zona con el €/m² de oferta de su barrio o, si el barrio
+	 * no tiene dato, el de su distrito (punteada). Los mismos cortes y colores que /mapa con «Anuncios»
+	 */
+	oferta: { tonos: Map<string, number | null>; punteadas: Set<string>; leyenda: EtiquetaEscala[]; fuente: string } | null;
 }
 
 export interface EntradaTuZona {
@@ -124,6 +132,14 @@ export function construirTuZona({ anuncio, clase, origen, cusecs, motivo = null,
 		vacia,
 		contexto: modo === 'contexto' ? (inquilino ? (cusecs.length > 1 ? TU_ZONA.contextoInquilinoVarias : TU_ZONA.contextoInquilino) : TU_ZONA.contexto) : null,
 		cruce: cusecs.length > 1 ? (motivo === 'calle' ? TU_ZONA.cruce.calle : motivo === 'pin' ? TU_ZONA.cruce.pin : TU_ZONA.cruce.otro)(cusecs.length) : null,
-		evolucion: evolucion(datos, cusecs)
+		evolucion: evolucion(datos, cusecs),
+		fuenteContratos: TU_ZONA.capas.fuenteContratos(mesAnio(datos.ipc.ultimo_mes)),
+		oferta: datos.oferta ? capaOferta(datos) : null
 	};
+}
+
+/** La capa de oferta de toda la ciudad (los cortes son de toda la ciudad); el €/m² no depende de la superficie */
+function capaOferta(datos: DatosMadrid): NonNullable<VistaTuZona['oferta']> {
+	const c = capaReferenciaAnuncios(zonasDelMapa(datos, 70));
+	return { tonos: c.tonos, punteadas: c.punteadas ?? new Set(), leyenda: c.leyenda, fuente: OFERTA.fuente(mesAnio(datos.oferta!.mes)) };
 }

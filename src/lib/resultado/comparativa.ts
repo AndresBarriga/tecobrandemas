@@ -12,7 +12,7 @@
  */
 import type { ContraOferta } from '../motor';
 import type { Barra } from './barra';
-import { euros, numero, porcentaje } from './formato';
+import { euros, mesAnio, numero, porcentaje } from './formato';
 import type { PantallaOferta } from './oferta';
 import { UMBRAL_VECES, partesRatio } from './ratio';
 import { COMPARATIVA as T } from './textos';
@@ -39,8 +39,10 @@ export interface TarjetaAnuncios {
 	lugar: string;
 	/** «+2 %» frente a la media de anuncios del barrio o del distrito */
 	cifra: string;
-	/** «frente a la media del barrio» */
+	/** «Frente a la oferta estimada para una vivienda de 90 m² en el distrito de Moratalaz.» */
 	nota: string;
+	/** La misma nota sin los m², para la tarjeta compartible */
+	notaCorta: string;
 	/** «En línea», «Por encima», «Por debajo» */
 	veredicto: string;
 	contra: ContraOferta;
@@ -67,9 +69,18 @@ export interface Reglas {
 		techo: Marca;
 	};
 	anuncios: {
-		/** La banda «en línea»: ±10 % de la estimación */
+		/** La banda «en línea» (±10 %): solo sirve para clasificar; no se dibuja (no es un intervalo estadístico) */
 		banda: { desde: number; hasta: number };
+		/** La oferta estimada: «Oferta estimada · 1.543 €» (marcador vertical violeta) */
 		media: Marca;
+		/** El precio de la persona: «Tu alquiler · 1.400 €» (marcador circular amarillo) */
+		precio: string;
+		/** «1.400 €»: para rehacer la etiqueta en el otro modo */
+		importe: string;
+		/** «Estimación para una vivienda de 90 m² en el distrito de Moratalaz.» */
+		estimacion: string;
+		/** «Ayuntamiento de Madrid · junio de 2026» */
+		fuente: string;
 	} | null;
 }
 
@@ -127,6 +138,8 @@ function marcasIntermedias(min: number, max: number): number[] {
 export interface EntradaComparativa {
 	modo: ModoComparativa;
 	precio: number;
+	/** m² de la vivienda (para el texto de la estimación de oferta) */
+	superficie: number;
 	barra: Barra;
 	/** La parte alta de la que salen las cifras: la media de las zonas si están en el mismo nivel; si no, la prudente */
 	parteAlta: number;
@@ -165,7 +178,8 @@ export function construirComparativa(e: EntradaComparativa): Comparativa {
 		? {
 				lugar: o.lugar,
 				cifra: Math.abs(precio / o.estimada - 1) < 0.0005 ? '0 %' : porcentaje(precio / o.estimada - 1, true),
-				nota: T.anuncios.nota(o.nivel),
+				nota: T.anuncios.nota(numero(e.superficie), o.lugar),
+				notaCorta: T.anuncios.notaCorta(o.nivel),
 				veredicto: VEREDICTO[o.contraOferta],
 				contra: o.contraOferta
 			}
@@ -193,7 +207,16 @@ export function construirComparativa(e: EntradaComparativa): Comparativa {
 			},
 			techo: { x: X(barra.techo.max), texto: euros(barra.techo.max) }
 		},
-		anuncios: o ? { banda: { desde: X(bajaAnuncios), hasta: X(altaAnuncios) }, media: { x: X(o.estimada), texto: `≈${euros(o.estimada)}` } } : null
+		anuncios: o
+			? {
+					banda: { desde: X(bajaAnuncios), hasta: X(altaAnuncios) },
+					media: { x: X(o.estimada), texto: T.reglas.oferta(euros(o.estimada)) },
+					precio: T.reglas.tuPrecio[e.modo](euros(precio)),
+					importe: euros(precio),
+					estimacion: T.reglas.estimacion(numero(e.superficie), o.lugar),
+					fuente: T.reglas.fuenteOferta(mesAnio(o.mes))
+				}
+			: null
 	};
 
 	// Impacto: solo frente a los contratos y solo por encima de la parte alta
@@ -223,7 +246,9 @@ function textosDelModo(modo: ModoComparativa, d: Comparativa['direcciones']) {
 /** La misma comparativa vista desde el otro modo: cambian el orden, el resumen, la explicación y el impacto */
 export function comparativaEnModo(c: Comparativa, modo: ModoComparativa): Comparativa {
 	const impacto = c.impacto ? { ...c.impacto, frase: T.impacto.frase(c.impacto.meses.frase, modo) } : null;
-	return { ...c, ...textosDelModo(modo, c.direcciones), impacto };
+	const a = c.reglas.anuncios;
+	const reglas = a ? { ...c.reglas, anuncios: { ...a, precio: T.reglas.tuPrecio[modo](a.importe) } } : c.reglas;
+	return { ...c, ...textosDelModo(modo, c.direcciones), impacto, reglas };
 }
 
 /** Descripción de las reglas para lectores de pantalla (sin repetir el precio, que va en la cabecera) */

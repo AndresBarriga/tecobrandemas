@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@400;500;600;700;800&family=Sofia+Sans+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@700;800;900&display=swap" rel="stylesheet">
+<script src="./costura.js"></script>
+<style>body{margin:0;background:#F6F4EE}a{color:#1C1B19}a:hover{color:#5A5750}</style>
+</helmet>
+<div style="{{ s.root }}">
+  <div style="{{ s.ctxWrap }}">
+    <div><div style="{{ s.lugar }}">{{ lugar }}</div><div style="{{ s.ctx }}">{{ ctxA }}<b>{{ ctxB }}</b></div></div>
+    <sc-if value="{{ aprox }}" hint-placeholder-val="{{ false }}"><div style="{{ s.aprox }}">Ubicación aproximada: tu dirección puede caer en varias zonas, así que lo habitual se muestra como una horquilla.</div></sc-if>
+    <div style="{{ s.titular }}"><span style="{{ titA.st }}">{{ titA.t }}</span> <span style="{{ titB.st }}">{{ titB.t }}</span></div>
+  </div>
+  <div style="{{ s.panel }}">
+    <sc-for list="{{ bands }}" as="b" hint-placeholder-count="2">
+      <div style="{{ b.st }}">
+        <sc-if value="{{ b.headerFirst }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="{{ s.q }}">{{ b.q }}</div>
+            <div style="{{ b.subSt }}">{{ b.sub }}</div><sc-if value="{{ b.hasFirma }}"><div style="{{ b.firmaSt }}">{{ b.firma }}</div></sc-if>
+            <sc-if value="{{ b.hasWord }}">
+              <div style="{{ s.wordRow }}"><div style="{{ b.wordSt }}">{{ b.word }}</div><sc-if value="{{ b.numRight }}"><div style="text-align:right"><div style="{{ b.numSt }}">{{ b.num }}</div><div style="{{ b.txtSt }}">{{ b.txt }}</div></div></sc-if></div>
+              <sc-if value="{{ b.numBelow }}"><div style="{{ s.belowRow }}"><div style="{{ b.numSt }}">{{ b.num }}</div><div style="{{ b.txtSt }}">{{ b.txt }}</div></div></sc-if>
+            </sc-if>
+            <sc-if value="{{ b.hasNote }}"><div style="{{ s.note }}">{{ b.note }}</div></sc-if>
+          </div>
+        </sc-if>
+        <div style="{{ b.laneSt }}">
+          <sc-for list="{{ b.rects }}" as="r"><div style="{{ r }}"></div></sc-for>
+          <sc-for list="{{ b.labels }}" as="l"><div style="{{ l.st }}">{{ l.t }}<b style="{{ l.bst }}">{{ l.b }}</b></div></sc-for>
+        </div>
+        <sc-if value="{{ b.headerLast }}" hint-placeholder-val="{{ true }}">
+          <div style="{{ b.headWrap }}">
+            <div style="{{ s.q }}">{{ b.q }}</div>
+            <div style="{{ b.subSt }}">{{ b.sub }}</div><sc-if value="{{ b.hasFirma }}"><div style="{{ b.firmaSt }}">{{ b.firma }}</div></sc-if>
+            <sc-if value="{{ b.hasWord }}">
+              <div style="{{ s.wordRow }}"><div style="{{ b.wordSt }}">{{ b.word }}</div><sc-if value="{{ b.numRight }}"><div style="text-align:right"><div style="{{ b.numSt }}">{{ b.num }}</div><div style="{{ b.txtSt }}">{{ b.txt }}</div></div></sc-if></div>
+              <sc-if value="{{ b.numBelow }}"><div style="{{ s.belowRow }}"><div style="{{ b.numSt }}">{{ b.num }}</div><div style="{{ b.txtSt }}">{{ b.txt }}</div></div></sc-if>
+            </sc-if>
+            <sc-if value="{{ b.noData }}"><div style="{{ s.chip }}">Sin dato de oferta este mes</div><div style="{{ s.noDataTxt }}">El Ayuntamiento no ha publicado precio de oferta para este distrito en el último mes disponible. Solo comparamos con los contratos.</div></sc-if>
+            <sc-if value="{{ b.hasNote }}"><div style="{{ s.note }}">{{ b.note }}</div></sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+  <div style="{{ s.pleg }}">
+    <sc-for list="{{ pleg }}" as="p" hint-placeholder-count="3">
+      <div style="{{ s.plegItem }}">
+        <div style="{{ s.plegHead }}"><span>{{ p.t }}</span><span>{{ p.sign }}</span></div>
+        <sc-if value="{{ p.open }}">
+          <sc-if value="{{ p.isAnio }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div><div style="font-size:13px;color:#5A5750">{{ anio.mesL }}</div><div style="font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:24px">{{ anio.mes }}</div></div>
+                <div><div style="font-size:13px;color:#5A5750">Al año</div><div style="font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:24px">{{ anio.ano }}</div></div>
+              </div>
+              <div style="font-size:15px;font-weight:600;line-height:1.35">{{ anio.frase }}</div>
+              <div style="display:flex;gap:4px;height:22px">
+                <div style="flex:12;display:grid;grid-template-columns:repeat(12,1fr);gap:2px"><sc-for list="{{ doce }}" as="z"><span style="background:#1C1B19;border-radius:2px"></span></sc-for></div>
+                <div style="{{ anio.extraWrap }}"><sc-for list="{{ anio.extra }}" as="e"><span style="border-radius:2px;border:1.5px solid #1C1B19;box-sizing:border-box;position:relative;overflow:hidden"><span style="{{ e }}"></span></span></sc-for></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:#5A5750"><span>12 meses de alquiler</span><b style="color:#1C1B19">{{ anio.label }}</b></div>
+              <div style="font-size:12.5px;line-height:1.4;color:#5A5750">{{ anio.nota }}</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ p.isText }}"><sc-for list="{{ p.paras }}" as="x"><div style="{{ s.plegTxt }}">{{ x }}</div></sc-for></sc-if>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:900},&quot;caso&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;principal&quot;,&quot;dentro&quot;,&quot;algo&quot;,&quot;ambos&quot;,&quot;sinoferta&quot;,&quot;horquilla&quot;,&quot;antiguo&quot;],&quot;default&quot;:&quot;principal&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;modo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;alquiler&quot;,&quot;anuncio&quot;],&quot;default&quot;:&quot;alquiler&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;desktop&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;abierto&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  componentDidMount() {
+    if (!window.Costura) this._t = setInterval(() => { if (window.Costura) { clearInterval(this._t); this.forceUpdate(); } }, 40);
+  }
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    const K = window.Costura;
+    const D = !!this.props.desktop;
+    if (!K) return { s: { root: { width: D ? 760 : 390, minHeight: 600 } }, bands: [], pleg: [], doce: [], anio: {}, titA: {}, titB: {} };
+    const r = K.calc(this.props.caso || 'principal', this.props.modo || 'alquiler');
+    const c = r.c, eur = K.eur, NB = K.NB;
+    const SC = "'Sofia Sans Semi Condensed'", XC = "'Sofia Sans Extra Condensed'";
+    const W = D ? 704 : 350, H = D ? 28 : 24, DARK = '#0B0A0A', LIGHT = '#EDE9E0';
+    const X = v => Math.max(0, Math.min(W, (v - r.min) / (r.max - r.min) * W));
+    const ux = X(r.p);
+    const est = (t, fs) => t.length * fs * 0.52 + 8;
+    const cl = (l, w) => Math.max(0, Math.min(W - w, l));
+    const lab = (top, left, fs, color, bg, t, b, bcolor, extra) => ({ st: Object.assign({ position: 'absolute', top, left, whiteSpace: 'nowrap', fontFamily: SC, fontSize: fs, lineHeight: 1.3, color, background: bg, padding: '0 4px', borderRadius: 3, zIndex: 1 }, extra || {}), t, b: b || '', bst: { color: bcolor || color } });
+    const pillT = (r.anuncio ? 'Tu anuncio · ' : 'Tu alquiler · ') + eur(r.p);
+    const pw = est(pillT, D ? 17 : 15) + (D ? 28 : 20);
+    const pill = { st: { position: 'absolute', top: D ? -21 : -18, left: Math.max(pw / 2, Math.min(W - pw / 2, ux)), transform: 'translateX(-50%)', zIndex: 3, whiteSpace: 'nowrap', background: '#EBC85A', color: '#1C1B19', borderRadius: 999, padding: D ? '9px 18px' : '7px 14px', fontFamily: SC, fontWeight: 700, fontSize: D ? 17 : 15, lineHeight: 1.3 }, t: pillT, b: '', bst: {} };
+    const line = (pos, T, h, color) => Object.assign({ position: 'absolute', left: ux - (D ? 2 : 1.5), width: D ? 4 : 3, background: color, zIndex: 0 }, pos === 'top' ? { top: T + H / 2, height: h - (T + H / 2) } : { top: 0, height: T + H / 2 });
+    const dot = (T, border) => ({ position: 'absolute', top: T, left: ux - H / 2, width: H, height: H, boxSizing: 'border-box', borderRadius: '50%', background: '#EBC85A', border: '3px solid ' + border, zIndex: 2 });
+
+    const laneC = pos => {
+      const T = pos === 'top' ? 0 : (D ? 40 : 36), r1 = T + H + 6, r2 = T + H + (D ? 30 : 28), h = r2 + (pos === 'top' ? (D ? 46 : 42) : (D ? 22 : 20));
+      const lo = X(c.lo), hi = X(c.hi), hm = X(r.hiMax), te = X(r.techoMax), bw = hi - lo;
+      const rects = [
+        { position: 'absolute', top: T, left: 0, width: W, height: H, background: '#5A5750', borderRadius: 4 },
+        { position: 'absolute', top: T, left: lo, width: bw, height: H, background: '#F6F4EE' }
+      ];
+      if (hm > hi) rects.push({ position: 'absolute', top: T, left: hi, width: hm - hi, height: H, background: '#D6D1C6' });
+      rects.push({ position: 'absolute', top: T, left: hm, width: Math.max(0, te - hm), height: H, background: '#857F74' });
+      rects.push(line(pos, T, h, '#EBC85A'), dot(T, DARK));
+      const labels = [];
+      if (bw >= (D ? 90 : 76)) labels.push({ st: { position: 'absolute', top: T, left: lo, width: hm - lo, height: H, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SC, fontSize: D ? 14 : 12.5, fontWeight: 700, color: '#1C1B19', zIndex: 1 }, t: 'lo habitual', b: '', bst: {} });
+      const fsV = D ? 15 : 13.5, tLo = eur(c.lo), tHi = r.tHi, wLo = est(tLo, fsV), wHi = est(tHi, fsV), hiC = (hi + hm) / 2;
+      const wide = bw >= (D ? 110 : 84);
+      labels.push(lab(r1, wide ? cl(lo - wLo / 2, wLo) : cl(lo - wLo, wLo), fsV, '#F6F4EE', DARK, tLo, '', null, { fontWeight: 700 }));
+      labels.push(lab(r1, wide ? cl(hiC - wHi / 2, wHi) : cl(hm, wHi), fsV, '#F6F4EE', DARK, tHi, '', null, { fontWeight: 700 }));
+      const tE = 'máximo si fuera un piso excelente: ', fsE = D ? 15 : 13, wE = est(tE + r.tTecho, fsE);
+      labels.push(lab(r2, cl(te - wE, wE), fsE, '#D6D1C6', DARK, tE, r.tTecho, '#F6F4EE'));
+      if (pos === 'bottom') labels.push(pill);
+      return { laneSt: { position: 'relative', height: h, marginTop: pos === 'top' ? (D ? 24 : 18) : 0 }, rects, labels };
+    };
+    const laneO = pos => {
+      if (!r.oferta) return { laneSt: { position: 'relative', height: pos === 'bottom' ? (D ? 44 : 40) : 0 }, rects: [], labels: pos === 'bottom' ? [pill] : [] };
+      const T = pos === 'top' ? 8 : (D ? 40 : 36), r1 = T + H + 6, h = r1 + (pos === 'top' ? (D ? 46 : 42) : (D ? 22 : 20)), ox = X(r.oferta);
+      const rects = [
+        { position: 'absolute', top: T, left: 0, width: W, height: H, background: '#E4DFD5', borderRadius: 4, boxShadow: 'inset 0 0 0 1px #D6D1C6' },
+        { position: 'absolute', top: T, left: X(r.oferta * (1 - r.U)), width: X(r.oferta * (1 + r.U)) - X(r.oferta * (1 - r.U)), height: H, background: '#E9DFF1', boxShadow: 'inset 0 0 0 1.5px #6A3A8C', zIndex: 0 },
+        { position: 'absolute', top: T - (D ? 8 : 7), left: ox - (D ? 2 : 1.5), width: D ? 4 : 3, height: H + (D ? 16 : 14), background: '#6A3A8C', zIndex: 1 },
+        line(pos, T, h, '#D8B44A'), dot(T, LIGHT)
+      ];
+      const tO = 'se pide ≈', bO = eur(r.oferta), fs = D ? 15 : 13.5, w = est(tO + bO, fs);
+      const labels = [lab(r1, ox > W / 2 ? cl(ox + 2 - w, w) : cl(ox - 2, w), fs, '#6A3A8C', LIGHT, tO, bO, null, { fontWeight: 700 })];
+      if (pos === 'bottom') labels.push(pill);
+      return { laneSt: { position: 'relative', height: h, marginTop: pos === 'top' ? (D ? 24 : 18) : 0 }, rects, labels };
+    };
+    const hdr = src => {
+      const isC = src === 'c', v = isC ? r.vC : r.vO;
+      const long = v && v.word.length > 10;
+      return {
+        q: isC ? '¿Cuánto pagan quienes ya viven aquí?' : '¿Cuánto se pide hoy por entrar en un piso de ' + c.m2 + NB + 'm²?',
+        sub: isC ? 'Lo habitual en los contratos de alquiler firmados en tu zona, para pisos de ' + c.m2 + NB + 'm².' : 'Según los anuncios del distrito. Solo cuenta el tamaño, no cómo es el piso.',
+        subSt: { fontSize: D ? 14 : 13, lineHeight: 1.4, color: isC ? '#D6D1C6' : '#5A5750', marginTop: 3 },
+        hasWord: !!v, noData: !v, word: v ? v.word : '', num: v ? v.num : '', txt: v ? v.txt : '',
+        wordSt: { fontFamily: XC, fontWeight: 800, fontSize: D ? (long ? 64 : 80) : (long ? 42 : 56), lineHeight: .86, whiteSpace: 'nowrap', color: isC ? '#F6F4EE' : '#6A3A8C' },
+        numRight: !!(D && v && v.num && !long), numBelow: !!(v && (!D || !v.num || long)),
+        numSt: { fontFamily: XC, fontWeight: 900, fontSize: D ? 60 : 36, lineHeight: 1, flex: 'none', color: isC ? '#F6F4EE' : '#1C1B19' },
+        txtSt: { fontSize: D ? 14 : 13.5, lineHeight: 1.35, color: isC ? '#D6D1C6' : '#5A5750' },
+        hasFirma: !!(isC ? r.notaFirmaC : r.notaFirmaO), firma: isC ? r.notaFirmaC : r.notaFirmaO,
+        firmaSt: { marginTop: 8, display: 'inline-block', fontSize: D ? 14 : 13, fontWeight: 600, lineHeight: 1.4, padding: '5px 10px', borderRadius: 6, background: isC ? '#2A2926' : '#E4DFD5', color: isC ? '#F6F4EE' : '#1C1B19' },
+        hasNote: !isC && !!v, note: !isC && v ? '≈ Estimación: ' + r.m2o + NB + '€/m² del distrito × tus ' + c.m2 + NB + 'm². No es el precio de pisos como el tuyo.' : ''
+      };
+    };
+    const order = r.anuncio && r.vO ? ['o', 'c'] : ['c', 'o'];
+    const bands = order.map((src, i) => {
+      const pos = i ? 'bottom' : 'top';
+      return Object.assign(hdr(src), src === 'c' ? laneC(pos) : laneO(pos), {
+        st: { background: src === 'c' ? DARK : LIGHT, color: src === 'c' ? '#F6F4EE' : '#1C1B19', padding: pos === 'top' ? (D ? '24px 28px 0' : '22px 20px 0') : (D ? '0 28px 24px' : '0 20px 22px'), borderRadius: D ? (pos === 'top' ? '8px 8px 0 0' : '0 0 8px 8px') : 0 },
+        headerFirst: pos === 'top', headerLast: pos === 'bottom', headWrap: { marginTop: D ? 8 : 6 }
+      });
+    });
+
+    if (this.props.demo) bands.forEach(b => { b.subSt = { display: 'none' }; b.hasNote = false; b.hasFirma = false; });
+    const tC = { t: r.frC, st: { color: '#1C1B19' } }, tOf = { t: r.frO, st: { color: '#6A3A8C' } };
+    const open = !!this.props.abierto;
+    const pleg = [];
+    let anio = {};
+    if (r.anio) {
+      pleg.push({ t: '¿Cuánto es al año?', isAnio: true, isText: false, paras: [] });
+      const n = Math.max(1, Math.min(12, Math.ceil(r.anio.meses))), extra = [];
+      for (let i = 0; i < n; i++) extra.push({ position: 'absolute', top: 0, left: 0, bottom: 0, width: Math.min(1, r.anio.meses - i) * 100 + '%', background: '#EBC85A' });
+      anio = { mesL: c.aprox ? 'Al mes, como mínimo' : 'Al mes', mes: r.anio.mes, ano: r.anio.ano, label: r.anio.label,
+        frase: 'Equivale a ' + r.anio.frase + (r.anuncio ? ' de este alquiler al año.' : ' de tu alquiler al año.'),
+        nota: (r.anuncio ? 'Lo que te piden' : 'Lo que pagas') + ' por encima de lo más alto de lo habitual. Solo aparece si estás por encima.',
+        extraWrap: { flex: n, display: 'grid', gridTemplateColumns: 'repeat(' + n + ',1fr)', gap: 2 }, extra };
+    }
+    pleg.push({ t: '¿Por qué no coinciden?', isAnio: false, isText: true, paras: ['Los contratos recogen rentas ya firmadas, algunas de hace años. Lo que se pide es el precio de los anuncios de hoy, para quien llega. Miden cosas distintas, así que pueden no coincidir.', 'La franja morada alrededor de lo que se pide marca el margen «en línea»: ±' + Math.round(r.U * 100) + NB + '%. Es una estimación del distrito, no un precio exacto.'] });
+    const datos = ['Contratos: SERPAVI (Ministerio de Vivienda), 2024. Basado en ' + c.n + ' contratos vigentes en la zona, de propietarios particulares declarados a Hacienda (2024), ajustados por el IPC del alquiler hasta agosto de 2026. No incluye empresas ni fondos.'];
+    if (r.oferta) datos.push('Anuncios: Ayuntamiento de Madrid, Banco de Datos, serie 4.3.21.D (elaboración del Ayuntamiento a partir de datos de Idealista), junio de 2026. Cálculo: ' + r.m2o + NB + '€/m² × ' + c.m2 + NB + 'm². Precio de oferta agregado del distrito, no una media observada de pisos de ' + c.m2 + NB + 'm².');
+    pleg.push({ t: 'De dónde salen los datos', isAnio: false, isText: true, paras: datos });
+    pleg.forEach(p => { p.open = open; p.sign = open ? '−' : '+'; });
+
+    return {
+      lugar: c.zona + ', ' + c.distrito,
+      ctxA: (r.anuncio ? 'Un anuncio · ' : 'Mi alquiler · ') + c.m2 + NB + 'm² · ', ctxB: eur(r.p) + '/mes',
+      aprox: !!c.aprox,
+      titA: r.asuPrecio ? { t: 'A su precio.', st: { color: r.anuncio ? '#6A3A8C' : '#1C1B19' } } : (r.anuncio && r.vO ? tOf : tC),
+      titB: r.anuncio && r.vO ? tC : (r.vO ? tOf : { t: '', st: {} }),
+      bands, pleg: this.props.demo ? [] : pleg, anio, doce: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      s: {
+        root: { width: D ? 760 : 390, fontFamily: "'Sofia Sans',sans-serif", color: '#1C1B19', fontVariantNumeric: 'tabular-nums', background: '#F6F4EE' },
+        ctxWrap: { display: 'flex', flexDirection: 'column', gap: D ? 14 : 10, padding: D ? '0 0 24px' : '4px 20px 20px' },
+        lugar: { fontSize: D ? 20 : 17, fontWeight: 700 },
+        ctx: D ? { fontSize: 17, fontWeight: 500, marginTop: 2 } : { fontSize: 14, color: '#5A5750' },
+        aprox: { fontSize: D ? 14 : 13, lineHeight: 1.45, padding: '10px 12px', border: '1.5px dashed #857F74', borderRadius: 8, color: '#5A5750' },
+        titular: this.props.demo ? { display: 'none' } : { fontFamily: XC, fontWeight: 800, fontSize: D ? 62 : 42, lineHeight: .9, textWrap: 'balance', maxWidth: 760 },
+        panel: { width: D ? 760 : 390 },
+        q: { fontSize: D ? 18 : 16, fontWeight: 600 },
+        wordRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: D ? 24 : 10, marginTop: D ? 12 : 10 },
+        belowRow: { display: 'flex', gap: 10, alignItems: 'baseline', marginTop: 8 },
+        chip: { marginTop: 10, display: 'inline-flex', padding: '6px 12px', border: '1.5px solid #5A5750', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#5A5750' },
+        noDataTxt: { fontSize: 14, lineHeight: 1.45, color: '#5A5750', marginTop: 10, maxWidth: 620 },
+        note: { fontSize: D ? 13 : 12.5, lineHeight: 1.5, color: '#5A5750', marginTop: D ? 16 : 12 },
+        pleg: this.props.demo ? { display: 'none' } : open || !D ? { display: 'flex', flexDirection: 'column', gap: 10, padding: D ? '24px 0 0' : '16px 20px 0' } : { display: 'grid', gridTemplateColumns: 'repeat(' + pleg.length + ',minmax(0,1fr))', gap: 12, padding: '24px 0 0' },
+        plegItem: { background: '#EDE9E0', borderRadius: 8, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12 },
+        plegHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 15, fontWeight: 600 },
+        plegTxt: { fontSize: 14, lineHeight: 1.5, color: '#5A5750' }
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

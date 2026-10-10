@@ -29,7 +29,6 @@ Se actualiza al cerrar cada tarea; lo hecho pasa a `progreso.md`. Última revisi
 - «Suma las habitaciones del piso»: no tiene tests propios (regla de arriba).
 - El estado «cargando» de «Tu zona» no tiene prueba propia.
 - El mensaje del 429 dice «espera un momento», pero el límite es diario (200 búsquedas por IP y día); y «Solo la calle» también usa el geocodificador. Solo el mapa sirve como salida real mientras dure el límite.
-- «Cómo calculamos»: la fila de la muestra usa «Fuente del Berro (Salamanca)» fijo, pero los datos dan «Goya» para esa sección. Unificar.
 - «Cómo calculamos» del paquete F1 difiere de `docs/design` (fila del INE con «Serie: [SERIE]» y línea de validación BORRADOR): no aplicado, a la espera del usuario.
 - Diferencias con el diseño de F1 a revisar: en «Habitación» no se piden fecha de firma ni renta al firmar; «Aportar» con menos de 10 no enseña el número que falta; la portada no enseña el contador de ejemplo «12.480».
 - Alias de barrios sin cargar por dudosos: Montecarmelo, Nuevos Ministerios, Plaza de Castilla, Tirso de Molina y Gran Vía (confirmar a qué barrio oficial pertenecen). Se editan en `src/lib/resultado/alias.ts`.

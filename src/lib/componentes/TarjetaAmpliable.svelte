@@ -8,7 +8,7 @@
 	 * queda inerte y el foco vuelve al botón. La imagen es la del canvas que se comparte, así que lo que
 	 * se ve es lo que se envía; su descripción es el aria-label que la página pone al canvas.
 	 */
-	let { tarjeta, titulo, detalle }: { tarjeta: Snippet; titulo: string; detalle: string } = $props();
+	let { tarjeta, titulo, detalle, soloTexto = false }: { tarjeta: Snippet; titulo: string; detalle: string; soloTexto?: boolean } = $props();
 
 	let miniatura: HTMLElement | undefined = $state();
 	let dialogo: HTMLDialogElement | undefined = $state();
@@ -33,8 +33,9 @@
 </script>
 
 <div class="tarjeta">
-	<!-- Para quien usa ratón o dedo; con teclado o lector se usa el botón de al lado -->
-	<button type="button" class="miniatura" bind:this={miniatura} onclick={abrir} tabindex="-1" aria-hidden="true">{@render tarjeta()}</button>
+	<!-- Para quien usa ratón o dedo; con teclado o lector se usa el botón de al lado. Con selector, las miniaturas
+	     van en el selector y esta queda oculta (su canvas es el que se comparte y se amplía) -->
+	<button type="button" class="miniatura" class:oculta={soloTexto} bind:this={miniatura} onclick={abrir} tabindex="-1" aria-hidden="true">{@render tarjeta()}</button>
 	<div class="tarjeta-texto">
 		<span class="tarjeta-titulo">{titulo}</span>
 		<span class="tarjeta-detalle">{detalle}</span>
@@ -75,6 +76,9 @@
 		overflow: hidden;
 		background: none;
 		cursor: zoom-in;
+	}
+	.miniatura.oculta {
+		display: none;
 	}
 	.tarjeta-texto {
 		display: flex;

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { MAPA_REFERENCIA, TONOS_ZONA, TU_ZONA, type VistaTuZona } from '#lib/resultado';
+	import Segmentado from './Segmentado.svelte';
+	import { MAPA_REFERENCIA, TONOS_ANUNCIOS, TONOS_ZONA, TU_ZONA, colorPunteado, type VistaTuZona } from '#lib/resultado';
 	import {
 		type Caja, type GeometriaZona, aPx, cajaDe, colocarNombres, proyeccion, trazado, trazadoLineas
 	} from '#lib/cliente/zona-mapa';
@@ -7,10 +8,35 @@
 	/**
 	 * «Tu zona» (diseño 6a-6f). `estado`: «cargando» mientras llegan los polígonos y los datos, «fallo» si no
 	 * se pudieron cargar (la sección se omite sin más). El mapa es un SVG proyectado al ancho real.
+	 * Con los anuncios recientes cargados, un selector cambia lo que colorea el mapa: «Contratos» (lo de siempre) u
+	 * «Oferta» (el €/m² de oferta del barrio o, si no tiene dato, del distrito). Nunca las dos a la vez. La capa por
+	 * defecto depende del modo: «Mi alquiler», contratos; «Un anuncio», oferta. La persona puede cambiarla después.
 	 */
 	let {
-		estado, vista = null, geom = null
-	}: { estado: 'cargando' | 'listo' | 'fallo'; vista?: VistaTuZona | null; geom?: GeometriaZona | null } = $props();
+		estado, vista = null, geom = null, modo = 'mirando'
+	}: { estado: 'cargando' | 'listo' | 'fallo'; vista?: VistaTuZona | null; geom?: GeometriaZona | null; modo?: 'mirando' | 'vivo' } = $props();
+
+	type Capa = 'contratos' | 'oferta';
+	const porDefecto = (m: 'mirando' | 'vivo'): Capa => (m === 'vivo' ? 'contratos' : 'oferta');
+	let capaElegida = $state<Capa>('contratos');
+	// Al empezar y al cambiar de modo, la capa por defecto de ese modo (solo entonces: elegir otro resultado no la reinicia)
+	let modoAnterior: string | null = null;
+	$effect.pre(() => {
+		if (modo !== modoAnterior) {
+			modoAnterior = modo;
+			capaElegida = porDefecto(modo);
+		}
+	});
+	const oferta = $derived(vista?.oferta ?? null);
+	const capa = $derived<Capa>(capaElegida === 'oferta' && oferta ? 'oferta' : 'contratos');
+	const tonosOferta = TONOS_ANUNCIOS.referencia;
+	const relleno = (cusec: string, tono: number | 'fuera' | null) => {
+		if (tono === 'fuera') return '#ECEAE5';
+		if (capa === 'contratos' || !oferta) return tono === null ? 'url(#tz-rayado)' : TONOS_ZONA[tono];
+		const t = oferta.tonos.get(cusec);
+		if (t === null || t === undefined) return 'url(#tz-rayado)';
+		return oferta.punteadas.has(cusec) ? `url(#tz-punto-${t})` : tonosOferta[t]!;
+	};
 
 	let ancho = $state(350);
 	let sel = $state(-1);
@@ -77,6 +103,16 @@
 
 	const elegir = (i: number) => (sel = sel === i ? -1 : i);
 	const rotuloX = $derived(Math.min(Math.max(xUsuario - 36, 0), w - 72));
+	// «círculo: 1,5 km» va a la derecha; si el rótulo «tu zona» llegaría a pisarlo (móvil), pasa a la izquierda
+	const circuloIzquierda = $derived.by(() => {
+		lienzo ??= document.createElement('canvas').getContext('2d');
+		let anchoCirculo = TU_ZONA.circulo.length * 6.5;
+		if (lienzo) {
+			lienzo.font = '600 12px "Sofia Sans Semi Condensed", sans-serif';
+			anchoCirculo = lienzo.measureText(TU_ZONA.circulo).width;
+		}
+		return rotuloX + 72 + 8 > w - anchoCirculo;
+	});
 	const iconoTendencia = $derived(vista?.evolucion?.tendencia === 'baja' ? 'M3 6l5 5 3-3 6 6M17 9v5h-5' : 'M3 14l5-5 3 3 6-6M17 11V6h-5');
 	const muescaDesplazamiento = $derived(
 		vista?.muesca.alineada === 'derecha' ? 'calc(-100% + 10px)' : vista?.muesca.alineada === 'izquierda' ? '-10px' : '-50%'
@@ -87,7 +123,32 @@
 	<section class="zona" aria-label={TU_ZONA.titulo} aria-busy={estado === 'cargando'}>
 		<div class="cabeza">
 			<h2>{TU_ZONA.titulo}</h2>
-			<p>{vista?.intro ?? TU_ZONA.intro}</p>
+			<!-- La explicación justo debajo del título, según la capa: qué colorea el mapa, la fuente y el periodo -->
+			{#if capa === 'oferta' && oferta}
+				<p>{TU_ZONA.capas.introOferta}</p>
+				<p class="fuente">{oferta.fuente}</p>
+			{:else}
+				<p>{TU_ZONA.capas.introContratos}{vista?.lista ? ` ${TU_ZONA.introNumeros}` : ''}</p>
+				{#if vista}<p class="fuente">{vista.fuenteContratos}</p>{/if}
+				{#if estado === 'listo' && vista?.evolucion}
+					<div class="evolucion">
+						<svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true" style="flex: none"><path d={iconoTendencia} stroke="var(--tinta)" stroke-width="2" fill="none" /></svg>
+						<span class="evolucion-texto">{#each vista.evolucion.partes as t (t.texto)}{#if t.fuerte}<strong>{t.texto}</strong>{:else}{t.texto}{/if}{/each}</span>
+					</div>
+				{/if}
+			{/if}
+			{#if oferta}
+				<Segmentado
+					nombre="capa-tu-zona"
+					etiqueta={TU_ZONA.capas.etiqueta}
+					valor={capa}
+					onchange={(v) => (capaElegida = v)}
+					opciones={[
+						{ valor: 'contratos', etiqueta: TU_ZONA.capas.contratos },
+						{ valor: 'oferta', etiqueta: TU_ZONA.capas.oferta }
+					]}
+				/>
+			{/if}
 		</div>
 
 		<div class="cuerpo" bind:clientWidth={ancho}>
@@ -99,6 +160,12 @@
 								<rect width="6" height="6" fill="#DAD5CA" />
 								<line x1="0" y1="0" x2="0" y2="6" stroke="#857F74" stroke-width="1.5" />
 							</pattern>
+							{#each tonosOferta as color, i (i)}
+								<pattern id="tz-punto-{i}" width="5" height="5" patternUnits="userSpaceOnUse">
+									<rect width="5" height="5" fill={color} />
+									<circle cx="2.5" cy="2.5" r="0.9" fill={colorPunteado(color)} />
+								</pattern>
+							{/each}
 							<clipPath id="tz-recorte"><rect x="0" y="0" width={w} height={alto} rx="8" /></clipPath>
 						</defs>
 						<g clip-path="url(#tz-recorte)">
@@ -107,7 +174,7 @@
 								<path
 									d={c.d}
 									fill-rule="evenodd"
-									fill={c.tono === 'fuera' ? '#ECEAE5' : c.tono === null ? 'url(#tz-rayado)' : TONOS_ZONA[c.tono]}
+									fill={relleno(c.cusec, c.tono)}
 									stroke={c.tono === 'fuera' ? '#DDD9D1' : '#857F74'}
 									stroke-width="1"
 									stroke-linejoin="round"
@@ -121,7 +188,7 @@
 						<line x1={xUsuario} y1={yUsuario} x2={xUsuario} y2={alto + 8} stroke="#1C1B19" stroke-width="1.5" />
 						<rect x={rotuloX} y={alto + 8} width="72" height="22" rx="4" fill="#1C1B19" />
 						<text x={rotuloX + 36} y={alto + 23.5} text-anchor="middle" font-family="Sofia Sans, sans-serif" font-weight="700" font-size="13" fill="#F6F4EE">{usuario.length > 1 ? TU_ZONA.tusZonas : TU_ZONA.tuZona}</text>
-						<text x={w} y={alto + 23.5} text-anchor="end" font-family="Sofia Sans Semi Condensed, sans-serif" font-weight="600" font-size="12" fill="#5A5750">{TU_ZONA.circulo}</text>
+						<text x={circuloIzquierda ? 0 : w} y={alto + 23.5} text-anchor={circuloIzquierda ? 'start' : 'end'} font-family="Sofia Sans Semi Condensed, sans-serif" font-weight="600" font-size="12" fill="#5A5750">{TU_ZONA.circulo}</text>
 					</svg>
 					{#each nombres as n (n.texto)}
 						<span class="nombre" style:left="{n.x}px" style:top="{n.y}px" style:font-size="{n.cuerpo}px">{n.texto}</span>
@@ -149,7 +216,24 @@
 				<p class="cruce" role="status">{vista.cruce}</p>
 			{/if}
 
-			{#if estado === 'listo' && vista}
+			{#if estado === 'listo' && vista && capa === 'oferta' && oferta}
+				<div class="leyenda">
+					<span class="leyenda-titulo">{TU_ZONA.capas.leyendaOferta}</span>
+					<div class="muestras">
+						{#each oferta.leyenda as l (l.etiqueta)}
+							<div class="muestra">
+								<span class="color" style:background={l.tono === null ? undefined : tonosOferta[l.tono]}></span>
+								<span class="etiqueta">{l.etiqueta}</span>
+							</div>
+						{/each}
+						<div class="muestra">
+							<span class="color rayado"></span>
+							<span class="etiqueta">{TU_ZONA.sinDato}</span>
+						</div>
+					</div>
+					<span class="nota">{TU_ZONA.capas.notaOferta}</span>
+				</div>
+			{:else if estado === 'listo' && vista}
 				<div class="leyenda">
 					<span class="leyenda-titulo">{TU_ZONA.leyenda}</span>
 					<div class="escala">
@@ -169,6 +253,8 @@
 				</div>
 			{/if}
 
+			<!-- Sin zonas cercanas donde el precio sea habitual («ninguna»), no se enseña nada -->
+			{#if estado === 'cargando' || vista?.lista || vista?.contexto}
 			<div class="lista">
 				{#if estado === 'cargando'}
 					<span class="fantasma titulo-f"></span>
@@ -201,27 +287,17 @@
 						{/each}
 					</div>
 					<span class="nota">{vista.lista.pie}</span>
-				{:else if vista?.vacia}
-					<div class="vacia">
-						<span class="vacia-titulo">{vista.vacia.titulo}</span>
-						<span class="vacia-texto">{vista.vacia.texto}</span>
-					</div>
 				{:else if vista?.contexto}
 					<p class="contexto">{vista.contexto}</p>
 				{/if}
 			</div>
+			{/if}
 		</div>
 
 		{#if estado === 'listo'}
 			<a class="enlace" href="/mapa">{MAPA_REFERENCIA.enlaceTuZona}</a>
 		{/if}
 
-		{#if estado === 'listo' && vista?.evolucion}
-			<div class="evolucion">
-				<svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true" style="flex: none"><path d={iconoTendencia} stroke="var(--tinta)" stroke-width="2" fill="none" /></svg>
-				<span class="evolucion-texto">{#each vista.evolucion.partes as t (t.texto)}{#if t.fuerte}<strong>{t.texto}</strong>{:else}{t.texto}{/if}{/each}</span>
-			</div>
-		{/if}
 	</section>
 {/if}
 
@@ -252,6 +328,10 @@
 		font: 400 16px/1.5 var(--f-texto);
 		max-width: 620px;
 		text-wrap: pretty;
+	}
+	.cabeza p.fuente {
+		font: 400 13px/1.45 var(--f-texto);
+		color: var(--grafito);
 	}
 	.cuerpo {
 		display: flex;
@@ -485,21 +565,6 @@
 		flex: none;
 		font: 600 14px/1 var(--f-semi);
 		color: var(--grafito);
-	}
-	.vacia {
-		background: var(--superficie);
-		border-radius: var(--radio);
-		padding: 16px;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-	.vacia-titulo {
-		font: 700 16px/1.3 var(--f-texto);
-	}
-	.vacia-texto {
-		font: 400 15px/1.5 var(--f-texto);
-		text-wrap: pretty;
 	}
 	.contexto {
 		font: 400 15px/1.5 var(--f-texto);

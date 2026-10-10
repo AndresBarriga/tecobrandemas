@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import BarraEjemplo from '#lib/componentes/BarraEjemplo.svelte';
 	import Cabecera from '#lib/componentes/Cabecera.svelte';
-	import Icono from '#lib/componentes/Icono.svelte';
+	import CarrilMini from '#lib/componentes/CarrilMini.svelte';
+	import Costura from '#lib/componentes/Costura.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
-	import { ETIQUETA_NIVEL } from '#lib/resultado';
 
 	let { data } = $props();
 	const p = $derived(data.pagina);
@@ -97,13 +96,47 @@
 				</ol>
 			</section>
 
+			<!-- Cómo se lee: las dos mitades del resultado, cada palabra con su línea y dónde caería el precio -->
+			<section id="leer">
+				<h2>Cómo se lee el resultado</h2>
+				{#if p.lectura}
+					<p>{p.lectura.intro}</p>
+					<div class="lectura">
+						{#each p.lectura.grupos as g (g.fuente)}
+							<div class="grupo {g.fuente}">
+								<div class="grupo-cab">
+									<span class="sello">{g.etiqueta}</span>
+									<span class="grupo-pregunta">{g.pregunta}</span>
+								</div>
+								<dl>
+									{#each g.items as it (it.palabra)}
+										<div class="palabra-fila">
+											<div class="palabra-texto">
+												<dt class="palabra">{it.palabra}</dt>
+												<dd>{it.texto}</dd>
+											</div>
+											<div class="palabra-carril" aria-hidden="true"><CarrilMini carril={it.carril} alto={16} /></div>
+										</div>
+									{/each}
+								</dl>
+							</div>
+						{/each}
+					</div>
+					<div class="asu">
+						<span class="asu-titulo">{p.lectura.asuPrecio.titulo}</span>
+						<p>{p.lectura.asuPrecio.texto}</p>
+					</div>
+					<p class="nota-color">{p.lectura.color}</p>
+				{/if}
+			</section>
+
 			<section id="ej">
-				<h2>Un ejemplo, paso a paso</h2>
+				<h2>Paso a paso</h2>
 				{#if p.ejemplo}
 					<p>{p.ejemplo.intro}</p>
 					<ol class="pasos">
 						{#each p.ejemplo.pasos as paso (paso.n)}
-							<li>
+							<li class="paso {paso.fuente}">
 								<div class="paso-cab">
 									<span class="num-paso">{paso.n}</span>
 									<div>
@@ -111,9 +144,17 @@
 										<span class="paso-texto">{paso.descripcion}</span>
 									</div>
 								</div>
-								<div class="barra-caja"><BarraEjemplo {paso} precio={p.ejemplo.precio} /></div>
-								{#if paso.nivel}
-									<span class="etiqueta nivel-{paso.nivel}"><Icono clase={paso.nivel} />{ETIQUETA_NIVEL[paso.nivel]}</span>
+								{#if paso.carril}
+									<div class="tira {paso.carril.fuente}">
+										<div role="img" aria-label={paso.aria}><CarrilMini carril={paso.carril} /></div>
+										<ul class="leyenda">
+											{#each paso.leyenda as l (l.clave)}
+												<li><span class="muestra-l {l.clave}" aria-hidden="true"></span>{l.texto} <strong>{l.valor}</strong></li>
+											{/each}
+										</ul>
+									</div>
+								{:else}
+									<div class="resultado-ej"><Costura costura={p.ejemplo.costura} demo /></div>
 								{/if}
 							</li>
 						{/each}
@@ -121,74 +162,51 @@
 				{/if}
 			</section>
 
-			<section id="niv">
-				<h2>Los niveles</h2>
-				{#if p.niveles}
-					<div class="niveles">
-						{#each p.niveles.items as n (n.etiqueta)}
-							<div class="nivel">
-								<div class="nivel-texto">
-									<span class="etiqueta nivel-{n.clase}"><Icono clase={n.icono ?? n.clase} />{n.etiqueta}</span>
-									<span class="nivel-desc">{n.descripcion}</span>
-								</div>
-								<div class="mini nivel-{n.clase}" aria-hidden="true">
-									<div class="mini-pista"></div>
-									<div class="mini-banda" style:left="{p.niveles.mini.banda.desde * 100}%" style:width="{(p.niveles.mini.banda.hasta - p.niveles.mini.banda.desde) * 100}%"></div>
-									<div class="mini-techo" style:left="{p.niveles.mini.techo.desde * 100}%" style:width="{(p.niveles.mini.techo.hasta - p.niveles.mini.techo.desde) * 100}%"></div>
-									<div class="mini-punto" style:left="{n.x * 100}%"></div>
-								</div>
+			<!-- Las dos referencias: dos tarjetas con las mismas filas (negra y clara, unidas en móvil como la costura) -->
+			<section id="ref">
+				<h2>{p.referencias.titulo}</h2>
+				<p>{p.referencias.intro}</p>
+				<div class="referencias">
+					{#each p.referencias.tarjetas as t (t.fuente)}
+						<div class="referencia {t.fuente}">
+							<div class="grupo-cab">
+								<span class="sello">{t.etiqueta}</span>
+								<span class="grupo-pregunta">{t.pregunta}</span>
+							</div>
+							<dl class="filas-ref">
+								{#each t.filas as f (f.etiqueta)}
+									<div><dt>{f.etiqueta}</dt><dd>{f.texto}</dd></div>
+								{/each}
+							</dl>
+							<dl class="terminos">
+								{#each t.terminos as f (f.titulo)}
+									<div><dt>{f.titulo}</dt><dd>{f.texto}</dd></div>
+								{/each}
+							</dl>
+						</div>
+					{/each}
+				</div>
+				{#each p.referencias.cierre as t (t)}<p class="cierre-ref">{t}</p>{/each}
+				<details>
+					<summary>{p.referencias.limites.titulo}</summary>
+					<div class="limites-ref">
+						{#each p.referencias.limites.grupos as g (g.titulo)}
+							<div>
+								<h3>{g.titulo}</h3>
+								<ul class="lista">
+									{#each g.items as t (t)}<li>{t}</li>{/each}
+								</ul>
 							</div>
 						{/each}
 					</div>
-				{/if}
-			</section>
-
-			<section id="ped" class="oscura">
-				<h2>{p.precioPedido.titulo}</h2>
-				<p class="lead">{p.precioPedido.destacado}</p>
-				<p class="claro">{p.precioPedido.cuerpo}</p>
-				<h3>{p.precioPedido.incluye.titulo}</h3>
-				<ul class="claro">
-					{#each p.precioPedido.incluye.items as t (t)}<li>{t}</li>{/each}
-				</ul>
-				<h3>{p.precioPedido.parteAlta.titulo}</h3>
-				<p class="claro">{p.precioPedido.parteAlta.texto}</p>
-			</section>
-
-			<section id="anu">
-				<h2>{p.anuncios.titulo}</h2>
-				<p class="lead">{p.anuncios.intro}</p>
-				<table class="comparativa">
-					<caption class="solo-lectores">Contratos y anuncios recientes, lado a lado</caption>
-					<thead>
-						<tr><td></td><th scope="col">{p.anuncios.tabla.columnas[0]}</th><th scope="col">{p.anuncios.tabla.columnas[1]}</th></tr>
-					</thead>
-					<tbody>
-						{#each p.anuncios.tabla.filas as f (f.etiqueta)}
-							<tr>
-								<th scope="row">{f.etiqueta}</th>
-								<td data-columna={p.anuncios.tabla.columnas[0]}>{f.contratos}</td>
-								<td data-columna={p.anuncios.tabla.columnas[1]}>{f.anuncios}</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-				<p>{p.anuncios.enLinea}</p>
-				<details>
-					<summary>{p.anuncios.estimacion.titulo}</summary>
-					<p>{p.anuncios.estimacion.texto}</p>
-				</details>
-				<details>
-					<summary>{p.anuncios.limites.titulo}</summary>
-					<ul class="lista">
-						{#each p.anuncios.limites.items as t (t)}<li>{t}</li>{/each}
-					</ul>
 				</details>
 			</section>
 
 			<section id="map">
-				<h2>El mapa</h2>
+				<h2>{p.mapa.titulo}</h2>
 				{#each p.mapa.parrafos as t (t)}<p>{t}</p>{/each}
+				<h3>{p.mapa.tuZona.titulo}</h3>
+				{#each p.mapa.tuZona.parrafos as t (t)}<p>{t}</p>{/each}
 				<div class="dos">
 					<div class="caja-blanca chica">
 						<h3>Qué muestra</h3>
@@ -210,7 +228,7 @@
 				<a class="enlace" href="/mapa">Ver el mapa de Madrid</a>
 			</section>
 
-			<section id="dat">
+			<section id="tus-datos">
 				<h2>Tus datos</h2>
 				{#each p.datos.parrafos as t (t)}<p>{t}</p>{/each}
 				<div class="dos">
@@ -423,7 +441,104 @@
 		font: 800 24px/1 var(--f-extra);
 	}
 
-	/* Ejemplo */
+	/* —— Cómo se lee: dos tarjetas unidas, como la costura —— */
+	.lectura {
+		--negro: #0b0a0a;
+		border-radius: var(--radio);
+		overflow: hidden;
+	}
+	.grupo {
+		padding: 20px 18px 8px;
+	}
+	.grupo.contratos {
+		background: var(--negro);
+		color: var(--papel);
+	}
+	.grupo.oferta {
+		background: var(--superficie);
+	}
+	.grupo-cab {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding-bottom: 6px;
+	}
+	.sello {
+		align-self: flex-start;
+		font: 700 12px/1 var(--f-semi);
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		padding: 5px 8px;
+		border-radius: 4px;
+	}
+	.contratos .sello {
+		background: #2a2926;
+		color: var(--papel);
+	}
+	.oferta .sello {
+		background: var(--ciruela-tinte);
+		color: var(--ciruela);
+	}
+	.grupo-pregunta {
+		font: 600 17px/1.3 var(--f-texto);
+	}
+	dl {
+		margin: 0;
+	}
+	.palabra-fila {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 10px;
+		padding: 16px 0;
+		border-top: 1px solid #2a2926;
+	}
+	.oferta .palabra-fila {
+		border-top-color: #d6d1c6;
+	}
+	.palabra-fila:first-child {
+		border-top: 0;
+	}
+	.palabra-texto {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	.palabra {
+		font: 800 32px/0.9 var(--f-extra);
+	}
+	.oferta .palabra {
+		color: var(--ciruela);
+	}
+	dd {
+		margin: 0;
+		font: 400 15px/1.45 var(--f-texto);
+		text-wrap: pretty;
+	}
+	.contratos dd {
+		color: #d6d1c6;
+	}
+	.oferta dd {
+		color: #3a3935;
+	}
+	.palabra-carril {
+		min-width: 0;
+	}
+	.asu {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		border-left: 4px solid var(--paja);
+		padding: 2px 0 2px 16px;
+	}
+	.asu-titulo {
+		font: 800 34px/0.95 var(--f-extra);
+	}
+	.nota-color {
+		font-size: 15px;
+		color: var(--grafito);
+	}
+
+	/* —— Paso a paso: cada paso, con la tira de su referencia —— */
 	.pasos {
 		list-style: none;
 		padding: 0;
@@ -431,11 +546,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
+		counter-reset: none;
 	}
-	.pasos li {
-		background: var(--superficie);
+	.paso {
+		background: var(--blanco);
 		border-radius: var(--radio);
-		padding: 16px 16px 14px;
+		padding: 18px 16px 16px;
 		display: flex;
 		flex-direction: column;
 		gap: 14px;
@@ -443,7 +559,7 @@
 	}
 	.paso-cab {
 		display: grid;
-		grid-template-columns: 36px minmax(0, 1fr);
+		grid-template-columns: 34px minmax(0, 1fr);
 		gap: 10px;
 		align-items: baseline;
 		max-width: 70ch;
@@ -456,6 +572,9 @@
 	.num-paso {
 		font: 800 32px/1 var(--f-extra);
 	}
+	.paso.oferta .num-paso {
+		color: var(--ciruela);
+	}
 	.paso-titulo {
 		font: 700 16px/1.35 var(--f-texto);
 	}
@@ -463,178 +582,169 @@
 		font: 400 16px/1.55 var(--f-texto);
 		text-wrap: pretty;
 	}
-	.barra-caja {
+	.tira {
+		border-radius: 6px;
+		padding: 14px 16px 12px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+	.tira.contratos {
+		background: #0b0a0a;
+		color: var(--papel);
+	}
+	.tira.oferta {
+		background: var(--superficie);
+	}
+	.leyenda {
+		display: flex;
+		flex-flow: row wrap;
+		gap: 6px 18px;
+		font: 500 13px/1.3 var(--f-semi);
+	}
+	.tira.contratos .leyenda {
+		color: #d6d1c6;
+	}
+	.leyenda strong {
+		font-weight: 700;
+		color: var(--tinta);
+	}
+	.tira.contratos .leyenda strong {
+		color: var(--papel);
+	}
+	.leyenda li {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.muestra-l {
+		flex: none;
+		width: 14px;
+		height: 10px;
+		border-radius: 2px;
+	}
+	.muestra-l.banda {
+		background: #f6f4ee;
+	}
+	.muestra-l.anterior {
+		border: 1.5px dashed #d6d1c6;
+		box-sizing: border-box;
+	}
+	.muestra-l.excelente {
+		background: #857f74;
+	}
+	.muestra-l.marca {
+		width: 3px;
+		height: 14px;
+		background: var(--ciruela);
+		border-radius: 0;
+	}
+	.muestra-l.margen {
+		height: 2px;
+		background: var(--ciruela);
+		opacity: 0.55;
+	}
+	.resultado-ej {
 		min-width: 0;
+	}
+
+	/* —— Las dos referencias —— */
+	.referencias {
+		--negro: #0b0a0a;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		border-radius: var(--radio);
 		overflow: hidden;
 	}
-	.etiqueta {
-		display: inline-flex;
-		align-self: flex-start;
-		align-items: center;
-		gap: 8px;
-		min-height: 32px;
-		padding: 4px 12px 4px 8px;
-		background: var(--tinte);
-		color: var(--acento);
-		border-radius: var(--radio);
-		font: 700 14px/1.25 var(--f-texto);
-	}
-
-	/* Niveles */
-	.niveles {
-		display: flex;
-		flex-direction: column;
-		gap: 20px;
-	}
-	.nivel {
+	/* Cada tarjeta es una rejilla de 7 filas (cabecera, 4 filas y 2 términos); en escritorio las dos comparten las
+	   filas con subgrid, así que «Qué mide», «Fuente»… quedan a la misma altura en las dos */
+	.referencia {
+		padding: 20px 18px;
 		display: grid;
-		grid-template-columns: 1fr;
-		gap: 12px 24px;
-		align-items: center;
+		grid-template-columns: minmax(0, 1fr);
+		align-content: start;
 	}
-	.nivel-texto {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
+	.referencia .grupo-cab {
+		padding-bottom: 14px;
 	}
-	.nivel-desc {
-		font: 400 16px/1.5 var(--f-texto);
-		max-width: 60ch;
+	.referencia.contratos {
+		background: var(--negro);
+		color: var(--papel);
+	}
+	.referencia.oferta {
+		background: var(--superficie);
+	}
+	.filas-ref,
+	.terminos {
+		display: contents;
+	}
+	.filas-ref div {
+		display: grid;
+		grid-template-columns: 76px minmax(0, 1fr);
+		gap: 12px;
+		padding: 9px 0;
+		border-top: 1px solid #2a2926;
+	}
+	.oferta .filas-ref div {
+		border-top-color: #d6d1c6;
+	}
+	.filas-ref dt {
+		font: 700 13px/1.45 var(--f-semi);
+		letter-spacing: 0.02em;
+	}
+	.contratos .filas-ref dt {
+		color: var(--paja);
+	}
+	.oferta .filas-ref dt {
+		color: var(--ciruela);
+	}
+	.filas-ref dd,
+	.terminos dd {
+		margin: 0;
+		font: 400 15px/1.45 var(--f-texto);
 		text-wrap: pretty;
 	}
-	.mini {
-		position: relative;
-		height: 24px;
-		width: 100%;
+	.contratos .filas-ref dd,
+	.contratos .terminos dd {
+		color: #d6d1c6;
 	}
-	.mini > div {
-		position: absolute;
+	.terminos div {
+		padding-top: 10px;
 	}
-	.mini-pista {
-		left: 0;
-		right: 0;
-		top: 7px;
-		height: 10px;
-		background: #e0dace;
+	.terminos div:first-child {
+		margin-top: 14px;
+		padding-top: 14px;
+		border-top: 2px solid #2a2926;
 	}
-	.mini-banda {
-		top: 7px;
-		height: 10px;
-		background: var(--tinta);
+	.oferta .terminos div:first-child {
+		border-top-color: #d6d1c6;
 	}
-	.mini-techo {
-		top: 7px;
-		height: 10px;
-		background: var(--piedra);
+	.terminos dt {
+		font: 700 16px/1.3 var(--f-texto);
 	}
-	.mini-punto {
-		top: 2px;
-		width: 20px;
-		height: 20px;
-		margin-left: -10px;
-		box-sizing: border-box;
-		border-radius: 50%;
-		border: 3px solid var(--papel);
-		background: var(--acento);
+	.oferta .terminos dt {
+		color: var(--ciruela);
 	}
-
-	/* Precio pedido */
-	.oscura {
-		background: var(--tinta);
-		color: var(--papel);
-		border-radius: var(--radio);
-		padding: 20px 18px;
-		gap: 12px;
+	.cierre-ref {
+		font-weight: 500;
 	}
-	.oscura h2 {
-		color: var(--paja);
-	}
-	.oscura .lead {
-		color: var(--papel);
-	}
-	.oscura h3 {
-		color: var(--paja);
-		margin-top: 4px;
-	}
-	.oscura ul {
+	.limites-ref {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
-		padding-left: 18px;
-		list-style: disc;
+		gap: 12px;
+		padding: 0 16px 16px;
 	}
-	.claro {
-		color: var(--pista);
+	.limites-ref .lista {
+		padding-left: 20px;
 	}
 
-	/* Anuncios recientes: listas con viñeta, tabla comparativa y desplegables nativos */
+	/* Anuncios recientes: listas con viñeta y desplegables nativos */
 	.lista {
 		list-style: disc;
 		padding-left: 20px;
 		gap: 8px;
 		max-width: 70ch;
 		font: 400 16px/1.55 var(--f-texto);
-	}
-	.comparativa {
-		width: 100%;
-		border-collapse: separate;
-		border-spacing: 0;
-		background: var(--blanco);
-		border-radius: var(--radio);
-		font: 400 15px/1.45 var(--f-texto);
-		text-align: left;
-	}
-	.comparativa th,
-	.comparativa td {
-		padding: 12px 14px;
-		vertical-align: top;
-		border-top: 1px solid var(--pista);
-	}
-	.comparativa thead th,
-	.comparativa thead td {
-		font: 700 15px/1.3 var(--f-texto);
-		border-top: 0;
-	}
-	.comparativa tbody th {
-		font: 700 14px/1.4 var(--f-texto);
-		width: 22%;
-	}
-	@media (max-width: 639px) {
-		/* En móvil cada fila pasa a bloque y cada celda lleva su columna delante */
-		.comparativa,
-		.comparativa tbody,
-		.comparativa tr,
-		.comparativa th,
-		.comparativa td {
-			display: block;
-		}
-		.comparativa thead {
-			position: absolute;
-			width: 1px;
-			height: 1px;
-			overflow: hidden;
-			clip-path: inset(50%);
-		}
-		.comparativa tbody tr {
-			padding: 6px 0;
-			border-top: 1px solid var(--pista);
-		}
-		.comparativa tbody tr:first-child {
-			border-top: 0;
-		}
-		.comparativa tbody th {
-			width: auto;
-			padding: 8px 14px 2px;
-			border-top: 0;
-		}
-		.comparativa td {
-			padding: 4px 14px;
-			border-top: 0;
-		}
-		.comparativa td::before {
-			content: attr(data-columna) ': ';
-			font-weight: 700;
-		}
 	}
 	details {
 		background: var(--blanco);
@@ -672,14 +782,6 @@
 		outline: 2px solid var(--tinta);
 		outline-offset: 2px;
 		border-radius: var(--radio);
-	}
-	details > p,
-	details > .lista {
-		margin: 0;
-		padding: 0 16px 16px;
-	}
-	details > .lista {
-		padding-left: 36px;
 	}
 
 	/* Datos */
@@ -894,8 +996,7 @@
 			font-size: 44px;
 		}
 		p,
-		.paso-texto,
-		.nivel-desc {
+		.paso-texto {
 			font-size: 17px;
 		}
 		.lead {
@@ -907,14 +1008,37 @@
 		.caja-blanca {
 			padding: 28px 32px;
 		}
-		.oscura {
-			padding: 28px 32px;
+		.referencias {
+			grid-template-columns: 1fr 1fr;
+			grid-template-rows: repeat(7, auto);
 		}
-		.pasos li {
-			padding: 20px 24px 18px;
+		.referencia {
+			padding: 26px 24px;
+			grid-row: span 7;
+			grid-template-rows: subgrid;
 		}
-		.nivel {
-			grid-template-columns: minmax(0, 1fr) 260px;
+		.paso {
+			padding: 22px 24px 20px;
+		}
+		.tira {
+			margin-left: 44px;
+		}
+		.resultado-ej {
+			margin-left: 44px;
+		}
+		.grupo {
+			padding: 26px 28px 10px;
+		}
+		.palabra-fila {
+			grid-template-columns: minmax(0, 1fr) 220px;
+			gap: 28px;
+			align-items: center;
+		}
+		.palabra {
+			font-size: 38px;
+		}
+		.asu-titulo {
+			font-size: 42px;
 		}
 		.chica {
 			padding: 18px 20px;
