@@ -5,6 +5,7 @@
  * «Un anuncio» o «Mi alquiler».
  */
 import type { Comparativa } from './comparativa';
+import type { Costura } from './costura';
 import type { DatosMadrid } from './datos';
 import { ANUNCIO_EJEMPLO, CUSEC_EJEMPLO } from './metodologia';
 import { aInquilino } from './inquilino';
@@ -22,6 +23,7 @@ export interface Muestra {
 	contexto: string;
 	clase: Clase;
 	comparativa: Comparativa;
+	costura: Costura;
 }
 
 const UBICACION: Ubicacion = {
@@ -34,7 +36,7 @@ export function construirMuestra(datos: DatosMadrid, modo: ModoMuestra = 'mirand
 	const v = p.vista;
 	if (modo === 'vivo') {
 		const q = aInquilino(p, ANUNCIO_EJEMPLO, { firma: { reciente: false, mes: 1, ano: 2020 }, rentaFirma: null, somos: null });
-		return { modo, lugar: v.lugar, contexto: q.inquilino!.pagas, clase: q.inquilino!.clase, comparativa: q.comparativa };
+		return { modo, lugar: v.lugar, contexto: q.inquilino!.pagas, clase: q.inquilino!.clase, comparativa: q.comparativa, costura: q.costura };
 	}
-	return { modo, lugar: v.lugar, contexto: `${v.m2} · ${v.precio}/mes · ${COMPARATIVA.cabecera.mirando}`, clase: v.clase, comparativa: p.comparativa };
+	return { modo, lugar: v.lugar, contexto: `${v.m2} · ${v.precio}/mes · ${COMPARATIVA.cabecera.mirando}`, clase: v.clase, comparativa: p.comparativa, costura: p.costura };
 }

@@ -558,6 +558,8 @@
 				{#snippet mapa()}<Mapa alMarcar={marcarPunto} enfocar={enfoqueMapa} {puntoInicial} />{/snippet}
 			</Formulario>
 			<div class="historial"><HistorialSesion {filas} {activa} alElegir={elegirHistorial} /></div>
+			<!-- Móvil: el ejemplo bajo el formulario, y solo se calcula al llegar a él -->
+			{#if !hayResultado}<MuestraResultado modo={esVivo ? 'vivo' : 'mirando'} movil />{/if}
 		</aside>
 
 		<div class="principal" bind:this={ficha} tabindex="-1">

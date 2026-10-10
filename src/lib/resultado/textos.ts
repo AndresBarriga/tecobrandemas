@@ -301,7 +301,7 @@ export const UBICACION_ACTUAL = {
 export const MUESTRA = {
 	titulo: 'Así se ve un resultado',
 	ejemplo: 'Ejemplo',
-	nota: 'Es un ejemplo con datos de una zona real. Al comprobar, tu resultado sustituye a este.'
+	nota: 'Datos de una zona real. Al comprobar, tu resultado sustituye a este.'
 } as const;
 
 export const TIPO_VIVIENDA = {
@@ -391,6 +391,89 @@ export const INQUILINO = {
 	compartir: 'Compartir mi resultado',
 	acciones: { titulo: 'Siguientes pasos', oficial: 'Consultar el valor oficial', mirando: 'Comprobar un anuncio' },
 	servido: '¿Te ha servido?'
+} as const;
+
+/**
+ * Resultado «La costura» (handoff de 10/10/2026, docs/design/new design handoff): contratos en negro y oferta en claro, con
+ * la misma escala. «Ahora» en lugar de «hoy»; la oferta es del barrio o del distrito, nunca «zona».
+ */
+export const COSTURA = {
+	contexto: { mirando: 'Un anuncio', vivo: 'Mi alquiler' },
+	palabras: { debajo: 'POR DEBAJO', dentro: 'DENTRO', algo: 'ALGO POR ENCIMA', encima: 'POR ENCIMA', enLinea: 'EN LÍNEA', pidenMas: 'PIDEN MÁS' },
+	titular: {
+		asuPrecio: 'A su precio.',
+		contratos: {
+			mirando: {
+				debajo: 'Menos de lo que pagan quienes ya viven aquí.',
+				dentro: 'Lo habitual entre quienes ya viven aquí.',
+				algo: 'Algo más de lo que pagan quienes ya viven aquí.',
+				encima: 'Más de lo que pagan quienes ya viven aquí.'
+			},
+			vivo: { debajo: 'Pagas menos que tus vecinos.', dentro: 'Pagas lo habitual en tu zona.', algo: 'Pagas algo más que tus vecinos.', encima: 'Pagas más que tus vecinos.' }
+		},
+		oferta: {
+			mirando: (clave: 'enlinea' | 'encima' | 'debajo' | 'pidenmas', nivel: 'barrio' | 'distrito') =>
+				`${clave === 'enlinea' ? 'En línea con' : clave === 'encima' ? 'Por encima de' : 'Por debajo de'} lo que se pide ahora en el ${nivel}.`,
+			vivo: (clave: 'enlinea' | 'encima' | 'debajo' | 'pidenmas', _nivel: 'barrio' | 'distrito') =>
+				clave === 'enlinea' ? 'En línea con lo que se pide ahora por entrar.' : clave === 'encima' ? 'Más de lo que se pide ahora por entrar.' : 'Si buscaras piso ahora, te pedirían más.'
+		}
+	},
+	contratos: {
+		pregunta: '¿Cuánto pagan quienes ya viven aquí?',
+		aclaracion: (m2: string, modo: 'mirando' | 'vivo') =>
+			`Lo habitual en los contratos de alquiler firmados en ${modo === 'vivo' ? 'tu zona' : 'la zona'}, para pisos de ${m2}.`,
+		notaReciente: 'Contrato de hace menos de un año: lo habitual mezcla contratos de distintas fechas, y los más antiguos suelen tener rentas más bajas.',
+		debajo: { mirando: 'de lo habitual en la zona', vivo: 'de lo habitual en tu zona' },
+		dentro: (parte: string) => `en la parte ${parte} de lo habitual`,
+		sobreLoMasAlto: 'sobre lo más alto de lo habitual',
+		vecesLoMasAlto: 'lo más alto de lo habitual',
+		excelente: '. Puede cuadrar si el piso es excelente.',
+		banda: 'lo habitual',
+		maximo: 'máximo si fuera un piso excelente: '
+	},
+	oferta: {
+		pregunta: (m2: string) => `¿Cuánto se pide ahora por entrar en un piso de ${m2}?`,
+		aclaracion: (nivel: 'barrio' | 'distrito') => `Según los anuncios del ${nivel}. Solo cuenta el tamaño, no cómo es el piso.`,
+		texto: 'frente a lo que se pide en anuncios',
+		estimacion: (eurosM2: string, nivel: 'barrio' | 'distrito', m2: string, modo: 'mirando' | 'vivo') =>
+			`≈ Estimación: ${eurosM2} €/m² del ${nivel} × ${modo === 'vivo' ? 'tus' : 'los'} ${m2}. No es el precio de pisos como ${modo === 'vivo' ? 'el tuyo' : 'este'}.`,
+		marca: (e: string) => `se pide ≈${e}`,
+		sinDato: 'Sin dato de oferta este mes',
+		sinDatoTexto: 'El Ayuntamiento no ha publicado precio de oferta para esta zona en el último mes disponible. Solo comparamos con los contratos.'
+	},
+	pastilla: { mirando: (e: string) => `Tu anuncio · ${e}`, vivo: (e: string) => `Tu alquiler · ${e}` },
+	anio: {
+		titulo: '¿Cuánto es al año?',
+		alMes: 'Al mes',
+		alMesMinimo: 'Al mes, como mínimo',
+		alAño: 'Al año',
+		frase: (meses: string, modo: 'mirando' | 'vivo') => `Equivale a ${meses} de ${modo === 'vivo' ? 'tu' : 'este'} alquiler al año.`,
+		bloques: '12 meses de alquiler',
+		nota: {
+			mirando: 'Lo que te piden por encima de lo más alto de lo habitual. Solo aparece si estás por encima.',
+			vivo: 'Lo que pagas por encima de lo más alto de lo habitual. Solo aparece si estás por encima.'
+		}
+	},
+	porque: {
+		titulo: '¿Por qué no coinciden?',
+		distintas:
+			'Los contratos recogen rentas ya firmadas, algunas de hace años. Lo que se pide es el precio de los anuncios recientes, para quien llega. Miden cosas distintas, así que pueden no coincidir.',
+		margen: (pct: string, nivel: 'barrio' | 'distrito') =>
+			`La línea morada bajo lo que se pide marca el margen «en línea»: ±${pct} %. Es una estimación del ${nivel}, no un precio exacto.`
+	},
+	datos: {
+		titulo: 'De dónde salen los datos',
+		calculo: (eurosM2: string, m2: string, nivel: 'barrio' | 'distrito') =>
+			`Cálculo: ${eurosM2} €/m² × ${m2}. Precio de oferta agregado del ${nivel}, no una media observada de pisos de ${m2}.`
+	},
+	/** Siempre visible bajo el bloque: la fuente y la fecha de cada cifra */
+	fuentesCortas: (mesOferta: string | null) =>
+		`Contratos: SERPAVI (Ministerio de Vivienda), 2024${mesOferta ? ` · Anuncios: Ayuntamiento de Madrid, ${mesOferta}` : ''}`,
+	aria: {
+		contratos: (bajo: string, alto: string, maximo: string) =>
+			`Contratos vigentes de la zona: lo habitual de ${bajo} a ${alto}; máximo si fuera un piso excelente, ${maximo}.`,
+		oferta: (marca: string) => `Anuncios recientes: ${marca}.`
+	}
 } as const;
 
 /**

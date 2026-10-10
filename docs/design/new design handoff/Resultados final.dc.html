@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@400;500;600;700;800&family=Sofia+Sans+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@700;800;900&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#D9D4C9;font-family:'Sofia Sans',sans-serif;color:#1C1B19;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}a{color:#1C1B19;text-decoration:underline}a:hover{color:#5A5750}</style>
+</helmet>
+<section style="padding:64px;display:flex;flex-direction:column;gap:56px">
+
+<div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:56px;max-width:2200px">
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:15px;letter-spacing:.06em">A SU PRECIO · RESULTADO Y TARJETAS · PROPUESTA FINAL</div>
+    <div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:96px;line-height:.86;text-transform:uppercase">La costura</div>
+    <div style="font-size:19px;line-height:1.45;max-width:980px;text-wrap:pretty">Arriba, en negro, lo que pagan quienes ya viven aquí. Abajo, en claro, lo que se pide hoy por entrar. Los dos carriles comparten escala y se tocan en la costura, donde tu precio, en amarillo, los une. Todo se dibuja con <b>ResultadoCostura</b> y <b>TarjetaCostura</b> a partir de <b>costura.js</b>. Los casos que no son el principal son EJEMPLO.</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 32px;font-size:15px;line-height:1.5;align-content:start;padding-top:24px">
+    <div><b>Fijo.</b> <span style="color:#5A5750">Estructura, colores, escala, reglas de veredicto y textos clave: las dos preguntas, las palabras del veredicto, «lo habitual», «máximo si fuera un piso excelente» y «se pide ≈».</span></div>
+    <div><b>Flexible.</b> <span style="color:#5A5750">El resto de microtexto, los espaciados finos y los nombres de componentes. Los textos que ya existen en la app los decide quien implementa.</span></div>
+    <div><b>Sin cambios.</b> <span style="color:#5A5750">El formulario, Siguientes pasos, la casilla de estadísticas, «¿Qué vas a hacer?» y Tu zona.</span></div>
+    <div><b>Cambia.</b> <span style="color:#5A5750">La parte de arriba del resultado y el bloque «Tu tarjeta para compartir», que ahora tiene selector.</span></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;align-items:center;gap:14px"><div style="background:#1C1B19;color:#F6F4EE;font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:18px;padding:6px 12px;border-radius:8px">P</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:44px;line-height:1;text-transform:uppercase">Portada · el ejemplo de entrada</div></div>
+  <div style="font-size:16px;color:#5A5750;max-width:1100px">El ejemplo es el mismo bloque que el resultado, sin titular, sin aclaraciones y sin plegables: solo las dos preguntas, las respuestas y tu precio. Quien entra ve exactamente lo que va a recibir; al comprobar, su resultado ocupa el mismo sitio.</div>
+  <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap">
+    <div id="P-escritorio" data-screen-label="P escritorio" style="width:1280px;flex:none;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 28px"><div data-logo="true" style="display:flex;gap:12px;align-items:center"><div style="width:48px;height:48px;background:#EBC85A;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:22px">AsP</div><div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:26px;line-height:1">A SU PRECIO</div><div style="font-size:15px;font-weight:500">Que el precio no sea a ciegas.</div></div></div><div style="display:flex;gap:18px;font-size:15px;font-weight:600"><span style="border-bottom:3px solid #EBC85A">Comprobar</span><span>Mapa</span><span>Cómo calculamos</span></div></div>
+      <div style="display:grid;grid-template-columns:400px minmax(0,1fr)">
+        <div style="padding:16px 28px 40px;border-right:1px solid #E4DFD5;display:flex;flex-direction:column;gap:14px"><div style="font-size:20px;font-weight:700">Comprueba tu alquiler</div><div style="height:820px;border:1.5px dashed #857F74;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#5A5750;text-align:center">Formulario<br>sin cambios</div></div>
+        <div style="padding:48px 64px 56px;display:flex;flex-direction:column;gap:28px">
+          <div style="display:flex;flex-direction:column;gap:16px;width:760px">
+            <div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:96px;line-height:.86;text-transform:uppercase"><span style="text-decoration:underline;text-decoration-color:#EBC85A;text-decoration-thickness:.12em;text-underline-offset:.08em">¿Cuánto pagan los demás?</span></div>
+            <div style="font-size:18px;line-height:1.5;max-width:560px">Compara tu alquiler o el de un anuncio con los contratos reales de tu zona y con los anuncios recientes.</div>
+          </div>
+          <div style="width:760px;display:flex;justify-content:space-between;align-items:center;margin-top:12px"><div style="font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:14px;letter-spacing:.06em">ASÍ SE VE UN RESULTADO</div><div style="font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:12px;letter-spacing:.08em;padding:3px 8px;border:1.5px dashed #6A3A8C;color:#6A3A8C;border-radius:4px">EJEMPLO</div></div>
+          <dc-import name="ResultadoCostura" caso="principal" modo="alquiler" desktop="{{ true }}" demo="{{ true }}" hint-size="760px,700px"></dc-import>
+          <div style="width:760px;font-size:13px;line-height:1.5;color:#5A5750">Datos de una zona real. Al comprobar, tu resultado sustituye a este.</div>
+        </div>
+      </div>
+    </div>
+    <div id="P-movil" data-screen-label="P móvil" style="width:390px;flex:none;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12);padding-bottom:24px">
+      <div style="padding:14px 20px;display:flex;justify-content:space-between;align-items:center"><div data-logo="true" style="display:flex;gap:8px;align-items:center"><div style="width:32px;height:32px;background:#EBC85A;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:16px">AsP</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:18px">A SU PRECIO</div></div><span style="font-size:14px;font-weight:600">Cómo calculamos</span></div>
+      <div style="padding:12px 20px 24px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:60px;line-height:.86;text-transform:uppercase"><span style="text-decoration:underline;text-decoration-color:#EBC85A;text-decoration-thickness:.12em;text-underline-offset:.08em">¿Cuánto pagan los demás?</span></div>
+        <div style="font-size:16px;line-height:1.5">Compara tu alquiler o el de un anuncio con los contratos reales de tu zona y con los anuncios recientes.</div>
+        <div style="height:56px;margin-top:6px;display:flex;align-items:center;justify-content:center;background:#EBC85A;border-radius:8px;font-weight:700;font-size:17px">Comprobar mi alquiler</div>
+      </div>
+      <div style="padding:0 20px 12px;display:flex;justify-content:space-between;align-items:center"><div style="font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:13px;letter-spacing:.06em">ASÍ SE VE UN RESULTADO</div><div style="font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:11px;letter-spacing:.08em;padding:2px 7px;border:1.5px dashed #6A3A8C;color:#6A3A8C;border-radius:4px">EJEMPLO</div></div>
+      <dc-import name="ResultadoCostura" caso="principal" modo="alquiler" desktop="{{ false }}" demo="{{ true }}" hint-size="390px,760px"></dc-import>
+      <div style="padding:14px 20px 0;display:flex;flex-direction:column;gap:14px"><div style="font-size:12.5px;line-height:1.5;color:#5A5750">Datos de una zona real. Al comprobar, tu resultado sustituye a este.</div><div style="height:52px;border:1.5px dashed #857F74;border-radius:8px;display:flex;align-items:center;padding:0 16px;font-size:13.5px;color:#5A5750">Formulario · sin cambios</div></div>
+    </div>
+    <div style="flex:1;min-width:280px;max-width:400px;display:flex;flex-direction:column;gap:16px;font-size:15px;line-height:1.5">
+      <div><b>Por qué el mismo componente.</b> <span style="color:#5A5750">La primera impresión enseña la forma exacta del resultado. Al comprobar no hay que aprender nada nuevo: cambian los datos, no el dibujo.</span></div>
+      <div><b>Sin leyenda.</b> <span style="color:#5A5750">Las preguntas de cada mitad ya explican los colores y la pastilla dice qué es el punto amarillo.</span></div>
+      <div><b>Móvil.</b> <span style="color:#5A5750">Titular, botón «Comprobar mi alquiler» (lleva al formulario) y el ejemplo debajo. Si en la app el formulario va primero, el ejemplo va justo después.</span></div>
+      <div><b>Fuera.</b> <span style="color:#5A5750">«Mapa de Madrid» y el resto de la portada no cambian.</span></div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;align-items:center;gap:14px"><div style="background:#1C1B19;color:#F6F4EE;font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:18px;padding:6px 12px;border-radius:8px">R1</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:44px;line-height:1;text-transform:uppercase">Mi alquiler · por encima / en línea</div></div>
+  <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap">
+    <div id="R1-escritorio" data-screen-label="R1 escritorio" style="width:1280px;flex:none;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 28px">
+        <div data-logo="true" style="display:flex;gap:12px;align-items:center"><div style="width:48px;height:48px;background:#EBC85A;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:22px">AsP</div><div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:26px;line-height:1">A SU PRECIO</div><div style="font-size:15px;font-weight:500">Que el precio no sea a ciegas.</div></div></div>
+        <div style="display:flex;gap:18px;font-size:15px;font-weight:600"><span style="border-bottom:3px solid #EBC85A">Comprobar</span><span>Mapa</span><span>Cómo calculamos</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:400px minmax(0,1fr)">
+        <div style="padding:16px 28px 40px;border-right:1px solid #E4DFD5;display:flex;flex-direction:column;gap:14px"><div style="font-size:20px;font-weight:700">Comprueba tu alquiler</div><div style="height:760px;border:1.5px dashed #857F74;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#5A5750;text-align:center">Formulario<br>sin cambios</div></div>
+        <div style="padding:40px 64px 56px;display:flex;flex-direction:column;gap:28px">
+          <dc-import name="ResultadoCostura" caso="principal" modo="alquiler" desktop="{{ true }}" hint-size="760px,860px"></dc-import>
+          <div style="height:56px;border:1.5px dashed #857F74;border-radius:8px;display:flex;align-items:center;padding:0 20px;font-size:14px;color:#5A5750">Siguientes pasos · sin cambios</div>
+          <div style="width:760px;display:flex;flex-direction:column;gap:16px">
+            <div><div style="font-size:17px;font-weight:700">Tu tarjeta para compartir</div><div style="font-size:14px;color:#5A5750;margin-top:2px">Elige cuál. Sin dirección ni precio: solo el barrio, el resultado y la fuente.</div></div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+              <div role="radio" aria-checked="true" style="display:flex;gap:12px;align-items:center;padding:10px;border:2px solid #1C1B19;border-radius:8px;background:#FFFFFF"><div style="width:72px;height:90px;flex:none;overflow:hidden;border-radius:4px"><div style="width:1080px;height:1350px;transform:scale(.0667);transform-origin:0 0"><dc-import name="TarjetaCostura" caso="principal" tipo="veredictos" hint-size="1080px,1350px"></dc-import></div></div><div style="flex:1"><div style="font-weight:700;font-size:15px">Dos veredictos</div><div style="font-size:13px;color:#5A5750">Una respuesta por fuente</div></div></div>
+              <div role="radio" aria-checked="false" style="display:flex;gap:12px;align-items:center;padding:10px;border:1.5px solid #E4DFD5;border-radius:8px;background:#FFFFFF"><div style="width:72px;height:90px;flex:none;overflow:hidden;border-radius:4px"><div style="width:1080px;height:1350px;transform:scale(.0667);transform-origin:0 0"><dc-import name="TarjetaCostura" caso="principal" tipo="costura" hint-size="1080px,1350px"></dc-import></div></div><div style="flex:1"><div style="font-weight:700;font-size:15px">La costura</div><div style="font-size:13px;color:#5A5750">Dónde quedas, sin euros</div></div></div>
+              <div role="radio" aria-checked="false" style="display:flex;gap:12px;align-items:center;padding:10px;border:1.5px solid #E4DFD5;border-radius:8px;background:#FFFFFF"><div style="width:72px;height:90px;flex:none;overflow:hidden;border-radius:4px"><div style="width:1080px;height:1350px;transform:scale(.0667);transform-origin:0 0"><dc-import name="TarjetaCostura" caso="principal" tipo="cifra" hint-size="1080px,1350px"></dc-import></div></div><div style="flex:1"><div style="font-weight:700;font-size:15px">La cifra</div><div style="font-size:13px;color:#5A5750">El % en grande</div></div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="height:48px;display:flex;align-items:center;justify-content:center;background:#EBC85A;border-radius:8px;font-weight:700;font-size:16px">WhatsApp</div><div style="height:48px;display:flex;align-items:center;justify-content:center;background:#EBC85A;border-radius:8px;font-weight:700;font-size:16px">X</div><div style="height:48px;display:flex;align-items:center;justify-content:center;border:1.5px solid #1C1B19;border-radius:8px;font-weight:600;font-size:16px">Copiar enlace</div><div style="height:48px;display:flex;align-items:center;justify-content:center;border:1.5px solid #1C1B19;border-radius:8px;font-weight:600;font-size:16px">Descargar imagen</div></div>
+            <div style="font-size:13px;line-height:1.5;color:#5A5750">Texto de ayuda actual de la app, sin cambios. La vista previa del enlace es siempre «Dos veredictos».</div>
+          </div>
+          <div style="height:56px;border:1.5px dashed #857F74;border-radius:8px;display:flex;align-items:center;padding:0 20px;font-size:14px;color:#5A5750">Casilla de estadísticas · ¿Qué vas a hacer? · Tu zona · sin cambios</div>
+        </div>
+      </div>
+    </div>
+    <div id="R1-movil" data-screen-label="R1 móvil" style="width:390px;flex:none;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12);padding-bottom:20px">
+      <div style="padding:14px 20px;display:flex;justify-content:space-between;align-items:center"><div data-logo="true" style="display:flex;gap:8px;align-items:center"><div style="width:32px;height:32px;background:#EBC85A;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:16px">AsP</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:18px">A SU PRECIO</div></div><span style="font-size:14px;font-weight:600;text-decoration:underline">Editar</span></div>
+      <dc-import name="ResultadoCostura" caso="principal" modo="alquiler" desktop="{{ false }}" hint-size="390px,900px"></dc-import>
+      <div style="padding:20px 20px 0;display:flex;flex-direction:column;gap:12px">
+        <div style="height:52px;border:1.5px dashed #857F74;border-radius:8px;display:flex;align-items:center;padding:0 16px;font-size:13.5px;color:#5A5750">Siguientes pasos · sin cambios</div>
+        <div style="font-size:16px;font-weight:700">Tu tarjeta para compartir</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:center"><div style="width:108px;height:135px;overflow:hidden;border-radius:6px;outline:2px solid #1C1B19;outline-offset:3px"><div style="width:1080px;height:1350px;transform:scale(.1);transform-origin:0 0"><dc-import name="TarjetaCostura" caso="principal" tipo="veredictos" hint-size="1080px,1350px"></dc-import></div></div><div style="font-size:13px;font-weight:700;margin-top:4px">Dos veredictos</div></div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:center"><div style="width:108px;height:135px;overflow:hidden;border-radius:6px"><div style="width:1080px;height:1350px;transform:scale(.1);transform-origin:0 0"><dc-import name="TarjetaCostura" caso="principal" tipo="costura" hint-size="1080px,1350px"></dc-import></div></div><div style="font-size:13px;font-weight:600;margin-top:4px">La costura</div></div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:center"><div style="width:108px;height:135px;overflow:hidden;border-radius:6px"><div style="width:1080px;height:1350px;transform:scale(.1);transform-origin:0 0"><dc-import name="TarjetaCostura" caso="principal" tipo="cifra" hint-size="1080px,1350px"></dc-import></div></div><div style="font-size:13px;font-weight:600;margin-top:4px">La cifra</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="height:48px;display:flex;align-items:center;justify-content:center;background:#EBC85A;border-radius:8px;font-weight:700;font-size:16px">WhatsApp</div><div style="height:48px;display:flex;align-items:center;justify-content:center;background:#EBC85A;border-radius:8px;font-weight:700;font-size:16px">X</div><div style="height:48px;display:flex;align-items:center;justify-content:center;border:1.5px solid #1C1B19;border-radius:8px;font-weight:600;font-size:15px">Copiar enlace</div><div style="height:48px;display:flex;align-items:center;justify-content:center;border:1.5px solid #1C1B19;border-radius:8px;font-weight:600;font-size:15px">Descargar imagen</div></div>
+        <div style="height:52px;border:1.5px dashed #857F74;border-radius:8px;display:flex;align-items:center;padding:0 16px;font-size:13.5px;color:#5A5750">Estadísticas · ¿Qué vas a hacer? · Tu zona · sin cambios</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;align-items:center;gap:14px"><div style="background:#1C1B19;color:#F6F4EE;font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:18px;padding:6px 12px;border-radius:8px">R2</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:44px;line-height:1;text-transform:uppercase">Un anuncio · mismo caso, oferta arriba</div></div>
+  <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap">
+    <div id="R2-escritorio" data-screen-label="R2 escritorio" style="width:1280px;flex:none;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 28px">
+        <div data-logo="true" style="display:flex;gap:12px;align-items:center"><div style="width:48px;height:48px;background:#EBC85A;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:22px">AsP</div><div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:26px;line-height:1">A SU PRECIO</div><div style="font-size:15px;font-weight:500">Que el precio no sea a ciegas.</div></div></div>
+        <div style="display:flex;gap:18px;font-size:15px;font-weight:600"><span style="border-bottom:3px solid #EBC85A">Comprobar</span><span>Mapa</span><span>Cómo calculamos</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:400px minmax(0,1fr)">
+        <div style="padding:16px 28px 40px;border-right:1px solid #E4DFD5;display:flex;flex-direction:column;gap:14px"><div style="font-size:20px;font-weight:700">Comprueba un anuncio</div><div style="height:760px;border:1.5px dashed #857F74;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#5A5750;text-align:center">Formulario<br>sin cambios</div></div>
+        <div style="padding:40px 64px 56px;display:flex;flex-direction:column;gap:28px">
+          <dc-import name="ResultadoCostura" caso="principal" modo="anuncio" desktop="{{ true }}" hint-size="760px,860px"></dc-import>
+          <div style="height:56px;border:1.5px dashed #857F74;border-radius:8px;display:flex;align-items:center;padding:0 20px;font-size:14px;color:#5A5750">Siguientes pasos (Negociar con el dato…) · Tu tarjeta para compartir (como R1) · Tu zona · sin cambios</div>
+        </div>
+      </div>
+    </div>
+    <div id="R2-movil" data-screen-label="R2 móvil" style="width:390px;flex:none;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12);padding-bottom:20px">
+      <div style="padding:14px 20px;display:flex;justify-content:space-between;align-items:center"><div data-logo="true" style="display:flex;gap:8px;align-items:center"><div style="width:32px;height:32px;background:#EBC85A;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Sofia Sans Extra Condensed';font-weight:900;font-size:16px">AsP</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:18px">A SU PRECIO</div></div><span style="font-size:14px;font-weight:600;text-decoration:underline">Editar</span></div>
+      <dc-import name="ResultadoCostura" caso="principal" modo="anuncio" desktop="{{ false }}" hint-size="390px,900px"></dc-import>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;align-items:center;gap:14px"><div style="background:#1C1B19;color:#F6F4EE;font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:18px;padding:6px 12px;border-radius:8px">R3</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:44px;line-height:1;text-transform:uppercase">Combinaciones y estados · móvil</div></div>
+  <div style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap">
+    <div style="display:flex;flex-direction:column;gap:8px"><div data-screen-label="R3 dentro" style="width:390px;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12);padding:16px 0 20px"><dc-import name="ResultadoCostura" caso="dentro" desktop="{{ false }}" hint-size="390px,860px"></dc-import></div><div style="font-size:14px;color:#5A5750;max-width:390px"><b style="color:#1C1B19">Dentro / por debajo.</b> Sin % de contratos: «en la parte media de lo habitual». Sin plegable «al año».</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px"><div data-screen-label="R3 algo por encima" style="width:390px;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12);padding:16px 0 20px"><dc-import name="ResultadoCostura" caso="algo" desktop="{{ false }}" hint-size="390px,900px"></dc-import></div><div style="font-size:14px;color:#5A5750;max-width:390px"><b style="color:#1C1B19">Algo por encima / en línea.</b> Entre lo más alto de lo habitual y el máximo para un piso excelente («Cerca del techo» en F1).</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px"><div data-screen-label="R3 las dos por encima" style="width:390px;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12);padding:16px 0 20px"><dc-import name="ResultadoCostura" caso="ambos" desktop="{{ false }}" hint-size="390px,900px"></dc-import></div><div style="font-size:14px;color:#5A5750;max-width:390px"><b style="color:#1C1B19">Las dos por encima.</b> La palabra se repite a propósito; el color sigue indicando la fuente.</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px"><div data-screen-label="R3 sin oferta" style="width:390px;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12);padding:16px 0 20px"><dc-import name="ResultadoCostura" caso="sinoferta" desktop="{{ false }}" hint-size="390px,800px"></dc-import></div><div style="font-size:14px;color:#5A5750;max-width:390px"><b style="color:#1C1B19">Sin dato de oferta.</b> La mitad clara se queda sin carril; el titular, con una sola frase. La pastilla sigue en la costura.</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px"><div data-screen-label="R3 contrato antiguo" style="width:390px;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12);padding:16px 0 20px"><dc-import name="ResultadoCostura" caso="antiguo" desktop="{{ false }}" hint-size="390px,900px"></dc-import></div><div style="font-size:14px;color:#5A5750;max-width:390px"><b style="color:#1C1B19">Contrato antiguo (2021).</b> Si pagas menos de lo que se pide hoy, no se celebra: «HOY PIDEN MÁS +47 %» y la nota de la fecha. Solo en Mi alquiler.</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px"><div data-screen-label="R3 a su precio" style="width:390px;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12);padding:16px 0 20px"><dc-import name="ResultadoCostura" caso="justo" desktop="{{ false }}" hint-size="390px,860px"></dc-import></div><div style="font-size:14px;color:#5A5750;max-width:390px"><b style="color:#1C1B19">«A su precio».</b> Mi alquiler dentro de lo habitual → el titular empieza por «A su precio.». En Un anuncio pasa con «en línea» (ver R2).</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px"><div data-screen-label="R3 horquilla" style="width:390px;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12);padding:16px 0 20px"><dc-import name="ResultadoCostura" caso="horquilla" desktop="{{ false }}" hint-size="390px,920px"></dc-import></div><div style="font-size:14px;color:#5A5750;max-width:390px"><b style="color:#1C1B19">Ubicación aproximada.</b> Lo más alto de lo habitual es un tramo (gris claro) y el % pasa a «+27 a +35 %».</div></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;align-items:center;gap:14px"><div style="background:#1C1B19;color:#F6F4EE;font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:18px;padding:6px 12px;border-radius:8px">R4</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:44px;line-height:1;text-transform:uppercase">Plegables abiertos</div></div>
+  <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap">
+    <div data-screen-label="R4 escritorio" style="width:840px;flex:none;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12);padding:40px"><dc-import name="ResultadoCostura" caso="principal" desktop="{{ true }}" abierto="{{ true }}" hint-size="760px,1200px"></dc-import></div>
+    <div data-screen-label="R4 móvil" style="width:390px;flex:none;background:#F6F4EE;border-radius:8px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.12);padding:16px 0 20px"><dc-import name="ResultadoCostura" caso="principal" desktop="{{ false }}" abierto="{{ true }}" hint-size="390px,1300px"></dc-import></div>
+    <div style="flex:1;min-width:280px;max-width:420px;display:flex;flex-direction:column;gap:16px;font-size:15px;line-height:1.5">
+      <div><b>¿Cuánto es al año?</b> <span style="color:#5A5750">Solo si el precio supera lo más alto de lo habitual. Meses = (precio − lo más alto) × 12 ÷ precio. El rótulo trunca («+2,7 meses») para no contradecir «casi 3 meses».</span></div>
+      <div><b>De dónde salen los datos.</b> <span style="color:#5A5750">Es el texto de fuentes actual de la app, con su recuento de contratos (EJEMPLO).</span></div>
+      <div><b>En escritorio, cerrados</b> <span style="color:#5A5750">se colocan en fila; al abrir uno, pasan a columna.</span></div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;align-items:center;gap:14px"><div style="background:#1C1B19;color:#F6F4EE;font-family:'Sofia Sans Semi Condensed';font-weight:700;font-size:18px;padding:6px 12px;border-radius:8px">T</div><div style="font-family:'Sofia Sans Extra Condensed';font-weight:800;font-size:44px;line-height:1;text-transform:uppercase">Tarjetas · 1080×1350 y vista previa 1200×630</div></div>
+  <div style="font-size:16px;color:#5A5750;max-width:1100px">Al 30&nbsp;%. Filas: caso real y tres combinaciones de EJEMPLO. «La cifra» no se ofrece si no hay % frente a los contratos.</div>
+  <sc-for list="{{ filas }}" as="f" hint-placeholder-count="4">
+    <div style="display:flex;gap:20px;align-items:flex-start">
+      <div style="width:150px;flex:none;padding-top:8px"><div style="font-weight:700;font-size:16px">{{ f.t }}</div><div style="font-size:14px;color:#5A5750">{{ f.s }}</div></div>
+      <div style="width:324px;height:405px;overflow:hidden;border-radius:6px;box-shadow:0 2px 16px rgba(0,0,0,.12);flex:none"><div style="width:1080px;height:1350px;transform:scale(.3);transform-origin:0 0"><dc-import name="TarjetaCostura" caso="{{ f.caso }}" tipo="veredictos" hint-size="1080px,1350px"></dc-import></div></div>
+      <div style="width:324px;height:405px;overflow:hidden;border-radius:6px;box-shadow:0 2px 16px rgba(0,0,0,.12);flex:none"><div style="width:1080px;height:1350px;transform:scale(.3);transform-origin:0 0"><dc-import name="TarjetaCostura" caso="{{ f.caso }}" tipo="costura" hint-size="1080px,1350px"></dc-import></div></div>
+      <div style="width:324px;height:405px;overflow:hidden;border-radius:6px;box-shadow:0 2px 16px rgba(0,0,0,.12);flex:none"><div style="width:1080px;height:1350px;transform:scale(.3);transform-origin:0 0"><dc-import name="TarjetaCostura" caso="{{ f.caso }}" tipo="cifra" hint-size="1080px,1350px"></dc-import></div></div>
+      <div style="width:360px;height:189px;overflow:hidden;border-radius:6px;box-shadow:0 2px 16px rgba(0,0,0,.12);flex:none"><div style="width:1200px;height:630px;transform:scale(.3);transform-origin:0 0"><dc-import name="TarjetaCostura" caso="{{ f.caso }}" tipo="og" hint-size="1200px,630px"></dc-import></div></div>
+    </div>
+  </sc-for>
+</div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return { filas: [
+      { caso: 'principal', t: 'Caso real', s: 'Por encima / en línea' },
+      { caso: 'ambos', t: 'EJEMPLO', s: 'Las dos por encima' },
+      { caso: 'algo', t: 'EJEMPLO', s: 'Algo por encima / en línea' },
+      { caso: 'dentro', t: 'EJEMPLO', s: 'Dentro / por debajo' },
+      { caso: 'antiguo', t: 'EJEMPLO', s: 'Contrato de 2021 · hoy piden más' }
+    ] };
+  }
+}
+</script>
+</body>
+</html>

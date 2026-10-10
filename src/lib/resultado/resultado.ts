@@ -12,11 +12,12 @@ import { type Anuncio, type Analisis, type Nivel, type ResultadoSeccion, analiza
 import { type DatosMadrid, barrioDe, datosSeccion } from './datos';
 import { type Barra, construirBarra, mostrarMedia, referenciaMedia } from './barra';
 import { type Comparativa, construirComparativa } from './comparativa';
+import { type Costura, type EntradaCostura, construirCostura } from './costura';
 import { type Evolucion, evolucion } from './evolucion';
 import { euros, mesAnio, numero } from './formato';
 import { type PantallaOferta, construirOferta } from './oferta';
 import {
-	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, ETIQUETA_POR_DEBAJO, FUENTE, NIVEL_CONTRATOS, type ClaveSinDato, type MotivoPantalla,
+	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, ETIQUETA_POR_DEBAJO, FUENTE, NIVEL_CONTRATOS, OFERTA, type ClaveSinDato, type MotivoPantalla,
 	PRECIO_PEDIDO, QUE_PUEDES_HACER, SIN_DATO, TEXTO_OFICIAL_SIN_DATO
 } from './textos';
 import type { PantallaHabitacion } from './habitacion';
@@ -90,6 +91,10 @@ export interface PantallaResultado {
 	oferta: PantallaOferta | null;
 	/** El resultado con las dos referencias, como se pinta (rediseño): resumen, tarjetas, reglas e impacto */
 	comparativa: Comparativa;
+	/** El resultado «La costura» (handoff del 10/10/2026), ya en el modo de la pantalla */
+	costura: Costura;
+	/** Lo que hace falta para rehacer la costura en «Mi alquiler» */
+	entradaCostura: EntradaCostura;
 }
 
 /** Entrada de «Tu zona»: el anuncio, la ubicación (el punto, o null si solo hay calle) y las zonas */
@@ -212,6 +217,21 @@ function desdeAnalisis(
 		rango: an.horquilla && !usarMedia ? { min: an.pctMin + 1, max: an.pctMax + 1 } : null,
 		oferta
 	});
+	const entradaCostura: EntradaCostura = {
+		modo: 'mirando',
+		precio: a.precio,
+		superficie: a.superficie,
+		lugar: vista.lugar,
+		barra,
+		parteAlta: media.sup,
+		nivel,
+		porDebajo: vista.etiqueta === ETIQUETA_POR_DEBAJO,
+		rango: an.horquilla && !usarMedia ? { min: an.pctMin + 1, max: an.pctMax + 1 } : null,
+		oferta,
+		ofertaEnLaWeb: !!datos.oferta,
+		fuenteContratos: oferta ? `${OFERTA.contratos} ${vista.fuente}` : vista.fuente,
+		fuenteOferta: oferta?.fuente ?? null
+	};
 	return {
 		tipo: 'resultado',
 		ratioMin: an.pctMin + 1,
@@ -243,7 +263,9 @@ function desdeAnalisis(
 		registro: barrio ? { barrio: barrio.codigo, precio: Math.round(a.precio), m2: a.superficie, nivel: vista.clase } : null,
 		inquilino: null,
 		oferta,
-		comparativa
+		comparativa,
+		costura: construirCostura(entradaCostura),
+		entradaCostura
 	};
 }
 

@@ -17,11 +17,11 @@ test('01-inicio', async ({ page }) => {
 
 test.describe('niveles', () => {
 	const niveles: [string, string, string, RegExp][] = [
-		['02-nivel-a-dentro', '1700', 'Dentro de rango', /PARTE (BAJA|MEDIA|ALTA)/i],
-		['03-nivel-b-explicable', '2100', 'Algo por encima', /por encima de lo habitual aquí/i],
-		['04-nivel-c-por-encima', '2500', 'Se sale de lo habitual', /\+\d+(,\d)? %/],
-		['05-nivel-c-extremo', '4000', 'Se sale de lo habitual', /\+\d+\s%/],
-		['05b-nivel-c-en-veces', '4500', 'Se sale de lo habitual', /\d,\d\sveces/]
+		['02-nivel-a-dentro', '1700', 'DENTRO', /en la parte (baja|media|alta) de lo habitual/i],
+		['03-nivel-b-explicable', '2100', 'ALGO POR ENCIMA', /sobre lo más alto de lo habitual/i],
+		['04-nivel-c-por-encima', '2500', 'POR ENCIMA', /\+\d+(,\d)? %/],
+		['05-nivel-c-extremo', '4000', 'POR ENCIMA', /\+\d+\s%/],
+		['05b-nivel-c-en-veces', '4500', 'POR ENCIMA', /\d,\d\sveces/]
 	];
 	for (const [nombre, precio, etiqueta, texto] of niveles) {
 		test(nombre, async ({ page }) => {
@@ -48,7 +48,7 @@ test.describe('niveles', () => {
 	test('el contador del barrio no sale sin dato real', async ({ page }) => {
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
+		await expect(page.getByText('POR ENCIMA', { exact: true }).first()).toBeVisible();
 		await expect(page.locator('main')).not.toContainText('personas han comprobado');
 		});
 });
@@ -97,7 +97,7 @@ test.describe('errores', () => {
 		await captura(page, '15-direccion-no-encontrada');
 		// La sugerencia fija la calle, conserva el número (en «Nº») y completa la comprobación
 		await page.getByRole('button', { name: 'Calle Fuente del Berro' }).click();
-		await expect(page.getByText(/^(Se sale de lo habitual|Algo por encima)$/).first()).toBeVisible();
+		await expect(page.getByText(/^(POR ENCIMA|ALGO POR ENCIMA)$/).first()).toBeVisible();
 	});
 
 	test('16-calle-demasiado-larga pide el número o el mapa', async ({ page }) => {
@@ -117,7 +117,7 @@ test.describe('errores', () => {
 		await captura(page, '17-sin-conexion');
 		await page.unroute('**/api/geocode');
 		await page.getByRole('button', { name: 'Reintentar' }).click();
-		await expect(page.getByText(/^(Se sale de lo habitual|Algo por encima)$/).first()).toBeVisible();
+		await expect(page.getByText(/^(POR ENCIMA|ALGO POR ENCIMA)$/).first()).toBeVisible();
 	});
 
 	test('18-validacion con mensajes en ciruela', async ({ page }) => {
@@ -177,14 +177,14 @@ test.describe('otras pantallas', () => {
 		test.skip(!info.project.name.startsWith('escritorio'), 'solo en escritorio');
 		await abrir(page);
 		await comprobar(page, { precio: '1700', superficie: '90' });
-		await expect(page.getByText('Dentro de rango', { exact: true })).toBeVisible();
+		await expect(page.getByText('DENTRO', { exact: true }).first()).toBeVisible();
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
+		await expect(page.getByText('POR ENCIMA', { exact: true }).first()).toBeVisible();
 		const filas = page.getByRole('button', { name: /Goya/ });
 		await expect(filas).toHaveCount(2);
 		await captura(page, '21-historial');
 		await filas.nth(1).click();
-		await expect(page.getByText('Dentro de rango', { exact: true })).toBeVisible();
+		await expect(page.getByText('DENTRO', { exact: true }).first()).toBeVisible();
 		await expect(page.locator('#precio')).toHaveValue('1.700');
 		// Se guarda en sessionStorage, no en localStorage
 		expect(await page.evaluate(() => localStorage.length)).toBe(0);

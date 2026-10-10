@@ -7,11 +7,11 @@ test.describe('flujo', () => {
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
-		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
+		await expect(page.getByText('POR ENCIMA', { exact: true }).first()).toBeVisible();
 		await esperarAnimacion(page);
 		expect(Date.now() - t0).toBeLessThan(30_000);
 		await expect(page.getByText(/2\.500 €\/mes · precio del anuncio/)).toBeVisible();
-		await expect(page.getByRole('img', { name: /Contratos vigentes de la zona: parte alta/ })).toBeVisible();
+		await expect(page.getByRole('img', { name: /Contratos vigentes de la zona: lo habitual de/ })).toBeVisible();
 	});
 
 	test('formatea el precio al salir del campo y valida con mensajes que dicen cómo corregir', async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe('flujo', () => {
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		// En escritorio la portada ya enseña un resultado de muestra: se espera al de verdad
 		await expect(page.getByRole('group', { name: 'Compartir el resultado' })).toBeVisible();
-		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
+		await expect(page.getByText('POR ENCIMA', { exact: true }).first()).toBeVisible();
 		expect(externas).toEqual([]);
 		// Solo se envía la dirección a nuestro Worker (para situar el piso); ni precio ni m² en ningún cuerpo
 		const rutas = posts.map((p) => new URL(p.url).pathname);
@@ -62,7 +62,7 @@ test.describe('flujo', () => {
 	test('«Otro anuncio» vuelve al formulario con lo escrito', async ({ page }) => {
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
-		await expect(page.getByText('Se sale de lo habitual')).toBeVisible();
+		await expect(page.getByText('POR ENCIMA', { exact: true }).first()).toBeVisible();
 		await page.getByRole('button', { name: /Comparar con otro anuncio/ }).click();
 		await expect(page.locator('#direccion')).toBeVisible();
 		// El número escrito al final de la calle pasa al campo «Nº»

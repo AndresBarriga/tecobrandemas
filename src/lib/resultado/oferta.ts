@@ -20,6 +20,8 @@ export interface PantallaOferta {
 	mes: string;
 	/** €/m² × m², redondeado al euro */
 	estimada: number;
+	/** €/m² de oferta del barrio o del distrito */
+	eurosM2: number;
 	/** «barrio de Goya» o «distrito de Moratalaz»: de qué es media (nunca «zona», que es de los contratos) */
 	lugar: string;
 	/** Banda de «en línea» (fracción, de config/oferta.json) */
@@ -70,7 +72,7 @@ export function construirOferta(
 	const zona = zonasDe(datos, cusecs)[0]!;
 	const b = datos.barrios[zona.barrio];
 	const lugar = r.oferta.nivel === 'barrio' ? `barrio de ${b?.nombre ?? 'Madrid'}` : `distrito de ${b?.distrito ?? 'Madrid'}`;
-	return { contraOferta: r.contraOferta, nivel: r.oferta.nivel, mes: r.oferta.mes, estimada, lugar, banda: BANDA_EN_LINEA, caso, veredicto: caso.startsWith('encima'), ...textos(r.oferta.nivel, r.oferta.mes, estimada, caso) };
+	return { contraOferta: r.contraOferta, nivel: r.oferta.nivel, mes: r.oferta.mes, estimada, eurosM2: r.oferta.eurosM2, lugar, banda: BANDA_EN_LINEA, caso, veredicto: caso.startsWith('encima'), ...textos(r.oferta.nivel, r.oferta.mes, estimada, caso) };
 }
 
 /** «Mi alquiler»: la misma referencia como línea secundaria, sin veredicto */

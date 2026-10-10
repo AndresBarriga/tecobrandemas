@@ -1,10 +1,10 @@
 <script lang="ts">
 	import AfinarNumero from './AfinarNumero.svelte';
-	import Comparativa from './Comparativa.svelte';
+	import Costura from './Costura.svelte';
 	import Compartir from './Compartir.svelte';
 	import QueHaras from './QueHaras.svelte';
 	import {
-		BOTON_COMPARTIR, COMPARATIVA, ENLACE_OFICIAL, OFERTA, REGISTRO, TARJETA, ALGO_NO_CUADRA, type RespuestaQueHaras,
+		BOTON_COMPARTIR, ENLACE_OFICIAL, REGISTRO, TARJETA, ALGO_NO_CUADRA, type RespuestaQueHaras,
 		type Canal, type Contador, type EnlacesCompartir, type PantallaResultado
 	} from '#lib/resultado';
 
@@ -53,14 +53,9 @@
 
 <article class="resultado nivel-{v.clase}">
 	<div class="arriba">
-		<div class="lugar">
-			<h1>{v.lugar}</h1>
-			<p>{v.m2} · {v.precio}/mes · {COMPARATIVA.cabecera.mirando}</p>
-		</div>
-
-		<Comparativa comparativa={pantalla.comparativa}>
-			{#snippet debajoTarjetas()}
-				<!-- Con varias zonas que difieren: la cifra es la media; esto dice entre qué valores se mueve. «Añade el número» solo con calle sin número -->
+		<Costura costura={pantalla.costura}>
+			{#snippet bajoContexto()}
+				<!-- Con varias zonas posibles: la cifra es la media (o un rango); esto lo explica. «Añade el número» solo con calle sin número -->
 				{#if v.aclaracion}
 					<div class="aclaracion">
 						<p>{v.aclaracion}</p>
@@ -68,7 +63,7 @@
 					</div>
 				{/if}
 			{/snippet}
-		</Comparativa>
+		</Costura>
 	</div>
 
 	<div class="abajo">
@@ -114,14 +109,6 @@
 				<a class="enlace-datos" href="/como-calculamos#tus-datos">{REGISTRO.enlace}</a>
 			</div>
 			<p class="mensaje" role="status">{registro === 'sumado' ? REGISTRO.sumado : ''}</p>
-		{/if}
-
-		{#if pantalla.oferta}
-			<!-- Fuentes completas al final: cada una en su párrafo -->
-			<p class="fuente">{OFERTA.contratos} {v.fuente}</p>
-			<p class="fuente">{pantalla.oferta.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
-		{:else}
-			<p class="fuente">{v.fuente} <a href="/como-calculamos">Cómo calculamos</a></p>
 		{/if}
 
 		<p class="no-cuadra"><a href="mailto:{ALGO_NO_CUADRA.correo}">{ALGO_NO_CUADRA.texto}</a></p>
@@ -198,13 +185,6 @@
 		flex-direction: column;
 		gap: 18px;
 	}
-	.lugar h1 {
-		font: 700 17px/1.3 var(--f-texto);
-	}
-	.lugar p {
-		font: 400 15px/1.4 var(--f-texto);
-		color: var(--grafito);
-	}
 	.aclaracion {
 		display: flex;
 		flex-direction: column;
@@ -229,10 +209,6 @@
 	}
 	.contador-num {
 		font: 800 34px/1 var(--f-extra);
-	}
-	.fuente {
-		font: 400 13px/1.45 var(--f-texto);
-		color: var(--grafito);
 	}
 	.acciones {
 		display: flex;
