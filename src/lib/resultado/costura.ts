@@ -20,7 +20,6 @@ import { euros, mesAnio, numero, porcentaje } from './formato';
 import type { PantallaOferta } from './oferta';
 import { UMBRAL_VECES } from './ratio';
 import { COSTURA as T } from './textos';
-import { type Meses, mesesEquivalentes } from './vista';
 
 export type ModoCostura = 'mirando' | 'vivo';
 export type ClaveContratos = 'debajo' | 'dentro' | 'algo' | 'encima';
@@ -67,7 +66,7 @@ export interface CarrilOferta {
 }
 
 export interface Plegable {
-	clave: 'anio' | 'porque' | 'datos';
+	clave: 'porque' | 'datos';
 	titulo: string;
 	parrafos: string[];
 }
@@ -89,8 +88,6 @@ export interface Costura {
 	punto: number;
 	/** «Tu alquiler · 1.400 €» */
 	pastilla: string;
-	/** «¿Cuánto es al año?» (solo por encima de lo más alto de lo habitual) */
-	anio: { mes: string; mesEtiqueta: string; año: string; frase: string; meses: Meses; nota: string } | null;
 	plegables: Plegable[];
 	/** Una línea corta de fuentes, siempre visible (el detalle va en «De dónde salen los datos») */
 	fuentes: string;
@@ -202,23 +199,7 @@ export function construirCostura(e: EntradaCostura): Costura {
 		? { x: X(o.estimada), margen: { desde: X(o.estimada * (1 - o.banda)), hasta: X(o.estimada * (1 + o.banda)) }, etiqueta: T.oferta.marca(euros(o.estimada)) }
 		: null;
 
-	// «¿Cuánto es al año?»: solo por encima de lo más alto de lo habitual (con zonas distintas, como mínimo)
-	let anio: Costura['anio'] = null;
-	if (precio > hiMax && (vC.clave === 'algo' || vC.clave === 'encima')) {
-		const mes = precio - (e.rango ? hiMax : e.parteAlta);
-		const meses = mesesEquivalentes((mes * 12) / precio, false);
-		anio = {
-			mes: `+${euros(mes)}`,
-			mesEtiqueta: e.rango ? T.anio.alMesMinimo : T.anio.alMes,
-			año: `+${euros(mes * 12)}`,
-			frase: T.anio.frase(meses.frase, modo),
-			meses,
-			nota: T.anio.nota[modo]
-		};
-	}
-
 	const plegables: Plegable[] = [];
-	if (anio) plegables.push({ clave: 'anio', titulo: T.anio.titulo, parrafos: [] });
 	if (o) plegables.push({ clave: 'porque', titulo: T.porque.titulo, parrafos: [T.porque.distintas, T.porque.margen(numero(o.banda * 100), nivelO)] });
 	plegables.push({
 		clave: 'datos',
@@ -236,7 +217,6 @@ export function construirCostura(e: EntradaCostura): Costura {
 		oferta,
 		punto: X(precio),
 		pastilla: T.pastilla[modo](euros(precio)),
-		anio,
 		plegables,
 		fuentes: T.fuentesCortas(o ? mesAnio(o.mes) : null)
 	};

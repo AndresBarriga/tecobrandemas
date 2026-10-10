@@ -442,18 +442,6 @@ export const COSTURA = {
 		sinDatoTexto: 'El Ayuntamiento no ha publicado precio de oferta para esta zona en el último mes disponible. Solo comparamos con los contratos.'
 	},
 	pastilla: { mirando: (e: string) => `Tu anuncio · ${e}`, vivo: (e: string) => `Tu alquiler · ${e}` },
-	anio: {
-		titulo: '¿Cuánto es al año?',
-		alMes: 'Al mes',
-		alMesMinimo: 'Al mes, como mínimo',
-		alAño: 'Al año',
-		frase: (meses: string, modo: 'mirando' | 'vivo') => `Equivale a ${meses} de ${modo === 'vivo' ? 'tu' : 'este'} alquiler al año.`,
-		bloques: '12 meses de alquiler',
-		nota: {
-			mirando: 'Lo que te piden por encima de lo más alto de lo habitual. Solo aparece si estás por encima.',
-			vivo: 'Lo que pagas por encima de lo más alto de lo habitual. Solo aparece si estás por encima.'
-		}
-	},
 	porque: {
 		titulo: '¿Por qué no coinciden?',
 		distintas:

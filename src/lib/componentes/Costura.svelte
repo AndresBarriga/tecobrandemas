@@ -145,24 +145,7 @@
 			{#each c.plegables as p (p.clave)}
 				<details>
 					<summary>{p.titulo}</summary>
-					{#if p.clave === 'anio' && c.anio}
-						{@const a = c.anio}
-						<div class="anio">
-							<div class="importes">
-								<div><span class="et">{a.mesEtiqueta}</span><span class="importe">{a.mes}</span></div>
-								<div><span class="et">{T.anio.alAño}</span><span class="importe">{a.año}</span></div>
-							</div>
-							<p class="frase">{a.frase}</p>
-							<div class="bloques" aria-hidden="true">
-								{#each { length: 12 } as _, i (i)}<span class="bloque tinta"></span>{/each}
-								{#each a.meses.bloques as f, i (i)}<span class="bloque extra" class:primero={i === 0}><span style:width="{f * 100}%"></span></span>{/each}
-							</div>
-							<div class="pie-bloques"><span>{T.anio.bloques}</span><strong>{a.meses.extra}</strong></div>
-							<p class="nota">{a.nota}</p>
-						</div>
-					{:else}
-						{#each p.parrafos as t (t)}<p class="parrafo">{t}</p>{/each}
-					{/if}
+					{#each p.parrafos as t (t)}<p class="parrafo">{t}</p>{/each}
 				</details>
 			{/each}
 		</div>
@@ -585,69 +568,6 @@
 	}
 	.parrafo + .parrafo {
 		margin-top: 8px;
-	}
-	.anio {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-	}
-	.importes {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 8px;
-	}
-	.importes div {
-		display: flex;
-		flex-direction: column;
-	}
-	.et {
-		font: 400 13px/1.3 var(--f-texto);
-		color: var(--grafito);
-	}
-	.importe {
-		font: 700 24px/1.2 var(--f-semi);
-	}
-	.frase {
-		font: 600 15px/1.35 var(--f-texto);
-	}
-	.bloques {
-		display: flex;
-		gap: 2px;
-		height: 22px;
-	}
-	.bloque {
-		flex: 1;
-		border-radius: 2px;
-		position: relative;
-		overflow: hidden;
-	}
-	.bloque.tinta {
-		background: var(--tinta);
-	}
-	.bloque.extra {
-		border: 1.5px solid var(--tinta);
-		box-sizing: border-box;
-	}
-	.bloque.extra.primero {
-		margin-left: 4px;
-	}
-	.bloque.extra span {
-		position: absolute;
-		inset: 0 auto 0 0;
-		background: #ebc85a;
-	}
-	.pie-bloques {
-		display: flex;
-		justify-content: space-between;
-		font: 400 12px/1.3 var(--f-texto);
-		color: var(--grafito);
-	}
-	.pie-bloques strong {
-		color: var(--tinta);
-	}
-	.nota {
-		font: 400 12.5px/1.4 var(--f-texto);
-		color: var(--grafito);
 	}
 	.fuentes {
 		font: 400 12.5px/1.45 var(--f-texto);
