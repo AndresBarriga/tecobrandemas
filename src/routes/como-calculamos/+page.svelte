@@ -656,11 +656,16 @@
 		border-radius: var(--radio);
 		overflow: hidden;
 	}
+	/* Cada tarjeta es una rejilla de 7 filas (cabecera, 4 filas y 2 términos); en escritorio las dos comparten las
+	   filas con subgrid, así que «Qué mide», «Fuente»… quedan a la misma altura en las dos */
 	.referencia {
 		padding: 20px 18px;
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		align-content: start;
+	}
+	.referencia .grupo-cab {
+		padding-bottom: 14px;
 	}
 	.referencia.contratos {
 		background: var(--negro);
@@ -669,10 +674,9 @@
 	.referencia.oferta {
 		background: var(--superficie);
 	}
-	.filas-ref {
-		margin: 0;
-		display: flex;
-		flex-direction: column;
+	.filas-ref,
+	.terminos {
+		display: contents;
 	}
 	.filas-ref div {
 		display: grid;
@@ -704,15 +708,15 @@
 	.contratos .terminos dd {
 		color: #d6d1c6;
 	}
-	.terminos {
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
+	.terminos div {
+		padding-top: 10px;
+	}
+	.terminos div:first-child {
+		margin-top: 14px;
 		padding-top: 14px;
 		border-top: 2px solid #2a2926;
 	}
-	.oferta .terminos {
+	.oferta .terminos div:first-child {
 		border-top-color: #d6d1c6;
 	}
 	.terminos dt {
@@ -1006,9 +1010,12 @@
 		}
 		.referencias {
 			grid-template-columns: 1fr 1fr;
+			grid-template-rows: repeat(7, auto);
 		}
 		.referencia {
 			padding: 26px 24px;
+			grid-row: span 7;
+			grid-template-rows: subgrid;
 		}
 		.paso {
 			padding: 22px 24px 20px;
