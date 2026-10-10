@@ -17,7 +17,7 @@
 	import { type TuZonaCargada, cargarTuZona } from '#lib/cliente/zona';
 	import {
 		AFINAR, DESCRIPCION, LEMA, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
-		construirTarjeta, textoCompartir, textosEnlace, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, filaHistorial, interpretarNumero, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
+		construirTarjeta, tiposDe, type TipoTarjeta, textoCompartir, textosEnlace, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, filaHistorial, interpretarNumero, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
 		parecePrecioErroneo,
 		type Pantalla, type PantallaResultado, type SugerenciaZona, type Ubicacion
 	} from '#lib/resultado';
@@ -184,12 +184,13 @@
 
 	// ——— Tarjeta ———
 	let canvasTarjeta: HTMLCanvasElement | undefined = $state();
+	let tipoTarjeta = $state<TipoTarjeta>('veredictos');
 	let compartiendo = $state(false);
 	let mensajeTarjeta = $state<string | null>(null);
 
 	/** Los datos de la tarjeta que se dibuja y se comparte (todos los niveles); null si no hay resultado */
 	const tarjetaActual = $derived(
-		!resultado ? null : construirTarjeta(resultado)
+		!resultado ? null : construirTarjeta(resultado, tipoTarjeta)
 	);
 
 	$effect(() => {
@@ -198,7 +199,27 @@
 
 	// Cada resultado tiene su id de tarjeta desde el principio (así los enlaces ya existen), pero la
 	// tarjeta solo se sube al servidor cuando la persona elige WhatsApp, X, copiar o la hoja del móvil.
-	let idTarjeta = $state<string | null>(null);
+	// Un id por formato: elegir otra tarjeta después de compartir no reescribe la que ya se guardó
+	let idsTarjeta = $state<Record<TipoTarjeta, string> | null>(null);
+	const idTarjeta = $derived(idsTarjeta && tarjetaActual ? idsTarjeta[tarjetaActual.tipo] : null);
+	function nuevaTarjeta(hay: boolean) {
+		tipoTarjeta = 'veredictos';
+		idsTarjeta = hay ? { veredictos: idDeTarjeta(), costura: idDeTarjeta(), cifra: idDeTarjeta() } : null;
+	}
+
+	// Selector de «La costura»: las tarjetas que se ofrecen, con su miniatura real
+	let miniaturas = $state<Partial<Record<TipoTarjeta, HTMLCanvasElement>>>({});
+	const tiposTarjeta = $derived(tarjetaActual ? tiposDe(tarjetaActual) : []);
+	$effect(() => {
+		if (!resultado) return;
+		for (const t of tiposTarjeta) {
+			const c = miniaturas[t];
+			if (c) void dibujarTarjeta(c, construirTarjeta(resultado, t));
+		}
+	});
+	const selector = $derived(
+		tarjetaActual ? { tipos: tiposTarjeta, tipo: tarjetaActual.tipo, elegir: (t: TipoTarjeta) => (tipoTarjeta = t), miniatura } : null
+	);
 	let nativo = $state(false);
 	const enlaces = $derived(idTarjeta ? enlacesCompartir(urlDeTarjeta(idTarjeta), tarjetaActual ? textoCompartir(tarjetaActual) : undefined) : null);
 
@@ -265,7 +286,7 @@
 	function mostrar(p: Pantalla, u: Ubicacion | null, alHistorial = true) {
 		pantalla = p;
 		desdeLimites = false;
-		idTarjeta = p.tipo === 'resultado' ? idDeTarjeta() : null;
+		nuevaTarjeta(p.tipo === 'resultado');
 		registro = 'no';
 		aporte = 'no';
 		aporteHab = 'no';
@@ -436,7 +457,7 @@
 	function reemplazar(p: Pantalla, u: Ubicacion | null) {
 		pantalla = p;
 		ubicacion = u;
-		idTarjeta = p.tipo === 'resultado' ? idDeTarjeta() : null;
+		nuevaTarjeta(p.tipo === 'resultado');
 		mensajeTarjeta = null;
 		registro = 'no';
 		aporte = 'no';
@@ -473,7 +494,7 @@
 		if (!e) return;
 		turno++;
 		pantalla = e.pantalla;
-		idTarjeta = e.pantalla.tipo === 'resultado' ? idDeTarjeta() : null;
+		nuevaTarjeta(e.pantalla.tipo === 'resultado');
 		registro = 'no';
 		f = { ...estadoInicial(), ...(e.formulario as Partial<EstadoFormulario>), modo: modoGuardado((e.formulario as Partial<EstadoFormulario>).modo) };
 		fase = 'resultado';
@@ -588,6 +609,7 @@
 					{mensajeTarjeta}
 					alCompartir={compartir}
 					alCompartirPor={compartirPor}
+					{selector}
 				>
 					{#snippet tarjeta()}
 						<canvas bind:this={canvasTarjeta} class="tarjeta-canvas" aria-label={descripcionTarjeta}></canvas>
@@ -615,6 +637,7 @@
 					{registro}
 					alRegistrar={registrar}
 					alQueHaras={(r) => queHaras(modoActual, r, nivelAnalitica)}
+					{selector}
 				>
 					{#snippet tarjeta()}
 						<canvas bind:this={canvasTarjeta} class="tarjeta-canvas" aria-label={descripcionTarjeta}></canvas>
@@ -649,6 +672,11 @@
 
 	<Pie habitacion={fase === 'resultado' && !!habitacionPantalla} />
 </div>
+
+<!-- Miniatura de cada tarjeta del selector (se pasa a Compartir dentro de `selector`) -->
+{#snippet miniatura(t: TipoTarjeta)}
+	<canvas bind:this={miniaturas[t]} class="tarjeta-canvas"></canvas>
+{/snippet}
 
 <style>
 	.pagina {

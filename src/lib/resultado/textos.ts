@@ -783,8 +783,8 @@ export const TARJETA = {
 	ampliar: 'Ver en grande',
 	ampliadaTitulo: 'Tu tarjeta, en grande',
 	cerrar: 'Cerrar',
-	/** Junto a la miniatura y en el diálogo: el eje lleva euros, así que el punto deja deducir el precio */
-	detalle: 'La tarjeta muestra tu barrio y permite deducir tu precio.',
+	/** Junto al selector y en el diálogo: las tarjetas de la costura no llevan euros */
+	detalle: 'La tarjeta muestra tu barrio y tus porcentajes, pero no tu precio ni tu dirección.',
 	/** Cierre de la tarjeta: nunca «a su precio» como veredicto */
 	cierre: '¿Está a su precio? Compruébalo en asuprecio.com',
 	/** Fuentes de la tarjeta v2: las atribuciones obligatorias tal cual, en una sola línea muy pequeña */
@@ -802,6 +802,44 @@ export const TARJETA = {
 		'Al elegir WhatsApp, X o copiar el enlace se guarda la tarjeta (sin dirección ni precio exacto) para que el enlace funcione. En WhatsApp la imagen sale como vista previa del enlace; si prefieres adjuntarla tú, descárgala.',
 	descargaHecha: 'Imagen descargada. No se ha guardado nada.',
 	error: 'No hemos podido preparar la tarjeta. Inténtalo de nuevo.'
+} as const;
+
+/**
+ * Tarjetas de «La costura» (v3): tres formatos que elige la persona, siempre sin euros, renta, dirección ni fecha.
+ * La vista previa del enlace es siempre «Dos veredictos». Las atribuciones van literales, en dos líneas pequeñas al pie
+ * (es lo único por debajo de 30 px).
+ */
+export const TARJETA_COSTURA = {
+	elegir: 'Elige tu tarjeta',
+	tipos: { veredictos: 'Dos veredictos', costura: 'La costura', cifra: 'La cifra' },
+	contexto: { mirando: 'Un anuncio', vivo: 'Mi alquiler' },
+	frenteContratos: 'Frente a quienes ya viven aquí',
+	frenteOferta: 'Frente a lo que se pide por entrar',
+	contratos: {
+		debajo: 'por debajo de lo habitual',
+		dentro: (parte: string) => `en la parte ${parte} de lo habitual`,
+		sobre: 'sobre lo más alto de lo habitual',
+		veces: 'lo más alto de lo habitual'
+	},
+	oferta: (nivel: 'barrio' | 'distrito') => `frente a lo que se pide en el ${nivel}`,
+	sinOferta: 'Sin dato de oferta este mes',
+	/** En la costura de la tarjeta, sobre el precio */
+	punto: { mirando: 'el anuncio', vivo: 'yo' },
+	habitual: 'lo habitual',
+	sePide: 'lo que se pide',
+	/** «La cifra»: el % frente a los contratos, en grande */
+	cifra: {
+		texto: (veces: boolean, modo: 'mirando' | 'vivo') =>
+			`${veces ? '' : 'sobre '}lo más alto de lo habitual entre quienes ya viven en ${modo === 'vivo' ? 'mi' : 'la'} zona.`,
+		oferta: (nivel: 'barrio' | 'distrito') => `Frente a lo que se pide ahora en el ${nivel}: `,
+		pidenMas: (pct: string) => `pago un ${pct} menos`
+	},
+	pie: '¿Y EL TUYO?',
+	dominio: 'asuprecio.com',
+	fuentes: [
+		'Origen de los datos: Ministerio de Vivienda y Agenda Urbana · Elaboración propia con datos extraídos del sitio web del INE: www.ine.es',
+		'Oferta: Ayuntamiento de Madrid, serie 4.3.21.D (elaboración a partir de datos de Idealista) · asuprecio.com'
+	]
 } as const;
 
 /** Tarjeta del inquilino (F1e): tres o cuatro textos por posición (dos en «por encima»); la persona elige uno. Nunca lleva la renta. */

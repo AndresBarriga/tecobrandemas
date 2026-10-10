@@ -5,9 +5,10 @@
  */
 import {
 	CTA_TARJETA, ETIQUETA_POR_DEBAJO, LEMA, NOMBRE, TARJETA, TARJETA_INQUILINO, colocarEtiqueta, OG_ALTO, OG_ANCHO, PIE_TARJETA, TARJETA_ALTO, TARJETA_ANCHO,
-	esV2, textosEnlace, type TarjetaDatos, type TarjetaV1
+	esV2, esV3, textosEnlace, type TarjetaDatos, type TarjetaV1
 } from '#lib/resultado';
 import { dibujarOgV2, dibujarTarjetaV2 } from './tarjeta-canvas-v2';
+import { dibujarOgV3, dibujarTarjetaV3 } from './tarjeta-canvas-v3';
 
 import {
 	ACENTO, COLOR, type Ctx, ICONO, NB, TINTE, ancho, baseline, cargarFuentes, circulo, envolver, fuente, linea, rect, type Fam
@@ -177,6 +178,7 @@ function barraTarjeta(ctx: Ctx, t: TarjetaV1, x: number, y: number, g: Geom): vo
 /** Tarjeta de 1080×1350: la del rediseño (v2) o, para los enlaces antiguos, la de antes (v1) */
 export async function dibujarTarjeta(canvas: HTMLCanvasElement, t: TarjetaDatos): Promise<void> {
 	await cargarFuentes();
+	if (esV3(t)) return dibujarTarjetaV3(canvas, t);
 	if (esV2(t)) return dibujarTarjetaV2(canvas, t);
 	dibujarTarjetaV1(canvas, t);
 }
@@ -275,6 +277,7 @@ function dibujarTarjetaV1(canvas: HTMLCanvasElement, t: TarjetaV1): void {
 /** Vista previa del enlace de 1200×630 */
 export async function dibujarOg(canvas: HTMLCanvasElement, t: TarjetaDatos): Promise<void> {
 	await cargarFuentes();
+	if (esV3(t)) return dibujarOgV3(canvas, t);
 	if (esV2(t)) return dibujarOgV2(canvas, t);
 	dibujarOgV1(canvas, t);
 }

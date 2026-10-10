@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import AfinarNumero from './AfinarNumero.svelte';
 	import Costura from './Costura.svelte';
-	import Compartir from './Compartir.svelte';
+	import Compartir, { type SelectorTarjeta } from './Compartir.svelte';
 	import Icono from './Icono.svelte';
 	import QueHaras from './QueHaras.svelte';
 	import {
@@ -25,7 +25,8 @@
 		enlaces = null,
 		mensajeTarjeta = null,
 		alCompartir,
-		alCompartirPor
+		alCompartirPor,
+		selector = null
 	}: {
 		pantalla: PantallaResultado;
 		/** Alquileres aportados en el barrio: solo llega si es real y de 10 o más */
@@ -46,6 +47,8 @@
 		mensajeTarjeta?: string | null;
 		alCompartir?: () => void;
 		alCompartirPor?: (canal: Canal) => void;
+		/** Las tres tarjetas de «La costura», para elegir cuál se comparte */
+		selector?: SelectorTarjeta | null;
 	} = $props();
 
 	const v = $derived(pantalla.vista);
@@ -132,6 +135,7 @@
 				mensaje={mensajeTarjeta}
 				{alCompartir}
 				{alCompartirPor}
+				{selector}
 			/>
 		{/if}
 

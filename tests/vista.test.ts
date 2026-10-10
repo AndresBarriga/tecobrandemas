@@ -196,7 +196,7 @@ describe('historial', () => {
 describe('tarjeta en el servidor', () => {
 	it('valida lo que construye el cliente y descarta cualquier campo extra', () => {
 		const t = construirTarjeta(resultado(2500));
-		const limpia = validarTarjeta({ ...t, precio: 2500, direccion: 'Calle X 3', reglas: { ...t.reglas } });
+		const limpia = validarTarjeta({ ...t, precio: 2500, direccion: 'Calle X 3', carriles: { ...t.carriles, euros: 2500 } });
 		expect(limpia).toEqual(t);
 		expect(JSON.stringify(limpia)).not.toMatch(/2500|Calle X/);
 	});
@@ -204,11 +204,16 @@ describe('tarjeta en el servidor', () => {
 	it('rechaza lo mal formado', () => {
 		const t = construirTarjeta(resultado(2500));
 		expect(validarTarjeta(null)).toBeNull();
-		expect(validarTarjeta({ ...t, contratos: { ...t.contratos, clase: 'd' } })).toBeNull();
-		expect(validarTarjeta({ ...t, contratos: { ...t.contratos, etiqueta: 'Otra' } })).toBeNull();
-		expect(validarTarjeta({ ...t, reglas: { ...t.reglas, punto: 7 } })).toBeNull();
-		expect(validarTarjeta({ ...t, resumen: 'x'.repeat(500) })).toBeNull();
+		expect(validarTarjeta({ ...t, contratos: { ...t.contratos, clave: 'otra' } })).toBeNull();
+		expect(validarTarjeta({ ...t, contratos: { ...t.contratos, palabra: 'Otra' } })).toBeNull();
+		expect(validarTarjeta({ ...t, carriles: { ...t.carriles, punto: 7 } })).toBeNull();
+		expect(validarTarjeta({ ...t, lugar: 'x'.repeat(500) })).toBeNull();
+		// Nada que parezca un portal en el lugar, ni tipos que no existen
+		expect(validarTarjeta({ ...t, lugar: 'Calle X 3' })).toBeNull();
+		expect(validarTarjeta({ ...t, tipo: 'otra' })).toBeNull();
 		expect(validarTarjeta({ ...t, contratos: { ...t.contratos, cifra: '' } })).toBeNull();
+		// Las tarjetas v2 ya no se aceptan para guardar (solo se leen las que ya existen)
+		expect(validarTarjeta({ ...t, v: 2 })).toBeNull();
 	});
 
 	it('el título y la descripción del enlace no llevan precio ni dirección', () => {

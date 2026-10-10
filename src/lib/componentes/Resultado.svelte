@@ -1,7 +1,7 @@
 <script lang="ts">
 	import AfinarNumero from './AfinarNumero.svelte';
 	import Costura from './Costura.svelte';
-	import Compartir from './Compartir.svelte';
+	import Compartir, { type SelectorTarjeta } from './Compartir.svelte';
 	import QueHaras from './QueHaras.svelte';
 	import {
 		BOTON_COMPARTIR, ENLACE_OFICIAL, REGISTRO, TARJETA, ALGO_NO_CUADRA, type RespuestaQueHaras,
@@ -23,7 +23,8 @@
 		alCompartirPor,
 		alQueHaras,
 		registro = 'no',
-		alRegistrar
+		alRegistrar,
+		selector = null
 	}: {
 		pantalla: PantallaResultado;
 		/** Estado del consentimiento del registro anónimo: desmarcado por defecto */
@@ -46,6 +47,8 @@
 		alCompartirPor?: (canal: Canal) => void;
 		/** «¿Qué vas a hacer con este resultado?»: la categoría elegida */
 		alQueHaras?: (r: RespuestaQueHaras) => void;
+		/** Las tres tarjetas de «La costura», para elegir cuál se comparte */
+		selector?: SelectorTarjeta | null;
 	} = $props();
 
 	const v = $derived(pantalla.vista);
@@ -92,7 +95,7 @@
 		</div>
 
 		{#if tarjeta}
-			<Compartir {tarjeta} titulo={TARJETA.titulo} detalle={TARJETA.detalle} boton={BOTON_COMPARTIR} principal {compartiendo} {nativo} {enlaces} mensaje={mensajeTarjeta} {alCompartir} alCompartirPor={(c) => alCompartirPor?.(c)} />
+			<Compartir {tarjeta} titulo={TARJETA.titulo} detalle={TARJETA.detalle} boton={BOTON_COMPARTIR} principal {compartiendo} {nativo} {enlaces} mensaje={mensajeTarjeta} {alCompartir} alCompartirPor={(c) => alCompartirPor?.(c)} {selector} />
 		{/if}
 
 		{#if pantalla.registro && alRegistrar}
