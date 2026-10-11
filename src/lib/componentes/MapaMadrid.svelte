@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { MAPA_REFERENCIA as T, SIN_DATO_PRESUPUESTO, TONOS_ANUNCIOS, TONOS_MAPA, colorPunteado, type CapaMapa, type FuenteMapa } from '#lib/resultado';
+	import { MAPA_REFERENCIA as T, SIN_DATO_PRESUPUESTO, colorPunteado, paletaDe, type CapaMapa, type FuenteMapa } from '#lib/resultado';
 	import { type Caja, type MadridCargado } from '#lib/cliente/mapa-madrid';
 	import { colocarNombres } from '#lib/cliente/zona-mapa';
 
@@ -80,7 +80,7 @@
 
 	// ——— Colores ———
 	const anuncios = $derived(fuente === 'anuncios' && capa !== 'evolucion');
-	const paleta = $derived(anuncios && capa !== 'evolucion' ? TONOS_ANUNCIOS[capa] : TONOS_MAPA[capa]);
+	const paleta = $derived(paletaDe(capa, fuente));
 	const presupuesto = $derived(capa === 'presupuesto');
 	// Zoom 12 de teselas de 256 px a la latitud de Madrid: 119.278 m/px ÷ 2^12
 	const hayRayado = $derived(!presupuesto || mpp <= 29.1);

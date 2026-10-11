@@ -456,3 +456,10 @@ Handoff en `docs/design/new design handoff/` (README, componentes de referencia 
 - **Tests:** `tests/oferta.test.ts` (excepción acotada a la regla de no añadir tests nuevos).
 - **Desviación del copy:** «normalmente» → «suele desviarse», porque un test prohíbe la palabra «normal».
 - **Contratos:** sin tocar. Fase 2 (bloque de contratos) en espera.
+
+## /mapa: «¿Dónde me llega?» (11/10/2026, rama `mapa-donde-me-llega`)
+- **Vista por defecto:** «Mi presupuesto» con la oferta, titulada «¿Dónde me llega?»; «Referencia» pasa a segunda pestaña y «Evolución» sigue igual. Se quita «Mi presupuesto · Contratos» y su código (`capaPresupuesto` de contratos, `posicionPresupuesto`, los textos y la paleta verde `TONOS_MAPA.presupuesto`). `capaPresupuestoAnuncios` pasa a llamarse `capaPresupuesto`. Sin la flag del mapa o sin el fichero de oferta, no hay «Mi presupuesto» y el mapa abre «Referencia» con contratos. Los enlaces antiguos con `?capa=presupuesto&fuente=contratos` abren la oferta.
+- **Controles:** barra + número sincronizados (`ControlDeslizante.svelte`): presupuesto 500–3.000 € (paso 50, inicial 1.200) y metros 30–150 (paso 5, inicial 60), con `RANGO_PRESUPUESTO`, `RANGO_METROS` y `ajustarARango` (fuera de rango, al límite). El mapa carga ya pintado y se recolorea al mover; no hay peticiones (los metros no recalculan las zonas, solo la capa).
+- **Móvil:** presupuesto y metros van fijos y compactos sobre el mapa (bajo el conmutador), no en la hoja; al empezar a arrastrar una barra la hoja se cierra y la frase de resumen pasa a su cabecera, siempre a la vista. La hoja mide ahora su cabecera de forma reactiva. En escritorio, los controles siguen en el panel.
+- **Textos:** «Escribe tu presupuesto…» → «Mueve tu presupuesto…». /como-calculamos: párrafos del mapa reescritos. Analítica sin cambios (`mapa_capa`, ya existente).
+- **Tests:** `tests/mapa-presupuesto.test.ts` (modelos de vista) y `e2e/mapa-presupuesto.spec.ts` (solo móvil).

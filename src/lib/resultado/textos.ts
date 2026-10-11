@@ -1055,8 +1055,8 @@ export const TU_ZONA = {
 /** Página /mapa: Madrid entera por zonas. Tono neutral: nada ordena barrios en mejores o peores */
 export const MAPA_REFERENCIA = {
 	titulo: 'Mapa',
+	tituloPresupuesto: '¿Dónde me llega?',
 	intro: 'Lo que pagan los inquilinos en cada zona de Madrid',
-	introPresupuesto: 'Madrid por zonas, según cómo queda tu presupuesto frente a lo que pagan quienes ya viven de alquiler en cada una.',
 	introEvolucion: 'Madrid por zonas, según lo que ha subido la mediana de los contratos vigentes entre 2015 y 2024.',
 	mapa: 'Mapa de Madrid por zonas',
 	cargando: 'Cargando el mapa de Madrid…',
@@ -1066,7 +1066,6 @@ export const MAPA_REFERENCIA = {
 	superficie: { etiqueta: 'Superficie', unidad: 'm²' },
 	leyenda: 'Lo más alto de lo habitual entre quienes ya viven aquí, en €/m² al mes',
 	leyendaEvolucion: 'Subida de la mediana de contratos vigentes 2015-2024',
-	leyendaPresupuesto: 'Tu presupuesto frente a lo que pagan quienes ya viven aquí',
 	notaCortes: (m2: string) => `Cortes calculados para ${m2}\u00A0m²; iguales para toda la ciudad. Las líneas gruesas separan barrios.`,
 	avisoEvolucion: 'Cada zona tiene pocos alquileres: las diferencias entre zonas vecinas pueden ser ruido.',
 	notaEvolucion: 'Mediana de contratos vigentes registrados, sin descontar la inflación. Datos hasta 2024. Cortes iguales para toda la ciudad. Las líneas gruesas separan barrios.',
@@ -1090,31 +1089,20 @@ export const MAPA_REFERENCIA = {
 		fuera: 'Tu ubicación está fuera de Madrid.'
 	},
 	presupuesto: {
-		titulo: 'Mi presupuesto',
-		campoPresupuesto: 'Tu presupuesto al mes (€)',
-		campoMetros: 'Metros (m²)',
-		debajo: 'No llega',
-		dentro: 'Dentro',
-		margen: 'Te sobra',
-		nota: 'No llega: menos que la parte baja de lo habitual. Dentro: dentro de lo habitual. Te sobra: más que lo más alto de lo habitual.',
-		aviso: 'Son contratos vigentes, no anuncios ni pisos disponibles.',
-		resumen: (porcentaje: string, llega: string, conDato: string) =>
-			`En el ${porcentaje}\u00A0% de las zonas con dato (${llega} de ${conDato}) tu presupuesto llega a lo que paga la gente de la zona.`,
+		campoPresupuesto: 'Tu presupuesto al mes',
+		campoPresupuestoCorto: 'Presupuesto',
+		campoMetros: 'Metros del piso',
+		campoMetrosCorto: 'Metros',
+		/** Para lectores de pantalla, el valor de cada barra */
+		valorPresupuesto: (e: string) => `${e} al mes`,
+		valorMetros: (m: string) => `${m}\u00A0m²`,
 		notaPoblacion: 'Ojo: las zonas grandes de la periferia ocupan más espacio en el mapa, pero cada zona cuenta igual en el porcentaje.',
 		cercanas: {
-			titulo: (donde: string) => `Las 5 zonas más cercanas ${donde} donde tu presupuesto llega a lo habitual`,
 			aTuUbicacion: 'a tu ubicación',
 			a: (nombre: string) => `a ${nombre}`,
 			zona: (barrio: string) => `Una zona de ${barrio}`,
 			metros: (m: string) => `${m}\u00A0m`,
 			km: (km: string) => `${km}\u00A0km`
-		},
-		pideDatos: 'Escribe tu presupuesto y mira en qué zonas queda dentro de lo que pagan los inquilinos con contrato vigente.',
-		metrosFuera: 'Los metros tienen que estar entre 30 y 150.',
-		metrosFueraMapa: 'Con otros metros, el mapa no tiene referencia: la calculamos entre 30 y 150\u00A0m².',
-		ninguna: {
-			titulo: 'Tu presupuesto no llega a lo habitual en ninguna zona.',
-			texto: 'Con estos metros, lo que pagan los contratos vigentes de todas las zonas es mayor. Prueba con menos metros o con otro presupuesto.'
 		},
 		extremo: {
 			sobra: 'Tu presupuesto llega a casi todas las zonas con estos metros. Prueba con más metros para ver dónde se ajusta.',
@@ -1128,11 +1116,6 @@ export const MAPA_REFERENCIA = {
 		parteAlta: (m2: string) => `Lo más alto de lo habitual: ${m2}\u00A0€/m² al mes`,
 		procedencia: (n: string, mes: string) =>
 			`${n} contratos vigentes de distintas fechas · propietarios particulares declarados a Hacienda (2024), sin empresas ni fondos · ajustado por el IPC hasta ${mes}`,
-		presupuesto: {
-			debajo: (e: string) => `Tu presupuesto (${e} al mes) no llega a lo que pagan los contratos vigentes de esta zona.`,
-			dentro: (e: string) => `Tu presupuesto (${e} al mes) queda dentro de lo que pagan los contratos vigentes de esta zona. No significa que haya pisos a ese precio.`,
-			margen: (e: string) => `Tu presupuesto (${e} al mes) supera lo más alto de lo habitual en los contratos vigentes de esta zona. No significa que haya pisos a ese precio.`
-		},
 		evolucion: (antes: string, despues: string, variacion: string) =>
 			`Mediana de contratos vigentes: de ${antes}\u00A0€/m² en 2015 a ${despues}\u00A0€/m² en 2024 (${variacion}). Sin descontar la inflación.`,
 		sinDatoZona: 'Esta zona no tiene dato de contratos.',
@@ -1162,7 +1145,7 @@ export const MAPA_REFERENCIA = {
 			aviso: 'Son anuncios recientes, no contratos firmados ni pisos disponibles: la media de cada barrio o distrito.',
 			resumen: (porcentaje: string, llega: string, conDato: string) =>
 				`En el ${porcentaje}\u00A0% de las zonas con dato (${llega} de ${conDato}) tu presupuesto llega a lo que se pide en los anuncios recientes.`,
-			pideDatos: 'Escribe tu presupuesto y mira en qué zonas queda en línea con lo que se pide en anuncios recientes.',
+				pideDatos: 'Mueve tu presupuesto y mira en qué zonas queda en línea con lo que se pide en anuncios recientes.',
 			ninguna: {
 				titulo: 'Tu presupuesto no llega a lo que se pide en ninguna zona.',
 				texto: 'Con estos metros, lo que se pide en los anuncios recientes es mayor en todas las zonas. Prueba con menos metros o con otro presupuesto.'

@@ -3,13 +3,14 @@
 	import { onMount, tick } from 'svelte';
 	import BuscadorMapa from '#lib/componentes/BuscadorMapa.svelte';
 	import Cabecera from '#lib/componentes/Cabecera.svelte';
+	import ControlDeslizante from '#lib/componentes/ControlDeslizante.svelte';
 	import HojaArrastrable from '#lib/componentes/HojaArrastrable.svelte';
 	import MapaMadrid from '#lib/componentes/MapaMadrid.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
 	import Segmentado from '#lib/componentes/Segmentado.svelte';
 	import {
-		MAPA_REFERENCIA as T, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, TONOS_ANUNCIOS, TONOS_MAPA, capaEvolucion, capaPresupuesto, capaPresupuestoAnuncios, capaReferencia,
-		capaReferenciaAnuncios, distanciaCorta, extremoPresupuesto, hojaDeZona, mesAnio, numero, numeroDelCampo, posicionPresupuestoAnuncios, superficieValida, zonasCercanas, zonasDelMapa,
+		MAPA_REFERENCIA as T, RANGO_METROS, RANGO_PRESUPUESTO, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, ajustarARango, capaEvolucion, capaPresupuesto, capaReferencia,
+		capaReferenciaAnuncios, distanciaCorta, euros, extremoPresupuesto, hojaDeZona, mesAnio, numero, paletaDe, posicionPresupuestoAnuncios, superficieValida, zonasCercanas, zonasDelMapa,
 		type CapaMapa, type FuenteMapa, type SugerenciaVia, type SugerenciaZona
 	} from '#lib/resultado';
 	import { MAPA_CON_ANUNCIOS } from '#lib/cliente/datos';
@@ -20,20 +21,24 @@
 	import { ubicarme } from '#lib/cliente/ubicacion-actual';
 	import { zonasDeVia } from '#lib/cliente/vias';
 
-	const CAPAS: CapaMapa[] = ['referencia', 'presupuesto', 'evolucion'];
+	// Móvil, «Mi presupuesto»: bajo el conmutador (64 px) van los controles fijos y, debajo, los tres colores
+	const ALTO_CONTROLES = 100;
+	const ARRIBA_CONTROLES = 64 + ALTO_CONTROLES;
+	const ARRIBA_PRESUPUESTO = ARRIBA_CONTROLES + 44;
+	const CAPAS: CapaMapa[] = ['presupuesto', 'referencia', 'evolucion'];
 	const TA = T.anuncios;
 
 	let estado = $state<'cargando' | 'listo' | 'fallo'>('cargando');
 	let madrid = $state<MadridCargado | null>(null);
 	let listo = $state(false);
 
-	let capa = $state<CapaMapa>('referencia');
-	// Fuente de cada capa (solo con las dos flags): «Referencia» empieza con los contratos y «Mi presupuesto» con los anuncios
+	// «Mi presupuesto» («¿Dónde me llega?») es la vista por defecto: carga ya pintada con los valores iniciales de las barras
+	let capa = $state<CapaMapa>(MAPA_CON_ANUNCIOS ? 'presupuesto' : 'referencia');
+	// Fuente de «Referencia» (solo con las dos flags): empieza con los contratos
 	let fuenteReferencia = $state<FuenteMapa>('contratos');
-	let fuentePresupuesto = $state<FuenteMapa>('anuncios');
 	let superficie = $state<number>(SUPERFICIE_MAPA_INICIAL);
-	let presupuestoTexto = $state('');
-	let metrosTexto = $state('');
+	let presupuesto = $state<number>(RANGO_PRESUPUESTO.inicial);
+	let metros = $state<number>(RANGO_METROS.inicial);
 
 	let seleccion = $state<string | null>(null);
 	let resaltadas = $state<Set<string>>(new Set());
@@ -50,7 +55,8 @@
 	let altoVisual = $state(0);
 	let topVisual = $state(0);
 	let altoRejilla = $state(0);
-	let hojaEstado = $state<'cerrada' | 'media' | 'completa'>('media');
+	// En «Mi presupuesto» la hoja empieza cerrada: el mapa es lo que se mira
+	let hojaEstado = $state<'cerrada' | 'media' | 'completa'>(MAPA_CON_ANUNCIOS ? 'cerrada' : 'media');
 	let altoHoja = $state(0);
 
 	// Estado compartible: ?capa=&m2=&barrio=. Nunca el presupuesto, la ubicación ni la zona tocada.
@@ -70,15 +76,14 @@
 	onMount(() => {
 		const q = new URLSearchParams(location.search);
 		const c = q.get('capa') as CapaMapa | null;
-		if (c && CAPAS.includes(c)) capa = c;
+		// Sin la flag del mapa no hay «Mi presupuesto»; un enlace antiguo con esa capa abre «Referencia»
+		if (c && CAPAS.includes(c)) capa = c === 'presupuesto' && !MAPA_CON_ANUNCIOS ? 'referencia' : c;
+		hojaEstado = capa === 'presupuesto' ? 'cerrada' : 'media';
 		const f = q.get('fuente');
-		if (MAPA_CON_ANUNCIOS && (f === 'contratos' || f === 'anuncios')) {
-			if (c === 'presupuesto') fuentePresupuesto = f;
-			else if (!c || c === 'referencia') fuenteReferencia = f;
-		}
+		if (MAPA_CON_ANUNCIOS && capa === 'referencia' && (f === 'contratos' || f === 'anuncios')) fuenteReferencia = f;
 		const m2 = Number(q.get('m2'));
 		if (superficieValida(m2)) {
-			if (c === 'presupuesto') metrosTexto = String(Math.round(m2));
+			if (capa === 'presupuesto') metros = ajustarARango(m2, RANGO_METROS);
 			else if ((SUPERFICIES_MAPA as readonly number[]).includes(m2)) superficie = m2;
 		}
 		const b = q.get('barrio');
@@ -123,7 +128,7 @@
 	let capaEnviada: string | null = null;
 	$effect(() => {
 		// Con las dos flags, y solo en las capas con selector, el evento lleva también la fuente (un enum)
-		const f = MAPA_CON_ANUNCIOS && capa !== 'evolucion' ? (capa === 'presupuesto' ? fuentePresupuesto : fuenteReferencia) : undefined;
+		const f = MAPA_CON_ANUNCIOS && capa !== 'evolucion' ? (capa === 'presupuesto' ? 'anuncios' : fuenteReferencia) : undefined;
 		const clave = `${capa}/${f ?? ''}`;
 		if (!listo || clave === capaEnviada) return;
 		capaEnviada = clave;
@@ -134,8 +139,8 @@
 		const q = new URLSearchParams();
 		q.set('capa', capa);
 		if (capa === 'referencia') q.set('m2', String(superficie));
-		else if (capa === 'presupuesto' && metros !== null && superficieValida(metros)) q.set('m2', String(Math.round(metros)));
-		if (MAPA_CON_ANUNCIOS && capa !== 'evolucion') q.set('fuente', capa === 'presupuesto' ? fuentePresupuesto : fuenteReferencia);
+		else if (capa === 'presupuesto') q.set('m2', String(metros));
+		if (MAPA_CON_ANUNCIOS && capa === 'referencia') q.set('fuente', fuenteReferencia);
 		if (barrioUrl) q.set('barrio', barrioUrl);
 		const url = `${location.pathname}?${q}`;
 		if (url !== location.pathname + location.search) {
@@ -147,29 +152,23 @@
 		}
 	});
 
-	// Si el fichero de anuncios no carga, el mapa sigue con los contratos y no se ofrece el selector
+	// Si el fichero de anuncios no carga, no hay «Mi presupuesto»: el mapa sigue con «Referencia» y los contratos
 	const sinOferta = $derived(estado === 'listo' && !madrid?.datos.oferta);
-	const conSelector = $derived(MAPA_CON_ANUNCIOS && capa !== 'evolucion' && !sinOferta);
-	const fuente = $derived<FuenteMapa>(!conSelector ? 'contratos' : capa === 'presupuesto' ? fuentePresupuesto : fuenteReferencia);
+	const conPresupuesto = $derived(MAPA_CON_ANUNCIOS && !sinOferta);
+	$effect(() => {
+		if (sinOferta && capa === 'presupuesto') capa = 'referencia';
+	});
+	const conSelector = $derived(MAPA_CON_ANUNCIOS && capa === 'referencia' && !sinOferta);
+	const fuente = $derived<FuenteMapa>(capa === 'presupuesto' ? 'anuncios' : conSelector ? fuenteReferencia : 'contratos');
 	const anuncios = $derived(fuente === 'anuncios');
 	const mesOferta = $derived(madrid?.datos.oferta ? mesAnio(madrid.datos.oferta.mes) : '');
-	const tonosCapa = $derived(anuncios && capa !== 'evolucion' ? TONOS_ANUNCIOS[capa] : TONOS_MAPA[capa]);
-	const elegirFuente = (v: FuenteMapa) => {
-		if (capa === 'presupuesto') fuentePresupuesto = v;
-		else fuenteReferencia = v;
-	};
+	const tonosCapa = $derived(paletaDe(capa, fuente));
 
-	const presupuesto = $derived(numeroDelCampo(presupuestoTexto));
-	const metros = $derived(numeroDelCampo(metrosTexto));
-	const superficieCapa = $derived(capa === 'presupuesto' ? (metros ?? 0) : superficie);
-	const zonas = $derived(madrid ? zonasDelMapa(madrid.datos, superficieCapa) : []);
+	// «Mi presupuesto» solo usa la oferta, que no depende de los metros: las zonas no se recalculan al mover las barras
+	const zonas = $derived(madrid ? zonasDelMapa(madrid.datos, capa === 'referencia' ? superficie : 0) : []);
 	const zonaPorCusec = $derived(new Map(zonas.map((z) => [z.cusec, z])));
 
-	const deMiPresupuesto = $derived(
-		capa === 'presupuesto' && presupuesto !== null && metros !== null && superficieValida(metros)
-			? (anuncios ? capaPresupuestoAnuncios(zonas, presupuesto, metros) : capaPresupuesto(zonas, presupuesto))
-			: null
-	);
+	const deMiPresupuesto = $derived(capa === 'presupuesto' ? capaPresupuesto(zonas, presupuesto, metros) : null);
 	const calculada = $derived(
 		capa === 'evolucion' ? capaEvolucion(zonas)
 		: capa === 'presupuesto' ? deMiPresupuesto
@@ -180,32 +179,36 @@
 	const resumen = $derived(deMiPresupuesto?.resumen ?? null);
 	const centros = $derived(new Map((madrid?.celdas ?? []).map((c) => [c.cusec, c.centro] as const)));
 	const cercanas = $derived(
-		madrid && origen && presupuesto !== null && resumen && resumen.llega > 0
-			? zonasCercanas(zonas, presupuesto, origen.centro, centros, 5, anuncios && metros !== null ? (z) => posicionPresupuestoAnuncios(presupuesto, metros, z) : undefined).map((c) => ({
+		madrid && origen && capa === 'presupuesto' && resumen && resumen.llega > 0
+			? zonasCercanas(zonas, origen.centro, centros, (z) => posicionPresupuestoAnuncios(presupuesto, metros, z)).map((c) => ({
 				...c,
 				nombre: T.presupuesto.cercanas.zona(madrid!.datos.barrios[madrid!.datos.secciones[c.cusec]?.barrio ?? '']?.nombre ?? 'Madrid')
 			}))
 			: []
 	);
 
-	const intro = $derived(
-		capa === 'presupuesto' ? (anuncios ? TA.introPresupuesto : T.introPresupuesto) : capa === 'evolucion' ? T.introEvolucion : anuncios ? TA.intro : T.intro
-	);
+	const titulo = $derived(capa === 'presupuesto' ? T.tituloPresupuesto : T.titulo);
+	const intro = $derived(capa === 'presupuesto' ? TA.introPresupuesto : capa === 'evolucion' ? T.introEvolucion : anuncios ? TA.intro : T.intro);
 	const tituloLeyenda = $derived(
-		capa === 'presupuesto' ? (anuncios ? TA.leyendaPresupuesto(mesOferta) : T.leyendaPresupuesto)
+		capa === 'presupuesto' ? TA.leyendaPresupuesto(mesOferta)
 		: capa === 'evolucion' ? T.leyendaEvolucion
 		: anuncios ? TA.leyenda(mesOferta)
 		: T.leyenda
 	);
-	const textosPresupuesto = $derived(anuncios ? TA.presupuesto : T.presupuesto);
-	const rotulo = $derived(anuncios && capa !== 'evolucion' && mesOferta ? TA.rotulo(mesOferta) : null);
-	const errorMetros = $derived(capa === 'presupuesto' && metros !== null && !superficieValida(metros) ? T.presupuesto.metrosFuera : null);
+	const textosPresupuesto = TA.presupuesto;
+	const rotulo = $derived(anuncios && mesOferta ? TA.rotulo(mesOferta) : null);
+	/** La frase de resumen de «Mi presupuesto»: en móvil va en la cabecera de la hoja, siempre a la vista */
+	const fraseResumen = $derived(
+		!resumen ? null
+		: resumen.conDato > 0 && resumen.llega === 0 ? textosPresupuesto.ninguna.titulo
+		: textosPresupuesto.resumen(String(resumen.porcentaje), numero(resumen.llega), numero(resumen.conDato))
+	);
 
 	const extremo = $derived(resumen ? extremoPresupuesto(resumen) : null);
 
 	const hoja = $derived.by(() => {
 		const z = seleccion ? zonaPorCusec.get(seleccion) : undefined;
-		return z && madrid ? hojaDeZona(z, madrid.datos, capa, superficieCapa, presupuesto, fuente) : null;
+		return z && madrid ? hojaDeZona(z, madrid.datos, capa, capa === 'presupuesto' ? metros : superficie, presupuesto, fuente) : null;
 	});
 
 	async function elegirZona(cusec: string) {
@@ -308,9 +311,15 @@
 		void goto('/');
 	}
 
-	const cambiarCapa = () => {
+	const cambiarCapa = (nueva: CapaMapa) => {
 		seleccion = null;
 		mensajeBusqueda = null;
+		hojaEstado = nueva === 'presupuesto' ? 'cerrada' : 'media';
+	};
+	const elegirFuente = (v: FuenteMapa) => (fuenteReferencia = v);
+	/** Al mover una barra en móvil la hoja se cierra: el mapa tiene que verse mientras se arrastra */
+	const alArrastrar = () => {
+		if (movil) hojaEstado = 'cerrada';
 	};
 
 	/** Al elegir una zona de la lista, se abre su ficha y la vista va a ella */
@@ -349,9 +358,37 @@
 	{/if}
 {/snippet}
 
-<!-- Móvil, «Mi presupuesto»: los tres colores siempre a la vista, bajo el conmutador de capa -->
+<!-- Presupuesto y metros: barra y número sincronizados. En móvil, compactos y fijos sobre el mapa -->
+{#snippet controles(compacto: boolean)}
+	<div class="controles-presupuesto" class:compactos={compacto}>
+		<ControlDeslizante
+			id="presupuesto"
+			etiqueta={T.presupuesto.campoPresupuesto}
+			etiquetaCorta={T.presupuesto.campoPresupuestoCorto}
+			bind:valor={presupuesto}
+			rango={RANGO_PRESUPUESTO}
+			unidad="€"
+			formato={(n) => T.presupuesto.valorPresupuesto(euros(n))}
+			{compacto}
+			{alArrastrar}
+		/>
+		<ControlDeslizante
+			id="metros"
+			etiqueta={T.presupuesto.campoMetros}
+			etiquetaCorta={T.presupuesto.campoMetrosCorto}
+			bind:valor={metros}
+			rango={RANGO_METROS}
+			unidad="m²"
+			formato={(n) => T.presupuesto.valorMetros(numero(n))}
+			{compacto}
+			{alArrastrar}
+		/>
+	</div>
+{/snippet}
+
+<!-- Móvil, «Mi presupuesto»: los tres colores siempre a la vista, bajo los controles -->
 {#snippet chipsPresupuesto()}
-	<ul class="chips-leyenda solo-movil" aria-label={T.leyendaPresupuesto}>
+	<ul class="chips-leyenda solo-movil" aria-label={TA.leyendaPresupuesto(mesOferta)}>
 		{#each [textosPresupuesto.debajo, textosPresupuesto.dentro, textosPresupuesto.margen] as nombre, i (nombre)}
 			<li><span class="punto" style:background={tonosCapa[i]}></span>{nombre}</li>
 		{/each}
@@ -368,9 +405,9 @@
 <div class="pagina" data-listo={listo} style:--vv-alto={movil && altoVisual ? `${altoVisual}px` : undefined} style:--vv-top="{movil ? topVisual : 0}px">
 	<Cabecera derecha="madrid" actual="mapa" />
 
-	<main class="rejilla" class:con-fuente={conSelector} bind:clientHeight={altoRejilla} style:--hoja-alto={movil ? `${altoHoja}px` : '0px'}>
+	<main class="rejilla" class:con-fuente={conSelector} bind:clientHeight={altoRejilla} style:--hoja-alto={movil ? `${altoHoja}px` : '0px'} style:--alto-controles="{ALTO_CONTROLES}px">
 		<section class="cabeza">
-			<h1>{T.titulo}</h1>
+			<h1>{titulo}</h1>
 			<p>{intro}</p>
 		</section>
 
@@ -381,9 +418,9 @@
 				bind:valor={capa}
 				onchange={cambiarCapa}
 				opciones={[
-					{ valor: 'referencia', etiqueta: T.capas.referencia },
-					{ valor: 'presupuesto', etiqueta: T.capas.presupuesto },
-					{ valor: 'evolucion', etiqueta: T.capas.evolucion }
+					...(conPresupuesto ? [{ valor: 'presupuesto' as const, etiqueta: T.capas.presupuesto }] : []),
+					{ valor: 'referencia' as const, etiqueta: T.capas.referencia },
+					{ valor: 'evolucion' as const, etiqueta: T.capas.evolucion }
 				]}
 			/>
 			{#if conSelector}
@@ -400,18 +437,15 @@
 			{/if}
 		</div>
 
-		{#if capa === 'presupuesto'}{@render chipsPresupuesto()}{/if}
+		{#if capa === 'presupuesto'}
+			{#if movil}<div class="controles-fijos">{@render controles(true)}</div>{/if}
+			{@render chipsPresupuesto()}
+		{/if}
 
 		<section class="mapa" aria-label={T.mapa} aria-busy={estado === 'cargando'}>
 			{#if estado === 'listo' && madrid}
-				<MapaMadrid {madrid} {tonos} {capa} {fuente} punteadas={calculada?.punteadas} {seleccion} {resaltadas} {enfoque} margenInferior={movil ? altoHoja : 0} margenSuperior={movil ? (capa === 'presupuesto' ? 108 : 64) + (conSelector ? 50 : 0) : 0} alElegir={elegirZona} />
+				<MapaMadrid {madrid} {tonos} {capa} {fuente} punteadas={calculada?.punteadas} {seleccion} {resaltadas} {enfoque} margenInferior={movil ? altoHoja : 0} margenSuperior={movil ? (capa === 'presupuesto' ? ARRIBA_PRESUPUESTO : 64) + (conSelector ? 50 : 0) : 0} alElegir={elegirZona} />
 				{#if rotulo}<p class="rotulo" role="note">{rotulo}</p>{/if}
-				{#if errorMetros}
-					<div class="mapa-aviso" role="status">
-						<p>{errorMetros}</p>
-						<p class="nota">{T.presupuesto.metrosFueraMapa}</p>
-					</div>
-				{/if}
 			{:else if estado === 'fallo'}
 				<div class="mensaje-mapa">
 					<p>{T.fallo}</p>
@@ -423,11 +457,12 @@
 		</section>
 
 		<div class="panel" class:con-ficha={!!hoja}>
-			<HojaArrastrable bind:estado={hojaEstado} bind:altoVisible={altoHoja} alto={altoRejilla} reservaSuperior={conSelector ? 114 : 64}>
+			<HojaArrastrable bind:estado={hojaEstado} bind:altoVisible={altoHoja} alto={altoRejilla} reservaSuperior={capa === 'presupuesto' ? ARRIBA_CONTROLES : conSelector ? 114 : 64}>
 				{#snippet cabecera()}
 					<div class="cab-leyenda" aria-label={tituloLeyenda}>
-						<span class="leyenda-titulo">{calculada ? tituloLeyenda : textosPresupuesto.pideDatos}</span>
+						<span class="leyenda-titulo">{calculada ? tituloLeyenda : capa === 'presupuesto' ? textosPresupuesto.pideDatos : ''}</span>
 						{@render muestras()}
+						{#if movil && fraseResumen}<strong class="resumen-cab" role="status">{fraseResumen}</strong>{/if}
 					</div>
 				{/snippet}
 
@@ -444,17 +479,7 @@
 							</div>
 						{:else if capa === 'presupuesto'}
 							<div class="presupuesto">
-								<div class="campos">
-									<div class="campo-grupo">
-										<label for="presupuesto">{T.presupuesto.campoPresupuesto}</label>
-										<input id="presupuesto" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" autocomplete="off" bind:value={presupuestoTexto} placeholder="1.200" />
-									</div>
-									<div class="campo-grupo">
-										<label for="metros">{T.presupuesto.campoMetros}</label>
-										<input id="metros" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" autocomplete="off" bind:value={metrosTexto} placeholder="60" aria-invalid={!!errorMetros} aria-describedby={errorMetros ? 'metros-error' : undefined} />
-									</div>
-								</div>
-								{#if errorMetros}<p class="error" id="metros-error">{errorMetros}</p>{/if}
+								{#if !movil}{@render controles(false)}{/if}
 								<p class="aviso destacado">{textosPresupuesto.aviso}</p>
 							</div>
 						{/if}
@@ -462,10 +487,10 @@
 						{#if capa === 'presupuesto'}
 							<div class="resumen" role="status">
 								{#if resumen && resumen.conDato > 0 && resumen.llega === 0}
-									<strong>{textosPresupuesto.ninguna.titulo}</strong>
+									<strong class="solo-escritorio">{textosPresupuesto.ninguna.titulo}</strong>
 									<span>{textosPresupuesto.ninguna.texto}</span>
 								{:else if resumen}
-									<strong>{textosPresupuesto.resumen(String(resumen.porcentaje), numero(resumen.llega), numero(resumen.conDato))}</strong>
+									<strong class="solo-escritorio">{fraseResumen}</strong>
 									{#if extremo}<span>{T.presupuesto.extremo[extremo]}</span>{/if}
 									<span class="nota">{T.presupuesto.notaPoblacion}</span>
 								{:else}
@@ -474,7 +499,7 @@
 							</div>
 							{#if cercanas.length && origen}
 								<div class="cercanas">
-									<h2 class="cercanas-titulo">{anuncios ? TA.presupuesto.cercanas(origen.donde) : T.presupuesto.cercanas.titulo(origen.donde)}</h2>
+									<h2 class="cercanas-titulo">{textosPresupuesto.cercanas(origen.donde)}</h2>
 									<ul>
 										{#each cercanas as c (c.cusec)}
 											<li>
@@ -520,7 +545,7 @@
 						{#if hoja.procedencia}<p class="nota">{hoja.procedencia}</p>{/if}
 						<button type="button" class="boton-paja grande" onclick={comprobarAqui}>{T.hoja.comprobar}</button>
 					{:else}
-						<p class="nota solo-escritorio">{anuncios && capa !== 'evolucion' ? TA.hoja.vacia : T.hoja.vacia}</p>
+						<p class="nota solo-escritorio">{anuncios ? TA.hoja.vacia : T.hoja.vacia}</p>
 					{/if}
 				</section>
 
@@ -644,45 +669,13 @@
 		flex-direction: column;
 		gap: 10px;
 	}
-	.campos {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 10px;
-		align-items: end;
-	}
-	.campo-grupo {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		min-width: 0;
-	}
-	label {
-		font: 600 14px/1.3 var(--f-texto);
-	}
-	input {
-		height: 48px;
-		padding: 0 14px;
-		border: 1.5px solid var(--tinta);
-		border-radius: var(--radio);
-		background: var(--blanco);
-		font: 500 16px/1 var(--f-texto);
-		min-width: 0;
-	}
-	input:focus-visible {
-		outline: 2px solid var(--tinta);
-		outline-offset: 3px;
-	}
-	.error {
-		font: 500 14px/1.4 var(--f-texto);
-		color: var(--ciruela);
-	}
 	.aviso {
 		background: var(--superficie);
 		border-radius: var(--radio);
 		padding: 10px 12px;
 		font: 500 14px/1.45 var(--f-texto);
 	}
-	/* «Son contratos vigentes, no anuncios»: tiene que leerse, no quedar como nota al pie */
+	/* «Son anuncios recientes, no contratos firmados»: tiene que leerse, no quedar como nota al pie */
 	.aviso.destacado {
 		border-left: 3px solid var(--tinta);
 		font: 600 15px/1.45 var(--f-texto);
@@ -786,16 +779,6 @@
 		text-align: center;
 		font: 600 15px/1.4 var(--f-texto);
 	}
-	.mapa-aviso {
-		position: absolute;
-		inset: 12px 12px auto;
-		padding: 12px 14px;
-		border-radius: var(--radio);
-		background: var(--blanco);
-		border: 1.5px solid var(--tinta);
-		font: 600 15px/1.4 var(--f-texto);
-		pointer-events: none;
-	}
 
 	/* Ficha de la zona */
 	.hoja-cabeza {
@@ -869,10 +852,34 @@
 	.color.rayado.plano {
 		background: #efece4;
 	}
-	.chips-leyenda {
+	/* Presupuesto y metros: en escritorio, en el panel; en móvil, fijos y compactos sobre el mapa, bajo el conmutador */
+	.controles-presupuesto {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+	.controles-fijos {
 		position: absolute;
 		z-index: 3;
 		top: 64px;
+		left: var(--margen);
+		right: var(--margen);
+		padding: 7px 10px;
+		border-radius: var(--radio);
+		background: #f6f4ee;
+		box-shadow: 0 1px 4px rgb(28 27 25 / 0.25);
+	}
+	.controles-fijos .controles-presupuesto {
+		gap: 6px;
+	}
+	/* La frase de resumen, siempre a la vista en la cabecera de la hoja */
+	.resumen-cab {
+		font: 700 14px/1.3 var(--f-texto);
+	}
+	.chips-leyenda {
+		position: absolute;
+		z-index: 3;
+		top: calc(64px + var(--alto-controles, 100px) + 6px);
 		left: var(--margen);
 		right: var(--margen);
 		margin: 0;
@@ -961,12 +968,6 @@
 		right: var(--margen);
 		filter: drop-shadow(0 2px 6px rgb(28 27 25 / 0.25));
 	}
-	.mapa-aviso {
-		top: 64px;
-	}
-	.chips-leyenda ~ .mapa .mapa-aviso {
-		top: 108px;
-	}
 	/* Rótulo de la fuente «Anuncios» sobre el mapa: abajo a la izquierda, sobre la hoja y sin tapar los botones de zoom */
 	.rotulo {
 		position: absolute;
@@ -982,18 +983,6 @@
 		border: 1.5px solid var(--tinta);
 		font: 600 12.5px/1.35 var(--f-texto);
 		pointer-events: none;
-	}
-	@media (max-width: 959px) {
-		/* Con el selector de fuente, el conmutador mide 50 px más: bajan las chips y el aviso */
-		.con-fuente .chips-leyenda {
-			top: 114px;
-		}
-		.con-fuente .mapa-aviso {
-			top: 114px;
-		}
-		.con-fuente .chips-leyenda ~ .mapa .mapa-aviso {
-			top: 158px;
-		}
 	}
 	.pie-hoja {
 		margin: 0 calc(-1 * var(--margen));
@@ -1068,9 +1057,6 @@
 		.conmutador {
 			position: static;
 			filter: none;
-		}
-		.mapa-aviso {
-			top: 12px;
 		}
 		.panel :global(.controles),
 		.panel.con-ficha :global(.controles) {
