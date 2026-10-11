@@ -4,7 +4,7 @@
  * el mapa y «Tu zona», los datos que se guardan, lo que no se calcula, las fuentes, quiénes somos y financiación.
  *
  * Nada de cifras copiadas: el factor y el mes del IPC salen de ipc_alquiler.json, la oferta de oferta_madrid.json y el
- * ejemplo se calcula con los datos de la zona (Embajadores, 45 m², 1.400 €; el mismo de la portada). Si cambian los
+ * ejemplo se calcula con los datos de la zona (Delicias, 65 m², 1.650 €; el mismo de la portada). Si cambian los
  * datos, cambia el ejemplo. Mismas reglas de tono que textos.ts (lo comprueba tests/textos.test.ts).
  */
 import { type Anuncio, OFERTA_BANDA_EN_LINEA, OFERTA_S_REF_M2, type Referencia, factorTamano, referencia, tieneDato } from '../motor';
@@ -18,11 +18,11 @@ import type { Ubicacion } from './ubicacion';
 const NB = ' ';
 export const CORREO = 'hola@asuprecio.com';
 
-/** Una zona de Embajadores (Centro): el ejemplo de la portada y de «Cómo calculamos» */
-export const CUSEC_EJEMPLO = '2807901040';
-export const ANUNCIO_EJEMPLO: Anuncio = { precio: 1400, superficie: 45, obraNueva: false, tipo: 'piso', largaDuracion: true };
+/** Una zona de Delicias (Arganzuela): el ejemplo de la portada y de «Cómo calculamos» */
+export const CUSEC_EJEMPLO = '2807902106';
+export const ANUNCIO_EJEMPLO: Anuncio = { precio: 1650, superficie: 65, obraNueva: false, tipo: 'piso', largaDuracion: true };
 export const UBICACION_EJEMPLO: Ubicacion = {
-	cusecs: [CUSEC_EJEMPLO], aproximada: false, motivo: null, numerosUsados: [], punto: { lon: -3.703, lat: 40.406 }, via: null
+	cusecs: [CUSEC_EJEMPLO], aproximada: false, motivo: null, numerosUsados: [], punto: { lon: -3.6935, lat: 40.3975 }, via: null
 };
 
 export interface SeccionTexto {
