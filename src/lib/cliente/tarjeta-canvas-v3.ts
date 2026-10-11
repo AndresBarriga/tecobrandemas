@@ -171,10 +171,10 @@ function laCostura(ctx: Ctx, t: TarjetaV3): void {
 	if (t.oferta && r.oferta) {
 		rect(ctx, ux - 4, 700, 8, yO + hO / 2 - 700, C.tinta);
 		rect(ctx, X0, yO, W, hO, C.pajaOscura, 8);
-		// Margen «en línea»: línea fina bajo el carril
+		// Margen «en línea»: tramo claro dentro del carril, como «lo habitual» en el de contratos
 		const b0 = X(r.oferta.margen.desde);
 		const b1 = X(r.oferta.margen.hasta);
-		rect(ctx, b0, yO + hO + 12, Math.max(4, b1 - b0), 5, C.ciruela, 2);
+		rect(ctx, b0, yO, Math.max(4, b1 - b0), hO, C.papel);
 		const ox = X(r.oferta.marca);
 		rect(ctx, ox - 6, yO - 20, 12, hO + 40, C.ciruela, 3);
 		fuente(ctx, 600, 30, 'texto');

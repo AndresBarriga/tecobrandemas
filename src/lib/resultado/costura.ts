@@ -12,7 +12,7 @@
  *  - «ahora» en lugar de «hoy»; la oferta es del barrio si tiene dato y, si no, del distrito (el texto lo dice);
  *  - «Mi alquiler» claramente por debajo de la oferta no se celebra: «PIDEN MÁS», con el mismo % que el resto;
  *  - la escala va de 0,85 × el valor más bajo a 1,10 × el más alto, redondeada a 100 €, y no se rotula;
- *  - el margen «en línea» (±10 %) es una línea fina bajo el carril de oferta, no una banda de precios.
+ *  - el margen «en línea» (±15 %) es un tramo sombreado en el carril de oferta, como «lo habitual» en el de contratos.
  */
 import type { Nivel } from '../motor';
 import type { Barra } from './barra';
@@ -60,7 +60,7 @@ export interface CarrilContratos {
 export interface CarrilOferta {
 	/** La oferta estimada */
 	x: number;
-	/** El margen «en línea» (±10 %): se dibuja como una línea fina bajo el carril */
+	/** El margen «en línea» (±15 %): se dibuja como un tramo sombreado dentro del carril */
 	margen: { desde: number; hasta: number };
 	etiqueta: string;
 }
@@ -177,7 +177,7 @@ export function construirCostura(e: EntradaCostura): Costura {
 		aclaracion: T.oferta.aclaracion(nivelO),
 		nota: null,
 		veredicto: vO,
-		estimacion: o ? T.oferta.estimacion(numero(o.eurosM2, 2), nivelO, m2, modo) : null
+		estimacion: o ? T.oferta.estimacion(numero(o.eurosM2, 2), nivelO, m2) : null
 	};
 	const conOferta = e.ofertaEnLaWeb;
 	const mitades = !conOferta ? [mitadC] : modo === 'mirando' && vO ? [mitadO, mitadC] : [mitadC, mitadO];
@@ -211,7 +211,7 @@ export function construirCostura(e: EntradaCostura): Costura {
 	plegables.push({
 		clave: 'datos',
 		titulo: T.datos.titulo,
-		parrafos: [e.fuenteContratos, ...(o && e.fuenteOferta ? [`${e.fuenteOferta} ${T.datos.calculo(numero(o.eurosM2, 2), m2, nivelO)}`] : [])]
+		parrafos: [e.fuenteContratos, ...(o && e.fuenteOferta ? [`${e.fuenteOferta} ${T.datos.calculo(numero(o.eurosM2, 2), nivelO, m2, euros(o.estimada))}`] : [])]
 	});
 
 	return {

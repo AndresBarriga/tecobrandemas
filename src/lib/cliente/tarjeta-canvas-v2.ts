@@ -142,7 +142,7 @@ function reglas(ctx: Ctx, t: TarjetaV2, y0: number, g: GeomReglas, dibujar: bool
 				ctx.lineTo(X(c.parteAlta), y + g.barra - grosor / 2);
 				ctx.stroke();
 			} else if (r.anuncios) {
-				// La oferta estimada: una marca vertical violeta (la banda de ±10 % no se dibuja: solo clasifica)
+				// La oferta estimada: una marca vertical violeta (la banda de ±15 % no se dibuja: solo clasifica)
 				const grosor = Math.max(4, g.barra * 0.14);
 				rect(ctx, X(r.anuncios.media) - grosor / 2, y - g.barra * 0.22, grosor, g.barra * 1.44, VIOLETA.fuerte, grosor / 2);
 			}

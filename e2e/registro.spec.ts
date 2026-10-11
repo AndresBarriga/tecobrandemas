@@ -39,7 +39,7 @@ test.describe('aportaciones y recuentos', () => {
 		await page.getByRole('checkbox', { name: 'Hace menos de un año' }).check();
 		await page.fill('#renta-firma', '');
 		await page.locator('form').getByRole('button', { name: 'Comprobar mi alquiler' }).click();
-		await expect(page.getByText('Contrato de hace menos de un año:')).toBeVisible();
+		await expect(page.getByText('Contrato de hace menos de un año:').first()).toBeVisible();
 	});
 
 	test('un análisis iniciado desde una tarjeta (/?t=ID) llega al registro con ese id, solo con la casilla marcada', async ({ page }) => {

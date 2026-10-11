@@ -7,7 +7,7 @@
  *  - nunca la diferencia entre las dos referencias, ni el nombre del barrio, ni un porcentaje;
  *  - sin dato de la zona o con menos de 30 m²: ni línea ni error (null).
  */
-import { BANDA_EN_LINEA, type CasoOferta, type ContraOferta, type NivelOferta, type PosicionContratos, type ZonaOferta, type Anuncio, casoOferta, compararConOferta, ofertaDeZonas } from '../motor';
+import { OFERTA_BANDA_EN_LINEA, type CasoOferta, type ContraOferta, type NivelOferta, type PosicionContratos, type ZonaOferta, type Anuncio, casoOferta, compararConOferta, ofertaDeZonas } from '../motor';
 import type { DatosMadrid } from './datos';
 import { euros, mesAnio } from './formato';
 import { OFERTA } from './textos';
@@ -18,7 +18,7 @@ export interface PantallaOferta {
 	nivel: NivelOferta;
 	/** AAAA-MM */
 	mes: string;
-	/** €/m² × m², redondeado al euro */
+	/** €/m² ajustado por tamaño × m², redondeado al euro */
 	estimada: number;
 	/** €/m² de oferta del barrio o del distrito */
 	eurosM2: number;
@@ -72,7 +72,7 @@ export function construirOferta(
 	const zona = zonasDe(datos, cusecs)[0]!;
 	const b = datos.barrios[zona.barrio];
 	const lugar = r.oferta.nivel === 'barrio' ? `barrio de ${b?.nombre ?? 'Madrid'}` : `distrito de ${b?.distrito ?? 'Madrid'}`;
-	return { contraOferta: r.contraOferta, nivel: r.oferta.nivel, mes: r.oferta.mes, estimada, eurosM2: r.oferta.eurosM2, lugar, banda: BANDA_EN_LINEA, caso, veredicto: caso.startsWith('encima'), ...textos(r.oferta.nivel, r.oferta.mes, estimada, caso) };
+	return { contraOferta: r.contraOferta, nivel: r.oferta.nivel, mes: r.oferta.mes, estimada, eurosM2: r.oferta.eurosM2, lugar, banda: OFERTA_BANDA_EN_LINEA, caso, veredicto: caso.startsWith('encima'), ...textos(r.oferta.nivel, r.oferta.mes, estimada, caso) };
 }
 
 /** «Mi alquiler»: la misma referencia como línea secundaria, sin veredicto */

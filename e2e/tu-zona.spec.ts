@@ -12,6 +12,8 @@ test.describe('Tu zona', () => {
 		const zona = page.getByRole('region', { name: 'Tu zona' });
 		await expect(zona.getByRole('heading', { level: 2, name: 'Tu zona' })).toBeVisible();
 		await expect(zona.getByRole('img', { name: /Mapa de tu zona y las zonas a 1,5 km o menos/ })).toBeVisible({ timeout: 15_000 });
+		// «Un anuncio» empieza en la capa «Oferta»: la muesca de «tu precio» es de la capa de contratos
+		await zona.getByRole('radio', { name: 'Contratos' }).check();
 		await expect(zona.getByText(/tu precio: 27,8\s€\/m²/)).toBeVisible();
 		await expect(zona.getByText('Lo más alto de lo habitual entre quienes ya viven aquí, en €/m² al mes')).toBeVisible();
 		await expect(zona.getByText('Cortes iguales para toda la ciudad')).toBeVisible();

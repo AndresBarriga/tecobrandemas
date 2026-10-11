@@ -24,6 +24,8 @@ export const BRECHAS = ['lt0', '0_10', '10_25', '25_50', '50_100', 'gt100'] as c
 export const RESULTADOS_OFERTA = ['por_debajo', 'en_linea', 'por_encima'] as const;
 /** `completa.nivel_oferta`: de qué nivel era el dato de anuncios (nunca el barrio ni el distrito concretos) */
 export const NIVELES_OFERTA = ['barrio', 'distrito'] as const;
+/** `completa.metodo_oferta`: cómo se calculó la estimación (para comparar antes y después de cambiarla) */
+export const METODOS_OFERTA = ['tamano_v1'] as const;
 export const CANALES = ['whatsapp', 'x', 'copiar', 'descargar', 'nativo'] as const;
 /** Capas de /mapa (`mapa_capa.capa`): nunca la zona, el presupuesto ni los metros */
 export const CAPAS_MAPA = ['referencia', 'presupuesto', 'evolucion'] as const;
@@ -59,6 +61,7 @@ const VALIDADORES: Record<string, Validador> = {
 	brecha_tramo: enumerado(BRECHAS),
 	resultado_oferta: enumerado(RESULTADOS_OFERTA),
 	nivel_oferta: enumerado(NIVELES_OFERTA),
+	metodo_oferta: enumerado(METODOS_OFERTA),
 	es_horquilla: (v) => typeof v === 'boolean',
 	distrito: (v) => typeof v === 'string' && NOMBRE_DISTRITO.test(v),
 	segundos_hasta_resultado: entero(0, 86_400),
@@ -93,7 +96,7 @@ export const EVENTOS: Record<string, readonly string[]> = {
 	usar_ubicacion: ['resultado'],
 	error_geocodificador: ['tipo'],
 	confirma_precio: ['modo'],
-	completa: ['modo', 'resultado', 'posicion', 'brecha_tramo', 'resultado_oferta', 'nivel_oferta', 'es_horquilla', 'distrito', 'segundos_hasta_resultado', 'indice_analisis'],
+	completa: ['modo', 'resultado', 'posicion', 'brecha_tramo', 'resultado_oferta', 'nivel_oferta', 'metodo_oferta', 'es_horquilla', 'distrito', 'segundos_hasta_resultado', 'indice_analisis'],
 	sin_dato: ['modo', 'motivo'],
 	que_haras: ['modo', 'respuesta', 'resultado'],
 	comparte: ['modo', 'canal', 'tarjeta_id', 'resultado'],

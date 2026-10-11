@@ -3,7 +3,10 @@
  * referencia junto a los contratos vigentes de SERPAVI. Módulo independiente: no toca los niveles contra
  * contratos ni el factor IPC, y solo se enciende con la flag de compilación (la decide quien carga los datos).
  *
- *   estimada = €/m² de la zona × m² del usuario        (solo con m² ≥ 30 y zona con dato)
+ *   estimada = €/m² de la zona × m² × (m² / 78) ^ −0,40        (solo con m² ≥ 30 y zona con dato)
+ *
+ * El €/m² anunciado baja con el tamaño: sin el factor, los pisos pequeños parecen caros y los grandes baratos.
+ * Calibrado con 145 anuncios reales (Idealista y Fotocasa, oct. 2026): ver docs/calibracion/README.md.
  *
  * Regla: cada referencia se compara solo con el precio de la persona. Aquí nunca se calcula ni se devuelve la
  * diferencia entre los anuncios y los contratos.
@@ -15,8 +18,12 @@
 import config from '../../../config/oferta.json';
 import { SUPERFICIE_MIN } from './elegibilidad';
 
-/** Banda de «en línea» alrededor de la estimación (fracción). Se recalibra con `resultado_oferta` tras el soft launch */
-export const BANDA_EN_LINEA: number = config.banda_en_linea;
+/** Banda de «en línea» alrededor de la estimación (fracción): lo que se desvía normalmente un anuncio corriente */
+export const OFERTA_BANDA_EN_LINEA: number = config.banda_en_linea;
+/** Exponente del tamaño: calibrado con 145 anuncios, oct. 2026 */
+export const OFERTA_SIZE_EXP: number = config.size_exp;
+/** m² en que el €/m² de la serie es exacto */
+export const OFERTA_S_REF_M2: number = config.s_ref_m2;
 
 export type NivelOferta = 'barrio' | 'distrito';
 export type ContraOferta = 'por_debajo' | 'en_linea' | 'por_encima';
@@ -47,7 +54,7 @@ export interface DatoOferta {
 }
 
 export interface Oferta extends DatoOferta {
-	/** €/m² × m² del usuario, €/mes */
+	/** €/m² × m² del usuario, ajustado por tamaño, €/mes */
 	estimada: number;
 }
 
@@ -55,6 +62,12 @@ export interface ResultadoOferta {
 	contraOferta: ContraOferta;
 	oferta: Oferta;
 }
+
+/** Cuánto se desvía el €/m² anunciado de un piso de `m2` respecto al de la serie: >1 los pequeños, <1 los grandes */
+export const factorTamano = (m2: number): number => Math.pow(m2 / OFERTA_S_REF_M2, OFERTA_SIZE_EXP);
+
+/** Referencia de oferta (€/mes) para `m2` metros a partir del €/m² de la serie; sin límites de m², los pone quien llama */
+export const referenciaOferta = (eurM2Serie: number, m2: number): number => eurM2Serie * m2 * factorTamano(m2);
 
 const unicos = (xs: readonly string[]): string[] => [...new Set(xs)];
 
@@ -75,10 +88,10 @@ export function ofertaDeZonas(zonas: readonly ZonaOferta[], tabla: TablaOferta):
 
 /** Precio frente a la estimación: por debajo de la banda, en línea (límites incluidos) o por encima. Null si no hay línea que mostrar */
 export function compararConOferta(
-	precio: number, superficie: number, dato: DatoOferta | null, banda: number = BANDA_EN_LINEA
+	precio: number, superficie: number, dato: DatoOferta | null, banda: number = OFERTA_BANDA_EN_LINEA
 ): ResultadoOferta | null {
 	if (!dato || !(superficie >= SUPERFICIE_MIN) || !(precio > 0)) return null;
-	const estimada = dato.eurosM2 * superficie;
+	const estimada = referenciaOferta(dato.eurosM2, superficie);
 	const contraOferta: ContraOferta =
 		precio < estimada * (1 - banda) ? 'por_debajo' : precio > estimada * (1 + banda) ? 'por_encima' : 'en_linea';
 	return { contraOferta, oferta: { ...dato, estimada } };
