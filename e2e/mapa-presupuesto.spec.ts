@@ -20,7 +20,7 @@ test('«¿Dónde me llega?» es la vista por defecto, sin la opción de contrato
 	await expect(page.locator('.conmutador .seg').first().locator('label.activo')).toHaveText('Mi presupuesto');
 	// «Mi presupuesto» ya no tiene selector Contratos | Oferta
 	await expect(page.getByRole('radiogroup', { name: 'Fuente' })).toHaveCount(0);
-	await expect(page.locator('#presupuesto')).toHaveValue('1200');
+	await expect(page.locator('#presupuesto')).toHaveValue('1.200');
 	await expect(page.locator('#metros')).toHaveValue('60');
 	await expect(page.getByRole('slider', { name: 'Tu presupuesto al mes' })).toHaveValue('1200');
 	await expect(page.getByRole('slider', { name: 'Metros del piso' })).toHaveValue('60');
@@ -37,14 +37,14 @@ test('mover la barra o escribir el número: se sincronizan, se ajustan al rango 
 
 	// La barra mueve el número
 	await page.getByRole('slider', { name: 'Tu presupuesto al mes' }).fill('2500');
-	await expect(page.locator('#presupuesto')).toHaveValue('2500');
+	await expect(page.locator('#presupuesto')).toHaveValue('2.500');
 	await expect(resumen).not.toHaveText(antes);
 	const conMucho = await resumen.innerText();
 
 	// El número mueve la barra; fuera de rango, al límite
 	await page.locator('#presupuesto').fill('99999');
 	await page.locator('#presupuesto').blur();
-	await expect(page.locator('#presupuesto')).toHaveValue('3000');
+	await expect(page.locator('#presupuesto')).toHaveValue('3.000');
 	await expect(page.getByRole('slider', { name: 'Tu presupuesto al mes' })).toHaveValue('3000');
 	await page.locator('#presupuesto').fill('10');
 	await page.locator('#presupuesto').blur();

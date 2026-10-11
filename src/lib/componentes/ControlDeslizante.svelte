@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { ajustarARango, numeroDelCampo, type RangoControl } from '#lib/resultado';
+	import { ajustarARango, numero, numeroDelCampo, type RangoControl } from '#lib/resultado';
 
 	/**
 	 * Una barra con su número editable, sincronizados. La barra mueve el valor al instante (el mapa se recolorea a medida
 	 * que se arrastra); el número admite escribir con libertad: mientras se escribe, el valor es el número ajustado al rango
-	 * (así el mapa sigue en tiempo real) y el campo no se reescribe hasta salir de él o pulsar Intro.
+	 * (así el mapa sigue en tiempo real) y el campo no se reescribe hasta salir de él o pulsar Intro. Con separador de miles
+	 * (1.200) salvo mientras el campo tiene el foco, que se escribe sin él.
 	 */
 	let {
 		id,
@@ -34,19 +35,26 @@
 	} = $props();
 
 	let texto = $state('');
-	let editando = $state(false);
-	// Mientras no se edita, el campo enseña el valor
-	const mostrado = $derived(editando ? texto : String(valor));
+	let enfocado = $state(false);
+	// Con el foco, lo que se escribe (sin separador); sin él, el valor con separador de miles
+	const mostrado = $derived(enfocado ? texto : numero(valor));
+
+	function alEnfocar(e: FocusEvent & { currentTarget: HTMLInputElement }) {
+		texto = String(valor);
+		enfocado = true;
+		// Se quita el separador y se selecciona todo ya, sin esperar al repintado: lo que se escriba reemplaza el número
+		e.currentTarget.value = texto;
+		e.currentTarget.select();
+	}
 
 	function alEscribir(e: Event & { currentTarget: HTMLInputElement }) {
-		editando = true;
 		texto = e.currentTarget.value;
 		const n = numeroDelCampo(texto);
 		if (n !== null) valor = ajustarARango(n, rango);
 	}
 	function alSalir() {
-		editando = false;
 		// Un campo vacío o sin número válido vuelve al valor que tenía la barra
+		enfocado = false;
 		texto = '';
 	}
 	function alPulsar(e: KeyboardEvent) {
@@ -78,6 +86,7 @@
 			enterkeyhint="done"
 			autocomplete="off"
 			value={mostrado}
+			onfocus={alEnfocar}
 			oninput={alEscribir}
 			onblur={alSalir}
 			onkeydown={alPulsar}
