@@ -168,7 +168,8 @@
 	const zonas = $derived(madrid ? zonasDelMapa(madrid.datos, capa === 'referencia' ? superficie : 0) : []);
 	const zonaPorCusec = $derived(new Map(zonas.map((z) => [z.cusec, z])));
 
-	const deMiPresupuesto = $derived(capa === 'presupuesto' ? capaPresupuesto(zonas, presupuesto, metros) : null);
+	// Sin el mapa cargado no hay zonas: ni resumen ni «0 de 0»
+	const deMiPresupuesto = $derived(capa === 'presupuesto' && madrid ? capaPresupuesto(zonas, presupuesto, metros) : null);
 	const calculada = $derived(
 		capa === 'evolucion' ? capaEvolucion(zonas)
 		: capa === 'presupuesto' ? deMiPresupuesto

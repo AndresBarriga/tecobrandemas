@@ -9,7 +9,7 @@ async function abrirMapa(page: import('@playwright/test').Page, ruta = '/mapa') 
 	await page.goto(ruta);
 	await page.locator('[data-listo=true]').waitFor();
 	// El mapa carga ya pintado: con los valores iniciales hay frase de resumen sin tocar nada
-	await expect(page.locator('.resumen-cab')).toContainText(/de las zonas con dato/, { timeout: 20_000 });
+	await expect(page.locator('.resumen-cab')).toContainText(/\([\d.]{3,} de [\d.]{3,}\)/, { timeout: 30_000 });
 }
 
 test('«¿Dónde me llega?» es la vista por defecto, sin la opción de contratos, con las barras en sus valores iniciales', async ({ page }) => {
