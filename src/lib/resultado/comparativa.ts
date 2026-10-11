@@ -69,7 +69,7 @@ export interface Reglas {
 		techo: Marca;
 	};
 	anuncios: {
-		/** La banda «en línea» (±10 %): solo sirve para clasificar; no se dibuja (no es un intervalo estadístico) */
+		/** La banda «en línea» (±15 %): solo sirve para clasificar; no se dibuja (no es un intervalo estadístico) */
 		banda: { desde: number; hasta: number };
 		/** La oferta estimada: «Oferta estimada · 1.543 €» (marcador vertical violeta) */
 		media: Marca;

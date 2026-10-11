@@ -435,8 +435,8 @@ export const COSTURA = {
 		pregunta: (m2: string) => `¿Cuánto se pide ahora por entrar en un piso de ${m2}?`,
 		aclaracion: (nivel: 'barrio' | 'distrito') => `Según los anuncios del ${nivel}. Solo cuenta el tamaño, no cómo es el piso.`,
 		texto: 'frente a lo que se pide en anuncios',
-		estimacion: (eurosM2: string, nivel: 'barrio' | 'distrito', m2: string, modo: 'mirando' | 'vivo') =>
-			`≈ Estimación: ${eurosM2} €/m² del ${nivel} × ${modo === 'vivo' ? 'tus' : 'los'} ${m2}. No es el precio de pisos como ${modo === 'vivo' ? 'el tuyo' : 'este'}.`,
+		estimacion: (eurosM2: string, nivel: 'barrio' | 'distrito', m2: string) =>
+			`Estimación para ${m2} a partir de ${eurosM2} €/m² del ${nivel}. Los pisos pequeños se anuncian más caros por m², y lo tenemos en cuenta. No mira cómo es el piso (estado, planta, reforma).`,
 		marca: (e: string) => `se pide ≈${e}`,
 		sinDato: 'Sin dato de oferta este mes',
 		sinDatoTexto: 'El Ayuntamiento no ha publicado precio de oferta para esta zona en el último mes disponible. Solo comparamos con los contratos.'
@@ -446,13 +446,12 @@ export const COSTURA = {
 		titulo: '¿Por qué no coinciden?',
 		distintas:
 			'Los contratos recogen rentas ya firmadas, algunas de hace años. Lo que se pide es el precio de los anuncios recientes, para quien llega. Miden cosas distintas, así que pueden no coincidir.',
-		margen: (pct: string, nivel: 'barrio' | 'distrito') =>
-			`La línea morada bajo lo que se pide marca el margen «en línea»: ±${pct} %. Es una estimación del ${nivel}, no un precio exacto.`
+		margen: (pct: string) =>
+			`La línea morada marca el margen «en línea»: ±${pct} %. Es lo que suele desviarse un anuncio corriente de nuestra estimación.`
 	},
 	datos: {
 		titulo: 'De dónde salen los datos',
-		calculo: (eurosM2: string, m2: string, nivel: 'barrio' | 'distrito') =>
-			`Cálculo: ${eurosM2} €/m² × ${m2}. Precio de oferta agregado del ${nivel}, no una media observada de pisos de ${m2}.`
+		calculo: 'Precio de oferta del barrio o del distrito, ajustado por tamaño (calibrado con 145 anuncios reales de Idealista y Fotocasa, octubre de 2026).'
 	},
 	/** Siempre visible bajo el bloque: la fuente y la fecha de cada cifra */
 	fuentesCortas: (mesOferta: string | null) =>
@@ -490,7 +489,7 @@ export const COMPARATIVA = {
 	anuncios: {
 		titulo: 'Anuncios recientes',
 		sub: { mirando: 'lo que se pide', vivo: 'si te mudaras' },
-		/** Una estimación (€/m² de oferta × los m²), no una valoración del piso */
+		/** Una estimación (€/m² de oferta ajustado por tamaño), no una valoración del piso */
 		nota: (m2: string, lugar: string) => `Frente a la oferta estimada para una vivienda de ${m2} m² en el ${lugar}.`,
 		/** En la tarjeta compartible, sin los m² */
 		notaCorta: (nivel: 'barrio' | 'distrito') => `frente a la oferta estimada del ${nivel}`
@@ -1158,7 +1157,7 @@ export const MAPA_REFERENCIA = {
 			dentro: 'En línea',
 			margen: 'Te sobra',
 			nota: (debajo: string, banda: string, sobra: string) =>
-				`No llega: menos del ${debajo}\u00A0% de la estimación (€/m² de anuncios × tus metros). En línea: dentro de ±${banda}\u00A0%. Te sobra: más del ${sobra}\u00A0%.`,
+				`No llega: menos del ${debajo}\u00A0% de la estimación (€/m² de anuncios ajustado por tamaño × tus metros). En línea: dentro de ±${banda}\u00A0%. Te sobra: más del ${sobra}\u00A0%.`,
 			aviso: 'Son anuncios recientes, no contratos firmados ni pisos disponibles: la media de cada barrio o distrito.',
 			resumen: (porcentaje: string, llega: string, conDato: string) =>
 				`En el ${porcentaje}\u00A0% de las zonas con dato (${llega} de ${conDato}) tu presupuesto llega a lo que se pide en los anuncios recientes.`,

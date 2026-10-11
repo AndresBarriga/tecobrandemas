@@ -202,6 +202,23 @@
 				</details>
 			</section>
 
+			<section id="ajuste">
+				<h2>{p.ajuste.titulo}</h2>
+				{#each p.ajuste.parrafos as t (t)}<p>{t}</p>{/each}
+				<table class="factores">
+					<thead>
+						<tr><th scope="col">{p.ajuste.tabla.cabecera[0]}</th><th scope="col">{p.ajuste.tabla.cabecera[1]}</th></tr>
+					</thead>
+					<tbody>
+						{#each p.ajuste.tabla.filas as f (f.m2)}<tr><td>{f.m2}</td><td>{f.factor}</td></tr>{/each}
+					</tbody>
+				</table>
+				<h3>Límites</h3>
+				<ul class="lista">
+					{#each p.ajuste.limites as t (t)}<li>{t}</li>{/each}
+				</ul>
+			</section>
+
 			<section id="map">
 				<h2>{p.mapa.titulo}</h2>
 				{#each p.mapa.parrafos as t (t)}<p>{t}</p>{/each}
@@ -724,6 +741,20 @@
 	}
 	.oferta .terminos dt {
 		color: var(--ciruela);
+	}
+	.factores {
+		border-collapse: collapse;
+		max-width: 320px;
+		font: 400 16px/1.4 var(--f-texto);
+	}
+	.factores th,
+	.factores td {
+		padding: 8px 12px;
+		text-align: left;
+		border-bottom: 1px solid #d6d1c6;
+	}
+	.factores th {
+		font-weight: 700;
 	}
 	.cierre-ref {
 		font-weight: 500;

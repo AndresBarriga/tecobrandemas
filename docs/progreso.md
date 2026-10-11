@@ -448,3 +448,11 @@ Handoff en `docs/design/new design handoff/` (README, componentes de referencia 
 - **Tarjeta v3** (`resultado/tarjeta.ts`): sale de la costura, con las palabras, los % y los carriles en fracciones de una escala sin rotular. Sin euros, renta, m², dirección ni fecha. Tres formatos que elige la persona: «Dos veredictos» (por defecto), «La costura» y «La cifra» (solo con % frente a los contratos). `validarTarjeta` acepta solo la v3, con palabras y textos de conjuntos cerrados y lugares sin cifras; las v1 y v2 ya guardadas se siguen leyendo y dibujando. En D1, la columna `nivel` guarda la clave de contratos (`dentro`, `encima`…).
 - **Dibujo** (`cliente/tarjeta-canvas-v3.ts`): 1080×1350 según el handoff (mitad negra #0B0A0A y mitad paja; palabras medidas y reducidas hasta caber; las palabras con tilde bajan lo justo) y vista previa 1200×630 siempre en «Dos veredictos». Pie: dominio, «¿Y EL TUYO?» y las atribuciones literales en dos líneas pequeñas (lo único por debajo de 30 px). «La cifra» adapta «mi zona» / «la zona» al modo, y con PIDEN MÁS dice «pago un N % menos».
 - **Compartir:** selector con las miniaturas reales y su radio (`Compartir.svelte`); «Ver en grande» y los canales usan la elegida. Un id por formato, para que elegir otra tarjeta después de compartir no reescriba la que ya se guardó. El aviso pasa a «La tarjeta muestra tu barrio y tus porcentajes, pero no tu precio ni tu dirección».
+
+## Oferta: ajuste por tamaño (11/10/2026, rama `oferta-ajuste-tamano`)
+- **Motor:** `referenciaOferta` y `factorTamano` en `motor/oferta.ts`; constantes `OFERTA_SIZE_EXP`, `OFERTA_S_REF_M2` y `OFERTA_BANDA_EN_LINEA` (antes `BANDA_EN_LINEA`) desde `config/oferta.json`. Banda «en línea» ±15 %.
+- **Interfaz:** el margen «en línea» es ahora un tramo sombreado en el carril (Costura, CarrilMini y tarjeta v3); la tarjeta v2 sigue sin dibujarlo. Textos nuevos de la estimación, «¿Por qué no coinciden?» y «De dónde salen los datos»; sección «Ajuste por tamaño» en /como-calculamos con la tabla de factores.
+- **Analítica:** `completa.metodo_oferta = "tamano_v1"` (con oferta).
+- **Tests:** `tests/oferta.test.ts` (excepción acotada a la regla de no añadir tests nuevos).
+- **Desviación del copy:** «normalmente» → «suele desviarse», porque un test prohíbe la palabra «normal».
+- **Contratos:** sin tocar. Fase 2 (bloque de contratos) en espera.

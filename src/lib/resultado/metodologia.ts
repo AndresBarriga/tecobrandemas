@@ -7,7 +7,7 @@
  * ejemplo se calcula con los datos de la zona (Embajadores, 45 m², 1.400 €; el mismo de la portada). Si cambian los
  * datos, cambia el ejemplo. Mismas reglas de tono que textos.ts (lo comprueba tests/textos.test.ts).
  */
-import { type Anuncio, BANDA_EN_LINEA, type Referencia, referencia, tieneDato } from '../motor';
+import { type Anuncio, OFERTA_BANDA_EN_LINEA, OFERTA_S_REF_M2, type Referencia, factorTamano, referencia, tieneDato } from '../motor';
 import { type Costura, escalaCostura } from './costura';
 import { type DatosMadrid, type IpcJson, datosSeccion } from './datos';
 import { euros, mesAnio, numero, porcentaje } from './formato';
@@ -139,6 +139,13 @@ export interface Metodologia {
 		cierre: string[];
 		limites: { titulo: string; grupos: { titulo: string; items: string[] }[] };
 	};
+	/** Cómo se ajusta la oferta por tamaño: la fórmula, por qué, cómo se calibró, cuánto acierta y sus límites */
+	ajuste: {
+		titulo: string;
+		parrafos: string[];
+		tabla: { cabecera: [string, string]; filas: { m2: string; factor: string }[] };
+		limites: string[];
+	};
 	mapa: { titulo: string; parrafos: string[]; tuZona: { titulo: string; parrafos: string[] }; muestra: string[]; noMuestra: string[] };
 	datos: { parrafos: string[]; guardamos: string[]; noGuardamos: string[]; notas: { titulo: string; texto: string[]; ancha?: boolean }[] };
 	limites: { intro: string; items: LimiteMetodologia[]; cierre: string };
@@ -155,6 +162,7 @@ export const INDICE = [
 	{ id: 'leer', titulo: 'Cómo se lee el resultado' },
 	{ id: 'ej', titulo: 'Paso a paso' },
 	{ id: 'ref', titulo: 'Las dos referencias' },
+	{ id: 'ajuste', titulo: 'Ajuste por tamaño' },
 	{ id: 'map', titulo: 'El mapa y Tu zona' },
 	{ id: 'tus-datos', titulo: 'Tus datos' },
 	{ id: 'lo-que-no-calculamos', titulo: 'Lo que no calculamos' },
@@ -253,7 +261,7 @@ function construirEjemplo(b: Base, f: number, ultimoMes: string): Ejemplo {
 		const hi = oferta.estimada * (1 + oferta.banda);
 		pasos.push({
 			n: 4, fuente: 'oferta', titulo: 'Lo que se pide ahora',
-			descripcion: `Los anuncios del ${oferta.nivel} piden de media ${numero(oferta.eurosM2, 2)}${NB}€/m² (${mesAnio(oferta.mes)}). Por ${m2}: ≈${euros(oferta.estimada)} al mes. «En línea» es ±${numero(oferta.banda * 100)}${NB}% de esa cifra: de ${numero(lo)} a ${euros(hi)}.`,
+			descripcion: `Los anuncios del ${oferta.nivel} piden de media ${numero(oferta.eurosM2, 2)}${NB}€/m² (${mesAnio(oferta.mes)}). Por ${m2}, con el ajuste por tamaño: ≈${euros(oferta.estimada)} al mes. «En línea» es ±${numero(oferta.banda * 100)}${NB}% de esa cifra: de ${numero(lo)} a ${euros(hi)}.`,
 			aria: `Lo que se pide ahora, ≈${euros(oferta.estimada)}; en línea, de ${numero(lo)} a ${euros(hi)}`,
 			carril: carril('oferta', { marca: X(oferta.estimada), margen: tramo(lo, hi) }),
 			leyenda: [
@@ -276,7 +284,7 @@ function construirEjemplo(b: Base, f: number, ultimoMes: string): Ejemplo {
 
 function construirLectura(b: Base): Lectura {
 	const { con, oferta, X } = b;
-	const banda = `${numero(BANDA_EN_LINEA * 100)}${NB}%`;
+	const banda = `${numero(OFERTA_BANDA_EN_LINEA * 100)}${NB}%`;
 	const P = COSTURA.palabras;
 	const contratos = (x: number) => carril('contratos', { banda: { desde: X(con.inf), hasta: X(con.sup) }, excelente: { desde: X(con.sup), hasta: X(con.max) }, punto: X(x) });
 	const grupos: GrupoLectura[] = [
@@ -323,7 +331,7 @@ const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): Metodologia['referencias'] {
 	const mes = datos?.oferta ? mayuscula(mesAnio(datos.oferta.mes)) : 'El último mes publicado';
 	const serie = datos?.oferta?.serie ?? '4.3.21.D';
-	const banda = numero(BANDA_EN_LINEA * 100);
+	const banda = numero(OFERTA_BANDA_EN_LINEA * 100);
 	return {
 		titulo: 'Las dos referencias',
 		intro: 'Cada resultado compara tu precio con dos cosas distintas: lo que pagan quienes ya viven de alquiler y lo que se pide ahora por entrar.',
@@ -350,7 +358,7 @@ function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): M
 					{ etiqueta: 'Ojo', texto: 'Es lo que se anuncia, no lo que se firma' }
 				],
 				terminos: [
-					{ titulo: 'Estimación', texto: 'El €/m² del barrio (o del distrito, si el barrio no tiene dato) por tus metros.' },
+					{ titulo: 'Estimación', texto: 'El €/m² del barrio (o del distrito, si el barrio no tiene dato) por tus metros, ajustado por el tamaño del piso.' },
 					{ titulo: 'En línea', texto: `Tu precio queda a ±${banda}\u00A0% o menos de la estimación.` }
 				]
 			}
@@ -376,11 +384,35 @@ function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): M
 						'La resolución es de barrio o distrito: dentro de cada uno, los precios pueden variar mucho. El dato de un barrio cambia más de un mes a otro que el de un distrito.',
 						'Usamos la media del barrio si tiene datos en los dos últimos meses; si no, la del distrito (punteada en el mapa).',
 						'Solo la calculamos con 30\u00A0m² o más, y si tu dirección cae en varias zonas, solo cuando todas son del mismo barrio o distrito.',
+						'No mira cómo es el piso (estado, planta, reforma): solo el tamaño. Los estudios de menos de 50\u00A0m² aún salen un 12\u00A0% altos.',
 						'La serie viene de Idealista: refleja lo que se anuncia allí, no todo el mercado. Se publica con unos 3-4 meses de retraso.'
 					]
 				}
 			]
 		}
+	};
+}
+
+/** «Ajuste por tamaño»: los factores salen del mismo `factorTamano` que usa el cálculo */
+function construirAjuste(): Metodologia['ajuste'] {
+	const banda = numero(OFERTA_BANDA_EN_LINEA * 100);
+	return {
+		titulo: 'Ajuste por tamaño',
+		parrafos: [
+			`Un piso pequeño se anuncia más caro por metro cuadrado que uno grande. Por eso multiplicar el €/m² del barrio por tus metros hace que los pisos pequeños parezcan caros y los grandes baratos. Para evitarlo, multiplicamos además por un factor que depende del tamaño: ${numero(OFERTA_S_REF_M2)}${NB}m² es la medida en que el €/m² de la serie es exacto (factor 1); por debajo, el factor sube; por encima, baja.`,
+			'En lenguaje llano: cada vez que el piso es un 10\u00A0% más grande, el €/m² esperado baja algo menos de un 4\u00A0%. Es una sola curva para toda la ciudad: con nuestros datos, entre zonas baratas y caras la diferencia no era significativa.',
+			'Lo calibramos con 145 anuncios reales de Idealista y Fotocasa de octubre de 2026, de los 20 distritos. Anotamos a mano solo el precio y los metros (sin scraping) y los comparamos con el €/m² de la serie del Ayuntamiento.',
+			`Con el ajuste, el error típico baja del 14\u00A0% al 10\u00A0% y los anuncios normales dentro de ±${banda}\u00A0% pasan del 52\u00A0% al 68\u00A0%. Por eso el margen «en línea» es de ±${banda}\u00A0%.`
+		],
+		tabla: {
+			cabecera: ['Metros', 'Factor'],
+			filas: [35, 45, 60, 80, 100, 130].map((m2) => ({ m2: `${m2}${NB}m²`, factor: `×${numero(factorTamano(m2), 2)}` }))
+		},
+		limites: [
+			'No tiene en cuenta el estado del piso, la planta ni si está reformado: un anuncio puede salir alto o bajo por eso, no por el precio.',
+			'Los estudios y pisos de menos de 50\u00A0m² aún salen de media un 12\u00A0% por encima de la estimación.',
+			'Es una estimación con un error típico del 10\u00A0%, no un precio exacto.'
+		]
 	};
 }
 
@@ -408,13 +440,14 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 		lectura,
 		ejemplo,
 		referencias: construirReferencias(datos, mes),
+		ajuste: construirAjuste(),
 		mapa: {
 			titulo: 'El mapa y Tu zona',
 			parrafos: [
 				'El mapa de Madrid pinta cada zona con lo más alto de lo habitual de su referencia, en €/m² al mes, para la superficie que elijas (40, 55, 70, 90 o 110\u00A0m²). Lo calcula tu navegador con el mismo método y el mismo ajuste del IPC que el resultado.',
 				'Los cinco colores reparten las zonas con dato en cinco grupos del mismo tamaño, con cortes iguales para toda la ciudad, y se recalculan al cambiar la superficie. Las zonas con 20 contratos o menos, y las superficies fuera de 30-150\u00A0m², salen como «sin dato».',
 				'En «Mi presupuesto» comparamos tu presupuesto al mes con el rango de lo que pagan los contratos de cada zona para tus metros: por debajo de la parte baja, dentro de lo habitual o por encima de lo más alto de lo habitual. En «Evolución 2015-2024» se ve cuánto ha subido la mediana de los contratos de cada zona, sin descontar la inflación.',
-				`Con el selector «Contratos | Oferta» de «Referencia» y «Mi presupuesto» ves una fuente u otra, nunca las dos a la vez. Con «Oferta», «Referencia» pinta el €/m² medio de los anuncios recientes del barrio (o del distrito, con punteado, si el barrio no tiene dato) y «Mi presupuesto» compara tu presupuesto con la estimación (€/m² × tus metros): «No llega» por debajo del ${numero((1 - BANDA_EN_LINEA) * 100)}\u00A0%, «En línea» dentro de ±${numero(BANDA_EN_LINEA * 100)}\u00A0% y «Te sobra» por encima del ${numero((1 + BANDA_EN_LINEA) * 100)}\u00A0%. «Evolución» solo usa contratos.`
+				`Con el selector «Contratos | Oferta» de «Referencia» y «Mi presupuesto» ves una fuente u otra, nunca las dos a la vez. Con «Oferta», «Referencia» pinta el €/m² medio de los anuncios recientes del barrio (o del distrito, con punteado, si el barrio no tiene dato) y «Mi presupuesto» compara tu presupuesto con la estimación (€/m² ajustado por tamaño × tus metros): «No llega» por debajo del ${numero((1 - OFERTA_BANDA_EN_LINEA) * 100)}\u00A0%, «En línea» dentro de ±${numero(OFERTA_BANDA_EN_LINEA * 100)}\u00A0% y «Te sobra» por encima del ${numero((1 + OFERTA_BANDA_EN_LINEA) * 100)}\u00A0%. «Evolución» solo usa contratos.`
 			],
 			tuZona: {
 				titulo: 'Tu zona',

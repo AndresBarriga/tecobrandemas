@@ -31,7 +31,7 @@ export function datosCompleta(p: Extract<Pantalla, { tipo: 'resultado' | 'habita
 		posicion: tercio === null ? null : POSICIONES[tercio],
 		brecha_tramo: tramoDeBrecha(r.ratioMin),
 		// Solo la categoría y el nivel del dato: nunca importes, €/m², m² ni la zona
-		...(r.oferta ? { resultado_oferta: r.oferta.contraOferta, nivel_oferta: r.oferta.nivel } : {}),
+		...(r.oferta ? { resultado_oferta: r.oferta.contraOferta, nivel_oferta: r.oferta.nivel, metodo_oferta: 'tamano_v1' as const } : {}),
 		es_horquilla: r.horquilla,
 		distrito: distritoDeLugar(r.vista.lugar)
 	};

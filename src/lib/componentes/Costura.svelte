@@ -95,12 +95,12 @@
 	{:else if c.oferta}
 		<div class="carril oferta" class:abajo={posicion === 'abajo'} style:--h="{H}px">
 			<div class="pista">
+				<!-- El margen «en línea»: un tramo sombreado, como «lo habitual» en los contratos -->
+				<span class="enlinea" style:left="{X(c.oferta.margen.desde)}px" style:width="{Math.max(2, X(c.oferta.margen.hasta) - X(c.oferta.margen.desde))}px"></span>
 				<span class="marca" style:left="{ofX}px"></span>
 				<span class="linea clara" class:hacia-abajo={posicion === 'arriba'} style:left="{xPunto}px"></span>
 				<span class="punto" style:left="{xPunto}px"></span>
 			</div>
-			<!-- El margen «en línea» (más o menos el umbral): una línea fina bajo el carril, no una banda de precios -->
-			<span class="margen" style:left="{X(c.oferta.margen.desde)}px" style:width="{Math.max(2, X(c.oferta.margen.hasta) - X(c.oferta.margen.desde))}px"></span>
 			<div class="fila">
 				<span class="valor oferta-et" bind:offsetWidth={wOferta} style:left="{izqOferta}px">{c.oferta.etiqueta}</span>
 			</div>
@@ -387,6 +387,9 @@
 	.ancho .banda {
 		font-size: 14px;
 	}
+	.pista > .enlinea {
+		background: #f6f4ee;
+	}
 	.pista > .incertidumbre {
 		background: #d6d1c6;
 	}
@@ -430,14 +433,6 @@
 	.pista > .linea.hacia-abajo {
 		top: calc(var(--h) / 2);
 		height: calc(var(--h) / 2 + 200px);
-	}
-	.margen {
-		position: absolute;
-		top: calc(var(--h) + 4px);
-		height: 3px;
-		border-radius: 2px;
-		background: var(--ciruela);
-		opacity: 0.55;
 	}
 	.fila {
 		position: relative;

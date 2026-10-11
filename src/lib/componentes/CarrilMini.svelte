@@ -10,15 +10,15 @@
 	const ancho = (t: { desde: number; hasta: number }) => `${Math.max(0, Math.min(t.hasta, 1) - Math.max(t.desde, 0)) * 100}%`;
 </script>
 
-<div class="carril {c.fuente}" style:--h="{alto}px" class:con-margen={!!c.margen}>
+<div class="carril {c.fuente}" style:--h="{alto}px">
 	<div class="pista">
 		{#if c.anterior}<span class="anterior" style:left={pc(c.anterior.desde)} style:width={ancho(c.anterior)}></span>{/if}
 		{#if c.banda}<span class="banda" style:left={pc(c.banda.desde)} style:width={ancho(c.banda)}></span>{/if}
 		{#if c.excelente}<span class="excelente" style:left={pc(c.excelente.desde)} style:width={ancho(c.excelente)}></span>{/if}
+		{#if c.margen}<span class="banda" style:left={pc(c.margen.desde)} style:width={ancho(c.margen)}></span>{/if}
 		{#if c.marca !== null}<span class="marca" style:left={pc(c.marca)}></span>{/if}
 		{#if c.punto !== null}<span class="punto" style:left={pc(c.punto)}></span>{/if}
 	</div>
-	{#if c.margen}<span class="margen" style:left={pc(c.margen.desde)} style:width={ancho(c.margen)}></span>{/if}
 </div>
 
 <style>
@@ -27,9 +27,6 @@
 		--claro: #ede9e0;
 		position: relative;
 		padding: 7px 0;
-	}
-	.carril.con-margen {
-		padding-bottom: 14px;
 	}
 	.pista {
 		position: relative;
@@ -81,13 +78,5 @@
 	}
 	.oferta .pista > .punto {
 		border-color: var(--claro);
-	}
-	.margen {
-		position: absolute;
-		bottom: 5px;
-		height: 2px;
-		background: var(--ciruela);
-		opacity: 0.55;
-		border-radius: 1px;
 	}
 </style>

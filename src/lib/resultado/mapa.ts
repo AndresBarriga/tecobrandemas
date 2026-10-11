@@ -11,7 +11,7 @@
  * u otra, nunca las dos a la vez ni la diferencia entre ellas.
  * Sin dato: 20 testigos o menos, sin datos de la zona o superficie fuera de 30-150 m². En los textos, «zona».
  */
-import { BANDA_EN_LINEA, type DatoOferta, SUPERFICIE_MAX, SUPERFICIE_MIN, compararConOferta, motivoSeccion, ofertaDeZonas, rangoInicial, tieneDato } from '../motor';
+import { OFERTA_BANDA_EN_LINEA, type DatoOferta, SUPERFICIE_MAX, SUPERFICIE_MIN, compararConOferta, motivoSeccion, referenciaOferta, ofertaDeZonas, rangoInicial, tieneDato } from '../motor';
 import { type DatosMadrid, barrioDe, datosSeccion } from './datos';
 import { euros, mesAnio, numero } from './formato';
 import { MAPA_REFERENCIA as T } from './textos';
@@ -207,7 +207,7 @@ export function capaPresupuesto(zonas: ZonaMapa[], presupuesto: number): CapaCal
 
 const POSICION_ANUNCIOS = { por_debajo: 'debajo', en_linea: 'dentro', por_encima: 'margen' } as const;
 
-/** Presupuesto frente a la estimación de anuncios de la zona (€/m² × metros), con la banda de config/oferta.json */
+/** Presupuesto frente a la estimación de anuncios de la zona (€/m² ajustado por tamaño × metros), con la banda de config/oferta.json */
 export function posicionPresupuestoAnuncios(presupuesto: number, metros: number, z: Pick<ZonaMapa, 'oferta'>): PosicionPresupuesto | null {
 	const r = compararConOferta(presupuesto, metros, z.oferta);
 	return r ? POSICION_ANUNCIOS[r.contraOferta] : null;
@@ -227,7 +227,7 @@ export function capaReferenciaAnuncios(zonas: ZonaMapa[]): CapaCalculada {
 	};
 }
 
-/** «Mi presupuesto» con anuncios: «No llega» (< 90 %), «En línea» (±10 %) o «Te sobra» (> 110 % de la estimación) */
+/** «Mi presupuesto» con anuncios: «No llega» (< 90 %), «En línea» (±15 %) o «Te sobra» (> 110 % de la estimación) */
 export function capaPresupuestoAnuncios(zonas: ZonaMapa[], presupuesto: number, metros: number): CapaCalculada & { resumen: ResumenPresupuesto } {
 	const pos = new Map(zonas.map((z) => [z.cusec, posicionPresupuestoAnuncios(presupuesto, metros, z)]));
 	return {
@@ -237,7 +237,7 @@ export function capaPresupuestoAnuncios(zonas: ZonaMapa[], presupuesto: number, 
 			{ tono: 1, etiqueta: A.presupuesto.dentro },
 			{ tono: 2, etiqueta: A.presupuesto.margen }
 		],
-		nota: A.presupuesto.nota(String(Math.round((1 - BANDA_EN_LINEA) * 100)), String(Math.round(BANDA_EN_LINEA * 100)), String(Math.round((1 + BANDA_EN_LINEA) * 100))),
+		nota: A.presupuesto.nota(String(Math.round((1 - OFERTA_BANDA_EN_LINEA) * 100)), String(Math.round(OFERTA_BANDA_EN_LINEA * 100)), String(Math.round((1 + OFERTA_BANDA_EN_LINEA) * 100))),
 		punteadas: punteadasDe(zonas),
 		resumen: resumenPresupuesto(pos.values())
 	};
@@ -307,7 +307,7 @@ export function hojaDeZona(
 		const distrito = z.barrio ? datos.barrios[z.barrio]?.distrito : undefined;
 		hoja.referencia = o.nivel === 'barrio' ? A.hoja.barrio(numero(o.eurosM2, 1)) : A.hoja.distrito(distrito ?? 'Madrid', numero(o.eurosM2, 1));
 		if (capa === 'presupuesto' && presupuesto !== null && superficieValida(superficie)) {
-			hoja.parteAlta = A.hoja.estimada(m2, euros(Math.round(o.eurosM2 * superficie)));
+			hoja.parteAlta = A.hoja.estimada(m2, euros(Math.round(referenciaOferta(o.eurosM2, superficie))));
 			const p = posicionPresupuestoAnuncios(presupuesto, superficie, z);
 			if (p) hoja.presupuesto = A.hoja.presupuesto[p](euros(presupuesto));
 		}
