@@ -49,7 +49,7 @@ describe('página «Cómo calculamos»', () => {
 		expect(e.pasos.at(-1)!.carril).toBeNull();
 		expect(e.costura.modo).toBe('mirando');
 		expect(e.costura.mitades.map((x) => x.fuente)).toEqual(['oferta', 'contratos']);
-		expect(e.intro).toContain('Embajadores');
+		expect(e.intro).toContain('Delicias');
 	});
 
 	it('cómo se lee: las palabras del resultado, con su punto dentro de la escala y en orden', () => {
