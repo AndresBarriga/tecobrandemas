@@ -447,7 +447,7 @@ export const COSTURA = {
 		distintas:
 			'Los contratos recogen rentas ya firmadas, algunas de hace años. Lo que se pide es el precio de los anuncios recientes, para quien llega. Miden cosas distintas, así que pueden no coincidir.',
 		margen: (pct: string) =>
-			`La línea morada marca el margen «en línea»: ±${pct} %. Es lo que suele desviarse un anuncio corriente de nuestra estimación.`
+			`La línea morada marca el margen «en línea»: ±${pct} %. Es el margen en el que suele quedar un anuncio corriente respecto a nuestra estimación.`
 	},
 	datos: {
 		titulo: 'De dónde salen los datos',

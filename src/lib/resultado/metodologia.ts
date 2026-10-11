@@ -354,7 +354,7 @@ function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): M
 				filas: [
 					{ etiqueta: 'Qué mide', texto: 'Precios pedidos en anuncios, antes de cerrar el precio' },
 					{ etiqueta: 'Fuente', texto: `Serie ${serie} del Ayuntamiento de Madrid, elaborada a partir de Idealista` },
-					{ etiqueta: 'Al día', texto: `${mes}, sin ajustar: ya es reciente` },
+					{ etiqueta: 'Al día', texto: `${mes}, sin ajuste de IPC: ya es reciente` },
 					{ etiqueta: 'Ojo', texto: 'Es lo que se anuncia, no lo que se firma' }
 				],
 				terminos: [
@@ -402,7 +402,7 @@ function construirAjuste(): Metodologia['ajuste'] {
 			`Un piso pequeño se anuncia más caro por metro cuadrado que uno grande. Por eso multiplicar el €/m² del barrio por tus metros hace que los pisos pequeños parezcan caros y los grandes baratos. Para evitarlo, multiplicamos además por un factor que depende del tamaño: ${numero(OFERTA_S_REF_M2)}${NB}m² es la medida en que el €/m² de la serie es exacto (factor 1); por debajo, el factor sube; por encima, baja.`,
 			'En lenguaje llano: cada vez que el piso es un 10\u00A0% más grande, el €/m² esperado baja algo menos de un 4\u00A0%. Es una sola curva para toda la ciudad: con nuestros datos, entre zonas baratas y caras la diferencia no era significativa.',
 			'Lo calibramos con 145 anuncios reales de Idealista y Fotocasa de octubre de 2026, de los 20 distritos. Anotamos a mano solo el precio y los metros (sin scraping) y los comparamos con el €/m² de la serie del Ayuntamiento.',
-			`Con el ajuste, el error típico baja del 14\u00A0% al 10\u00A0% y los anuncios normales dentro de ±${banda}\u00A0% pasan del 52\u00A0% al 68\u00A0%. Por eso el margen «en línea» es de ±${banda}\u00A0%.`
+			`Con el ajuste, el error típico baja del 14\u00A0% al 10\u00A0% y los anuncios corrientes dentro de ±${banda}\u00A0% pasan del 52\u00A0% al 68\u00A0%. Por eso el margen «en línea» es de ±${banda}\u00A0%.`
 		],
 		tabla: {
 			cabecera: ['Metros', 'Factor'],
@@ -432,7 +432,7 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 		indice: INDICE.map((i) => ({ ...i })),
 		treintaSegundos: [
 			'Comparamos el precio de un anuncio, o de tu alquiler, con dos referencias: lo que pagan quienes ya viven de alquiler en la zona (contratos vigentes declarados a Hacienda, 2024) y lo que se pide ahora en los anuncios del barrio o del distrito.',
-			`Ajustamos los contratos con el IPC del alquiler: ${pct} hasta ${mes}. Lo que se pide no se ajusta: ya es reciente.`,
+			`Ajustamos los contratos con el IPC del alquiler: ${pct} hasta ${mes}. Lo que se pide no se ajusta por IPC (ya es reciente), pero sí por tamaño: los pisos pequeños se anuncian más caros por m².`,
 			'Los contratos ya están firmados, algunos hace años; los anuncios son precios pedidos que aún pueden cambiar. Miden cosas distintas: cada referencia se compara solo con tu precio, nunca una con otra.',
 			'No vemos el piso por dentro ni sabemos qué se firmará: por eso damos una palabra y un margen, no una cifra exacta.',
 			'No somos una tasación ni sustituimos al valor oficial.'
