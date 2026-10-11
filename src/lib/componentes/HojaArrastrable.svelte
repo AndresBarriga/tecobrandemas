@@ -25,10 +25,11 @@
 		children: Snippet;
 	} = $props();
 
-	let cabEl: HTMLElement | undefined = $state();
+	// El alto de la cabecera cambia con su contenido (la frase de resumen llega después): se mide en cada cambio
+	let altoCab = $state(56);
 	let asaEl: HTMLElement | undefined = $state();
 	const ASA = 36;
-	const cerrada = $derived(ASA + (cabEl?.offsetHeight ?? 56) + 8);
+	const cerrada = $derived(ASA + altoCab + 8);
 	const completa = $derived(Math.max(cerrada + 120, alto - reservaSuperior));
 	const media = $derived(Math.min(completa - 60, Math.max(cerrada + 140, Math.round(alto * 0.42))));
 	const altura = (e: 'cerrada' | 'media' | 'completa') => (e === 'cerrada' ? cerrada : e === 'media' ? media : completa);
@@ -101,7 +102,7 @@
 		onclick={alternar}
 		onkeydown={teclaAsa}
 	><span></span></button>
-	<div class="cab" bind:this={cabEl}>{@render cabecera()}</div>
+	<div class="cab" bind:offsetHeight={altoCab}>{@render cabecera()}</div>
 	<div class="cuerpo">{@render children()}</div>
 </section>
 

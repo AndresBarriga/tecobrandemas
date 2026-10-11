@@ -141,3 +141,8 @@ Decisiones del usuario para la serie del Ayuntamiento 4.3.21.D (PR 1 de 3: motor
 - **Se conservan** las etiquetas «anuncios recientes» y «no son contratos firmados», el mes y la fuente en pantalla.
 - **Sigue vigente:** no mostrar ni calcular la diferencia entre ambas referencias, ni la razón interna de ~1,2× entre ellas.
 - **PR 3:** ya no va tras flag; todo lo visible tiene que quedar explicado en la web (portada, «Cómo calculamos», FAQ y atribución).
+
+## /mapa: «¿Dónde me llega?» (11/10/2026)
+- **«Mi presupuesto» solo con la oferta:** compara con la estimación de anuncios (€/m² ajustado por tamaño × metros, banda ±15 %), no con contratos. Los contratos se ven en «Referencia».
+- **Barras con número:** presupuesto 500–3.000 € (paso 50) y metros 30–150 (paso 5); un número fuera de rango se ajusta al límite. En móvil son fijos y compactos sobre el mapa porque en la hoja el teclado la subía a pantalla completa y tapaba lo que se estaba moviendo.
+
