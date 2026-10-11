@@ -207,11 +207,11 @@ export function construirCostura(e: EntradaCostura): Costura {
 		: null;
 
 	const plegables: Plegable[] = [];
-	if (o) plegables.push({ clave: 'porque', titulo: T.porque.titulo, parrafos: [T.porque.distintas, T.porque.margen(numero(o.banda * 100))] });
+	if (o) plegables.push({ clave: 'porque', titulo: T.porque.titulo, parrafos: [T.porque.distintas, T.porque.margen(numero(o.banda * 100), nivelO)] });
 	plegables.push({
 		clave: 'datos',
 		titulo: T.datos.titulo,
-		parrafos: [e.fuenteContratos, ...(o && e.fuenteOferta ? [`${e.fuenteOferta} ${T.datos.calculo}`] : [])]
+		parrafos: [e.fuenteContratos, ...(o && e.fuenteOferta ? [`${e.fuenteOferta} ${T.datos.calculo(numero(o.eurosM2, 2), nivelO, m2, euros(o.estimada))}`] : [])]
 	});
 
 	return {

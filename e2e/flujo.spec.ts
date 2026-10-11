@@ -10,7 +10,7 @@ test.describe('flujo', () => {
 		await expect(page.getByText('POR ENCIMA', { exact: true }).first()).toBeVisible();
 		await esperarAnimacion(page);
 		expect(Date.now() - t0).toBeLessThan(30_000);
-		await expect(page.getByText(/2\.500 €\/mes · precio del anuncio/)).toBeVisible();
+		await expect(page.getByText(/Un anuncio · 90\sm² · 2\.500\s€\/mes/)).toBeVisible();
 		await expect(page.getByRole('img', { name: /Contratos vigentes de la zona: lo habitual de/ })).toBeVisible();
 	});
 

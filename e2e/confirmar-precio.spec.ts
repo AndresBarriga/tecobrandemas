@@ -4,8 +4,10 @@ import { abrir, comprobar, esperarAnimacion, sinCompartirNativo } from './ayudas
 async function parteAlta(page: import('@playwright/test').Page): Promise<number> {
 	await abrir(page);
 	await comprobar(page, { precio: '2500', superficie: '90' });
-	const aria = (await page.locator('.panel[role="img"]').first().getAttribute('aria-label')) ?? '';
-	return Number(aria.match(/lo habitual de [\d.]+\s€ a ([\d.]+)/)![1]!.replace('.', ''));
+	const aria = (await page.locator('article').getByRole('img', { name: /Contratos vigentes de la zona: lo habitual de/ }).first().getAttribute('aria-label')) ?? '';
+	// «a 1.040 €» o, con zonas en niveles distintos, «a 1.040–1.214 €»: la parte alta es la cifra mayor
+	const alto = aria.match(/lo habitual de [\d.]+\s€ a ([^;]+)/)![1]!;
+	return Math.max(...[...alto.matchAll(/\d[\d.]*/g)].map((m) => Number(m[0].replace('.', ''))));
 }
 
 test.describe('aviso de posible error al teclear', () => {

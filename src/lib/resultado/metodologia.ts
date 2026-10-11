@@ -384,7 +384,7 @@ function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): M
 						'La resolución es de barrio o distrito: dentro de cada uno, los precios pueden variar mucho. El dato de un barrio cambia más de un mes a otro que el de un distrito.',
 						'Usamos la media del barrio si tiene datos en los dos últimos meses; si no, la del distrito (punteada en el mapa).',
 						'Solo la calculamos con 30\u00A0m² o más, y si tu dirección cae en varias zonas, solo cuando todas son del mismo barrio o distrito.',
-						'No mira cómo es el piso (estado, planta, reforma): solo el tamaño. Los estudios de menos de 50\u00A0m² aún salen un 12\u00A0% altos.',
+						'No mira cómo es el piso (estado, planta, reforma): solo el tamaño. Los estudios de menos de 50\u00A0m² salen de media un 12\u00A0% altos.',
 						'La serie viene de Idealista: refleja lo que se anuncia allí, no todo el mercado. Se publica con unos 3-4 meses de retraso.'
 					]
 				}
@@ -402,7 +402,7 @@ function construirAjuste(): Metodologia['ajuste'] {
 			`Un piso pequeño se anuncia más caro por metro cuadrado que uno grande. Por eso multiplicar el €/m² del barrio por tus metros hace que los pisos pequeños parezcan caros y los grandes baratos. Para evitarlo, multiplicamos además por un factor que depende del tamaño: ${numero(OFERTA_S_REF_M2)}${NB}m² es la medida en que el €/m² de la serie es exacto (factor 1); por debajo, el factor sube; por encima, baja.`,
 			'En lenguaje llano: cada vez que el piso es un 10\u00A0% más grande, el €/m² esperado baja algo menos de un 4\u00A0%. Es una sola curva para toda la ciudad: con nuestros datos, entre zonas baratas y caras la diferencia no era significativa.',
 			'Lo calibramos con 145 anuncios reales de Idealista y Fotocasa de octubre de 2026, de los 20 distritos. Anotamos a mano solo el precio y los metros (sin scraping) y los comparamos con el €/m² de la serie del Ayuntamiento.',
-			`Con el ajuste, el error típico baja del 14\u00A0% al 10\u00A0% y los anuncios corrientes dentro de ±${banda}\u00A0% pasan del 52\u00A0% al 68\u00A0%. Por eso el margen «en línea» es de ±${banda}\u00A0%.`
+			`Con el ajuste, el error típico es del 10\u00A0% y el 68\u00A0% de los anuncios corrientes queda dentro de ±${banda}\u00A0%. Por eso el margen «en línea» es de ±${banda}\u00A0%.`
 		],
 		tabla: {
 			cabecera: ['Metros', 'Factor'],
@@ -410,7 +410,7 @@ function construirAjuste(): Metodologia['ajuste'] {
 		},
 		limites: [
 			'No tiene en cuenta el estado del piso, la planta ni si está reformado: un anuncio puede salir alto o bajo por eso, no por el precio.',
-			'Los estudios y pisos de menos de 50\u00A0m² aún salen de media un 12\u00A0% por encima de la estimación.',
+			'Los estudios y pisos de menos de 50\u00A0m² salen de media un 12\u00A0% por encima de la estimación.',
 			'Es una estimación con un error típico del 10\u00A0%, no un precio exacto.'
 		]
 	};
@@ -504,7 +504,7 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 				},
 				{
 					nombre: 'Banco de Datos del Ayuntamiento de Madrid, serie 4.3.21.D (precio de oferta de alquiler, €/m²)', host: 'madrid.es', url: 'https://www.madrid.es',
-					uso: `Los anuncios recientes por barrio y distrito${mesOferta ? `, ${mesOferta}` : ''}. Serie elaborada por el Ayuntamiento a partir de datos de Idealista; no usamos Idealista directamente.`,
+					uso: `Los anuncios recientes por barrio y distrito${mesOferta ? `, ${mesOferta}` : ''}. No descargamos ni copiamos datos de portales. La serie de anuncios es del Ayuntamiento de Madrid (elaborada a partir de Idealista). Para calibrar el ajuste por tamaño leímos a mano 145 anuncios publicados en Idealista y Fotocasa, guardando solo precio, metros y barrio; no los publicamos.`,
 					atribucion: OFERTA.fuente(mesOferta ?? 'último mes publicado')
 				},
 				{

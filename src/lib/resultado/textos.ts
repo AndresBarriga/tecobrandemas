@@ -446,12 +446,13 @@ export const COSTURA = {
 		titulo: '¿Por qué no coinciden?',
 		distintas:
 			'Los contratos recogen rentas ya firmadas, algunas de hace años. Lo que se pide es el precio de los anuncios recientes, para quien llega. Miden cosas distintas, así que pueden no coincidir.',
-		margen: (pct: string) =>
-			`La línea morada marca el margen «en línea»: ±${pct} %. Es el margen en el que suele quedar un anuncio corriente respecto a nuestra estimación.`
+		margen: (pct: string, nivel: 'barrio' | 'distrito') =>
+			`La línea morada bajo lo que se pide marca el margen «en línea»: ±${pct} %. Es el margen en el que suele quedar un anuncio corriente respecto a nuestra estimación, que es del ${nivel} y no un precio exacto.`
 	},
 	datos: {
 		titulo: 'De dónde salen los datos',
-		calculo: 'Precio de oferta del barrio o del distrito, ajustado por tamaño (calibrado con 145 anuncios reales de Idealista y Fotocasa, octubre de 2026).'
+		calculo: (eurosM2: string, nivel: 'barrio' | 'distrito', m2: string, estimada: string) =>
+			`${eurosM2} €/m² de media del ${nivel}, ajustado a ${m2} porque el €/m² baja cuanto más grande es el piso: ≈${estimada}. Es una estimación, no una media observada de pisos de ${m2}.`
 	},
 	/** Siempre visible bajo el bloque: la fuente y la fecha de cada cifra */
 	fuentesCortas: (mesOferta: string | null) =>
