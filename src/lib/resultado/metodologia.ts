@@ -231,7 +231,7 @@ function construirEjemplo(b: Base, f: number, ultimoMes: string): Ejemplo {
 	const tramo = (inf: number, sup: number): TramoEscala => ({ desde: X(inf), hasta: X(sup) });
 	const m2 = `${numero(a.superficie)}${NB}m²`;
 	const habitual = (r: Referencia): LeyendaEjemplo => ({ clave: 'banda', texto: COSTURA.contratos.banda, valor: rango(r.inf, r.sup) });
-	const excelente: LeyendaEjemplo = { clave: 'excelente', texto: 'máximo si fuera un piso excelente', valor: euros(con.max) };
+	const excelente: LeyendaEjemplo = { clave: 'excelente', texto: 'si fuera un piso excelente', valor: euros(con.max) };
 
 	const pasos: PasoEjemplo[] = [
 		{
@@ -251,7 +251,7 @@ function construirEjemplo(b: Base, f: number, ultimoMes: string): Ejemplo {
 		{
 			n: 3, fuente: 'contratos', titulo: 'Si fuera un piso excelente',
 			descripcion: `La referencia deja margen para las mejores características (ascensor, garaje, reforma reciente, piscina o vistas): hasta ${euros(con.max)}. Es el máximo de la referencia, no del mercado: hay contratos por encima.`,
-			aria: `Lo habitual, de ${numero(con.inf)} a ${euros(con.sup)}; máximo si fuera un piso excelente, ${euros(con.max)}`,
+			aria: `Lo habitual, de ${numero(con.inf)} a ${euros(con.sup)}; si fuera un piso excelente, ${euros(con.max)}`,
 			carril: carril('contratos', { banda: tramo(con.inf, con.sup), excelente: tramo(con.sup, con.max) }),
 			leyenda: [habitual(con), excelente]
 		}
@@ -293,8 +293,8 @@ function construirLectura(b: Base): Lectura {
 			items: [
 				{ palabra: P.debajo, texto: 'Por debajo de la parte baja de lo habitual.', carril: contratos(con.inf * 0.9) },
 				{ palabra: P.dentro, texto: 'Entre la parte baja y lo más alto de lo habitual. Te decimos si cae en la parte baja, media o alta.', carril: contratos((con.inf + con.sup) / 2) },
-				{ palabra: P.algo, texto: 'Supera lo más alto de lo habitual, pero no el máximo si fuera un piso excelente: puede cuadrar si el piso lo es.', carril: contratos((con.sup + con.max) / 2) },
-				{ palabra: P.encima, texto: 'Supera incluso el máximo si fuera un piso excelente. La cifra dice cuánto pasa de lo más alto de lo habitual: en %, o en veces desde el doble.', carril: contratos(con.max * 1.15) }
+				{ palabra: P.algo, texto: 'Supera lo más alto de lo habitual, pero no llega a lo de un piso excelente: puede cuadrar si el piso lo es.', carril: contratos((con.sup + con.max) / 2) },
+				{ palabra: P.encima, texto: 'Supera incluso lo de un piso excelente. La cifra dice cuánto pasa de lo más alto de lo habitual: en %, o en veces desde el doble.', carril: contratos(con.max * 1.15) }
 			]
 		}
 	];
@@ -346,7 +346,7 @@ function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): M
 				],
 				terminos: [
 					{ titulo: 'Lo habitual', texto: 'La franja de la mayoría de los contratos de pisos como el tuyo, ajustada a la superficie.' },
-					{ titulo: 'Máximo si fuera un piso excelente', texto: 'El margen para las mejores características. Es el máximo de la referencia, no del mercado.' }
+					{ titulo: 'Si fuera un piso excelente', texto: 'El margen para las mejores características. Es el máximo de la referencia, no del mercado.' }
 				]
 			},
 			{

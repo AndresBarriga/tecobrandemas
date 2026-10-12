@@ -409,7 +409,12 @@ export const COSTURA = {
 				algo: 'Algo más de lo que pagan quienes ya viven aquí.',
 				encima: 'Más de lo que pagan quienes ya viven aquí.'
 			},
-			vivo: { debajo: 'Pagas menos que tus vecinos.', dentro: 'Pagas lo habitual en tu zona.', algo: 'Pagas algo más que tus vecinos.', encima: 'Pagas más que tus vecinos.' }
+			vivo: {
+					debajo: 'Pagas menos que la parte baja de lo que pagan quienes ya viven aquí.',
+					dentro: 'Pagas lo habitual en tu zona.',
+					algo: 'Pagas algo más que la parte alta de lo que pagan quienes ya viven aquí.',
+					encima: 'Pagas más que la parte alta de lo que pagan quienes ya viven aquí.'
+				}
 		},
 		oferta: {
 			mirando: (clave: 'enlinea' | 'encima' | 'debajo' | 'pidenmas', nivel: 'barrio' | 'distrito') =>
@@ -429,7 +434,7 @@ export const COSTURA = {
 		vecesLoMasAlto: 'lo más alto de lo habitual',
 		excelente: '. Puede cuadrar si el piso es excelente.',
 		banda: 'lo habitual',
-		maximo: 'máximo si fuera un piso excelente: '
+		maximo: 'si fuera un piso excelente: '
 	},
 	oferta: {
 		pregunta: (m2: string) => `¿Cuánto se pide ahora por entrar en un piso de ${m2}?`,
@@ -462,7 +467,7 @@ export const COSTURA = {
 		`Contratos: SERPAVI (Ministerio de Vivienda), 2024${mesOferta ? ` · Anuncios: Ayuntamiento de Madrid, ${mesOferta}` : ''}`,
 	aria: {
 		contratos: (bajo: string, alto: string, maximo: string) =>
-			`Contratos vigentes de la zona: lo habitual de ${bajo} a ${alto}; máximo si fuera un piso excelente, ${maximo}.`,
+			`Contratos vigentes de la zona: lo habitual de ${bajo} a ${alto}; si fuera un piso excelente, ${maximo}.`,
 		oferta: (marca: string) => `Anuncios recientes: ${marca}.`
 	}
 } as const;
