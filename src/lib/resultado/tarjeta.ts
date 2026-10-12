@@ -146,8 +146,9 @@ export function construirTarjeta(p: PantallaResultado, tipo: TipoTarjeta = 'vere
 		v: 3,
 		modo: c.modo,
 		tipo,
-		lugar: c.lugar,
-		barrio: p.barrio,
+		// La tarjeta no lleva el barrio: solo el distrito (o «Madrid»), en la imagen, en la vista previa y en el texto que se comparte
+		lugar: p.distrito ?? 'Madrid',
+		barrio: null,
 		aproximada: p.horquilla,
 		contratos: { clave: vC.clave as ClaveContratos, palabra: vC.palabra, cifra: vC.cifra, texto: textoContratos(vC) },
 		oferta: vO && c.oferta ? { clave: vO.clave as ClaveOferta, palabra: vO.palabra, cifra: vO.cifra, texto: T.oferta(nivel), nivel } : null,
@@ -208,7 +209,7 @@ export interface TextosEnlace {
 
 /** Título, descripción y textos de la vista previa del enlace: sin precio ni dirección */
 export function textosEnlace(t: TarjetaDatos): TextosEnlace {
-	const lugar = t.barrio ?? 'Madrid';
+	const lugar = esV3(t) ? t.lugar : (t.barrio ?? 'Madrid');
 	if (esV3(t)) {
 		const titulo = `${NOMBRE} · ${t.modo === 'vivo' ? 'Un alquiler' : 'Un anuncio'} en ${lugar}`;
 		return { titulo, descripcion: `${resumenV3(t)} ${TARJETA.cierre}`, og: { etiqueta: t.contratos.palabra, titular: resumenV3(t), nota: '', cta: TARJETA.cierre } };

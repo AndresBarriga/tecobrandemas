@@ -22,6 +22,22 @@ function pantalla(precio: number, vivo: boolean) {
 	return q;
 }
 
+describe('la tarjeta lleva solo el distrito', () => {
+	it('imagen (lugar), vista previa y texto de WhatsApp: «Chamberí», nunca el barrio; las ya guardadas no se migran', () => {
+		for (const vivo of [false, true]) {
+			const t = construirTarjeta(pantalla(2600, vivo));
+			expect(t.lugar).toBe('Chamberí');
+			expect(t.barrio).toBeNull();
+			expect(textoCompartir(t)).toMatch(/^Chamberí\. /);
+			expect(textosEnlace(t).titulo).toBe(`A su precio · ${vivo ? 'Un alquiler' : 'Un anuncio'} en Chamberí`);
+			expect(JSON.stringify([t, textoCompartir(t), textosEnlace(t)])).not.toContain('Almagro');
+		}
+		// Una tarjeta v3 ya guardada con barrio se lee tal cual (no hay migración): el texto sigue su `barrio`
+		const antigua = { ...construirTarjeta(pantalla(2600, false)), lugar: 'Almagro, Chamberí', barrio: 'Almagro' };
+		expect(textosEnlace(antigua).titulo).toContain('Almagro, Chamberí');
+	});
+});
+
 describe('ofertaConDireccion', () => {
 	it('positivo: por encima; negativo: por debajo; sin signo, igual; el número va sin signo', () => {
 		expect(ofertaConDireccion(`+76${NB}%`, 'lo que se pide en anuncios')).toEqual({ cifra: `76${NB}%`, direccion: 'por encima', texto: 'por encima de lo que se pide en anuncios' });
