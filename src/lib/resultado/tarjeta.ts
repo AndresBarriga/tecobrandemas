@@ -14,7 +14,7 @@
  * cifra»), con las palabras y los % del resultado. Sin euros en ningún sitio: los carriles de «La costura» van en
  * fracciones de una escala sin rotular. La vista previa del enlace es siempre «Dos veredictos».
  */
-import type { ClaveContratos, ClaveOferta, Costura, Veredicto } from './costura';
+import { type ClaveContratos, type ClaveOferta, type Costura, type Veredicto, ofertaConDireccion } from './costura';
 import { heroEnVeces } from './ratio';
 import type { PantallaResultado } from './resultado';
 import { COSTURA, ETIQUETA_OG, ETIQUETA_POR_DEBAJO, NOMBRE, OFERTA, OG, TARJETA, TARJETA_COSTURA, TARJETA_INQUILINO } from './textos';
@@ -162,15 +162,24 @@ export function construirTarjeta(p: PantallaResultado, tipo: TipoTarjeta = 'vere
 }
 
 /** «por encima (+35 %)», «dentro, en la parte media de lo habitual»: una referencia en una frase corta */
+/** La oferta de la tarjeta con dirección: «0,8 %» + «por debajo de lo que se pide en el distrito» */
+export const ofertaTarjetaPintada = (o: NonNullable<TarjetaV3['oferta']>) => ofertaConDireccion(o.cifra, T.ofertaReferencia(o.nivel));
+
 function frase(palabra: string, cifra: string, texto: string): string {
 	return cifra ? `${palabra.toLowerCase()} (${cifra})` : `${palabra.toLowerCase()}, ${texto}`;
+}
+
+/** «en línea: 0,8 % por debajo de lo que se pide en el distrito» */
+function fraseOferta(o: NonNullable<TarjetaV3['oferta']>): string {
+	const p = ofertaTarjetaPintada(o);
+	return `${o.palabra.toLowerCase()}: ${p.cifra} ${p.texto}`;
 }
 
 /** Las dos referencias en dos frases, para el texto del mensaje y la descripción del enlace */
 function resumenV3(t: TarjetaV3): string {
 	const c = `${T.frenteContratos}: ${frase(t.contratos.palabra, t.contratos.cifra, t.contratos.texto)}.`;
 	if (!t.oferta) return c;
-	const o = t.oferta.clave === 'pidenmas' ? T.cifra.pidenMas(t.oferta.cifra.replace(/^[+−]/, '')) : frase(t.oferta.palabra, t.oferta.cifra, t.oferta.texto);
+	const o = t.oferta.clave === 'pidenmas' ? T.cifra.pidenMas(t.oferta.cifra.replace(/^[+−]/, '')) : fraseOferta(t.oferta);
 	return `${c} ${T.frenteOferta}: ${o}.`;
 }
 

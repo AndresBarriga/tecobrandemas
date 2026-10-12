@@ -7,7 +7,7 @@
  * Las palabras y las cifras grandes se miden y se reducen hasta caber. Nada por debajo de 30 px salvo las
  * atribuciones, que van literales en dos líneas pequeñas al pie. No hay euros, renta, m² ni dirección que dibujar.
  */
-import { OG_ALTO, OG_ANCHO, TARJETA_ALTO, TARJETA_ANCHO, TARJETA_COSTURA as T, type TarjetaV3 } from '#lib/resultado';
+import { OG_ALTO, OG_ANCHO, TARJETA_ALTO, TARJETA_ANCHO, TARJETA_COSTURA as T, ofertaTarjetaPintada, type TarjetaV3 } from '#lib/resultado';
 import { type Ctx, ancho, circulo, envolver, fuente, linea, rect } from './tarjeta-lienzo';
 
 const C = {
@@ -115,7 +115,8 @@ function dosVeredictos(ctx: Ctx, t: TarjetaV3): void {
 	linea(ctx, T.frenteOferta, X0, 760, 46, { color: C.tinta });
 	if (t.oferta) {
 		const baja = palabra(ctx, t.oferta.palabra, X0, 822, W, 200, 128, C.tinta);
-		filaCifra(ctx, t.oferta.cifra, t.oferta.texto, 1016 + baja, C.tinta, 120, 38);
+		const p = ofertaTarjetaPintada(t.oferta);
+		filaCifra(ctx, p.cifra, p.texto, 1016 + baja, C.tinta, 120, 38);
 	} else {
 		fuente(ctx, 700, 56, 'texto');
 		linea(ctx, T.sinOferta, X0, 840, 70, { color: C.grafito });
@@ -225,7 +226,7 @@ function laCifra(ctx: Ctx, t: TarjetaV3): void {
 		fuente(ctx, 600, 42, 'texto');
 		linea(ctx, T.cifra.oferta(t.oferta.nivel).trim(), X0, 916, 52, { color: C.tinta });
 		const valor =
-			t.oferta.clave === 'pidenmas' ? T.cifra.pidenMas(t.oferta.cifra.replace(/^[+−]/, '')) : `${t.oferta.palabra.toLowerCase()} (${t.oferta.cifra})`;
+			t.oferta.clave === 'pidenmas' ? T.cifra.pidenMas(t.oferta.cifra.replace(/^[+−]/, '')) : `${t.oferta.palabra.toLowerCase()}, ${ofertaTarjetaPintada(t.oferta).cifra} ${ofertaTarjetaPintada(t.oferta).direccion}`;
 		const tv = ajustar(ctx, `${valor}.`, W, 64, 800, 'texto');
 		fuente(ctx, 800, tv, 'texto');
 		linea(ctx, `${valor}.`, X0, 976, tv * 1.15, { color: C.tinta });
@@ -291,6 +292,9 @@ export function dibujarOgV3(canvas: HTMLCanvasElement, t: TarjetaV3): void {
 	const [ministerio, ine] = T.fuentes[0].split(' · ');
 	const [ayuntamiento, dominio] = T.fuentes[1].split(' · ');
 	mitadOg(ctx, 0, T.frenteContratos, t.contratos.palabra, t.contratos.cifra, t.contratos.texto, C.papel, [ministerio!, ine!]);
-	if (t.oferta) mitadOg(ctx, mitad, T.frenteOferta, t.oferta.palabra, t.oferta.cifra, t.oferta.texto, C.tinta, [ayuntamiento!, dominio!]);
+	if (t.oferta) {
+		const p = ofertaTarjetaPintada(t.oferta);
+		mitadOg(ctx, mitad, T.frenteOferta, t.oferta.palabra, p.cifra, p.texto, C.tinta, [ayuntamiento!, dominio!]);
+	}
 	else mitadOg(ctx, mitad, T.frenteOferta, null, '', T.sinOferta, C.tinta, [ayuntamiento!, dominio!]);
 }
