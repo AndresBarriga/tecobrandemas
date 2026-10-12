@@ -67,8 +67,9 @@ describe('almacén de tarjetas', () => {
 	it('memoria: con id propuesto es idempotente', async () => {
 		const a = almacenMemoria();
 		expect(await a.crear(tarjeta(), JPEG, 'abcde12345')).toBe('abcde12345');
-		expect(await a.crear({ ...tarjeta(), barrio: 'Otro' }, null, 'abcde12345')).toBe('abcde12345');
-		expect((await a.leer('abcde12345'))?.datos.barrio).toBe('Almagro');
+		expect(await a.crear({ ...tarjeta(), lugar: 'Otro' } as TarjetaDatos, null, 'abcde12345')).toBe('abcde12345');
+		// La tarjeta lleva el distrito, nunca el barrio
+		expect((await a.leer('abcde12345'))?.datos).toMatchObject({ lugar: 'Chamberí', barrio: null });
 	});
 
 	it('memoria: guarda y lee', async () => {
@@ -92,7 +93,8 @@ describe('almacén de tarjetas', () => {
 		}
 
 		const fila = db.prepare('SELECT * FROM tarjetas WHERE id = ?').get(id) as Record<string, string>;
-		expect(fila).toMatchObject({ mes: '2026-10', barrio: 'Almagro', nivel: 'encima' });
+		expect(fila).toMatchObject({ mes: '2026-10', barrio: null, nivel: 'encima' });
+		expect(fila.datos).not.toContain('Almagro');
 		expect(fila.datos).not.toMatch(/2500|2\.500/);
 
 		expect((await a.leer(id))?.datos).toEqual(tarjeta());
@@ -131,11 +133,11 @@ describe('POST /api/tarjeta', () => {
 		expect(((await r1.json()) as { id: string }).id).toBe('abcde12345');
 
 		// Otro canal sube lo mismo, o alguien intenta pisar la tarjeta con otra: no cambia nada
-		const f2 = formulario({ ...tarjeta(), barrio: 'Otro barrio' });
+		const f2 = formulario({ ...tarjeta(), lugar: 'Otro distrito' } as TarjetaDatos);
 		f2.append('id', 'abcde12345');
 		expect(((await (await llamar(f2, env)).json()) as { id: string }).id).toBe('abcde12345');
-		const fila = db.prepare('SELECT barrio FROM tarjetas WHERE id = ?').get('abcde12345') as { barrio: string };
-		expect(fila.barrio).toBe('Almagro');
+		const fila = db.prepare('SELECT datos FROM tarjetas WHERE id = ?').get('abcde12345') as { datos: string };
+		expect(JSON.parse(fila.datos)).toMatchObject({ lugar: 'Chamberí', barrio: null });
 		expect((db.prepare('SELECT COUNT(*) AS n FROM tarjetas').get() as { n: number }).n).toBe(1);
 	});
 

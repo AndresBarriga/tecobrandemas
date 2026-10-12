@@ -409,7 +409,12 @@ export const COSTURA = {
 				algo: 'Algo más de lo que pagan quienes ya viven aquí.',
 				encima: 'Más de lo que pagan quienes ya viven aquí.'
 			},
-			vivo: { debajo: 'Pagas menos que tus vecinos.', dentro: 'Pagas lo habitual en tu zona.', algo: 'Pagas algo más que tus vecinos.', encima: 'Pagas más que tus vecinos.' }
+			vivo: {
+					debajo: 'Pagas menos que la parte baja de lo que pagan quienes ya viven aquí.',
+					dentro: 'Pagas lo habitual en tu zona.',
+					algo: 'Pagas algo más que la parte alta de lo que pagan quienes ya viven aquí.',
+					encima: 'Pagas más que la parte alta de lo que pagan quienes ya viven aquí.'
+				}
 		},
 		oferta: {
 			mirando: (clave: 'enlinea' | 'encima' | 'debajo' | 'pidenmas', nivel: 'barrio' | 'distrito') =>
@@ -429,12 +434,15 @@ export const COSTURA = {
 		vecesLoMasAlto: 'lo más alto de lo habitual',
 		excelente: '. Puede cuadrar si el piso es excelente.',
 		banda: 'lo habitual',
-		maximo: 'máximo si fuera un piso excelente: '
+		maximo: 'si fuera un piso excelente: '
 	},
 	oferta: {
 		pregunta: (m2: string) => `¿Cuánto se pide ahora por entrar en un piso de ${m2}?`,
 		aclaracion: (nivel: 'barrio' | 'distrito') => `Según los anuncios del ${nivel}. Solo cuenta el tamaño, no cómo es el piso.`,
 		texto: 'frente a lo que se pide en anuncios',
+		/** El % de la oferta se pinta sin signo y con dirección: «0,8 % por debajo de lo que se pide en anuncios» */
+		referencia: 'lo que se pide en anuncios',
+		direccion: { encima: 'por encima', debajo: 'por debajo', igual: 'igual' },
 		estimacion: (eurosM2: string, nivel: 'barrio' | 'distrito', m2: string) =>
 			`Estimación para ${m2} a partir de ${eurosM2} €/m² del ${nivel}. Los pisos pequeños se anuncian más caros por m², y lo tenemos en cuenta. No mira cómo es el piso (estado, planta, reforma).`,
 		marca: (e: string) => `se pide ≈${e}`,
@@ -459,7 +467,7 @@ export const COSTURA = {
 		`Contratos: SERPAVI (Ministerio de Vivienda), 2024${mesOferta ? ` · Anuncios: Ayuntamiento de Madrid, ${mesOferta}` : ''}`,
 	aria: {
 		contratos: (bajo: string, alto: string, maximo: string) =>
-			`Contratos vigentes de la zona: lo habitual de ${bajo} a ${alto}; máximo si fuera un piso excelente, ${maximo}.`,
+			`Contratos vigentes de la zona: lo habitual de ${bajo} a ${alto}; si fuera un piso excelente, ${maximo}.`,
 		oferta: (marca: string) => `Anuncios recientes: ${marca}.`
 	}
 } as const;
@@ -822,6 +830,8 @@ export const TARJETA_COSTURA = {
 		veces: 'lo más alto de lo habitual'
 	},
 	oferta: (nivel: 'barrio' | 'distrito') => `frente a lo que se pide en el ${nivel}`,
+	/** Con lo que se pide en la zona de la tarjeta: «0,8 % por debajo de lo que se pide en el distrito» */
+	ofertaReferencia: (nivel: 'barrio' | 'distrito') => `lo que se pide en el ${nivel}`,
 	sinOferta: 'Sin dato de oferta este mes',
 	/** En la costura de la tarjeta, sobre el precio */
 	punto: { mirando: 'el anuncio', vivo: 'yo' },

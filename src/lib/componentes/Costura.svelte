@@ -58,8 +58,9 @@
 				<p class="palabra">{v.palabra}</p>
 				{#if v.cifra}
 					<div class="cifra-caja">
-						<p class="cifra">{v.cifra}</p>
-						<p class="texto">{v.texto}</p>
+						<!-- La oferta pinta el % sin signo y con su dirección (por encima o por debajo de lo que se pide) -->
+						<p class="cifra">{v.pintado?.cifra ?? v.cifra}</p>
+						<p class="texto">{v.pintado?.texto ?? v.texto}</p>
 					</div>
 				{:else}
 					<p class="texto solo">{v.texto}</p>

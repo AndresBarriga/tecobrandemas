@@ -15,6 +15,9 @@
 		esV2(data.tarjeta) || esV3(data.tarjeta) ? PAGINA_TARJETA.explicacionDos[data.tarjeta.modo] : inquilino ? PAGINA_TARJETA.explicacionInquilino : PAGINA_TARJETA.explicacion
 	);
 
+	// Las tarjetas de ahora llevan solo el distrito en `lugar` (y no tienen barrio); las ya guardadas, el barrio
+	const sitio = $derived(esV3(data.tarjeta) ? data.tarjeta.lugar : data.tarjeta.barrio);
+
 	let canvas: HTMLCanvasElement;
 	onMount(() => void dibujarTarjeta(canvas, data.tarjeta));
 </script>
@@ -45,7 +48,7 @@
 			<canvas bind:this={canvas} width="1080" height="1350" aria-label="Tarjeta compartida: {enlace.descripcion}"></canvas>
 		</div>
 		<div class="texto">
-			<p class="intro">{inquilino ? PAGINA_TARJETA.introInquilino(data.tarjeta.barrio) : PAGINA_TARJETA.intro(data.tarjeta.barrio)}</p>
+			<p class="intro">{inquilino ? PAGINA_TARJETA.introInquilino(sitio) : PAGINA_TARJETA.intro(sitio)}</p>
 			<h1>{PAGINA_TARJETA.titular}</h1>
 			<p class="explicacion">{explicacion}</p>
 			<a class="boton" href={inquilino ? `/?t=${data.id}&modo=vivo` : `/?t=${data.id}&modo=mirando`}>{inquilino ? TARJETA_INQUILINO.cta : PAGINA_TARJETA.boton}</a>

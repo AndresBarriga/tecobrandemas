@@ -218,7 +218,7 @@ describe('tarjeta en el servidor', () => {
 
 	it('el título y la descripción del enlace no llevan precio ni dirección', () => {
 		const e = textosEnlace(construirTarjeta(resultado(2500)));
-		expect(e.titulo).toBe('A su precio · Un anuncio en Almagro');
+		expect(e.titulo).toBe('A su precio · Un anuncio en Chamberí');
 		expect(JSON.stringify(e)).not.toMatch(/2\.?500|€\/mes/);
 	});
 });

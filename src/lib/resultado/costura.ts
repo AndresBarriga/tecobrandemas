@@ -32,6 +32,18 @@ export interface Veredicto {
 	/** «+30 %», «−9,3 %» o vacío (dentro y por debajo de los contratos) */
 	cifra: string;
 	texto: string;
+	/** Solo en la oferta: cómo se pinta el % (sin signo y con su dirección); `cifra` y `texto` conservan el valor con signo */
+	pintado?: { cifra: string; texto: string };
+}
+
+/**
+ * El % de la oferta sin signo y con dirección: «−0,8 %» → «0,8 %» + «por debajo de {referencia}»; «+76 %» → «76 %» + «por encima de…».
+ * Solo cambia cómo se pinta; un 0 exacto (sin signo) queda «igual que».
+ */
+export function ofertaConDireccion(cifra: string, referencia: string): { cifra: string; direccion: string; texto: string } {
+	const d = T.oferta.direccion;
+	const direccion = cifra.startsWith('+') ? d.encima : cifra.startsWith('−') ? d.debajo : d.igual;
+	return { cifra: cifra.replace(/^[+−]/, ''), direccion, texto: `${direccion} ${direccion === d.igual ? 'que' : 'de'} ${referencia}` };
 }
 
 export interface Mitad {
@@ -139,9 +151,10 @@ function veredictoContratos(e: EntradaCostura): Veredicto {
 function veredictoOferta(e: EntradaCostura, o: PantallaOferta): Veredicto {
 	const cifra = Math.abs(e.precio / o.estimada - 1) < 0.0005 ? '0 %' : porcentaje(e.precio / o.estimada - 1, true);
 	// «Mi alquiler» claramente por debajo de la oferta: no es suerte, es que ahora piden más (con el mismo %)
-	if (e.modo === 'vivo' && o.contraOferta === 'por_debajo') return { clave: 'pidenmas', palabra: T.palabras.pidenMas, cifra, texto: T.oferta.texto };
+	const pintado = ofertaConDireccion(cifra, T.oferta.referencia);
+	if (e.modo === 'vivo' && o.contraOferta === 'por_debajo') return { clave: 'pidenmas', palabra: T.palabras.pidenMas, cifra, texto: T.oferta.texto, pintado };
 	const clave: ClaveOferta = o.contraOferta === 'en_linea' ? 'enlinea' : o.contraOferta === 'por_encima' ? 'encima' : 'debajo';
-	return { clave, palabra: T.palabras[clave === 'enlinea' ? 'enLinea' : clave], cifra, texto: T.oferta.texto };
+	return { clave, palabra: T.palabras[clave === 'enlinea' ? 'enLinea' : clave], cifra, texto: T.oferta.texto, pintado };
 }
 
 /**

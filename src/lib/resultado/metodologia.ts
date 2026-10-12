@@ -231,7 +231,7 @@ function construirEjemplo(b: Base, f: number, ultimoMes: string): Ejemplo {
 	const tramo = (inf: number, sup: number): TramoEscala => ({ desde: X(inf), hasta: X(sup) });
 	const m2 = `${numero(a.superficie)}${NB}m²`;
 	const habitual = (r: Referencia): LeyendaEjemplo => ({ clave: 'banda', texto: COSTURA.contratos.banda, valor: rango(r.inf, r.sup) });
-	const excelente: LeyendaEjemplo = { clave: 'excelente', texto: 'máximo si fuera un piso excelente', valor: euros(con.max) };
+	const excelente: LeyendaEjemplo = { clave: 'excelente', texto: 'si fuera un piso excelente', valor: euros(con.max) };
 
 	const pasos: PasoEjemplo[] = [
 		{
@@ -250,8 +250,8 @@ function construirEjemplo(b: Base, f: number, ultimoMes: string): Ejemplo {
 		},
 		{
 			n: 3, fuente: 'contratos', titulo: 'Si fuera un piso excelente',
-			descripcion: `La referencia deja margen para las mejores características (ascensor, garaje, reforma reciente, piscina o vistas): hasta ${euros(con.max)}. Es el máximo de la referencia, no del mercado: hay contratos por encima.`,
-			aria: `Lo habitual, de ${numero(con.inf)} a ${euros(con.sup)}; máximo si fuera un piso excelente, ${euros(con.max)}`,
+			descripcion: `La referencia deja margen para las mejores características (ascensor, garaje, reforma reciente, piscina o vistas): hasta ${euros(con.max)}. Es la parte alta de lo que pagan quienes ya viven aquí, no el precio de mercado: hay contratos por encima.`,
+			aria: `Lo habitual, de ${numero(con.inf)} a ${euros(con.sup)}; si fuera un piso excelente, ${euros(con.max)}`,
 			carril: carril('contratos', { banda: tramo(con.inf, con.sup), excelente: tramo(con.sup, con.max) }),
 			leyenda: [habitual(con), excelente]
 		}
@@ -292,9 +292,9 @@ function construirLectura(b: Base): Lectura {
 			fuente: 'contratos', etiqueta: 'Contratos', pregunta: COSTURA.contratos.pregunta,
 			items: [
 				{ palabra: P.debajo, texto: 'Por debajo de la parte baja de lo habitual.', carril: contratos(con.inf * 0.9) },
-				{ palabra: P.dentro, texto: 'Entre la parte baja y lo más alto de lo habitual. Te decimos si cae en la parte baja, media o alta.', carril: contratos((con.inf + con.sup) / 2) },
-				{ palabra: P.algo, texto: 'Supera lo más alto de lo habitual, pero no el máximo si fuera un piso excelente: puede cuadrar si el piso lo es.', carril: contratos((con.sup + con.max) / 2) },
-				{ palabra: P.encima, texto: 'Supera incluso el máximo si fuera un piso excelente. La cifra dice cuánto pasa de lo más alto de lo habitual: en %, o en veces desde el doble.', carril: contratos(con.max * 1.15) }
+				{ palabra: P.dentro, texto: 'Entre la parte baja y la parte alta de lo que pagan quienes ya viven aquí. Te decimos si cae en la parte baja, media o alta.', carril: contratos((con.inf + con.sup) / 2) },
+				{ palabra: P.algo, texto: 'Supera la parte alta de lo que pagan quienes ya viven aquí, pero no llega a lo de un piso excelente: puede cuadrar si el piso lo es.', carril: contratos((con.sup + con.max) / 2) },
+				{ palabra: P.encima, texto: 'Supera incluso lo de un piso excelente. La cifra dice cuánto pasa de la parte alta de lo que pagan quienes ya viven aquí: en %, o en veces desde el doble.', carril: contratos(con.max * 1.15) }
 			]
 		}
 	];
@@ -346,7 +346,7 @@ function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): M
 				],
 				terminos: [
 					{ titulo: 'Lo habitual', texto: 'La franja de la mayoría de los contratos de pisos como el tuyo, ajustada a la superficie.' },
-					{ titulo: 'Máximo si fuera un piso excelente', texto: 'El margen para las mejores características. Es el máximo de la referencia, no del mercado.' }
+					{ titulo: 'Si fuera un piso excelente', texto: 'El margen para las mejores características. Es la parte alta de lo que pagan quienes ya viven aquí, no el precio de mercado.' }
 				]
 			},
 			{
@@ -446,7 +446,7 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 			parrafos: [
 				'El mapa de Madrid tiene tres vistas. «Mi presupuesto» («¿Dónde me llega?», la que abre por defecto) pinta cada zona según cómo queda tu presupuesto al mes frente a lo que se pide en los anuncios recientes de su barrio (o de su distrito, con punteado, si el barrio no tiene dato), para los metros que elijas con la barra o con el número.',
 				`La comparación usa la estimación de cada zona (€/m² ajustado por tamaño × tus metros): «No llega» por debajo del ${numero((1 - OFERTA_BANDA_EN_LINEA) * 100)}\u00A0%, «En línea» dentro de ±${numero(OFERTA_BANDA_EN_LINEA * 100)}\u00A0% y «Te sobra» por encima del ${numero((1 + OFERTA_BANDA_EN_LINEA) * 100)}\u00A0%. El mapa se recolorea al mover las barras: el cálculo lo hace tu navegador.`,
-				'«Referencia» pinta lo más alto de lo habitual de los contratos, con el mismo método y el mismo ajuste del IPC que el resultado, para la superficie que elijas (40, 55, 70, 90 o 110\u00A0m²); con «Oferta», el €/m² medio de los anuncios recientes del barrio o del distrito. Los cinco colores reparten las zonas con dato en cinco grupos del mismo tamaño, con cortes iguales para toda la ciudad. Las zonas con 20 contratos o menos, y las superficies fuera de 30-150\u00A0m², salen como «sin dato».',
+				'«Referencia» pinta la parte alta de lo que pagan quienes ya viven aquí según los contratos, con el mismo método y el mismo ajuste del IPC que el resultado, para la superficie que elijas (40, 55, 70, 90 o 110\u00A0m²); con «Oferta», el €/m² medio de los anuncios recientes del barrio o del distrito. Los cinco colores reparten las zonas con dato en cinco grupos del mismo tamaño, con cortes iguales para toda la ciudad. Las zonas con 20 contratos o menos, y las superficies fuera de 30-150\u00A0m², salen como «sin dato».',
 				'«Evolución 2015-2024» muestra cuánto ha subido la mediana de los contratos de cada zona, sin descontar la inflación. Solo usa contratos.'
 			],
 			tuZona: {
@@ -521,7 +521,7 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 				}
 			],
 			ipc: `Último dato del IPC del alquiler: ${mes}, factor ${factor} (${pct}).`,
-			validacion: 'Comprobamos nuestro cálculo contra la aplicación oficial con 30 casos: la diferencia máxima es de 0,6 céntimos al mes.',
+			validacion: 'Comprobamos nuestro cálculo contra la aplicación oficial con 30 casos: la mayor diferencia es de 0,6 céntimos al mes.',
 			nota: AVISO_INDEPENDIENTE,
 			enlaceOficial: ENLACE_OFICIAL
 		},

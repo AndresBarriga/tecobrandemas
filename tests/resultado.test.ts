@@ -463,8 +463,10 @@ describe('tarjeta', () => {
 		const p = construirPantalla(anuncio(precio), ubic(['A']), DATOS);
 		if (p.tipo !== 'resultado') throw new Error('esperaba resultado');
 		const t = construirTarjeta(p);
-		expect(t).toMatchObject({ v: 3, modo: 'mirando', tipo: 'veredictos', contratos: { clave: 'encima', palabra: 'POR ENCIMA', cifra: p.brechaPct }, barrio: 'Almagro', aproximada: false });
-		expect(t.lugar).toBe(p.costura.lugar);
+		expect(t).toMatchObject({ v: 3, modo: 'mirando', tipo: 'veredictos', contratos: { clave: 'encima', palabra: 'POR ENCIMA', cifra: p.brechaPct }, barrio: null, aproximada: false });
+		// Solo el distrito: ni el barrio ni «barrio, distrito»
+		expect(t.lugar).toBe('Chamberí');
+		expect(JSON.stringify(t)).not.toContain('Almagro');
 		const texto = JSON.stringify(t);
 		expect(texto).not.toContain(String(precio));
 		expect(texto).not.toMatch(/€/);
