@@ -32,3 +32,4 @@ export * from './contadores';
 export * from './negociar';
 export * from './historial';
 export * from './metodologia';
+export * from './seo';

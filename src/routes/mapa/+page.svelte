@@ -9,7 +9,7 @@
 	import Pie from '#lib/componentes/Pie.svelte';
 	import Segmentado from '#lib/componentes/Segmentado.svelte';
 	import {
-		MAPA_REFERENCIA as T, RANGO_METROS, RANGO_PRESUPUESTO, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, ajustarARango, capaEvolucion, capaPresupuesto, capaReferencia,
+		MAPA_REFERENCIA as T, SEO_MAPA, RANGO_METROS, RANGO_PRESUPUESTO, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, ajustarARango, capaEvolucion, capaPresupuesto, capaReferencia,
 		capaReferenciaAnuncios, distanciaCorta, euros, extremoPresupuesto, hojaDeZona, mesAnio, numero, paletaDe, posicionPresupuestoAnuncios, superficieValida, zonasCercanas, zonasDelMapa,
 		type CapaMapa, type FuenteMapa, type SugerenciaVia, type SugerenciaZona
 	} from '#lib/resultado';
@@ -332,8 +332,8 @@
 </script>
 
 <svelte:head>
-	<title>{T.titulo} · A su precio</title>
-	<meta name="description" content={T.intro} />
+	<title>{SEO_MAPA.titulo}</title>
+	<meta name="description" content={SEO_MAPA.descripcion} />
 </svelte:head>
 
 {#snippet muestras()}

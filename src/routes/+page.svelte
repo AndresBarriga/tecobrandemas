@@ -16,7 +16,7 @@
 	import TuZona from '#lib/componentes/TuZona.svelte';
 	import { type TuZonaCargada, cargarTuZona } from '#lib/cliente/zona';
 	import {
-		AFINAR, DESCRIPCION, LEMA, NOMBRE, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
+		AFINAR, DESCRIPCION, NOMBRE, SEO_PORTADA, jsonLdPortada, jsonLdComoTexto, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
 		construirTarjeta, tiposDe, type TipoTarjeta, textoCompartir, textosEnlace, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, filaHistorial, interpretarNumero, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
 		parecePrecioErroneo,
 		type Pantalla, type PantallaResultado, type SugerenciaZona, type Ubicacion
@@ -509,8 +509,8 @@
 </script>
 
 <svelte:head>
-	<title>{NOMBRE} · {LEMA}</title>
-	<meta name="description" content={DESCRIPCION} />
+	<title>{SEO_PORTADA.titulo}</title>
+	<meta name="description" content={SEO_PORTADA.descripcion} />
 	<meta property="og:title" content={NOMBRE} />
 	<meta property="og:description" content={DESCRIPCION} />
 	<meta property="og:type" content="website" />
@@ -522,6 +522,9 @@
 	<meta property="og:image:height" content="630" />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:image" content={urlAbsoluta('/og-portada.png')} />
+	{#each jsonLdPortada() as datos}
+		{@html `<script type="application/ld+json">${jsonLdComoTexto(datos)}</script>`}
+	{/each}
 </svelte:head>
 
 <div class="pagina" data-fase={fase} data-listo={listo}>
