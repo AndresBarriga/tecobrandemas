@@ -4,6 +4,7 @@
 	import CarrilMini from '#lib/componentes/CarrilMini.svelte';
 	import Costura from '#lib/componentes/Costura.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
+	import { SEO_COMO_CALCULAMOS } from '#lib/resultado';
 
 	let { data } = $props();
 	const p = $derived(data.pagina);
@@ -57,8 +58,8 @@
 </script>
 
 <svelte:head>
-	<title>{p.titulo} · A su precio</title>
-	<meta name="description" content={p.intro} />
+	<title>{SEO_COMO_CALCULAMOS.titulo}</title>
+	<meta name="description" content={SEO_COMO_CALCULAMOS.descripcion} />
 </svelte:head>
 
 <div class="pagina" data-listo={listo}>
