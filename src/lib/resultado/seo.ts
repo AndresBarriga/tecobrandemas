@@ -29,21 +29,21 @@ export const SEO_COMO_CALCULAMOS = {
 /** Páginas indexables, en el orden del sitemap. Sin /t/*, /r7k/* ni rutas con parámetros */
 export const RUTAS_INDEXABLES = ['/', '/como-calculamos', '/mapa'] as const;
 
-/** Rastreadores de vista previa de enlaces: no indexan, pero necesitan leer /t/:id y su imagen para mostrar la tarjeta */
+/** Rastreadores de vista previa de enlaces (leen /t/:id y su imagen para mostrar la tarjeta) */
 export const AGENTES_VISTA_PREVIA = ['Twitterbot', 'facebookexternalhit', 'WhatsApp', 'LinkedInBot', 'Slackbot', 'TelegramBot', 'Discordbot'] as const;
 
 /** Rastreadores de búsqueda y de IA que deben poder rastrear lo público (grupo propio, mismas reglas que `*`) */
 export const AGENTES_BUSQUEDA = ['Googlebot', 'Bingbot', 'OAI-SearchBot', 'ChatGPT-User', 'PerplexityBot'] as const;
 
-const RUTAS_CERRADAS = ['/r7k/', '/t/'] as const;
+const RUTAS_CERRADAS = ['/api/', '/r7k/'] as const;
 
 export function contenidoRobots(): string {
 	const cerradas = RUTAS_CERRADAS.map((r) => `Disallow: ${r}`);
 	const grupo = (agentes: readonly string[], reglas: string[]) => [...agentes.map((a) => `User-agent: ${a}`), ...reglas, ''];
 	return [
 		...grupo(['*', ...AGENTES_BUSQUEDA], ['Allow: /', ...cerradas]),
-		// Solo leen la tarjeta para la vista previa; la tarjeta lleva noindex
-		...grupo(AGENTES_VISTA_PREVIA, ['Allow: /', 'Disallow: /r7k/']),
+		// Vista previa de enlaces: mismas reglas. /t/ está abierto a todos: la tarjeta se queda fuera del índice por su noindex, que así se puede leer
+		...grupo(AGENTES_VISTA_PREVIA, ['Allow: /', ...cerradas]),
 		`Sitemap: ${SITE_URL}/sitemap.xml`,
 		''
 	].join('\n');

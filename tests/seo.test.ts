@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
-	AGENTES_BUSQUEDA, RUTAS_INDEXABLES, SEO_COMO_CALCULAMOS, SEO_MAPA, SEO_PORTADA, SITE_URL, contenidoRobots, contenidoSitemap, jsonLdComoTexto, jsonLdPortada
+	AGENTES_BUSQUEDA, AGENTES_VISTA_PREVIA, RUTAS_INDEXABLES, SEO_COMO_CALCULAMOS, SEO_MAPA, SEO_PORTADA, SITE_URL, contenidoRobots, contenidoSitemap, jsonLdComoTexto, jsonLdPortada
 } from '../src/lib/resultado';
 
 const fuente = (ruta: string) => readFileSync(new URL(`../${ruta}`, import.meta.url), 'utf8');
@@ -63,18 +63,17 @@ describe('SEO: sitemap y robots', () => {
 		for (const u of urls) expect(u).not.toMatch(/\/t\/|\/r7k\/|[?#]/);
 		expect(xml.startsWith('<?xml')).toBe(true);
 	});
-	it('robots: cierra /r7k/ y /t/, enlaza el sitemap y deja entrar a los buscadores', () => {
+	it('robots: cierra /api/ y /r7k/, deja abierto /t/ (lo protege el noindex), enlaza el sitemap y deja entrar a buscadores y vistas previas', () => {
 		const txt = contenidoRobots();
 		const grupos = txt.trim().split(/\n\n+/).filter((g) => g.includes('User-agent'));
 		const reglasDe = (agente: string) => grupos.find((g) => g.split('\n').includes(`User-agent: ${agente}`))!.split('\n').filter((l) => /^(Allow|Disallow)/.test(l));
 		expect(txt).toContain(`Sitemap: ${SITE_URL}/sitemap.xml`);
-		for (const a of ['*', ...AGENTES_BUSQUEDA]) {
-			expect(reglasDe(a), a).toEqual(['Allow: /', 'Disallow: /r7k/', 'Disallow: /t/']);
+		for (const a of ['*', ...AGENTES_BUSQUEDA, ...AGENTES_VISTA_PREVIA]) {
+			expect(reglasDe(a), a).toEqual(['Allow: /', 'Disallow: /api/', 'Disallow: /r7k/']);
 		}
+		expect(txt).not.toContain('/t/');
 		// Ninguna regla cierra todo el sitio
 		expect(txt).not.toMatch(/^Disallow:\s*\/?\s*$/m);
-		// Quien solo hace vista previa de un enlace compartido sigue pudiendo leer la tarjeta
-		expect(reglasDe('Twitterbot')).not.toContain('Disallow: /t/');
 	});
 });
 
