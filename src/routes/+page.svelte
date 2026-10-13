@@ -39,6 +39,8 @@
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
 	import { COMPARATIVA, MAPA_REFERENCIA, TARJETA, urlAbsoluta } from '#lib/resultado';
 
+	let { data } = $props();
+
 	type Fase = 'inicio' | 'buscando' | 'confirmar' | 'resultado' | 'negociar' | 'sin_conexion';
 
 	let f = $state<EstadoFormulario>(estadoInicial());
@@ -581,6 +583,7 @@
 			>
 				{#snippet mapa()}<Mapa alMarcar={marcarPunto} enfocar={enfoqueMapa} {puntoInicial} />{/snippet}
 			</Formulario>
+			<p class="datos-al-dia">Datos actualizados a {data.actualizado}.</p>
 			<div class="historial"><HistorialSesion {filas} {activa} alElegir={elegirHistorial} /></div>
 			<!-- Móvil: el ejemplo bajo el formulario, y solo se calcula al llegar a él -->
 			{#if !hayResultado}<MuestraResultado modo={esVivo ? 'vivo' : 'mirando'} movil />{/if}
@@ -682,6 +685,10 @@
 {/snippet}
 
 <style>
+	.datos-al-dia {
+		font: 500 13px/1.4 var(--f-texto);
+		color: var(--grafito);
+	}
 	.pagina {
 		min-height: 100vh;
 		display: flex;

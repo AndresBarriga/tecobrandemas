@@ -4,7 +4,7 @@
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import indexacion from '../../config/indexacion.json';
-	import { urlAbsoluta } from '#lib/resultado';
+	import { SITE_URL, alternativas, urlAbsoluta } from '#lib/resultado';
 	import { iniciarAnalitica, paginaSalida, paginaVista } from '#lib/cliente/analitica';
 	let { children } = $props();
 
@@ -27,6 +27,9 @@
 		else addEventListener('load', arrancar, { once: true });
 	});
 
+	// Páginas equivalentes en español e inglés (hreflang, en las dos direcciones; x-default, la española)
+	const alt = $derived(alternativas(page.url.pathname));
+
 	// Una sola etiqueta: todo el sitio mientras no sea el lanzamiento, y siempre las tarjetas
 	// compartidas (el noindex no afecta a la vista previa de WhatsApp o X)
 	const noindex = $derived(
@@ -36,6 +39,11 @@
 
 <svelte:head>
 	<link rel="canonical" href={urlAbsoluta(page.url.pathname, page.url.origin)} />
+	{#if alt}
+		<link rel="alternate" hreflang="es" href={`${SITE_URL}${alt.es}`} />
+		<link rel="alternate" hreflang="en" href={`${SITE_URL}${alt.en}`} />
+		<link rel="alternate" hreflang="x-default" href={`${SITE_URL}${alt.es}`} />
+	{/if}
 	{#if noindex}<meta name="robots" content="noindex, nofollow" />{/if}
 </svelte:head>
 

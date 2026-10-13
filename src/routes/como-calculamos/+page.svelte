@@ -86,6 +86,7 @@
 			<div class="titulo">
 				<h1>{p.titulo}</h1>
 				<p class="lead">{p.intro}</p>
+				<p class="actualizado">Datos actualizados a {p.datosActualizados}.</p>
 			</div>
 
 			<section id="resumen" class="caja-blanca">
@@ -326,6 +327,8 @@
 				<a class="boton-cta" href="/">{p.cta.boton}</a>
 				<a class="enlace-preguntas" href="/preguntas">¿Dudas concretas? Mira las preguntas sobre el precio del alquiler</a>
 			</div>
+
+			<p class="nota-ia">Los textos de esta web se redactan con ayuda de herramientas de IA y se revisan a mano. Los datos salen de fuentes oficiales, enlazadas en cada página.</p>
 		</main>
 	</div>
 
@@ -961,6 +964,11 @@
 	}
 	.cta-pregunta {
 		font: 700 24px/1.2 var(--f-texto);
+	}
+	.actualizado,
+	.nota-ia {
+		font: 500 14px/1.45 var(--f-texto);
+		color: var(--grafito);
 	}
 	.enlace-preguntas {
 		display: inline-flex;
