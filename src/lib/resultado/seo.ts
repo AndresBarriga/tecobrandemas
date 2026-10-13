@@ -6,6 +6,9 @@ import { NOMBRE } from './textos';
 import { SITE_URL } from './sitio';
 import { AUTOR, FECHA_PREGUNTAS, PREGUNTAS, type PaginaPregunta } from './preguntas';
 import { FECHA_MAPA, TEXTO_MAPA } from './mapa-texto';
+import { PAGINAS_EN, FECHA_EN, AUTOR_EN, type PaginaEn } from './en';
+import { FECHA_CORRECCIONES } from './correcciones';
+import ogPaginas from './og-paginas.json';
 
 export const PERFIL_INSTAGRAM = 'https://www.instagram.com/asuprecio/';
 export const PERFIL_FACEBOOK = 'https://www.facebook.com/people/ASuPrecio/61595385748217/';
@@ -34,7 +37,9 @@ export const ENTRADAS_SITEMAP: { ruta: string; lastmod?: string }[] = [
 	{ ruta: '/como-calculamos' },
 	{ ruta: '/mapa', lastmod: FECHA_MAPA },
 	{ ruta: '/preguntas', lastmod: FECHA_PREGUNTAS },
-	...PREGUNTAS.map((p) => ({ ruta: `/preguntas/${p.slug}`, lastmod: FECHA_PREGUNTAS }))
+	...PREGUNTAS.map((p) => ({ ruta: `/preguntas/${p.slug}`, lastmod: FECHA_PREGUNTAS })),
+	...PAGINAS_EN.map((p) => ({ ruta: p.ruta, lastmod: FECHA_EN })),
+	{ ruta: '/correcciones', lastmod: FECHA_CORRECCIONES }
 ];
 export const RUTAS_INDEXABLES = ENTRADAS_SITEMAP.map((e) => e.ruta);
 
@@ -154,3 +159,49 @@ export function jsonLdMapa(h1: string): object[] {
 		migas({ nombre: 'Mapa', ruta: '/mapa' })
 	];
 }
+
+// ——— Páginas en inglés ———
+
+/** JSON-LD de una página en inglés: WebPage, FAQPage (solo con su bloque de preguntas) y BreadcrumbList */
+export function jsonLdEn(p: PaginaEn): object[] {
+	const url = `${SITE_URL}${p.ruta}`;
+	const pasos = p.ruta === '/en' ? [] : [{ nombre: p.h1, ruta: p.ruta }];
+	return [
+		{
+			'@context': 'https://schema.org',
+			'@type': 'WebPage',
+			name: p.h1,
+			description: p.descripcion,
+			url,
+			inLanguage: 'en',
+			dateModified: FECHA_EN,
+			author: { '@type': 'Organization', name: AUTOR_EN, url: `${SITE_URL}/` },
+			publisher: editor(),
+			isPartOf: { '@type': 'WebSite', name: NOMBRE, url: `${SITE_URL}/` }
+		},
+		{
+			'@context': 'https://schema.org',
+			'@type': 'FAQPage',
+			inLanguage: 'en',
+			mainEntity: p.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }))
+		},
+		{
+			'@context': 'https://schema.org',
+			'@type': 'BreadcrumbList',
+			itemListElement: [{ nombre: 'Home', ruta: '/en' }, ...pasos].map((s, i) => ({ '@type': 'ListItem', position: i + 1, name: s.nombre, item: `${SITE_URL}${s.ruta}` }))
+		}
+	];
+}
+
+// ——— Vista previa (og:image) ———
+
+export interface OgPagina {
+	ruta: string;
+	imagen: string;
+	titulo: string;
+}
+
+/** Las páginas con imagen de vista previa propia (scripts/og_paginas.mjs las genera con una sola plantilla) */
+export const OG_PAGINAS: OgPagina[] = ogPaginas;
+
+export const ogDe = (ruta: string): OgPagina | undefined => OG_PAGINAS.find((o) => o.ruta === ruta);

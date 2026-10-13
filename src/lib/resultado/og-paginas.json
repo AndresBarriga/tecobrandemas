@@ -1,0 +1,11 @@
+[
+	{ "ruta": "/preguntas", "imagen": "preguntas.png", "titulo": "Preguntas sobre el precio del alquiler en Madrid" },
+	{ "ruta": "/preguntas/como-saber-si-un-alquiler-es-caro-en-madrid", "imagen": "como-saber-si-un-alquiler-es-caro-en-madrid.png", "titulo": "¿Cómo saber si un alquiler está caro en Madrid?" },
+	{ "ruta": "/preguntas/que-es-el-indice-de-referencia-del-alquiler", "imagen": "que-es-el-indice-de-referencia-del-alquiler.png", "titulo": "¿Qué es el índice de referencia del alquiler (SERPAVI)?" },
+	{ "ruta": "/preguntas/por-que-los-anuncios-son-mas-caros-que-los-contratos", "imagen": "por-que-los-anuncios-son-mas-caros-que-los-contratos.png", "titulo": "¿Por qué los anuncios piden más de lo que pagan los inquilinos actuales?" },
+	{ "ruta": "/preguntas/supera-mi-alquiler-el-indice-de-referencia", "imagen": "supera-mi-alquiler-el-indice-de-referencia.png", "titulo": "¿Supera mi alquiler el índice de referencia? Cómo comprobarlo" },
+	{ "ruta": "/mapa", "imagen": "mapa.png", "titulo": "Mapa del índice de referencia del alquiler en Madrid" },
+	{ "ruta": "/en", "imagen": "en.png", "titulo": "Is your rent in Madrid in line with what tenants already pay?" },
+	{ "ruta": "/en/what-is-the-rent-reference-index-in-spain", "imagen": "en-what-is-the-rent-reference-index-in-spain.png", "titulo": "What is the rent reference index in Spain (SERPAVI)?" },
+	{ "ruta": "/en/how-to-check-if-a-rent-is-too-high-in-madrid", "imagen": "en-how-to-check-if-a-rent-is-too-high-in-madrid.png", "titulo": "How can you tell if a rent in Madrid is too high?" }
+]

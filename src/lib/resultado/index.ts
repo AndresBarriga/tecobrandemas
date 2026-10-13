@@ -35,3 +35,5 @@ export * from './metodologia';
 export * from './seo';
 export * from './preguntas';
 export * from './mapa-texto';
+export * from './en';
+export * from './correcciones';

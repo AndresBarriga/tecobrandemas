@@ -6,6 +6,7 @@
 	import ControlDeslizante from '#lib/componentes/ControlDeslizante.svelte';
 	import HojaArrastrable from '#lib/componentes/HojaArrastrable.svelte';
 	import MapaMadrid from '#lib/componentes/MapaMadrid.svelte';
+	import MetaSocial from '#lib/componentes/MetaSocial.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
 	import Segmentado from '#lib/componentes/Segmentado.svelte';
 	import {
@@ -432,6 +433,8 @@
 		{#if capa === 'evolucion'}<span class="nota">{T.avisoEvolucion}</span>{/if}
 	{/if}
 {/snippet}
+
+<MetaSocial ruta="/mapa" titulo={SEO_MAPA.titulo} descripcion={SEO_MAPA.descripcion} />
 
 <div class="pagina" data-listo={listo} style:--vv-alto={movil && altoVisual ? `${altoVisual}px` : undefined} style:--vv-top="{movil ? topVisual : 0}px">
 	<Cabecera derecha="madrid" actual="mapa" />

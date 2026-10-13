@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Cabecera from '#lib/componentes/Cabecera.svelte';
+	import MetaSocial from '#lib/componentes/MetaSocial.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
 	import { HUB_PREGUNTAS as H, enlaceHerramienta, jsonLdComoTexto, jsonLdHubPreguntas, preguntaPorSlug } from '#lib/resultado';
 </script>
@@ -11,6 +12,8 @@
 		{@html `<script type="application/ld+json">${jsonLdComoTexto(datos)}</script>`}
 	{/each}
 </svelte:head>
+
+<MetaSocial ruta="/preguntas" titulo="{H.titulo} · A su precio" descripcion={H.descripcion} />
 
 <div class="pagina">
 	<Cabecera derecha="nada" volverHref="/" />

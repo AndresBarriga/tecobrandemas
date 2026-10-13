@@ -128,6 +128,8 @@ export interface Metodologia {
 	intro: string;
 	indice: { id: string; titulo: string }[];
 	treintaSegundos: string[];
+	/** «agosto de 2026»: el mes del último dato del IPC usado, leído de los datos */
+	datosActualizados: string;
 	/** null sin datos de la zona del ejemplo */
 	lectura: Lectura | null;
 	ejemplo: Ejemplo | null;
@@ -430,6 +432,7 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 		titulo: 'Cómo calculamos',
 		intro: 'Qué datos usamos, qué hacemos con ellos y hasta dónde llegan.',
 		indice: INDICE.map((i) => ({ ...i })),
+		datosActualizados: mes,
 		treintaSegundos: [
 			'Comparamos el precio de un anuncio, o de tu alquiler, con dos referencias: lo que pagan quienes ya viven de alquiler en la zona (contratos vigentes declarados a Hacienda, 2024) y lo que se pide ahora en los anuncios del barrio o del distrito.',
 			`Ajustamos los contratos con el IPC del alquiler: ${pct} hasta ${mes}. Lo que se pide no se ajusta por IPC (ya es reciente), pero sí por tamaño: los pisos pequeños se anuncian más caros por m².`,
