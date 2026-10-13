@@ -9,7 +9,7 @@
 	import Pie from '#lib/componentes/Pie.svelte';
 	import Segmentado from '#lib/componentes/Segmentado.svelte';
 	import {
-		MAPA_REFERENCIA as T, SEO_MAPA, RANGO_METROS, RANGO_PRESUPUESTO, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, ajustarARango, capaEvolucion, capaPresupuesto, capaReferencia,
+		MAPA_REFERENCIA as T, SEO_MAPA, TEXTO_MAPA, jsonLdComoTexto, jsonLdMapa, RANGO_METROS, RANGO_PRESUPUESTO, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, ajustarARango, capaEvolucion, capaPresupuesto, capaReferencia,
 		capaReferenciaAnuncios, distanciaCorta, euros, extremoPresupuesto, hojaDeZona, mesAnio, numero, paletaDe, posicionPresupuestoAnuncios, superficieValida, zonasCercanas, zonasDelMapa,
 		type CapaMapa, type FuenteMapa, type SugerenciaVia, type SugerenciaZona
 	} from '#lib/resultado';
@@ -188,7 +188,6 @@
 			: []
 	);
 
-	const titulo = $derived(capa === 'presupuesto' ? T.tituloPresupuesto : T.titulo);
 	const intro = $derived(capa === 'presupuesto' ? TA.introPresupuesto : capa === 'evolucion' ? T.introEvolucion : anuncios ? TA.intro : T.intro);
 	const tituloLeyenda = $derived(
 		capa === 'presupuesto' ? TA.leyendaPresupuesto(mesOferta)
@@ -334,7 +333,38 @@
 <svelte:head>
 	<title>{SEO_MAPA.titulo}</title>
 	<meta name="description" content={SEO_MAPA.descripcion} />
+	{#each jsonLdMapa(T.titulo) as datos}
+		{@html `<script type="application/ld+json">${jsonLdComoTexto(datos)}</script>`}
+	{/each}
 </svelte:head>
+
+<!-- Texto para buscadores y lectores, debajo del mapa. Se pinta en el servidor (la página está prerenderizada). En móvil la
+     página es el mapa y una hoja inferior: ahí va dentro de la hoja, al final; en escritorio, debajo del mapa. Solo se pinta en uno
+     de los dos sitios, para que haya un único bloque -->
+{#snippet textoSeo()}
+	<article class="seo">
+		<p class="seo-respuesta">{TEXTO_MAPA.respuesta.join(' ')}</p>
+		<a class="boton" href={TEXTO_MAPA.enlaceHerramienta}>{TEXTO_MAPA.boton}</a>
+		{#each TEXTO_MAPA.secciones as s (s.h2)}
+			<section>
+				<h2>{s.h2}</h2>
+				{#each s.parrafos as t (t)}<p>{t}</p>{/each}
+			</section>
+		{/each}
+		<section>
+			<h2>Preguntas frecuentes</h2>
+			{#each TEXTO_MAPA.faq as f (f.q)}
+				<h3>{f.q}</h3>
+				<p>{f.a}</p>
+			{/each}
+		</section>
+		<nav aria-label="Más información">
+			<ul>
+				{#each TEXTO_MAPA.enlaces as e (e.href)}<li><a href={e.href}>{e.texto}</a></li>{/each}
+			</ul>
+		</nav>
+	</article>
+{/snippet}
 
 {#snippet muestras()}
 	{#if calculada}
@@ -408,7 +438,8 @@
 
 	<main class="rejilla" class:con-fuente={conSelector} bind:clientHeight={altoRejilla} style:--hoja-alto={movil ? `${altoHoja}px` : '0px'} style:--alto-controles="{ALTO_CONTROLES}px">
 		<section class="cabeza">
-			<h1>{titulo}</h1>
+			<h1 class="larga">{T.titulo}</h1>
+			{#if capa === 'presupuesto'}<p class="titulo-capa">{T.tituloPresupuesto}</p>{/if}
 			<p>{intro}</p>
 		</section>
 
@@ -550,6 +581,8 @@
 					{/if}
 				</section>
 
+				{#if movil}{@render textoSeo()}{/if}
+
 				<div class="solo-movil pie-hoja"><Pie /></div>
 			</HojaArrastrable>
 		</div>
@@ -562,6 +595,8 @@
 			{/if}
 		</section>
 	</main>
+
+	{#if !movil}{@render textoSeo()}{/if}
 
 	<div class="pie-pagina"><Pie /></div>
 </div>
@@ -593,6 +628,55 @@
 	h1 {
 		font: 800 60px/0.88 var(--f-extra);
 		text-transform: uppercase;
+	}
+	.seo {
+		width: 100%;
+		max-width: 720px;
+		margin: 0 auto;
+		padding: 32px var(--margen) 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 24px;
+		font-variant-numeric: normal;
+	}
+	.seo section {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+	.seo h2 {
+		font: 700 24px/1.2 var(--f-texto);
+	}
+	.seo h3 {
+		font: 700 18px/1.3 var(--f-texto);
+		margin-top: 6px;
+	}
+	.seo p {
+		max-width: 70ch;
+		font: 400 17px/1.55 var(--f-texto);
+		text-wrap: pretty;
+	}
+	.seo .seo-respuesta {
+		font: 600 20px/1.45 var(--f-texto);
+	}
+	.seo ul {
+		margin: 0;
+		padding-left: 20px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		font: 500 16px/1.4 var(--f-texto);
+	}
+	.seo a {
+		color: inherit;
+		text-underline-offset: 3px;
+	}
+	.seo .boton {
+		text-decoration: none;
+	}
+	.cabeza .titulo-capa {
+		font: 700 28px/1.1 var(--f-texto);
+		max-width: none;
 	}
 	.cabeza p {
 		font: 400 16px/1.5 var(--f-texto);
@@ -1029,6 +1113,10 @@
 			clip-path: none;
 			white-space: normal;
 			font-size: 64px;
+		}
+		.cabeza h1.larga {
+			font-size: 44px;
+			line-height: 0.95;
 		}
 		.pagina {
 			position: static;

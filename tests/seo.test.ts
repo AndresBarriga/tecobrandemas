@@ -13,15 +13,16 @@ describe('SEO: título y descripción', () => {
 			'Comprueba en un minuto si tu alquiler, o el de un anuncio, está por encima de lo que pagan quienes ya viven de alquiler en tu zona. Datos del Ministerio de Vivienda. Gratis y sin registro.'
 		);
 	});
-	it('«Cómo calculamos» y «Mapa» llevan «alquiler Madrid» y «referencia», y caben en una búsqueda', () => {
-		for (const s of [SEO_MAPA, SEO_COMO_CALCULAMOS]) {
-			for (const t of [s.titulo, s.descripcion]) {
-				expect(t.toLowerCase()).toContain('alquiler madrid');
-				expect(t.toLowerCase()).toContain('referencia');
-			}
-			expect(s.titulo.length).toBeLessThanOrEqual(70);
-			expect(s.descripcion.length).toBeLessThanOrEqual(160);
+	it('«Cómo calculamos» lleva «alquiler Madrid» y «referencia», y cabe en una búsqueda; el mapa tiene su propio test (tests/mapa-seo.test.ts)', () => {
+		const s = SEO_COMO_CALCULAMOS;
+		for (const t of [s.titulo, s.descripcion]) {
+			expect(t.toLowerCase()).toContain('alquiler madrid');
+			expect(t.toLowerCase()).toContain('referencia');
 		}
+		expect(s.titulo.length).toBeLessThanOrEqual(70);
+		expect(s.descripcion.length).toBeLessThanOrEqual(160);
+		expect(SEO_MAPA.titulo.length).toBeLessThanOrEqual(70);
+		expect(SEO_MAPA.descripcion.length).toBeLessThanOrEqual(155);
 	});
 	it('las páginas usan esos textos', () => {
 		expect(fuente('src/routes/+page.svelte')).toContain('{SEO_PORTADA.titulo}');
