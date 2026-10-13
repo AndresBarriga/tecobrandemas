@@ -4,7 +4,7 @@
 	import MetaSocial from './MetaSocial.svelte';
 	import Pie from './Pie.svelte';
 	import {
-		AUTOR_EN, ENLACE_HERRAMIENTA_EN, FECHA_EN, fechaEn, jsonLdComoTexto, jsonLdEn, paginaEnPorRuta, type PaginaEn
+		AUTOR_EN, CONSEJO_TRADUCCION_EN, ENLACE_HERRAMIENTA_EN, FECHA_EN, fechaEn, jsonLdComoTexto, jsonLdEn, paginaEnPorRuta, type PaginaEn
 	} from '#lib/resultado';
 
 	let { p }: { p: PaginaEn } = $props();
@@ -46,6 +46,7 @@
 			<section class="herramienta" aria-label="Use the tool">
 				<p>The tool is in Spanish. It takes about a minute, it is free and you do not need to register.</p>
 				<a class="boton" href={ENLACE_HERRAMIENTA_EN}>{p.boton}</a>
+				<p class="consejo">{CONSEJO_TRADUCCION_EN}</p>
 			</section>
 
 			{#each p.secciones as s (s.h2)}
@@ -201,6 +202,10 @@
 	.herramienta .boton {
 		min-height: 60px;
 		font-size: 19px;
+	}
+	.consejo {
+		font: 500 14px/1.4 var(--f-texto);
+		color: var(--grafito);
 	}
 	dl {
 		margin: 0;

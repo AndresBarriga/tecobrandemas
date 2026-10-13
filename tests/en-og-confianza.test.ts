@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, statSync } from 'node:fs';
 import { campanaValida } from '../src/lib/cliente/analitica-filtro';
 import {
-	CORRECCIONES, ENLACE_HERRAMIENTA_EN, ENTRADAS_SITEMAP, FECHA_EN, HUB_PREGUNTAS, MAPA_REFERENCIA, OG_PAGINAS, PAGINAS_EN, PARES_IDIOMA, PREGUNTAS, SITE_URL,
+	CONSEJO_TRADUCCION_EN, CORRECCIONES, ENLACE_HERRAMIENTA_EN, ENTRADAS_SITEMAP, FECHA_EN, HUB_PREGUNTAS, MAPA_REFERENCIA, OG_PAGINAS, PAGINAS_EN, PARES_IDIOMA, PREGUNTAS, SITE_URL,
 	TEXTO_CORRECCIONES, alternativas, contenidoSitemap, jsonLdComoTexto, jsonLdEn, mesAnio, textoDePaginaEn, ogDe
 } from '../src/lib/resultado';
 import ipc from '../data/processed/ipc_alquiler.json';
@@ -34,6 +34,15 @@ describe('inglés: las tres páginas', () => {
 		expect(p.boton).toBe('Check a rent (in Spanish, 1 minute)');
 		expect(p.faq.length).toBeGreaterThanOrEqual(3);
 		for (const f of p.faq) expect(f.q.endsWith('?')).toBe(true);
+	});
+
+	it('/en: título pedido; el consejo de traducción, bajo el botón de las tres páginas', () => {
+		expect(`${INICIO!.titulo} · A su precio`).toBe('Is my Madrid rent too high? Free check · A su precio');
+		expect(CONSEJO_TRADUCCION_EN).toBe('Tip: Chrome, Safari and Edge can translate the tool into English automatically.');
+		const comp = fuente('src/lib/componentes/ArticuloEn.svelte');
+		expect(comp.indexOf('{CONSEJO_TRADUCCION_EN}')).toBeGreaterThan(comp.indexOf('{p.boton}'));
+		expect(comp.indexOf('{CONSEJO_TRADUCCION_EN}')).toBeLessThan(comp.indexOf('{#each p.secciones'));
+		expect(textoDePaginaEn(INDICE!).join(' ')).toContain('On A su precio, an area with too few contracts');
 	});
 
 	it('/en: «How to use it» con los campos y los 4 resultados', () => {

@@ -39,6 +39,8 @@ export interface PaginaEn {
 
 export const AUTOR_EN = AUTOR;
 export const BOTON_EN = 'Check a rent (in Spanish, 1 minute)';
+/** Bajo el botón de cada página en inglés */
+export const CONSEJO_TRADUCCION_EN = 'Tip: Chrome, Safari and Edge can translate the tool into English automatically.';
 
 const SERPAVI: Fuente = { texto: 'Spain’s Ministry of Housing and Urban Agenda: SERPAVI, the state rent reference system', url: 'https://serpavi.mivau.gob.es' };
 const INE: Fuente = {
@@ -56,7 +58,7 @@ export const PAGINAS_EN: PaginaEn[] = [
 	{
 		ruta: R_INICIO,
 		rutaEs: '/',
-		titulo: 'Madrid rent check against the reference index',
+		titulo: 'Is my Madrid rent too high? Free check',
 		descripcion: 'Compare your Madrid rent, or a listing, with what tenants already pay in your area. Data from Spain’s Ministry of Housing (SERPAVI). Free, in Spanish.',
 		h1: 'Is your rent in Madrid in line with what tenants already pay?',
 		respuesta: [
@@ -122,7 +124,7 @@ export const PAGINAS_EN: PaginaEn[] = [
 				h2: 'Where does the data come from?',
 				parrafos: [
 					'From the rental contracts that private landlords declare in their income tax return. These are signed contracts of different dates, not listings or asking prices.',
-					'An area only gets a value when there are enough contracts. In A su precio, an area with too few contracts shows as “sin dato”, which means no data.',
+					'An area only gets a value when there are enough contracts. On A su precio, an area with too few contracts shows as “sin dato”, which means no data.',
 					'Portals show what is asked now for homes that are available. The index reflects what people who already have a contract pay. They measure different things and can give different figures.'
 				]
 			},
@@ -252,7 +254,7 @@ export function fechaEn(iso: string): string {
 
 /** Todo el texto visible de una página en inglés, para contar palabras y revisar el vocabulario */
 export function textoDePaginaEn(p: PaginaEn, conFuentes = false): string[] {
-	const t: string[] = [p.h1, ...p.respuesta, p.boton];
+	const t: string[] = [p.h1, ...p.respuesta, p.boton, CONSEJO_TRADUCCION_EN];
 	for (const s of p.secciones) {
 		t.push(s.h2, ...s.parrafos);
 		if (s.definiciones) for (const d of s.definiciones) t.push(d.termino, d.texto);
