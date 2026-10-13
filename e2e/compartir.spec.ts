@@ -76,6 +76,25 @@ test.describe('compartir la tarjeta (botón principal de WhatsApp y el resto ple
 			/^Acabo de comparar mi alquiler con lo que pagan quienes ya viven de alquiler en mi zona\. ¿Y tú\? Se mira en un minuto → \S+\/t\/[0-9a-z]{10}\?utm_source=whatsapp&utm_medium=share&utm_campaign=tarjeta&utm_content=vivo$/
 		);
 		expect(texto).not.toMatch(/1\.?000|60\s?m|Berro|€|%/);
+		// Hasta aportar, el amarillo es «Aportar mi alquiler» y WhatsApp va con contorno; después, al revés. Nunca dos amarillos
+		const amarillos = page.locator('main .boton:not(.boton-contorno):visible');
+		await expect(boton).toHaveClass(/boton-contorno/);
+		await expect(page.getByRole('button', { name: 'Aportar mi alquiler' })).not.toHaveClass(/boton-contorno/);
+		await expect(amarillos.filter({ hasText: /Preguntarle/ })).toHaveCount(0);
+		await page.getByRole('button', { name: 'Aportar mi alquiler' }).click();
+		await expect(page.getByText('Alquiler aportado')).toBeVisible();
+		await expect(boton).not.toHaveClass(/boton-contorno/);
+		await expect(amarillos.filter({ hasText: /Aportar mi alquiler/ })).toHaveCount(0);
+	});
+
+	test('el aviso bajo el botón principal no habla de guardar la tarjeta', async ({ page }) => {
+		await abrir(page);
+		await comprobar(page, { precio: '2500', superficie: '90' });
+		await esperarAnimacion(page);
+		await expect(page.getByText('La tarjeta no incluye tu dirección ni el precio exacto.')).toBeVisible();
+		await expect(page.getByText(/se guarda la tarjeta/)).toBeHidden();
+		await abrirOtras(page);
+		await expect(page.getByText(/se guarda la tarjeta/)).toBeVisible();
 	});
 
 	test('descargar la imagen no guarda nada en el servidor', async ({ page }) => {

@@ -25,6 +25,7 @@
 		detalle,
 		boton,
 		modo,
+		principal = true,
 		compartiendo = false,
 		nativo = false,
 		enlaces = null,
@@ -41,6 +42,8 @@
 		boton: string;
 		/** Modalidad: decide el texto del botón principal y el mensaje de WhatsApp */
 		modo: ModoCompartir;
+		/** Amarillo (principal) o con contorno: en «Mi alquiler», hasta aportar el alquiler el principal es el de aportar */
+		principal?: boolean;
 		compartiendo?: boolean;
 		nativo?: boolean;
 		enlaces?: EnlacesCompartir | null;
@@ -71,16 +74,17 @@
 	{#if enlaces}
 		<div class="zona-compartir" role="group" aria-label={boton}>
 		<a
-			class="boton principal"
+			class={principal ? 'boton grande' : 'boton boton-contorno grande'}
 			href={enlaces.whatsapp}
 			target="_blank"
 			rel="noopener noreferrer"
 			onclick={(e) => { e.preventDefault(); alCompartirPor('whatsapp', 'principal'); }}
 		>{COMPARTIR_WHATSAPP[modo].boton}</a>
-		<p class="mensaje">{TARJETA.canalesAviso}</p>
+		<p class="mensaje">{COMPARTIR_WHATSAPP.aviso}</p>
 
 		<details class="otras">
 			<summary>{COMPARTIR_WHATSAPP.otras}</summary>
+			<p class="mensaje">{TARJETA.canalesAviso}</p>
 			<div class="canales">
 				{#if nativo}
 					<button type="button" class="boton boton-contorno canal ancho" onclick={alCompartir} disabled={compartiendo}>{compartiendo ? TARJETA.generando : boton}</button>
@@ -163,7 +167,7 @@
 		flex-direction: column;
 		gap: 16px;
 	}
-	.principal {
+	.grande {
 		min-height: 60px;
 		font-size: 18px;
 		text-align: center;
