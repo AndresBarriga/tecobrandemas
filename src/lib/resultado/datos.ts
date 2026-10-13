@@ -31,6 +31,8 @@ export interface IpcJson {
 	factor: number;
 	/** AAAA-MM */
 	ultimo_mes: string;
+	/** AAAA-MM-DD: cuándo se leyó la serie del INE */
+	fecha_extraccion?: string;
 }
 
 /** oferta_madrid.json: anuncios recientes (€/m²) del Ayuntamiento; solo se carga con la flag de la oferta encendida */

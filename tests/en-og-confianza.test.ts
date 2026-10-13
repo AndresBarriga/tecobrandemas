@@ -141,9 +141,9 @@ describe('inglés: hreflang, lang, sitemap, JSON-LD y pie', () => {
 describe('vista previa (og:image)', () => {
 	const paginasConOg = ['/preguntas', ...PREGUNTAS.map((p) => `/preguntas/${p.slug}`), '/mapa', ...PAGINAS_EN.map((p) => p.ruta)];
 	it('una imagen por página, y cada título es el H1 de su página', () => {
-		expect(OG_PAGINAS.map((o) => o.ruta)).toEqual(paginasConOg);
+		expect(OG_PAGINAS.map((o) => o.ruta).filter((r) => !r.startsWith('/alquiler'))).toEqual(paginasConOg);
 		const h1 = new Map<string, string>([['/preguntas', HUB_PREGUNTAS.h1], ['/mapa', MAPA_REFERENCIA.titulo], ...PREGUNTAS.map((p) => [`/preguntas/${p.slug}`, p.h1] as [string, string]), ...PAGINAS_EN.map((p) => [p.ruta, p.h1] as [string, string])]);
-		for (const o of OG_PAGINAS) expect(o.titulo, o.ruta).toBe(h1.get(o.ruta));
+		for (const o of OG_PAGINAS.filter((x) => !x.ruta.startsWith('/alquiler'))) expect(o.titulo, o.ruta).toBe(h1.get(o.ruta));
 		expect(ogDe('/mapa')!.imagen).toBe('mapa.png');
 	});
 	it.each(OG_PAGINAS.map((o) => [o.imagen] as const))('%s: PNG de 1200×630 y menos de 300 KB', (imagen) => {

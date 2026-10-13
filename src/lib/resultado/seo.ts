@@ -8,6 +8,7 @@ import { AUTOR, FECHA_PREGUNTAS, PREGUNTAS, type PaginaPregunta } from './pregun
 import { FECHA_MAPA, TEXTO_MAPA } from './mapa-texto';
 import { PAGINAS_EN, FECHA_EN, AUTOR_EN, type PaginaEn } from './en';
 import { FECHA_CORRECCIONES } from './correcciones';
+import { BARRIOS_PILOTO, FECHA_BARRIOS, nombreCompleto, barrioPilotoPorSlug, type PaginaBarrio } from './barrios';
 import ogPaginas from './og-paginas.json';
 
 export const PERFIL_INSTAGRAM = 'https://www.instagram.com/asuprecio/';
@@ -39,8 +40,25 @@ export const ENTRADAS_SITEMAP: { ruta: string; lastmod?: string }[] = [
 	{ ruta: '/preguntas', lastmod: FECHA_PREGUNTAS },
 	...PREGUNTAS.map((p) => ({ ruta: `/preguntas/${p.slug}`, lastmod: FECHA_PREGUNTAS })),
 	...PAGINAS_EN.map((p) => ({ ruta: p.ruta, lastmod: FECHA_EN })),
-	{ ruta: '/correcciones', lastmod: FECHA_CORRECCIONES }
+	{ ruta: '/correcciones', lastmod: FECHA_CORRECCIONES },
+	{ ruta: '/alquiler', lastmod: FECHA_BARRIOS },
+	...BARRIOS_PILOTO.map((b) => ({ ruta: `/alquiler/${b.slug}`, lastmod: FECHA_BARRIOS }))
 ];
+
+/**
+ * Entradas del sitemap con los datos reales: un barrio sin dato suficiente no se publica (no entra) y el `lastmod` de las
+ * páginas de barrio es el de los datos (fecha de extracción del IPC)
+ */
+export function entradasSitemap(opciones?: { barrios?: string[]; lastmodBarrios?: string }): { ruta: string; lastmod?: string }[] {
+	if (!opciones) return ENTRADAS_SITEMAP;
+	const lastmod = opciones.lastmodBarrios ?? FECHA_BARRIOS;
+	const publicados = new Set(opciones.barrios ?? BARRIOS_PILOTO.map((b) => b.slug));
+	return ENTRADAS_SITEMAP.flatMap((e) => {
+		if (e.ruta === '/alquiler') return publicados.size ? [{ ruta: e.ruta, lastmod }] : [];
+		if (e.ruta.startsWith('/alquiler/')) return publicados.has(e.ruta.slice('/alquiler/'.length)) ? [{ ruta: e.ruta, lastmod }] : [];
+		return [e];
+	});
+}
 export const RUTAS_INDEXABLES = ENTRADAS_SITEMAP.map((e) => e.ruta);
 
 /** Rastreadores de vista previa de enlaces (leen /t/:id y su imagen para mostrar la tarjeta) */
@@ -63,8 +81,8 @@ export function contenidoRobots(): string {
 	].join('\n');
 }
 
-export function contenidoSitemap(): string {
-	const urls = ENTRADAS_SITEMAP.map((e) => `\t<url><loc>${SITE_URL}${e.ruta}</loc>${e.lastmod ? `<lastmod>${e.lastmod}</lastmod>` : ''}</url>`).join('\n');
+export function contenidoSitemap(opciones?: { barrios?: string[]; lastmodBarrios?: string }): string {
+	const urls = entradasSitemap(opciones).map((e) => `\t<url><loc>${SITE_URL}${e.ruta}</loc>${e.lastmod ? `<lastmod>${e.lastmod}</lastmod>` : ''}</url>`).join('\n');
 	return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
 }
 
@@ -205,3 +223,33 @@ export interface OgPagina {
 export const OG_PAGINAS: OgPagina[] = ogPaginas;
 
 export const ogDe = (ruta: string): OgPagina | undefined => OG_PAGINAS.find((o) => o.ruta === ruta);
+
+// ——— Alquiler por barrios ———
+
+/** JSON-LD de la página de un barrio: WebPage, FAQPage y BreadcrumbList (Inicio › Alquiler por barrios › Barrio) */
+export function jsonLdBarrio(p: PaginaBarrio): object[] {
+	const b = barrioPilotoPorSlug(p.slug)!;
+	const url = `${SITE_URL}/alquiler/${p.slug}`;
+	return [
+		{
+			'@context': 'https://schema.org',
+			'@type': 'WebPage',
+			name: p.h1,
+			description: p.descripcion,
+			url,
+			inLanguage: 'es',
+			dateModified: p.modificado,
+			isPartOf: { '@type': 'WebSite', name: NOMBRE, url: `${SITE_URL}/` },
+			about: { '@type': 'Place', name: `${b.oficial}, Madrid`, address: { '@type': 'PostalAddress', addressLocality: 'Madrid', addressCountry: 'ES' } }
+		},
+		{
+			'@context': 'https://schema.org',
+			'@type': 'FAQPage',
+			mainEntity: p.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }))
+		},
+		migas({ nombre: 'Alquiler por barrios', ruta: '/alquiler' }, { nombre: nombreCompleto(b), ruta: `/alquiler/${p.slug}` })
+	];
+}
+
+export const jsonLdIndiceBarrios = (): object[] => [migas({ nombre: 'Alquiler por barrios', ruta: '/alquiler' })];
+

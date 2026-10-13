@@ -37,6 +37,7 @@
 		<nav class="enlaces-pie" aria-label="Más información">
 			<a class="enlace-pie" href="/como-calculamos">Cómo calculamos</a>
 			<a class="enlace-pie" href="/preguntas">Preguntas</a>
+			<a class="enlace-pie" href="/alquiler">Alquiler por barrios</a>
 			<a class="enlace-pie" href="/correcciones">Correcciones</a>
 			<a class="enlace-pie discreto" href={hrefEn} hreflang="en" lang="en">English</a>
 		</nav>
