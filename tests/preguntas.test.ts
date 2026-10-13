@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { campanaValida } from '../src/lib/cliente/analitica-filtro';
 import {
-	AUTOR, ENTRADAS_SITEMAP, FECHA_PREGUNTAS, HUB_PREGUNTAS, PREGUNTAS, SITE_URL, contenidoSitemap, enlaceHerramienta, jsonLdComoTexto, jsonLdHubPreguntas,
+	AUTOR, COSTURA, ENTRADAS_SITEMAP, FECHA_PREGUNTAS, HUB_PREGUNTAS, PREGUNTAS, SITE_URL, contenidoSitemap, enlaceHerramienta, jsonLdComoTexto, jsonLdHubPreguntas,
 	jsonLdPregunta, preguntaPorSlug, textoDePagina
 } from '../src/lib/resultado';
 
@@ -108,9 +108,26 @@ describe('preguntas: la del decreto (supera-mi-alquiler-el-indice-de-referencia)
 		expect(texto).toContain('31/12/2027');
 		expect(texto).toContain('07/10/2026');
 	});
+	it('Madrid: el aviso, la sección y la pregunta frecuente', () => {
+		const madrid = 'En la ciudad de Madrid no hay zonas declaradas tensionadas a 13/10/2026.';
+		expect(p.avisoExtra!.join(' ')).toContain(madrid);
+		expect(p.avisoExtra!.join(' ')).toContain('antes de negarte a una actualización');
+		expect(p.secciones.find((s) => s.h2.startsWith('¿A qué contratos'))!.parrafos.join(' ')).toContain(madrid);
+		const faq = p.faq.find((f) => f.q === '¿Y en Madrid?')!;
+		expect(faq.a).toContain(madrid.replace('.', ','));
+		expect(p.secciones.find((s) => s.tabla)!.tabla!.titulo).toMatch(/inventado y puede no existir para tu zona/);
+	});
 	it('dice el valor oficial y que la estimación es independiente', () => {
 		expect(texto).toContain('serpavi.mivau.gob.es');
 		expect(texto).toMatch(/independiente/);
+	});
+});
+
+describe('preguntas: nombres de resultado', () => {
+	it('los de la página 1 son los que muestra la herramienta', () => {
+		const palabras = [COSTURA.palabras.debajo, COSTURA.palabras.dentro, COSTURA.palabras.algo, COSTURA.palabras.encima];
+		const filas = PREGUNTAS[0]!.secciones.find((s) => s.tabla)!.tabla!.filas.map((f) => f[1]);
+		expect(filas).toEqual(palabras);
 	});
 });
 

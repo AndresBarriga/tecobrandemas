@@ -29,7 +29,12 @@
 			<div class="respuesta">
 				<p>{p.respuesta.join(' ')}</p>
 			</div>
-			{#if p.aviso}<p class="aviso" role="note">{p.aviso}</p>{/if}
+			{#if p.aviso}
+				<div class="aviso" role="note">
+					<p>{p.aviso}</p>
+					{#each p.avisoExtra ?? [] as t (t)}<p>{t}</p>{/each}
+				</div>
+			{/if}
 
 			<section class="herramienta" aria-label="Comprobar con la herramienta">
 				<p>Compruébalo con tu dirección. Tarda un minuto, es gratis y no hace falta registrarse.</p>
@@ -154,6 +159,11 @@
 		padding: 12px 14px;
 		border-left: 4px solid var(--paja);
 		background: var(--blanco);
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.aviso p {
 		font: 600 15px/1.45 var(--f-texto);
 	}
 	.herramienta {

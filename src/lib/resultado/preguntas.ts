@@ -51,6 +51,8 @@ export interface PaginaPregunta {
 	respuesta: string[];
 	/** Aviso destacado debajo de la respuesta (opcional) */
 	aviso?: string;
+	/** Párrafos destacados justo después del aviso (opcional) */
+	avisoExtra?: string[];
 	secciones: SeccionPregunta[];
 	faq: { q: string; a: string }[];
 	fuentes: Fuente[];
@@ -59,7 +61,10 @@ export interface PaginaPregunta {
 }
 
 const SERPAVI: Fuente = { texto: 'Ministerio de Vivienda y Agenda Urbana: SERPAVI, sistema estatal de referencia del precio del alquiler', url: 'https://serpavi.mivau.gob.es' };
-const INE: Fuente = { texto: 'INE: Índice de Precios de Consumo (IPC), subgrupo alquiler de vivienda', url: 'https://www.ine.es/' };
+const INE: Fuente = {
+	texto: 'INE: IPC, subclase 04.1.1.0 «Alquiler de vivienda principal», nacional (tabla 76128, serie IPC291807)',
+	url: 'https://servicios.ine.es/wstempus/js/ES/DATOS_SERIE/IPC291807?date=20240101:20991231'
+};
 const LEY_VIVIENDA: Fuente = { texto: 'BOE: Ley 12/2023, de 24 de mayo, por el derecho a la vivienda', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2023-12203' };
 const RDL: Fuente = { texto: 'BOE: Real Decreto-ley 29/2026, de 6 de octubre (BOE núm. 249, de 07/10/2026)', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2026-20823' };
 const MADRID: Fuente = { texto: 'Ayuntamiento de Madrid: serie 4.3.21.D de precios de oferta (elaboración a partir de datos de Idealista)', url: 'https://www.madrid.es/' };
@@ -80,7 +85,7 @@ const PAGINAS: PaginaPregunta[] = [
 		h1: '¿Cómo saber si un alquiler está caro en Madrid?',
 		respuesta: [
 			'Compáralo con lo que pagan quienes ya viven de alquiler en la zona: los contratos declarados a Hacienda que recoge el índice de referencia del Ministerio de Vivienda (SERPAVI).',
-			'Esa referencia se ajusta al tamaño de la vivienda y se actualiza con el IPC del alquiler, así que la comparación es con un piso como el tuyo y con precios al día.'
+			'La referencia se ajusta al tamaño de la vivienda y sus contratos se actualizan con el IPC del alquiler.'
 		],
 		secciones: [
 			{
@@ -102,16 +107,16 @@ const PAGINAS: PaginaPregunta[] = [
 			{
 				h2: '¿Cómo se comprueba en un minuto?',
 				parrafos: [
-					'Escribe la dirección, el precio al mes y los metros, y elige si es tu alquiler o un anuncio. La herramienta responde con una palabra (por debajo, dentro, algo por encima o por encima) y una barra que muestra dónde cae el precio.'
+					'Escribe la dirección, el precio al mes y los metros, y elige si es tu alquiler o un anuncio. La herramienta responde con una palabra (POR DEBAJO, DENTRO, ALGO POR ENCIMA o POR ENCIMA) y una barra que muestra dónde cae el precio.'
 				],
 				tabla: {
 					titulo: 'Ejemplo (hipotético): un piso de 70 m² en una zona imaginaria, donde la parte baja de lo que pagan quienes ya viven allí es 700 € y la parte alta, 900 €. Si fuera un piso excelente, el margen llegaría a 1.050 €',
 					cabecera: ['Precio al mes', 'Resultado'],
 					filas: [
-						['650 €', 'Por debajo'],
-						['800 €', 'Dentro'],
-						['950 €', 'Algo por encima'],
-						['1.150 €', 'Por encima']
+						['650 €', 'POR DEBAJO'],
+						['800 €', 'DENTRO'],
+						['950 €', 'ALGO POR ENCIMA'],
+						['1.150 €', 'POR ENCIMA']
 					]
 				}
 			},
@@ -119,7 +124,7 @@ const PAGINAS: PaginaPregunta[] = [
 				h2: '¿Qué hago con el resultado?',
 				parrafos: [
 					'Si estás buscando piso, úsalo para decidir si negocias o sigues buscando. Puedes pedir al propietario que explique la diferencia, por ejemplo qué incluye el precio. Si ya vives de alquiler, te dice dónde estás frente a tu zona.',
-					'Con «Dentro», tu precio está entre la parte baja y la parte alta de lo que pagan quienes ya viven allí. Con «Por encima», conviene preguntar por qué: puede haber una razón, como un piso excelente o una reforma reciente.',
+					'Con «DENTRO», tu precio está entre la parte baja y la parte alta de lo que pagan quienes ya viven allí. Con «POR ENCIMA», conviene preguntar por qué: puede haber una razón, como un piso excelente o una reforma reciente.',
 					'El resultado es una estimación independiente. El valor oficial es el de SERPAVI (serpavi.mivau.gob.es), que se consulta con los datos de la vivienda.'
 				]
 			},
@@ -250,7 +255,7 @@ const PAGINAS: PaginaPregunta[] = [
 			{
 				h2: '¿Qué significa esto al leer tu resultado?',
 				parrafos: [
-					'A su precio compara tu precio con cada referencia por separado. Un resultado «Por encima» de los contratos y «En línea» con los anuncios significa que ese precio se parece a lo que se pide ahora, aunque supere lo que pagan quienes ya viven allí.',
+					'A su precio compara tu precio con cada referencia por separado. Un resultado «POR ENCIMA» de los contratos y «EN LÍNEA» con los anuncios significa que ese precio se parece a lo que se pide ahora, aunque supere lo que pagan quienes ya viven allí.',
 					'Eso te da un argumento para preguntar y negociar, no una sentencia. No es un veredicto sobre el propietario ni sobre el piso: es un dato más para decidir.'
 				]
 			},
@@ -291,6 +296,10 @@ const PAGINAS: PaginaPregunta[] = [
 			'Si no lo supera, el incremento es el que pacten las partes y, sin acuerdo, no puede ser superior al 2 %.'
 		],
 		aviso: 'Es un real decreto-ley pendiente de convalidación en el Congreso y puede cambiar. Estado del texto a 13/10/2026. No es asesoramiento legal.',
+	avisoExtra: [
+			'En la ciudad de Madrid no hay zonas declaradas tensionadas a 13/10/2026. El decreto-ley no aclara si el “límite máximo aplicable” existe fuera de esas zonas. Si no existiera, a un alquiler en Madrid le aplicaría el apartado b): lo que se pacte o, sin pacto, hasta el 2 %.',
+			'Consulta el valor oficial en SERPAVI y pide asesoramiento antes de negarte a una actualización.'
+		],
 		secciones: [
 			{
 				h2: '¿Qué dice el decreto?',
@@ -310,6 +319,8 @@ const PAGINAS: PaginaPregunta[] = [
 				parrafos: [
 					'El texto habla de contratos de alquiler de vivienda sujetos a la Ley 29/1994. No lo limita a zonas tensionadas ni a una comunidad concreta. El propio decreto-ley dice que se aplica sin perjuicio de los regímenes civiles forales y de las competencias autonómicas en vivienda.',
 					'No queda claro cómo se determina el «límite máximo aplicable» a cada vivienda, ni qué pasa si no hay un límite aprobado para su zona. Tampoco sabemos cómo se aplicará en la práctica. Consulta tu caso antes de decidir nada.',
+					'En la ciudad de Madrid no hay zonas declaradas tensionadas a 13/10/2026. El decreto-ley no aclara si el “límite máximo aplicable” existe fuera de esas zonas. Si no existiera, a un alquiler en Madrid le aplicaría el apartado b): lo que se pacte o, sin pacto, hasta el 2 %.',
+					'Consulta el valor oficial en SERPAVI y pide asesoramiento antes de negarte a una actualización.',
 					'La actualización anual toca en la fecha en que tu contrato cumple un año más. Si esa fecha cae entre el 08/10/2026 y el 31/12/2027, la regla de arriba es la que importa.'
 				]
 			},
@@ -321,8 +332,8 @@ const PAGINAS: PaginaPregunta[] = [
 					'Anota la fecha de actualización de tu contrato y tu renta actual: son los dos datos que necesitas.'
 				],
 				tabla: {
-					titulo: 'Ejemplo (hipotético): una renta de 900 € al mes en una zona imaginaria',
-					cabecera: ['Límite oficial', 'Tu renta frente al límite', 'Qué dice el decreto'],
+					titulo: 'Ejemplo (hipotético): una renta de 900 € al mes en una zona imaginaria. El «límite oficial» de la tabla es inventado y puede no existir para tu zona',
+					cabecera: ['Límite oficial (hipotético)', 'Tu renta frente al límite', 'Qué dice el decreto'],
 					filas: [
 						['950 €', 'No lo supera', 'El pacto entre las partes; sin pacto, hasta 18 € más (el 2 %)'],
 						['850 €', 'Lo supera', 'Ningún incremento']
@@ -333,14 +344,17 @@ const PAGINAS: PaginaPregunta[] = [
 				h2: '¿Qué significa estar por encima o por debajo?',
 				parrafos: [
 					'«Por encima» del límite oficial es el caso del apartado a): no procede subir la renta. «Por debajo» es el del apartado b): lo que se pacte o, sin pacto, hasta el 2 %.',
-					'Si tu renta es igual al límite, no es «superior»: encaja en el apartado b). El resultado de A su precio («dentro», «algo por encima»…) es una orientación, no el cálculo legal.'
+					'Si tu renta es igual al límite, no es «superior»: encaja en el apartado b). El resultado de A su precio («DENTRO», «ALGO POR ENCIMA»…) es una orientación, no el cálculo legal.'
 				]
 			}
 		],
 		faq: [
+			{
+				q: '¿Y en Madrid?',
+				a: 'En la ciudad de Madrid no hay zonas declaradas tensionadas a 13/10/2026, y el decreto-ley no aclara si el «límite máximo aplicable» existe fuera de ellas. Si no existiera, a un alquiler en Madrid le aplicaría el apartado b): lo que se pacte o, sin pacto, hasta el 2 %.'
+			},
 			{ q: '¿Se aplica en toda España?', a: 'El texto no lo limita a zonas concretas, pero se aplica sin perjuicio de los regímenes forales y de las competencias autonómicas. Consulta cómo afecta a tu comunidad.' },
-			{ q: '¿Qué pasa si el Congreso no lo convalida?', a: 'Si no se convalida, el decreto-ley deja de estar en vigor. Si se convalida, sigue vigente y puede modificarse después.' },
-			{ q: '¿Cuánto es el 2 % de mi renta?', a: 'Multiplica tu renta mensual por 0,02. Con 900 € (ejemplo), son 18 € al mes.' }
+			{ q: '¿Qué pasa si el Congreso no lo convalida?', a: 'Si no se convalida, el decreto-ley deja de estar en vigor. Si se convalida, sigue vigente y puede modificarse después.' }
 		],
 		fuentes: [RDL, SERPAVI, LEY_VIVIENDA],
 		relacionadas: [P2, P1]
@@ -385,6 +399,7 @@ export const fechaLegible = (iso: string): string => iso.split('-').reverse().jo
 export function textoDePagina(p: PaginaPregunta, conFuentes = false): string[] {
 	const t: string[] = [p.h1, ...p.respuesta];
 	if (p.aviso) t.push(p.aviso);
+	if (p.avisoExtra) t.push(...p.avisoExtra);
 	for (const s of p.secciones) {
 		t.push(s.h2, ...s.parrafos);
 		if (s.tabla) t.push(s.tabla.titulo, ...s.tabla.cabecera, ...s.tabla.filas.flat());
