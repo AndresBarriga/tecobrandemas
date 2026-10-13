@@ -33,3 +33,4 @@ export * from './negociar';
 export * from './historial';
 export * from './metodologia';
 export * from './seo';
+export * from './preguntas';

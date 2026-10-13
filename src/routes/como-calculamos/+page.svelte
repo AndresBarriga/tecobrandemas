@@ -324,6 +324,7 @@
 			<div class="cta">
 				<span class="cta-pregunta">{p.cta.pregunta}</span>
 				<a class="boton-cta" href="/">{p.cta.boton}</a>
+				<a class="enlace-preguntas" href="/preguntas">¿Dudas concretas? Mira las preguntas sobre el precio del alquiler</a>
 			</div>
 		</main>
 	</div>
@@ -960,6 +961,13 @@
 	}
 	.cta-pregunta {
 		font: 700 24px/1.2 var(--f-texto);
+	}
+	.enlace-preguntas {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		font: 600 15px/1.3 var(--f-texto);
+		text-underline-offset: 4px;
 	}
 	.boton-cta {
 		height: 56px;
