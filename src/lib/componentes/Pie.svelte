@@ -15,7 +15,10 @@
 	<p>{antes}<a href={ENLACE_OFICIAL}>serpavi.mivau.gob.es</a>{despues}</p>
 	<p>{datos}</p>
 	<p>{otras}</p>
-	<a class="enlace-pie" href="/como-calculamos">Cómo calculamos</a>
+	<nav class="enlaces-pie" aria-label="Más información">
+		<a class="enlace-pie" href="/como-calculamos">Cómo calculamos</a>
+		<a class="enlace-pie" href="/preguntas">Preguntas</a>
+	</nav>
 </footer>
 
 <style>
@@ -37,10 +40,10 @@
 		color: var(--tinta);
 		text-underline-offset: 4px;
 	}
-	@media (min-width: 1024px) {
-		.enlace-pie:not([href='/como-calculamos']) {
-			display: none;
-		}
+	.enlaces-pie {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px 24px;
 	}
 	@media (min-width: 960px) {
 		footer {

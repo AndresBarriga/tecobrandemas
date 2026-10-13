@@ -55,10 +55,10 @@ describe('SEO: JSON-LD de la portada', () => {
 });
 
 describe('SEO: sitemap y robots', () => {
-	it('sitemap: portada, cómo calculamos y mapa; sin /t/, /r7k/ ni parámetros', () => {
+	it('sitemap: las páginas indexables; sin /t/, /r7k/ ni parámetros', () => {
 		const xml = contenidoSitemap();
 		const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-		expect(urls).toEqual([`${SITE_URL}/`, `${SITE_URL}/como-calculamos`, `${SITE_URL}/mapa`]);
+		expect(urls.slice(0, 3)).toEqual([`${SITE_URL}/`, `${SITE_URL}/como-calculamos`, `${SITE_URL}/mapa`]);
 		expect(urls).toHaveLength(RUTAS_INDEXABLES.length);
 		for (const u of urls) expect(u).not.toMatch(/\/t\/|\/r7k\/|[?#]/);
 		expect(xml.startsWith('<?xml')).toBe(true);

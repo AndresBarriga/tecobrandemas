@@ -4,6 +4,7 @@
  */
 import { NOMBRE } from './textos';
 import { SITE_URL } from './sitio';
+import { AUTOR, FECHA_PREGUNTAS, PREGUNTAS, type PaginaPregunta } from './preguntas';
 
 export const PERFIL_INSTAGRAM = '';
 export const PERFIL_FACEBOOK = '';
@@ -26,8 +27,15 @@ export const SEO_COMO_CALCULAMOS = {
 		'Método de la referencia de alquiler Madrid: contratos vigentes del Ministerio de Vivienda (SERPAVI 2024) ajustados por IPC. Fuentes y límites.'
 } as const;
 
-/** Páginas indexables, en el orden del sitemap. Sin /t/*, /r7k/* ni rutas con parámetros */
-export const RUTAS_INDEXABLES = ['/', '/como-calculamos', '/mapa'] as const;
+/** Páginas indexables, en el orden del sitemap, con `lastmod` cuando se conoce. Sin /t/*, /r7k/* ni rutas con parámetros */
+export const ENTRADAS_SITEMAP: { ruta: string; lastmod?: string }[] = [
+	{ ruta: '/' },
+	{ ruta: '/como-calculamos' },
+	{ ruta: '/mapa' },
+	{ ruta: '/preguntas', lastmod: FECHA_PREGUNTAS },
+	...PREGUNTAS.map((p) => ({ ruta: `/preguntas/${p.slug}`, lastmod: FECHA_PREGUNTAS }))
+];
+export const RUTAS_INDEXABLES = ENTRADAS_SITEMAP.map((e) => e.ruta);
 
 /** Rastreadores de vista previa de enlaces (leen /t/:id y su imagen para mostrar la tarjeta) */
 export const AGENTES_VISTA_PREVIA = ['Twitterbot', 'facebookexternalhit', 'WhatsApp', 'LinkedInBot', 'Slackbot', 'TelegramBot', 'Discordbot'] as const;
@@ -50,7 +58,7 @@ export function contenidoRobots(): string {
 }
 
 export function contenidoSitemap(): string {
-	const urls = RUTAS_INDEXABLES.map((r) => `\t<url><loc>${SITE_URL}${r}</loc></url>`).join('\n');
+	const urls = ENTRADAS_SITEMAP.map((e) => `\t<url><loc>${SITE_URL}${e.ruta}</loc>${e.lastmod ? `<lastmod>${e.lastmod}</lastmod>` : ''}</url>`).join('\n');
 	return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
 }
 
@@ -84,3 +92,42 @@ export function jsonLdPortada(): object[] {
 export function jsonLdComoTexto(datos: object): string {
 	return JSON.stringify(datos).replace(/</g, '\\u003c');
 }
+
+// ——— Centro de preguntas ———
+
+const editor = () => ({ '@type': 'Organization', name: NOMBRE, url: `${SITE_URL}/`, logo: { '@type': 'ImageObject', url: LOGO_ORGANIZACION } });
+
+function migas(...pasos: { nombre: string; ruta: string }[]): object {
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'BreadcrumbList',
+		itemListElement: [{ nombre: 'Inicio', ruta: '/' }, ...pasos].map((p, i) => ({ '@type': 'ListItem', position: i + 1, name: p.nombre, item: `${SITE_URL}${p.ruta}` }))
+	};
+}
+
+/** JSON-LD de una página de preguntas: Article, FAQPage (solo con su bloque de preguntas frecuentes) y BreadcrumbList */
+export function jsonLdPregunta(p: PaginaPregunta): object[] {
+	const url = `${SITE_URL}/preguntas/${p.slug}`;
+	return [
+		{
+			'@context': 'https://schema.org',
+			'@type': 'Article',
+			headline: p.h1,
+			description: p.descripcion,
+			inLanguage: 'es',
+			datePublished: FECHA_PREGUNTAS,
+			dateModified: FECHA_PREGUNTAS,
+			author: { '@type': 'Organization', name: AUTOR, url: `${SITE_URL}/` },
+			publisher: editor(),
+			mainEntityOfPage: url
+		},
+		{
+			'@context': 'https://schema.org',
+			'@type': 'FAQPage',
+			mainEntity: p.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }))
+		},
+		migas({ nombre: 'Preguntas', ruta: '/preguntas' }, { nombre: p.h1, ruta: `/preguntas/${p.slug}` })
+	];
+}
+
+export const jsonLdHubPreguntas = (): object[] => [migas({ nombre: 'Preguntas', ruta: '/preguntas' })];
