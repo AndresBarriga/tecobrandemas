@@ -103,18 +103,25 @@ describe('preguntas: la del decreto (supera-mi-alquiler-el-indice-de-referencia)
 		expect(cita).toContain('no procederá la aplicación de incremento alguno de la renta');
 		expect(cita).toContain('no podrá ser superior al dos por ciento');
 		expect(p.secciones.some((s) => s.cita?.fuente.url === 'https://www.boe.es/buscar/act.php?id=BOE-A-2026-20823')).toBe(true);
-		expect(p.aviso).toMatch(/pendiente de convalidación/);
+		expect(p.aviso).toMatch(/pendiente de convalidación/i);
 		expect(p.aviso).toMatch(/no es asesoramiento legal/i);
 		expect(texto).toContain('31/12/2027');
 		expect(texto).toContain('07/10/2026');
 	});
-	it('Madrid: el aviso, la sección y la pregunta frecuente', () => {
-		const madrid = 'En la ciudad de Madrid no hay zonas declaradas tensionadas a 13/10/2026.';
-		expect(p.avisoExtra!.join(' ')).toContain(madrid);
-		expect(p.avisoExtra!.join(' ')).toContain('antes de negarte a una actualización');
-		expect(p.secciones.find((s) => s.h2.startsWith('¿A qué contratos'))!.parrafos.join(' ')).toContain(madrid);
-		const faq = p.faq.find((f) => f.q === '¿Y en Madrid?')!;
-		expect(faq.a).toContain(madrid.replace('.', ','));
+	it('Madrid y la calculadora oficial: aviso, sección, pregunta frecuente, primer paso y fuentes', () => {
+		const frase = 'no exige que la vivienda esté en una zona tensionada';
+		expect(p.avisoExtra!.join(' ')).toContain(frase);
+		expect(p.avisoExtra!.join(' ')).toContain('consulta la calculadora oficial y, si dudas, pide asesoramiento');
+		expect(p.secciones.find((s) => s.h2.startsWith('¿A qué contratos'))!.parrafos.join(' ')).toContain(frase);
+		expect(p.faq.find((f) => f.q === '¿Y en Madrid?')!.a).toContain(frase);
+		expect(texto).not.toMatch(/no hay zonas declaradas|13\/10\/2026, y/);
+		const calc = 'https://www.mivau.gob.es/vivienda/calculadora-precio-alquiler';
+		const paso = p.secciones.find((s) => s.h2 === '¿Cómo compruebo mi caso?')!;
+		expect(paso.enlaces!.map((e) => e.url)).toEqual([calc]);
+		expect(paso.parrafos[0]!.indexOf('calculadora oficial')).toBeLessThan(paso.parrafos[0]!.indexOf('SERPAVI'));
+		expect(p.fuentes[0]!.url).toBe(calc);
+		expect(texto).toContain('IRAV (Índice de Referencia de Arrendamientos de Vivienda) del INE');
+		expect(p.aviso).toContain('Diputación Permanente del Congreso. El plazo constitucional vence hacia el 5 de noviembre de 2026. Estado a 13/10/2026.');
 		expect(p.secciones.find((s) => s.tabla)!.tabla!.titulo).toMatch(/inventado y puede no existir para tu zona/);
 	});
 	it('dice el valor oficial y que la estimación es independiente', () => {
