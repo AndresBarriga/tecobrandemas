@@ -9,7 +9,7 @@
  */
 import { PUBLIC_POSTHOG_ENABLED, PUBLIC_POSTHOG_KEY } from '$app/env/public';
 import {
-	type BRECHAS, type CANALES, type CAPAS_MAPA, type FUENTES_MAPA, type METODOS_OFERTA, type MODOS, type MOTIVOS_SIN_DATO, type NIVELES_OFERTA, type RESPUESTAS_QUE_HARAS, type RESULTADOS, type RESULTADOS_OFERTA,
+	type BOTONES_COMPARTIR, type BRECHAS, type CANALES, type CAPAS_MAPA, type FUENTES_MAPA, type METODOS_OFERTA, type MODOS, type MOTIVOS_SIN_DATO, type NIVELES_OFERTA, type RESPUESTAS_QUE_HARAS, type RESULTADOS, type RESULTADOS_OFERTA,
 	campanaValida, dominioDelReferrer, filtrarEvento, navegadorApp
 } from './analitica-filtro';
 import { leerOrigenDeLaUrl, tarjetaOrigen } from './origen';
@@ -182,7 +182,7 @@ export function queHaras(modo: Modo, respuesta: (typeof RESPUESTAS_QUE_HARAS)[nu
 	enviar('que_haras', { modo, respuesta, resultado });
 }
 
-export function comparte(d: { modo: Modo; canal: (typeof CANALES)[number]; tarjeta_id: string | null; resultado: Resultado | null }): void {
+export function comparte(d: { modo: Modo; canal: (typeof CANALES)[number]; boton: (typeof BOTONES_COMPARTIR)[number]; tarjeta_id: string | null; resultado: Resultado | null }): void {
 	enviar('comparte', d);
 }
 

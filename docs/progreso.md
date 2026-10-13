@@ -463,3 +463,6 @@ Handoff en `docs/design/new design handoff/` (README, componentes de referencia 
 - **Móvil:** presupuesto y metros van fijos y compactos sobre el mapa (bajo el conmutador), no en la hoja; al empezar a arrastrar una barra la hoja se cierra y la frase de resumen pasa a su cabecera, siempre a la vista. La hoja mide ahora su cabecera de forma reactiva. En escritorio, los controles siguen en el panel.
 - **Textos:** «Escribe tu presupuesto…» → «Mueve tu presupuesto…». /como-calculamos: párrafos del mapa reescritos. Analítica sin cambios (`mapa_capa`, ya existente).
 - **Tests:** `tests/mapa-presupuesto.test.ts` (modelos de vista) y `e2e/mapa-presupuesto.spec.ts` (solo móvil).
+
+## Compartir tras el resultado (13/10/2026)
+Un botón principal grande abre WhatsApp con el mensaje de la modalidad («Enviárselo a quien busca piso contigo» en «Un anuncio»; «Preguntarle a un amigo cuánto paga él» en «Mi alquiler»). El enlace es `/t/<id>?utm_source=whatsapp&utm_medium=share&utm_campaign=tarjeta&utm_content=<modalidad>`; el mensaje no lleva dirección, precio ni porcentaje. Hoja nativa, X, copiar enlace y descargar imagen, plegados en «Otras formas de compartir». El evento `comparte` lleva `boton` (`principal` | `otras`). Textos en `COMPARTIR_WHATSAPP` (`textos.ts`), enlaces en `src/lib/resultado/compartir.ts`.

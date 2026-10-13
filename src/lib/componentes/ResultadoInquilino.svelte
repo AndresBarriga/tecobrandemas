@@ -46,7 +46,7 @@
 		enlaces?: EnlacesCompartir | null;
 		mensajeTarjeta?: string | null;
 		alCompartir?: () => void;
-		alCompartirPor?: (canal: Canal) => void;
+		alCompartirPor?: (canal: Canal, boton: 'principal' | 'otras') => void;
 		/** Las tres tarjetas de «La costura», para elegir cuál se comparte */
 		selector?: SelectorTarjeta | null;
 	} = $props();
@@ -128,7 +128,7 @@
 				titulo={TARJETA_INQUILINO.titulo}
 				detalle={TARJETA.detalle}
 				boton={INQUILINO.compartir}
-				principal={aporte === 'hecho'}
+				modo="vivo"
 				{compartiendo}
 				{nativo}
 				{enlaces}

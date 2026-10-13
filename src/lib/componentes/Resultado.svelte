@@ -44,7 +44,7 @@
 		/** Móvil con hoja de compartir: un solo botón. Si no, los canales (escritorio) */
 		nativo?: boolean;
 		enlaces?: EnlacesCompartir | null;
-		alCompartirPor?: (canal: Canal) => void;
+		alCompartirPor?: (canal: Canal, boton: 'principal' | 'otras') => void;
 		/** «¿Qué vas a hacer con este resultado?»: la categoría elegida */
 		alQueHaras?: (r: RespuestaQueHaras) => void;
 		/** Las tres tarjetas de «La costura», para elegir cuál se comparte */
@@ -95,7 +95,7 @@
 		</div>
 
 		{#if tarjeta}
-			<Compartir {tarjeta} titulo={TARJETA.titulo} detalle={TARJETA.detalle} boton={BOTON_COMPARTIR} principal {compartiendo} {nativo} {enlaces} mensaje={mensajeTarjeta} {alCompartir} alCompartirPor={(c) => alCompartirPor?.(c)} {selector} />
+			<Compartir {tarjeta} titulo={TARJETA.titulo} detalle={TARJETA.detalle} boton={BOTON_COMPARTIR} modo="mirando" {compartiendo} {nativo} {enlaces} mensaje={mensajeTarjeta} {alCompartir} alCompartirPor={(c, b) => alCompartirPor?.(c, b)} {selector} />
 		{/if}
 
 		{#if pantalla.registro && alRegistrar}

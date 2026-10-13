@@ -73,3 +73,12 @@ export const conCompartirNativo = (page: Page) =>
 			}
 		});
 	});
+
+/** El botón principal de compartir (WhatsApp): su texto depende de la modalidad */
+export const BOTON_WHATSAPP = /^(Enviárselo a quien busca piso contigo|Preguntarle a un amigo cuánto paga él)$/;
+
+/** Despliega «Otras formas de compartir» (X, copiar enlace, descargar imagen y, en móvil, la hoja nativa) */
+export async function abrirOtras(page: Page) {
+	const resumen = page.getByText('Otras formas de compartir', { exact: true });
+	if (!(await page.getByRole('button', { name: 'Copiar enlace' }).isVisible())) await resumen.click();
+}

@@ -13,18 +13,18 @@
 
 <script lang="ts">
 	import TarjetaAmpliable from './TarjetaAmpliable.svelte';
-	import { TARJETA, TARJETA_COSTURA, type Canal, type EnlacesCompartir } from '#lib/resultado';
+	import { COMPARTIR_WHATSAPP, TARJETA, TARJETA_COSTURA, type Canal, type EnlacesCompartir, type ModoCompartir } from '#lib/resultado';
 
 	/**
-	 * Compartir la tarjeta (los dos modos). En el móvil con hoja de compartir, un botón que abre la hoja nativa con la
-	 * imagen y el enlace. En escritorio, WhatsApp, X, «Copiar enlace» y «Descargar imagen».
+	 * Compartir la tarjeta (los dos modos). Un botón principal que abre WhatsApp con el mensaje de la modalidad; plegadas debajo, la hoja nativa
+	 * (si el dispositivo la tiene), X, «Copiar enlace» y «Descargar imagen».
 	 */
 	let {
 		tarjeta,
 		titulo,
 		detalle,
 		boton,
-		principal = false,
+		modo,
 		compartiendo = false,
 		nativo = false,
 		enlaces = null,
@@ -39,19 +39,17 @@
 		detalle: string;
 		/** «Compartir mi resultado» */
 		boton: string;
-		/** Botón principal en Paja o secundario con contorno */
-		principal?: boolean;
+		/** Modalidad: decide el texto del botón principal y el mensaje de WhatsApp */
+		modo: ModoCompartir;
 		compartiendo?: boolean;
 		nativo?: boolean;
 		enlaces?: EnlacesCompartir | null;
 		mensaje?: string | null;
 		alCompartir: () => void;
-		alCompartirPor: (canal: Canal) => void;
+		alCompartirPor: (canal: Canal, boton: 'principal' | 'otras') => void;
 		/** Con varias tarjetas: la persona elige cuál comparte («La costura»). Sin él, una sola miniatura */
 		selector?: SelectorTarjeta | null;
 	} = $props();
-
-	const clase = $derived(principal ? 'boton' : 'boton boton-contorno');
 </script>
 
 <section class="compartir">
@@ -70,16 +68,29 @@
 		</fieldset>
 	{/if}
 
-	{#if nativo}
-		<button type="button" class={clase} onclick={alCompartir} disabled={compartiendo}>{compartiendo ? TARJETA.generando : boton}</button>
-	{:else if enlaces}
-		<div class="canales" role="group" aria-label={boton}>
-			<a class="{clase} canal" href={enlaces.whatsapp} target="_blank" rel="noopener noreferrer" onclick={(e) => { e.preventDefault(); alCompartirPor('whatsapp'); }}>{TARJETA.canales.whatsapp}</a>
-			<a class="{clase} canal" href={enlaces.x} target="_blank" rel="noopener noreferrer" onclick={(e) => { e.preventDefault(); alCompartirPor('x'); }}>{TARJETA.canales.x}</a>
-			<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor('copiar')}>{TARJETA.canales.copiar}</button>
-			<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor('descarga')}>{TARJETA.canales.descarga}</button>
-		</div>
+	{#if enlaces}
+		<div class="zona-compartir" role="group" aria-label={boton}>
+		<a
+			class="boton principal"
+			href={enlaces.whatsapp}
+			target="_blank"
+			rel="noopener noreferrer"
+			onclick={(e) => { e.preventDefault(); alCompartirPor('whatsapp', 'principal'); }}
+		>{COMPARTIR_WHATSAPP[modo].boton}</a>
 		<p class="mensaje">{TARJETA.canalesAviso}</p>
+
+		<details class="otras">
+			<summary>{COMPARTIR_WHATSAPP.otras}</summary>
+			<div class="canales">
+				{#if nativo}
+					<button type="button" class="boton boton-contorno canal ancho" onclick={alCompartir} disabled={compartiendo}>{compartiendo ? TARJETA.generando : boton}</button>
+				{/if}
+				<a class="boton boton-contorno canal" href={enlaces.x} target="_blank" rel="noopener noreferrer" onclick={(e) => { e.preventDefault(); alCompartirPor('x', 'otras'); }}>{TARJETA.canales.x}</a>
+				<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor('copiar', 'otras')}>{TARJETA.canales.copiar}</button>
+				<button type="button" class="boton boton-contorno canal" onclick={() => alCompartirPor('descarga', 'otras')}>{TARJETA.canales.descarga}</button>
+			</div>
+		</details>
+		</div>
 	{/if}
 	<p class="mensaje" role="status">{mensaje ?? ''}</p>
 </section>
@@ -146,6 +157,27 @@
 	}
 	.opcion.elegida .radio {
 		border-width: 4.5px;
+	}
+	.zona-compartir {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+	.principal {
+		min-height: 60px;
+		font-size: 18px;
+		text-align: center;
+	}
+	.otras summary {
+		cursor: pointer;
+		font: 600 15px/1.3 var(--f-texto);
+		padding: 8px 0;
+	}
+	.otras .canales {
+		margin-top: 8px;
+	}
+	.ancho {
+		grid-column: 1 / -1;
 	}
 	.canales {
 		display: grid;
