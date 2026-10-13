@@ -7,7 +7,7 @@ import { SITE_URL } from './sitio';
 import { AUTOR, FECHA_PREGUNTAS, PREGUNTAS, type PaginaPregunta } from './preguntas';
 
 export const PERFIL_INSTAGRAM = 'https://www.instagram.com/asuprecio/';
-export const PERFIL_FACEBOOK = '';
+export const PERFIL_FACEBOOK = 'https://www.facebook.com/people/ASuPrecio/61595385748217/';
 export const LOGO_ORGANIZACION = `${SITE_URL}/icon-512.png`;
 
 export const SEO_PORTADA = {
