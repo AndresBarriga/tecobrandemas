@@ -3,7 +3,7 @@
  *  - «Dos veredictos»: mitad negra (contratos) y mitad paja (oferta), con la palabra, el % y el lugar en la costura;
  *  - «La costura»: el mismo dibujo que la pantalla, sin euros ni %; «yo» o «el anuncio» sobre el precio;
  *  - «La cifra»: el % frente a los contratos, en grande (solo si hay %);
- *  - vista previa del enlace (1200×630): siempre «Dos veredictos».
+ *  - vista previa del enlace (1200×630): el veredicto de los contratos con su barra, y «¿Y el tuyo?» a la derecha.
  * Las palabras y las cifras grandes se miden y se reducen hasta caber. Nada por debajo de 30 px salvo las
  * atribuciones, que van literales en dos líneas pequeñas al pie. No hay euros, renta, m² ni dirección que dibujar.
  */
@@ -244,57 +244,88 @@ export function dibujarTarjetaV3(canvas: HTMLCanvasElement, t: TarjetaV3): void 
 	else dosVeredictos(ctx, t);
 }
 
-// ——— Vista previa del enlace: siempre «Dos veredictos» ———
+// ——— Vista previa del enlace (1200×630): solo el veredicto de los contratos y «¿Y el tuyo?» ———
+// Pocos textos y grandes, para que se lea en la miniatura de WhatsApp. Nada con forma de botón. Los carriles, la palabra y el
+// % salen de la tarjeta (sin euros, m² ni dirección); el lugar es el distrito.
 
-function mitadOg(ctx: Ctx, x: number, frente: string, p: string | null, cifra: string, texto: string, color: string, fuentes: string[]): void {
-	const w = OG_ANCHO / 2 - 104;
-	const xi = x + 52;
-	// Atribuciones al pie, dos líneas pequeñas
-	const tf = Math.min(...fuentes.map((f) => ajustar(ctx, f, w, 15, 500, 'semi')));
-	fuente(ctx, 500, tf, 'semi');
-	fuentes.forEach((f, i) => linea(ctx, f, xi, 566 + i * tf * 1.35, tf * 1.35, { color: color === C.papel ? C.suave : C.tinta }));
+/** Izquierda: el resultado (60 %); derecha: la invitación, sobre fondo de contraste */
+const OG_CORTE = 720;
+const OG_X = 52;
+const OG_W = OG_CORTE - 2 * OG_X;
 
-	let y = 548;
+function ogResultado(ctx: Ctx, t: TarjetaV3): void {
+	logo(ctx, OG_X, 40, 56, C.papel);
+	fuente(ctx, 600, 30, 'semi');
+	linea(ctx, `${t.lugar} · ${T.contexto[t.modo]}`, OG_X, 108, 36, { color: C.suave });
+
+	const { palabra: p, cifra, texto } = t.contratos;
+	// Con % la palabra es más chica y el % va debajo; sin %, la palabra manda
+	const tp = ajustar(ctx, p, OG_W, cifra ? 128 : 168, 800, 'extra');
+	const tilde = /[ÁÉÍÓÚ]/.test(p) ? tp * 0.1 : 0;
+	fuente(ctx, 800, tp, 'extra');
+	linea(ctx, p, OG_X - tp * 0.02, 156 + tilde, tp * 0.86, { color: C.papel });
+	let y = 156 + tilde + tp * 0.86 + 14;
 	if (cifra) {
-		const tc = ajustar(ctx, cifra, w, 64, 900, 'extra');
-		y -= tc * 0.9;
+		const tc = ajustar(ctx, cifra, OG_W, 140, 900, 'extra');
 		fuente(ctx, 900, tc, 'extra');
-		linea(ctx, cifra, xi - tc * 0.02, y, tc * 0.9, { color });
-	} else if (texto) {
-		fuente(ctx, 600, 28, 'texto');
-		const l = envolver(ctx, texto, w).slice(0, 2);
-		y -= l.length * 34;
-		l.forEach((s, i) => linea(ctx, s, xi, y + i * 34, 34, { color }));
+		linea(ctx, cifra, OG_X - tc * 0.02, y, tc * 0.86, { color: C.paja });
+		y += tc * 0.86 + 14;
 	}
-	if (p) {
-		const tp = ajustar(ctx, p, w, p.length > 10 ? 76 : 112, 800, 'extra');
-		y -= tp * 0.86 + 8;
-		fuente(ctx, 800, tp, 'extra');
-		linea(ctx, p, xi - tp * 0.02, y, tp * 0.86, { color });
-	}
-	fuente(ctx, 600, 28, 'texto');
-	y -= 36 + 6;
-	linea(ctx, frente, xi, y, 36, { color });
+	fuente(ctx, 600, 34, 'texto');
+	envolver(ctx, texto, OG_W).slice(0, 2).forEach((s, i) => linea(ctx, s, OG_X, y + i * 40, 40, { color: C.papel }));
+
+	// La barra: lo habitual (claro), la zona incierta y «si fuera un piso excelente»; el círculo, el piso
+	const r = t.carriles.contratos;
+	const X = (f: number) => OG_X + Math.min(Math.max(f, 0), 1) * OG_W;
+	const yB = 478;
+	const hB = 44;
+	rect(ctx, OG_X, yB, OG_W, hB, C.pista, 6);
+	const lo = X(r.banda.desde);
+	const hi = X(r.banda.hasta);
+	const hm = r.incertidumbre ? X(r.incertidumbre.hasta) : hi;
+	rect(ctx, lo, yB, Math.max(6, hi - lo), hB, C.papel);
+	if (r.incertidumbre) rect(ctx, hi, yB, Math.max(0, hm - hi), hB, C.incertidumbre);
+	rect(ctx, hm, yB, Math.max(0, X(r.excelente.hasta) - hm), hB, C.excelente);
+	const ux = X(t.carriles.punto);
+	fuente(ctx, 700, 26, 'semi');
+	const wh = ancho(ctx, T.habitual);
+	const sitio = [(lo + hi) / 2 - wh / 2, lo + 10, hi - 10 - wh].find((x) => x >= lo + 8 && x + wh <= hi - 8 && (x + wh < ux - 34 || x > ux + 34));
+	if (sitio !== undefined) linea(ctx, T.habitual, sitio, yB, hB, { color: C.tinta });
+	circulo(ctx, ux, yB + hB / 2, 52, C.paja, C.negro, 6);
+	fuente(ctx, 700, 26, 'semi');
+	const wp = ancho(ctx, T.punto[t.modo]);
+	linea(ctx, T.punto[t.modo], Math.min(Math.max(ux - wp / 2, OG_X), OG_X + OG_W - wp), yB + hB + 22, 32, { color: C.papel });
+
+	// Atribuciones literales, dos líneas pequeñas al pie
+	const [ministerio, ine] = T.fuentes[0].split(' · ');
+	const tf = Math.min(...[ministerio!, ine!].map((f) => ajustar(ctx, f, OG_W, 15, 500, 'semi')));
+	fuente(ctx, 500, tf, 'semi');
+	[ministerio!, ine!].forEach((f, i) => linea(ctx, f, OG_X, 586 + i * tf * 1.35, tf * 1.35, { color: C.suave }));
+}
+
+function ogInvitacion(ctx: Ctx): void {
+	const x = OG_CORTE + 48;
+	const w = OG_ANCHO - x - 40;
+	const [l1, l2] = T.og.titular;
+	const tt = Math.min(ajustar(ctx, l1, w, 190, 900, 'extra'), ajustar(ctx, l2, w, 190, 900, 'extra'));
+	const hT = tt * 0.86;
+	fuente(ctx, 700, 36, 'texto');
+	const lineas = envolver(ctx, T.og.texto, w);
+	const alto = hT * 2 + 18 + 40 + lineas.length * 44;
+	let y = (OG_ALTO - alto) / 2;
+	fuente(ctx, 900, tt, 'extra');
+	[l1, l2].forEach((s, i) => linea(ctx, s, x - tt * 0.02, y + i * (hT + 18), hT, { color: C.tinta }));
+	y += hT * 2 + 18 + 40;
+	fuente(ctx, 700, 36, 'texto');
+	lineas.forEach((s, i) => linea(ctx, s, x, y + i * 44, 44, { color: C.tinta }));
 }
 
 export function dibujarOgV3(canvas: HTMLCanvasElement, t: TarjetaV3): void {
 	canvas.width = OG_ANCHO;
 	canvas.height = OG_ALTO;
 	const ctx = canvas.getContext('2d')!;
-	const mitad = OG_ANCHO / 2;
-	rect(ctx, 0, 0, mitad, OG_ALTO, C.negro);
-	rect(ctx, mitad, 0, mitad, OG_ALTO, C.paja);
-	logo(ctx, 52, 48, 64, C.papel);
-	const tl = ajustar(ctx, t.lugar, mitad - 104, 30, 700, 'semi');
-	fuente(ctx, 700, tl, 'semi');
-	linea(ctx, t.lugar, mitad + 52, 48, 64, { color: C.tinta });
-
-	const [ministerio, ine] = T.fuentes[0].split(' · ');
-	const [ayuntamiento, dominio] = T.fuentes[1].split(' · ');
-	mitadOg(ctx, 0, T.frenteContratos, t.contratos.palabra, t.contratos.cifra, t.contratos.texto, C.papel, [ministerio!, ine!]);
-	if (t.oferta) {
-		const p = ofertaTarjetaPintada(t.oferta);
-		mitadOg(ctx, mitad, T.frenteOferta, t.oferta.palabra, p.cifra, p.texto, C.tinta, [ayuntamiento!, dominio!]);
-	}
-	else mitadOg(ctx, mitad, T.frenteOferta, null, '', T.sinOferta, C.tinta, [ayuntamiento!, dominio!]);
+	rect(ctx, 0, 0, OG_CORTE, OG_ALTO, C.negro);
+	rect(ctx, OG_CORTE, 0, OG_ANCHO - OG_CORTE, OG_ALTO, C.paja);
+	ogResultado(ctx, t);
+	ogInvitacion(ctx);
 }
