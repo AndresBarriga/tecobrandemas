@@ -6,7 +6,7 @@ import { NOMBRE } from './textos';
 import { SITE_URL } from './sitio';
 import { AUTOR, FECHA_PREGUNTAS, PREGUNTAS, type PaginaPregunta } from './preguntas';
 
-export const PERFIL_INSTAGRAM = '';
+export const PERFIL_INSTAGRAM = 'https://www.instagram.com/asuprecio/';
 export const PERFIL_FACEBOOK = '';
 export const LOGO_ORGANIZACION = `${SITE_URL}/icon-512.png`;
 

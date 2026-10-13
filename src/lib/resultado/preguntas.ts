@@ -67,7 +67,7 @@ const INE: Fuente = {
 };
 const LEY_VIVIENDA: Fuente = { texto: 'BOE: Ley 12/2023, de 24 de mayo, por el derecho a la vivienda', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2023-12203' };
 const RDL: Fuente = { texto: 'BOE: Real Decreto-ley 29/2026, de 6 de octubre (BOE núm. 249, de 07/10/2026)', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2026-20823' };
-const MADRID: Fuente = { texto: 'Ayuntamiento de Madrid: serie 4.3.21.D de precios de oferta (elaboración a partir de datos de Idealista)', url: 'https://www.madrid.es/' };
+const MADRID: Fuente = { texto: 'Ayuntamiento de Madrid: serie 4.3.21.D de precios de oferta (elaboración a partir de datos de Idealista)', url: 'https://servpub.madrid.es/CSEBD_WBINTER/seleccionSerie.html?numSerie=0504030000214' };
 
 const P1 = 'como-saber-si-un-alquiler-es-caro-en-madrid';
 const P2 = 'que-es-el-indice-de-referencia-del-alquiler';
