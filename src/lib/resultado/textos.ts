@@ -1080,7 +1080,7 @@ export const TU_ZONA = {
 
 /** Página /mapa: Madrid entera por zonas. Tono neutral: nada ordena barrios en mejores o peores */
 export const MAPA_REFERENCIA = {
-	titulo: 'Mapa',
+	titulo: 'Mapa del índice de referencia del alquiler en Madrid',
 	tituloPresupuesto: '¿Dónde me llega?',
 	intro: 'Lo que pagan los inquilinos en cada zona de Madrid',
 	introEvolucion: 'Madrid por zonas, según lo que ha subido la mediana de los contratos vigentes entre 2015 y 2024.',

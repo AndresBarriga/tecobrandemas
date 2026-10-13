@@ -5,6 +5,7 @@
 import { NOMBRE } from './textos';
 import { SITE_URL } from './sitio';
 import { AUTOR, FECHA_PREGUNTAS, PREGUNTAS, type PaginaPregunta } from './preguntas';
+import { FECHA_MAPA, TEXTO_MAPA } from './mapa-texto';
 
 export const PERFIL_INSTAGRAM = 'https://www.instagram.com/asuprecio/';
 export const PERFIL_FACEBOOK = 'https://www.facebook.com/people/ASuPrecio/61595385748217/';
@@ -17,8 +18,8 @@ export const SEO_PORTADA = {
 } as const;
 
 export const SEO_MAPA = {
-	titulo: `Alquiler Madrid: mapa de referencia por zonas · ${NOMBRE}`,
-	descripcion: 'Mapa del alquiler Madrid por zonas: la referencia de lo que pagan quienes ya viven de alquiler, con datos del Ministerio de Vivienda.'
+	titulo: `Mapa del índice de referencia del alquiler en Madrid · ${NOMBRE}`,
+	descripcion: 'Mapa de la referencia de lo que pagan quienes ya viven de alquiler, por zona, con datos del Ministerio de Vivienda. Compara tu alquiler gratis.'
 } as const;
 
 export const SEO_COMO_CALCULAMOS = {
@@ -31,7 +32,7 @@ export const SEO_COMO_CALCULAMOS = {
 export const ENTRADAS_SITEMAP: { ruta: string; lastmod?: string }[] = [
 	{ ruta: '/' },
 	{ ruta: '/como-calculamos' },
-	{ ruta: '/mapa' },
+	{ ruta: '/mapa', lastmod: FECHA_MAPA },
 	{ ruta: '/preguntas', lastmod: FECHA_PREGUNTAS },
 	...PREGUNTAS.map((p) => ({ ruta: `/preguntas/${p.slug}`, lastmod: FECHA_PREGUNTAS }))
 ];
@@ -131,3 +132,25 @@ export function jsonLdPregunta(p: PaginaPregunta): object[] {
 }
 
 export const jsonLdHubPreguntas = (): object[] => [migas({ nombre: 'Preguntas', ruta: '/preguntas' })];
+
+/** JSON-LD de /mapa: WebPage, FAQPage (con sus tres preguntas) y BreadcrumbList (Inicio › Mapa) */
+export function jsonLdMapa(h1: string): object[] {
+	return [
+		{
+			'@context': 'https://schema.org',
+			'@type': 'WebPage',
+			name: h1,
+			description: SEO_MAPA.descripcion,
+			url: `${SITE_URL}/mapa`,
+			inLanguage: 'es',
+			dateModified: FECHA_MAPA,
+			isPartOf: { '@type': 'WebSite', name: NOMBRE, url: `${SITE_URL}/` }
+		},
+		{
+			'@context': 'https://schema.org',
+			'@type': 'FAQPage',
+			mainEntity: TEXTO_MAPA.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }))
+		},
+		migas({ nombre: 'Mapa', ruta: '/mapa' })
+	];
+}

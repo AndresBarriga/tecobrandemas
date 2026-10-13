@@ -14,7 +14,8 @@ async function abrirMapa(page: import('@playwright/test').Page, ruta = '/mapa') 
 
 test('«¿Dónde me llega?» es la vista por defecto, sin la opción de contratos, con las barras en sus valores iniciales', async ({ page }) => {
 	await abrirMapa(page);
-	await expect(page.getByRole('heading', { level: 1 })).toHaveText('¿Dónde me llega?');
+	await expect(page.locator('.titulo-capa')).toHaveText('¿Dónde me llega?');
+	await expect(page.getByRole('heading', { level: 1 })).toHaveText('Mapa del índice de referencia del alquiler en Madrid');
 	const pestanas = page.locator('.conmutador .seg label');
 	await expect(pestanas).toHaveText(['Mi presupuesto', 'Referencia', 'Evolución']);
 	await expect(page.locator('.conmutador .seg').first().locator('label.activo')).toHaveText('Mi presupuesto');
@@ -87,7 +88,8 @@ test('en móvil el mapa se ve mientras arrastras: controles fijos sobre el mapa 
 
 test('un enlace antiguo con contratos en «Mi presupuesto» abre la oferta; los metros de la URL se ajustan al rango', async ({ page }) => {
 	await abrirMapa(page, '/mapa?capa=presupuesto&fuente=contratos&m2=9999');
-	await expect(page.getByRole('heading', { level: 1 })).toHaveText('¿Dónde me llega?');
+	await expect(page.locator('.titulo-capa')).toHaveText('¿Dónde me llega?');
+	await expect(page.getByRole('heading', { level: 1 })).toHaveText('Mapa del índice de referencia del alquiler en Madrid');
 	await expect(page.getByRole('radiogroup', { name: 'Fuente' })).toHaveCount(0);
 	await expect(page.locator('#metros')).toHaveValue('60');
 	await page.goto('/mapa?capa=presupuesto&m2=85');
