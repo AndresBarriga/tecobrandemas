@@ -26,7 +26,7 @@ const TOLERANCIA = 0.15;
 
 const SLUGS = [
 	'lavapies-embajadores', 'malasana-universidad', 'chueca-justicia', 'barrio-de-las-letras-cortes', 'arguelles', 'trafalgar', 'arapiles', 'goya', 'delicias',
-	'cuatro-caminos', 'prosperidad', 'puerta-del-angel', 'vista-alegre', 'pueblo-nuevo', 'palos-de-moguer-palos-de-la-frontera'
+	'cuatro-caminos', 'prosperidad', 'puerta-del-angel', 'vista-alegre', 'pueblo-nuevo', 'palos-de-moguer'
 ];
 
 // Mismas reglas que tests/textos.test.ts y tests/preguntas.test.ts, más las de este piloto
@@ -116,6 +116,18 @@ describe('barrios: cada página', () => {
 		expect(enlaceHerramientaBarrio(slug)).toBe(`/?utm_source=barrio&utm_content=${slug}`);
 	});
 
+	it('Palos de la Frontera es el nombre oficial (desde octubre de 2022; antes, Palos de Moguer) y el slug conserva el antiguo', () => {
+		expect(datos.barrios['026']!.nombre).toBe('Palos de la Frontera');
+		const p = construirBarrio(datos, 'palos-de-moguer')!;
+		expect(p.h1).toBe('Precio de referencia del alquiler en Palos de la Frontera, Madrid');
+		expect(p.donde.parrafos.join(' ')).toContain('hasta octubre de 2022 se llamó Palos de Moguer');
+		expect(p.donde.parrafos[0]).toContain('Limita con');
+		expect(construirBarrio(datos, 'palos-de-moguer-palos-de-la-frontera')).toBeNull();
+		const emb = construirBarrio(datos, 'lavapies-embajadores')!;
+		expect(emb.donde.parrafos[0]).toContain('Palos de la Frontera');
+		expect(emb.donde.vecinos.map((v) => v.nombre)).toContain('Palos de la Frontera');
+		expect(textoDeBarrio(p).join(' ')).not.toMatch(/Palos de Moguer \(|, al que se conoce popularmente/);
+	});
 	it('los slugs caben en utm_content (40 caracteres) y pasan el filtro de la analítica', () => {
 		for (const s of SLUGS) expect(campanaValida(s), s).toBe(true);
 	});

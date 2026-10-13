@@ -29,6 +29,8 @@ export interface BarrioPiloto {
 	oficial: string;
 	/** Nombre popular, si difiere del oficial */
 	popular?: string;
+	/** Nombre oficial anterior (el barrio se llamó Palos de Moguer hasta octubre de 2022): el slug conserva el nombre con el que se sigue buscando */
+	antiguo?: string;
 	/** Cómo se dice dentro de una frase si lleva artículo («el Barrio de las Letras») */
 	enFrase?: string;
 	slug: string;
@@ -50,7 +52,7 @@ export const BARRIOS_PILOTO: BarrioPiloto[] = [
 	{ codigo: '102', oficial: 'Puerta del Ángel', slug: 'puerta-del-angel' },
 	{ codigo: '114', oficial: 'Vista Alegre', slug: 'vista-alegre' },
 	{ codigo: '152', oficial: 'Pueblo Nuevo', slug: 'pueblo-nuevo' },
-	{ codigo: '026', oficial: 'Palos de la Frontera', popular: 'Palos de Moguer', slug: 'palos-de-moguer-palos-de-la-frontera' }
+	{ codigo: '026', oficial: 'Palos de la Frontera', antiguo: 'Palos de Moguer', slug: 'palos-de-moguer' }
 ];
 
 export const barrioPilotoPorSlug = (slug: string): BarrioPiloto | undefined => BARRIOS_PILOTO.find((b) => b.slug === slug);
@@ -287,7 +289,9 @@ export function construirBarrio(datos: DatosBarrios, slug: string): PaginaBarrio
 				`${info.nombre} es un barrio del distrito de ${info.distrito}, en Madrid.${limita.length ? ` Limita con ${listaLimita}.` : ''}`,
 				b.popular
 					? `Los datos corresponden al barrio oficial de ${info.nombre}, al que se conoce popularmente como ${b.popular}.`
-					: `Los datos corresponden al barrio oficial de ${info.nombre}.`
+					: b.antiguo
+						? `Los datos corresponden al barrio oficial de ${info.nombre}, que hasta octubre de 2022 se llamó ${b.antiguo}.`
+						: `Los datos corresponden al barrio oficial de ${info.nombre}.`
 			],
 			vecinos: vecinosPiloto
 		},

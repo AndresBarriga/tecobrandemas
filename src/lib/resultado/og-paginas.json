@@ -23,5 +23,5 @@
 	{"ruta": "/alquiler/puerta-del-angel", "imagen": "alquiler-puerta-del-angel.png", "titulo": "Precio de referencia del alquiler en Puerta del Ángel, Madrid"},
 	{"ruta": "/alquiler/vista-alegre", "imagen": "alquiler-vista-alegre.png", "titulo": "Precio de referencia del alquiler en Vista Alegre, Madrid"},
 	{"ruta": "/alquiler/pueblo-nuevo", "imagen": "alquiler-pueblo-nuevo.png", "titulo": "Precio de referencia del alquiler en Pueblo Nuevo, Madrid"},
-	{"ruta": "/alquiler/palos-de-moguer-palos-de-la-frontera", "imagen": "alquiler-palos-de-moguer-palos-de-la-frontera.png", "titulo": "Precio de referencia del alquiler en Palos de Moguer (Palos de la Frontera), Madrid"}
+	{"ruta": "/alquiler/palos-de-moguer", "imagen": "alquiler-palos-de-moguer.png", "titulo": "Precio de referencia del alquiler en Palos de la Frontera, Madrid"}
 ]
