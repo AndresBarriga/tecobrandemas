@@ -32,6 +32,8 @@ export interface SeccionPregunta {
 	tabla?: TablaEjemplo;
 	/** Cita textual de una norma, con su enlace */
 	cita?: { texto: string[]; fuente: Fuente };
+	/** Enlaces destacados justo después del primer párrafo (pasos con una herramienta oficial) */
+	enlaces?: Fuente[];
 	/** Párrafos después de la tabla o la cita */
 	despues?: string[];
 }
@@ -60,6 +62,7 @@ export interface PaginaPregunta {
 	relacionadas: [string, string];
 }
 
+const CALCULADORA: Fuente = { texto: 'Calculadora oficial del Ministerio de Vivienda y Agenda Urbana para actualizar la renta', url: 'https://www.mivau.gob.es/vivienda/calculadora-precio-alquiler' };
 const SERPAVI: Fuente = { texto: 'Ministerio de Vivienda y Agenda Urbana: SERPAVI, sistema estatal de referencia del precio del alquiler', url: 'https://serpavi.mivau.gob.es' };
 const INE: Fuente = {
 	texto: 'INE: IPC, subclase 04.1.1.0 «Alquiler de vivienda principal», nacional (tabla 76128, serie IPC291807)',
@@ -295,10 +298,9 @@ const PAGINAS: PaginaPregunta[] = [
 			'Según el Real Decreto-ley 29/2026 (BOE de 07/10/2026), mientras esté vigente la medida (hasta el 31/12/2027), si tu renta supera el límite máximo del sistema de índices de referencia no procede ningún incremento en la actualización anual.',
 			'Si no lo supera, el incremento es el que pacten las partes y, sin acuerdo, no puede ser superior al 2 %.'
 		],
-		aviso: 'Es un real decreto-ley pendiente de convalidación en el Congreso y puede cambiar. Estado del texto a 13/10/2026. No es asesoramiento legal.',
-	avisoExtra: [
-			'En la ciudad de Madrid no hay zonas declaradas tensionadas a 13/10/2026. El decreto-ley no aclara si el “límite máximo aplicable” existe fuera de esas zonas. Si no existiera, a un alquiler en Madrid le aplicaría el apartado b): lo que se pacte o, sin pacto, hasta el 2 %.',
-			'Consulta el valor oficial en SERPAVI y pide asesoramiento antes de negarte a una actualización.'
+		aviso: 'Pendiente de convalidación por la Diputación Permanente del Congreso. El plazo constitucional vence hacia el 5 de noviembre de 2026. Estado a 13/10/2026. No es asesoramiento legal.',
+		avisoExtra: [
+			'El texto de la disposición final sexta no exige que la vivienda esté en una zona tensionada, y el Ministerio de Vivienda ha incorporado el índice estatal a su calculadora de actualización de la renta. Aun así, no hay una aclaración oficial expresa sobre cómo se determina el “límite máximo aplicable” fuera de esas zonas, como la ciudad de Madrid. No des por hecho ni que se aplica ni que no se aplica a tu contrato: consulta la calculadora oficial y, si dudas, pide asesoramiento.'
 		],
 		secciones: [
 			{
@@ -312,24 +314,23 @@ const PAGINAS: PaginaPregunta[] = [
 						'b) En los demás casos, el incremento de la renta será el que resulte del nuevo pacto entre las partes. En ausencia de este nuevo pacto entre las partes, el incremento de la renta a aplicar no podrá ser superior al dos por ciento.»'
 					],
 					fuente: { texto: 'Real Decreto-ley 29/2026, disposición final sexta (BOE)', url: RDL.url }
-				}
+				},
+				despues: ['Cuando corresponda, también se aplica el límite general de actualización del IRAV (Índice de Referencia de Arrendamientos de Vivienda) del INE.']
 			},
 			{
 				h2: '¿A qué contratos afecta y qué no queda claro?',
 				parrafos: [
 					'El texto habla de contratos de alquiler de vivienda sujetos a la Ley 29/1994. No lo limita a zonas tensionadas ni a una comunidad concreta. El propio decreto-ley dice que se aplica sin perjuicio de los regímenes civiles forales y de las competencias autonómicas en vivienda.',
-					'No queda claro cómo se determina el «límite máximo aplicable» a cada vivienda, ni qué pasa si no hay un límite aprobado para su zona. Tampoco sabemos cómo se aplicará en la práctica. Consulta tu caso antes de decidir nada.',
-					'En la ciudad de Madrid no hay zonas declaradas tensionadas a 13/10/2026. El decreto-ley no aclara si el “límite máximo aplicable” existe fuera de esas zonas. Si no existiera, a un alquiler en Madrid le aplicaría el apartado b): lo que se pacte o, sin pacto, hasta el 2 %.',
-					'Consulta el valor oficial en SERPAVI y pide asesoramiento antes de negarte a una actualización.',
+					'El texto de la disposición final sexta no exige que la vivienda esté en una zona tensionada, y el Ministerio de Vivienda ha incorporado el índice estatal a su calculadora de actualización de la renta. Aun así, no hay una aclaración oficial expresa sobre cómo se determina el “límite máximo aplicable” fuera de esas zonas, como la ciudad de Madrid. No des por hecho ni que se aplica ni que no se aplica a tu contrato: consulta la calculadora oficial y, si dudas, pide asesoramiento.',
 					'La actualización anual toca en la fecha en que tu contrato cumple un año más. Si esa fecha cae entre el 08/10/2026 y el 31/12/2027, la regla de arriba es la que importa.'
 				]
 			},
 			{
 				h2: '¿Cómo compruebo mi caso?',
+				enlaces: [CALCULADORA],
 				parrafos: [
-					'Primero, consulta el valor oficial en SERPAVI (serpavi.mivau.gob.es) con la dirección y las características de tu vivienda. Después, para una estimación rápida en Madrid, usa A su precio.',
-					'Nuestra estimación es independiente y puede diferir del valor oficial. Si hay diferencia, vale el oficial.',
-					'Anota la fecha de actualización de tu contrato y tu renta actual: son los dos datos que necesitas.'
+					'Primero, usa la calculadora oficial del Ministerio de Vivienda: calcula la actualización de la renta que corresponde a tu contrato. Después, consulta el valor oficial en SERPAVI (serpavi.mivau.gob.es) con la dirección y las características de tu vivienda. Por último, para una estimación rápida en Madrid, usa A su precio.',
+					'Nuestra estimación es independiente; si difiere del valor oficial, vale el oficial.'
 				],
 				tabla: {
 					titulo: 'Ejemplo (hipotético): una renta de 900 € al mes en una zona imaginaria. El «límite oficial» de la tabla es inventado y puede no existir para tu zona',
@@ -351,12 +352,12 @@ const PAGINAS: PaginaPregunta[] = [
 		faq: [
 			{
 				q: '¿Y en Madrid?',
-				a: 'En la ciudad de Madrid no hay zonas declaradas tensionadas a 13/10/2026, y el decreto-ley no aclara si el «límite máximo aplicable» existe fuera de ellas. Si no existiera, a un alquiler en Madrid le aplicaría el apartado b): lo que se pacte o, sin pacto, hasta el 2 %.'
+				a: 'El texto de la disposición final sexta no exige que la vivienda esté en una zona tensionada, y el Ministerio de Vivienda ha incorporado el índice estatal a su calculadora de actualización de la renta. Aun así, no hay una aclaración oficial expresa sobre cómo se determina el «límite máximo aplicable» fuera de esas zonas, como la ciudad de Madrid, así que no des por hecho que se aplica ni que no: consulta la calculadora oficial.'
 			},
-			{ q: '¿Se aplica en toda España?', a: 'El texto no lo limita a zonas concretas, pero se aplica sin perjuicio de los regímenes forales y de las competencias autonómicas. Consulta cómo afecta a tu comunidad.' },
-			{ q: '¿Qué pasa si el Congreso no lo convalida?', a: 'Si no se convalida, el decreto-ley deja de estar en vigor. Si se convalida, sigue vigente y puede modificarse después.' }
+			{ q: '¿Cuánto es el 2 % de mi renta?', a: 'Multiplica tu renta mensual por 0,02: 18 € con 900 € (ejemplo).' },
+			{ q: '¿Qué pasa si el Congreso no lo convalida?', a: 'Si no se convalida, deja de estar en vigor; si se convalida, sigue vigente y puede modificarse.' }
 		],
-		fuentes: [RDL, SERPAVI, LEY_VIVIENDA],
+		fuentes: [CALCULADORA, RDL, SERPAVI, LEY_VIVIENDA],
 		relacionadas: [P2, P1]
 	}
 ];
@@ -402,6 +403,7 @@ export function textoDePagina(p: PaginaPregunta, conFuentes = false): string[] {
 	if (p.avisoExtra) t.push(...p.avisoExtra);
 	for (const s of p.secciones) {
 		t.push(s.h2, ...s.parrafos);
+		if (s.enlaces) t.push(...s.enlaces.map((e) => e.texto));
 		if (s.tabla) t.push(s.tabla.titulo, ...s.tabla.cabecera, ...s.tabla.filas.flat());
 		if (s.cita) t.push(...s.cita.texto, s.cita.fuente.texto);
 		if (s.despues) t.push(...s.despues);

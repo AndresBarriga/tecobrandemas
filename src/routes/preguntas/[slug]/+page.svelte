@@ -44,7 +44,14 @@
 			{#each p.secciones as s (s.h2)}
 				<section>
 					<h2>{s.h2}</h2>
-					{#each s.parrafos as t (t)}<p>{t}</p>{/each}
+					{#each s.parrafos as t, i (t)}
+						<p>{t}</p>
+						{#if i === 0 && s.enlaces}
+							<ul class="pasos-enlaces">
+								{#each s.enlaces as e (e.url)}<li><a class="boton boton-contorno" href={e.url} rel="noopener noreferrer">{e.texto}</a></li>{/each}
+							</ul>
+						{/if}
+					{/each}
 					{#if s.tabla}
 						<div class="tabla-caja">
 							<p class="ejemplo">{s.tabla.titulo}</p>
@@ -219,6 +226,11 @@
 	}
 	blockquote footer {
 		font: 500 14px/1.4 var(--f-texto);
+	}
+	.pasos-enlaces {
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
 	.fuentes,
 	.relacionadas ul {
