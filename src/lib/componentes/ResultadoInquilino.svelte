@@ -129,6 +129,7 @@
 				detalle={TARJETA.detalle}
 				boton={INQUILINO.compartir}
 				modo="vivo"
+				principal={aporte === 'hecho'}
 				{compartiendo}
 				{nativo}
 				{enlaces}

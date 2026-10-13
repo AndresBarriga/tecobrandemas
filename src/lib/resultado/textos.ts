@@ -822,6 +822,7 @@ export const COMPARTIR_WHATSAPP = {
 		boton: 'Preguntarle a un amigo cuánto paga él',
 		mensaje: 'Acabo de comparar mi alquiler con lo que pagan quienes ya viven de alquiler en mi zona. ¿Y tú? Se mira en un minuto →'
 	},
+	aviso: 'La tarjeta no incluye tu dirección ni el precio exacto.',
 	otras: 'Otras formas de compartir'
 } as const;
 
