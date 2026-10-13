@@ -860,6 +860,8 @@ export const TARJETA_COSTURA = {
 	},
 	pie: '¿Y EL TUYO?',
 	dominio: 'asuprecio.com',
+	/** Vista previa del enlace (1200×630): el panel de la derecha. Sin forma de botón */
+	og: { titular: ['¿Y EL', 'TUYO?'], texto: 'Compruébalo gratis en asuprecio.com' },
 	fuentes: [
 		'Origen de los datos: Ministerio de Vivienda y Agenda Urbana · Elaboración propia con datos extraídos del sitio web del INE: www.ine.es',
 		'Oferta: Ayuntamiento de Madrid, serie 4.3.21.D (elaboración a partir de datos de Idealista) · asuprecio.com'
