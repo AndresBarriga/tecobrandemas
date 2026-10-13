@@ -10,7 +10,7 @@
 	import Pie from '#lib/componentes/Pie.svelte';
 	import Segmentado from '#lib/componentes/Segmentado.svelte';
 	import {
-		MAPA_REFERENCIA as T, SEO_MAPA, TEXTO_MAPA, jsonLdComoTexto, jsonLdMapa, RANGO_METROS, RANGO_PRESUPUESTO, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, ajustarARango, capaEvolucion, capaPresupuesto, capaReferencia,
+		MAPA_REFERENCIA as T, SEO_MAPA, barrioPilotoDeSeccion, TEXTO_MAPA, jsonLdComoTexto, jsonLdMapa, RANGO_METROS, RANGO_PRESUPUESTO, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, ajustarARango, capaEvolucion, capaPresupuesto, capaReferencia,
 		capaReferenciaAnuncios, distanciaCorta, euros, extremoPresupuesto, hojaDeZona, mesAnio, numero, paletaDe, posicionPresupuestoAnuncios, superficieValida, zonasCercanas, zonasDelMapa,
 		type CapaMapa, type FuenteMapa, type SugerenciaVia, type SugerenciaZona
 	} from '#lib/resultado';
@@ -211,6 +211,9 @@
 		const z = seleccion ? zonaPorCusec.get(seleccion) : undefined;
 		return z && madrid ? hojaDeZona(z, madrid.datos, capa, capa === 'presupuesto' ? metros : superficie, presupuesto, fuente) : null;
 	});
+
+	// Si la zona elegida es de un barrio del piloto de «Alquiler por barrios», un enlace a la referencia de ese barrio
+	const barrioPiloto = $derived(seleccion && madrid ? barrioPilotoDeSeccion(madrid.datos, seleccion) : null);
 
 	async function elegirZona(cusec: string) {
 		seleccion = cusec;
@@ -579,6 +582,7 @@
 						{#if hoja.sinDato}<p class="sin-dato">{hoja.sinDato}</p>{/if}
 						{#if hoja.procedencia}<p class="nota">{hoja.procedencia}</p>{/if}
 						<button type="button" class="boton-paja grande" onclick={comprobarAqui}>{T.hoja.comprobar}</button>
+						{#if barrioPiloto}<a class="enlace-barrio" href="/alquiler/{barrioPiloto.slug}">Ver la referencia de {barrioPiloto.nombre}</a>{/if}
 					{:else}
 						<p class="nota solo-escritorio">{anuncios ? TA.hoja.vacia : T.hoja.vacia}</p>
 					{/if}
@@ -1087,6 +1091,15 @@
 	/* En la hoja, «Comprueba un anuncio aquí» sube antes de la procedencia: se ve sin desplazarse */
 	.ficha .boton-paja {
 		order: 1;
+	}
+	.enlace-barrio {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		order: 1;
+		font: 600 15px/1.3 var(--f-texto);
+		color: inherit;
+		text-underline-offset: 4px;
 	}
 	.ficha .nota {
 		order: 2;

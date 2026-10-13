@@ -367,7 +367,8 @@ function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): M
 		],
 		cierre: [
 			'Miden cosas distintas, así que pueden no coincidir: cada una se compara solo con tu precio, nunca una con otra.',
-			'Que un precio salga por encima no lo hace incorrecto: dice cuánto más se pide, o se paga, que la referencia. Nunca hablamos de precios correctos o incorrectos.'
+			'Que un precio salga por encima no lo hace incorrecto: dice cuánto más se pide, o se paga, que la referencia. Nunca hablamos de precios correctos o incorrectos.',
+			'En las páginas de «Alquiler por barrios», la cifra de cada barrio es la mediana de la referencia de sus zonas con más de 20\u00A0contratos, calculada con el mismo método y los mismos datos que la herramienta, para 50, 70 y 90\u00A0m². Dentro del barrio, la cifra varía según la calle y las características de la vivienda.'
 		],
 		limites: {
 			titulo: 'Límites de cada referencia',

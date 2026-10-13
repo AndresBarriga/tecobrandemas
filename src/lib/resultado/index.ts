@@ -37,3 +37,4 @@ export * from './preguntas';
 export * from './mapa-texto';
 export * from './en';
 export * from './correcciones';
+export * from './barrios';
