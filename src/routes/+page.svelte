@@ -221,7 +221,7 @@
 		tarjetaActual ? { tipos: tiposTarjeta, tipo: tarjetaActual.tipo, elegir: (t: TipoTarjeta) => (tipoTarjeta = t), miniatura } : null
 	);
 	let nativo = $state(false);
-	const enlaces = $derived(idTarjeta ? enlacesCompartir(urlDeTarjeta(idTarjeta), tarjetaActual ? textoCompartir(tarjetaActual) : undefined) : null);
+	const enlaces = $derived(idTarjeta ? enlacesCompartir(urlDeTarjeta(idTarjeta), tarjetaActual ? textoCompartir(tarjetaActual) : undefined, modoActual === 'vivo' ? 'vivo' : 'mirando') : null);
 
 	async function compartir() {
 		if (!tarjetaActual || !canvasTarjeta || !idTarjeta) return;
@@ -229,7 +229,7 @@
 		mensajeTarjeta = null;
 		try {
 			const via = await compartirNativo(tarjetaActual, canvasTarjeta, idTarjeta);
-			if (via !== 'cancelada') comparte({ modo: modoActual, canal: 'nativo', tarjeta_id: idTarjeta, resultado: nivelAnalitica });
+			if (via !== 'cancelada') comparte({ modo: modoActual, canal: 'nativo', boton: 'otras', tarjeta_id: idTarjeta, resultado: nivelAnalitica });
 			mensajeTarjeta = via === 'descargada' ? TARJETA.descargada : null;
 		} catch {
 			mensajeTarjeta = TARJETA.error;
@@ -238,19 +238,19 @@
 		}
 	}
 
-	async function compartirPor(canal: Canal) {
+	async function compartirPor(canal: Canal, boton: 'principal' | 'otras' = 'otras') {
 		if (!tarjetaActual || !idTarjeta) return;
 		const id = idTarjeta;
 		mensajeTarjeta = null;
 		try {
 			if (canal === 'descarga') {
 				// Solo la imagen: no se guarda nada en el servidor
-				comparte({ modo: modoActual, canal: 'descargar', tarjeta_id: null, resultado: nivelAnalitica });
+				comparte({ modo: modoActual, canal: 'descargar', boton, tarjeta_id: null, resultado: nivelAnalitica });
 				if (canvasTarjeta) await descargarImagen(canvasTarjeta);
 				mensajeTarjeta = TARJETA.descargaHecha;
 				return;
 			}
-			comparte({ modo: modoActual, canal, tarjeta_id: id, resultado: nivelAnalitica });
+			comparte({ modo: modoActual, canal, boton, tarjeta_id: id, resultado: nivelAnalitica });
 			const subida = subirTarjeta(tarjetaActual, id);
 			if (canal === 'copiar') {
 				// Se copia ya (hace falta el gesto de la persona) y se avisa cuando la tarjeta ya existe en el servidor

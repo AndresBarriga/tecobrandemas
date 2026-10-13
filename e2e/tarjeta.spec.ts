@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { SITE_URL } from '../src/lib/resultado/sitio';
-import { abrir, comprobar, esperarAnimacion, sinCompartirNativo } from './ayudas';
+import { abrir, comprobar, esperarAnimacion, sinCompartirNativo, BOTON_WHATSAPP, abrirOtras } from './ayudas';
 
 const carpeta = () => `e2e/capturas/${test.info().project.name}`;
 
@@ -36,6 +36,7 @@ test.describe('tarjeta y /t/:id', () => {
 
 		// Descargar la imagen no sube nada
 		const descarga = page.waitForEvent('download');
+		await abrirOtras(page);
 		await page.getByRole('button', { name: 'Descargar imagen' }).click();
 		const d = await descarga;
 		const ruta = `${carpeta()}/22-tarjeta.jpg`;
@@ -46,6 +47,7 @@ test.describe('tarjeta y /t/:id', () => {
 
 		// Copiar el enlace sí la sube, en menos de 3 s
 		const t0 = Date.now();
+		await abrirOtras(page);
 		await page.getByRole('button', { name: 'Copiar enlace' }).click();
 
 		// Lo que sube la tarjeta no lleva precio, m² ni dirección
@@ -150,6 +152,7 @@ test.describe('vista previa para rastreadores (WhatsApp, Facebook, X)', () => {
 		await expect(page.getByRole('group', { name: 'Compartir el resultado' })).toBeVisible();
 		await esperarAnimacion(page);
 		const subida = page.waitForResponse((r) => r.url().endsWith('/api/tarjeta'));
+		await abrirOtras(page);
 		await page.getByRole('button', { name: 'Copiar enlace' }).click();
 		const { id } = await (await subida).json();
 
@@ -197,6 +200,7 @@ test.describe('vista previa para rastreadores (WhatsApp, Facebook, X)', () => {
 		await expect(page.getByRole('group', { name: 'Compartir el resultado' })).toBeVisible();
 		await esperarAnimacion(page);
 		const subida = page.waitForResponse((r) => r.url().endsWith('/api/tarjeta'));
+		await abrirOtras(page);
 		await page.getByRole('button', { name: 'Copiar enlace' }).click();
 		const { id } = await (await subida).json();
 		await page.goto(`/t/${id}`);
@@ -220,7 +224,7 @@ test.describe('vista previa para rastreadores (WhatsApp, Facebook, X)', () => {
 		});
 		await context.route(/wa\.me|x\.com/, (r) => r.fulfill({ status: 200, body: 'ok' }));
 		const popup = context.waitForEvent('page');
-		await page.getByRole('link', { name: 'WhatsApp' }).click();
+		await page.getByRole('link', { name: BOTON_WHATSAPP }).click();
 		const nueva = await popup;
 		const abierta = Date.now();
 		expect(nueva.url()).toMatch(/wa\.me|about:blank/);

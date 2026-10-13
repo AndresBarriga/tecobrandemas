@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { abrir, comprobar, conCompartirNativo, esperarAnimacion, sinCompartirNativo } from './ayudas';
+import { abrir, comprobar, conCompartirNativo, esperarAnimacion, sinCompartirNativo, BOTON_WHATSAPP, abrirOtras } from './ayudas';
 
 type Peticion = { metodo: string; url: string; cuerpo: string };
 
-test.describe('compartir la tarjeta (escritorio: cuatro canales)', () => {
+test.describe('compartir la tarjeta (botón principal de WhatsApp y el resto plegado)', () => {
 	test.beforeEach(async ({ page }) => sinCompartirNativo(page));
 
 	test('no se guarda nada hasta elegir un canal; WhatsApp y X llevan el id y la subida es una sola', async ({ page, context }) => {
@@ -19,7 +19,11 @@ test.describe('compartir la tarjeta (escritorio: cuatro canales)', () => {
 		await expect(grupo).toBeVisible();
 		await grupo.scrollIntoViewIfNeeded();
 		await page.screenshot({ path: `e2e/capturas/${test.info().project.name}/37-compartir-canales.png` });
-		await expect(grupo.getByRole('link', { name: 'WhatsApp' })).toBeVisible();
+		await expect(grupo.getByRole('link', { name: 'Enviárselo a quien busca piso contigo' })).toBeVisible();
+		// El resto está plegado hasta abrir «Otras formas de compartir»
+		await expect(grupo.getByRole('link', { name: 'X', exact: true })).toBeHidden();
+		await expect(grupo.getByRole('button', { name: 'Copiar enlace' })).toBeHidden();
+		await abrirOtras(page);
 		await expect(grupo.getByRole('link', { name: 'X', exact: true })).toBeVisible();
 		await expect(grupo.getByRole('button', { name: 'Copiar enlace' })).toBeVisible();
 		await expect(grupo.getByRole('button', { name: 'Descargar imagen' })).toBeVisible();
@@ -28,17 +32,20 @@ test.describe('compartir la tarjeta (escritorio: cuatro canales)', () => {
 		// Sin elegir canal, nada se sube
 		expect(peticiones.filter((p) => p.url.endsWith('/api/tarjeta'))).toHaveLength(0);
 
-		const hrefWa = (await grupo.getByRole('link', { name: 'WhatsApp' }).getAttribute('href'))!;
+		const hrefWa = (await grupo.getByRole('link', { name: BOTON_WHATSAPP }).getAttribute('href'))!;
 		const hrefX = (await grupo.getByRole('link', { name: 'X', exact: true }).getAttribute('href'))!;
 		const id = decodeURIComponent(hrefWa).match(/\/t\/([0-9a-z]{10})/)![1]!;
 		expect(hrefWa).toMatch(/^https:\/\/wa\.me\/\?text=/);
+		expect(decodeURIComponent(hrefWa)).toContain(
+			`Antes de ir a verlo: mira cómo queda este piso frente a lo que pagan quienes ya viven de alquiler en la zona → ${new URL(page.url()).origin}/t/${id}?utm_source=whatsapp&utm_medium=share&utm_campaign=tarjeta&utm_content=mirando`
+		);
 		expect(hrefX).toMatch(/^https:\/\/x\.com\/intent\/post\?/);
 		expect(decodeURIComponent(hrefX)).toContain(`/t/${id}`);
 		// El texto compartido no lleva datos del anuncio
 		expect(decodeURIComponent(hrefWa + hrefX)).not.toMatch(/2\.?500|90\s?m|Fuente del Berro|€/);
 
 		// WhatsApp: se abre en otra pestaña y se sube la tarjeta con ese id
-		const [popup] = await Promise.all([context.waitForEvent('page'), grupo.getByRole('link', { name: 'WhatsApp' }).click()]);
+		const [popup] = await Promise.all([context.waitForEvent('page'), grupo.getByRole('link', { name: BOTON_WHATSAPP }).click()]);
 		await popup.close();
 		await expect.poll(() => peticiones.filter((p) => p.url.endsWith('/api/tarjeta')).length).toBe(1);
 		const subida = peticiones.find((p) => p.url.endsWith('/api/tarjeta'))!;
@@ -58,6 +65,19 @@ test.describe('compartir la tarjeta (escritorio: cuatro canales)', () => {
 		expect(externas).toEqual([]);
 	});
 
+	test('«Mi alquiler»: botón y mensaje propios, con utm_content=vivo y sin cifras', async ({ page }) => {
+		await abrir(page);
+		await comprobar(page, { precio: '1000', superficie: '60', vivo: { reciente: true } });
+		await esperarAnimacion(page);
+		const boton = page.getByRole('link', { name: 'Preguntarle a un amigo cuánto paga él' });
+		await expect(boton).toBeVisible();
+		const texto = decodeURIComponent((await boton.getAttribute('href'))!.replace('https://wa.me/?text=', ''));
+		expect(texto).toMatch(
+			/^Acabo de comparar mi alquiler con lo que pagan quienes ya viven de alquiler en mi zona\. ¿Y tú\? Se mira en un minuto → \S+\/t\/[0-9a-z]{10}\?utm_source=whatsapp&utm_medium=share&utm_campaign=tarjeta&utm_content=vivo$/
+		);
+		expect(texto).not.toMatch(/1\.?000|60\s?m|Berro|€|%/);
+	});
+
 	test('descargar la imagen no guarda nada en el servidor', async ({ page }) => {
 		const posts: string[] = [];
 		page.on('request', (r) => r.method() === 'POST' && posts.push(new URL(r.url()).pathname));
@@ -65,6 +85,7 @@ test.describe('compartir la tarjeta (escritorio: cuatro canales)', () => {
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		await esperarAnimacion(page);
 		const descarga = page.waitForEvent('download');
+		await abrirOtras(page);
 		await page.getByRole('button', { name: 'Descargar imagen' }).click();
 		expect((await descarga).suggestedFilename()).toBe('a-su-precio.jpg');
 		await expect(page.getByText('Imagen descargada. No se ha guardado nada.')).toBeVisible();
@@ -75,7 +96,7 @@ test.describe('compartir la tarjeta (escritorio: cuatro canales)', () => {
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		const id = async () =>
-			decodeURIComponent((await page.getByRole('link', { name: 'WhatsApp' }).getAttribute('href'))!).match(/\/t\/([0-9a-z]{10})/)![1];
+			decodeURIComponent((await page.getByRole('link', { name: BOTON_WHATSAPP }).getAttribute('href'))!).match(/\/t\/([0-9a-z]{10})/)![1];
 		const primero = await id();
 		// En móvil el formulario se esconde tras el resultado: se vuelve con «Otro anuncio»
 		if (!(await page.locator('#precio').isVisible())) await page.getByRole('button', { name: 'Otro anuncio' }).first().click();
@@ -85,7 +106,7 @@ test.describe('compartir la tarjeta (escritorio: cuatro canales)', () => {
 });
 
 test.describe('compartir la tarjeta (móvil con hoja nativa)', () => {
-	test('un solo botón: hoja nativa con la imagen y el enlace, y se guarda la tarjeta', async ({ page }, info) => {
+	test('hoja nativa (plegada) con la imagen y el enlace, y se guarda la tarjeta', async ({ page }, info) => {
 		test.skip(info.project.name.startsWith('escritorio'), 'La hoja nativa solo se usa en dispositivos táctiles');
 		await conCompartirNativo(page);
 		const posts: Peticion[] = [];
@@ -93,7 +114,10 @@ test.describe('compartir la tarjeta (móvil con hoja nativa)', () => {
 		await abrir(page);
 		await comprobar(page, { precio: '2500', superficie: '90' });
 		await esperarAnimacion(page);
-		await expect(page.getByRole('group', { name: 'Compartir el resultado' })).toHaveCount(0);
+		await expect(page.getByRole('link', { name: BOTON_WHATSAPP })).toBeVisible();
+		// La hoja nativa pasa a «Otras formas de compartir»
+		await expect(page.getByRole('button', { name: 'Compartir el resultado' })).toBeHidden();
+		await page.getByText('Otras formas de compartir', { exact: true }).click();
 		await page.getByRole('button', { name: 'Compartir el resultado' }).click();
 		await expect.poll(() => page.evaluate(() => (window as unknown as { __compartido?: unknown }).__compartido)).toMatchObject({
 			ficheros: [{ nombre: 'a-su-precio.jpg', tipo: 'image/jpeg' }],

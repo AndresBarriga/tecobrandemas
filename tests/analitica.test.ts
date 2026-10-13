@@ -36,6 +36,10 @@ describe('analítica: lista blanca (before_send)', () => {
 		expect(bueno.properties).toMatchObject({ modo: 'vivo', resultado: 'nivel3', posicion: null, brecha_tramo: '25_50', es_horquilla: false, distrito: 'Salamanca', segundos_hasta_resultado: 41, indice_analisis: 2 });
 		// El id de tarjeta tiene formato fijo
 		expect(filtrarEvento({ event: 'comparte', properties: { ...base, canal: 'x', tarjeta_id: 'Calle Mayor 1' } })!.properties).not.toHaveProperty('tarjeta_id');
+		const boton = (b: unknown) => filtrarEvento({ event: 'comparte', properties: { ...base, canal: 'whatsapp', boton: b } })!.properties;
+		expect(boton('principal')).toHaveProperty('boton', 'principal');
+		expect(boton('otras')).toHaveProperty('boton', 'otras');
+		expect(boton('grande')).not.toHaveProperty('boton');
 		expect(filtrarEvento({ event: 'comparte', properties: { ...base, canal: 'x', tarjeta_id: 'abcde12345' } })!.properties).toHaveProperty('tarjeta_id', 'abcde12345');
 	});
 

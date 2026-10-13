@@ -6,7 +6,7 @@
  */
 import { gunzipSync } from 'node:zlib';
 import { expect, test, type BrowserContext } from '@playwright/test';
-import { abrir, comprobar, esperarAnimacion, sinCompartirNativo } from './ayudas';
+import { abrir, comprobar, esperarAnimacion, sinCompartirNativo, BOTON_WHATSAPP, abrirOtras } from './ayudas';
 
 type Evento = { event: string; properties: Record<string, unknown> };
 
@@ -208,6 +208,7 @@ test.describe('analítica sin cookies', () => {
 		await page.getByRole('button', { name: 'Aportar mi alquiler' }).click();
 		await page.getByRole('button', { name: 'Hablar con mi casero' }).click();
 		const descarga = page.waitForEvent('download');
+		await abrirOtras(page);
 		await page.getByRole('button', { name: 'Descargar imagen' }).click();
 		await descarga;
 		await esperar(ev, 'que_haras');
@@ -217,8 +218,22 @@ test.describe('analítica sin cookies', () => {
 		expect(de(ev, 'completa')[0]!.properties).toMatchObject({ modo: 'vivo' });
 		expect(de(ev, 'aporta')[0]!.properties).toMatchObject({ tipo: 'alquiler' });
 		expect(de(ev, 'que_haras')[0]!.properties).toMatchObject({ modo: 'vivo', respuesta: 'hablar_casero' });
-		expect(de(ev, 'comparte')[0]!.properties).toMatchObject({ modo: 'vivo', canal: 'descargar' });
+		expect(de(ev, 'comparte')[0]!.properties).toMatchObject({ modo: 'vivo', canal: 'descargar', boton: 'otras' });
 		expect(JSON.stringify(ev)).not.toMatch(/1620|1\.620|1500|Berro|Calle/);
+	});
+
+	test('compartir por el botón principal: comparte con canal whatsapp y boton principal', async ({ page, context }) => {
+		await sinCompartirNativo(page);
+		await context.route(/https:\/\/wa\.me\//, (r) => r.fulfill({ status: 200, body: 'ok', contentType: 'text/html' }));
+		const ev = await escuchar(context);
+		await abrir(page, '/?ph_prueba=1');
+		await comprobar(page, { precio: '2500', superficie: '90' });
+		await esperarAnimacion(page);
+		const [popup] = await Promise.all([context.waitForEvent('page'), page.getByRole('link', { name: BOTON_WHATSAPP }).click()]);
+		await popup.close();
+		await esperar(ev, 'comparte');
+		expect(de(ev, 'comparte')[0]!.properties).toMatchObject({ modo: 'mirando', canal: 'whatsapp', boton: 'principal' });
+		expect(JSON.stringify(ev)).not.toMatch(/2500|2\.500|Berro|Calle/);
 	});
 
 	test('una pantalla de «Cómo calculamos» → «sin dato» no cuenta como análisis; /mapa no emite eventos propios', async ({ page, context }) => {

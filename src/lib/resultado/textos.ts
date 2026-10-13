@@ -812,6 +812,19 @@ export const TARJETA = {
 	error: 'No hemos podido preparar la tarjeta. Inténtalo de nuevo.'
 } as const;
 
+/** Compartir tras el resultado: un botón principal que abre WhatsApp con el mensaje escrito (nunca dirección, precio ni porcentaje) y el resto plegado */
+export const COMPARTIR_WHATSAPP = {
+	mirando: {
+		boton: 'Enviárselo a quien busca piso contigo',
+		mensaje: 'Antes de ir a verlo: mira cómo queda este piso frente a lo que pagan quienes ya viven de alquiler en la zona →'
+	},
+	vivo: {
+		boton: 'Preguntarle a un amigo cuánto paga él',
+		mensaje: 'Acabo de comparar mi alquiler con lo que pagan quienes ya viven de alquiler en mi zona. ¿Y tú? Se mira en un minuto →'
+	},
+	otras: 'Otras formas de compartir'
+} as const;
+
 /**
  * Tarjetas de «La costura» (v3): tres formatos que elige la persona, siempre sin euros, renta, dirección ni fecha.
  * La vista previa del enlace es siempre «Dos veredictos». Las atribuciones van literales, en dos líneas pequeñas al pie
