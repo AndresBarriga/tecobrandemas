@@ -38,3 +38,4 @@ export * from './mapa-texto';
 export * from './en';
 export * from './correcciones';
 export * from './barrios';
+export * from './enlaces';

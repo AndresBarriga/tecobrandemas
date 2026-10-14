@@ -13,7 +13,8 @@
 
 <script lang="ts">
 	import TarjetaAmpliable from './TarjetaAmpliable.svelte';
-	import { COMPARTIR_WHATSAPP, TARJETA, TARJETA_COSTURA, type Canal, type EnlacesCompartir, type ModoCompartir } from '#lib/resultado';
+	import { barcelonaClic } from '#lib/cliente/analitica';
+	import { BARCELONA, COMPARTIR_WHATSAPP, TARJETA, TARJETA_COSTURA, type Canal, type EnlacesCompartir, type ModoCompartir } from '#lib/resultado';
 
 	/**
 	 * Compartir la tarjeta (los dos modos). Un botón principal que abre WhatsApp con el mensaje de la modalidad; plegadas debajo, la hoja nativa
@@ -97,6 +98,7 @@
 		</div>
 	{/if}
 	<p class="mensaje" role="status">{mensaje ?? ''}</p>
+	<a class="enlace-barcelona" href="/barcelona" onclick={() => barcelonaClic('resultado')}>{BARCELONA.enlace}</a>
 </section>
 
 <style>
@@ -191,6 +193,15 @@
 	.canal {
 		min-height: 48px;
 		font-size: 16px;
+	}
+	.enlace-barcelona {
+		align-self: flex-start;
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		font: 500 14px/1.3 var(--f-texto);
+		color: var(--grafito);
+		text-underline-offset: 4px;
 	}
 	.mensaje {
 		font: 500 13px/1.4 var(--f-texto);

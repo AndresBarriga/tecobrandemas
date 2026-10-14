@@ -16,6 +16,8 @@ export const FECHA_PREGUNTAS = '2026-10-13';
 export interface Fuente {
 	texto: string;
 	url: string;
+	/** Se abre en pestaña nueva con rel="noopener" */
+	nuevaPestana?: boolean;
 }
 
 export interface TablaEjemplo {

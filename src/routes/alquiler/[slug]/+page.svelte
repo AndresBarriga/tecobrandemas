@@ -53,7 +53,9 @@
 				<h2>{p.comoLeer.h2}</h2>
 				{#each p.comoLeer.parrafos as t (t)}<p>{t}</p>{/each}
 				<ul class="lista">
-					{#each p.comoLeer.enlaces as e (e.url)}<li><a href={e.url} rel="noopener noreferrer">{e.texto}</a></li>{/each}
+					{#each p.comoLeer.enlaces as e (e.url)}
+						<li>{#if e.nuevaPestana}<a href={e.url} target="_blank" rel="noopener">{e.texto}</a>{:else}<a href={e.url} rel="noopener noreferrer">{e.texto}</a>{/if}</li>
+					{/each}
 				</ul>
 			</section>
 

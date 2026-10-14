@@ -175,6 +175,7 @@ export const INDICE = [
 
 export const QUIENES_SOMOS = [
 	`${NOMBRE} es una iniciativa independiente para ayudar a las personas a entender mejor los precios de la vivienda.`,
+	`${NOMBRE} lo ha creado Andres Barriga, Product Manager en Madrid.`,
 	'Creamos esta herramienta porque, tanto si buscas piso como si ya vives de alquiler, es difícil saber cómo se compara tu precio con lo que paga la gente de tu zona. Los portales muestran lo que se pide por una vivienda, pero no lo que pagan quienes ya viven de alquiler allí.',
 	`${NOMBRE} pone ese precio en contexto utilizando datos públicos y una metodología basada en los datos y criterios publicados por el Ministerio de Vivienda y Agenda Urbana.`,
 	'No somos una inmobiliaria, un portal de anuncios ni una administración pública. Tampoco determinamos cuál debería ser el precio de una vivienda. Nuestro objetivo es ofrecer una referencia independiente que ayude a cada persona a tomar sus propias decisiones.',

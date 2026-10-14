@@ -26,6 +26,8 @@ export const RESULTADOS_OFERTA = ['por_debajo', 'en_linea', 'por_encima'] as con
 export const NIVELES_OFERTA = ['barrio', 'distrito'] as const;
 /** `completa.metodo_oferta`: cómo se calculó la estimación (para comparar antes y después de cambiarla) */
 export const METODOS_OFERTA = ['tamano_v1'] as const;
+/** `barcelona_clic.origen`: desde dónde se pulsó «¿Y Barcelona?» (solo eso: ni dirección, ni precio, ni coordenadas) */
+export const ORIGENES_BARCELONA = ['resultado', 'como_calculamos'] as const;
 export const BOTONES_COMPARTIR = ['principal', 'otras'] as const;
 export const CANALES = ['whatsapp', 'x', 'copiar', 'descargar', 'nativo'] as const;
 /** Capas de /mapa (`mapa_capa.capa`): nunca la zona, el presupuesto ni los metros */
@@ -72,6 +74,7 @@ const VALIDADORES: Record<string, Validador> = {
 	respuesta: enumerado(RESPUESTAS_QUE_HARAS),
 	canal: enumerado(CANALES),
 	boton: enumerado(BOTONES_COMPARTIR),
+	origen: enumerado(ORIGENES_BARCELONA),
 	capa: enumerado(CAPAS_MAPA),
 	fuente_mapa: enumerado(FUENTES_MAPA),
 	tarjeta_id: (v) => typeof v === 'string' && IDENTIFICADOR_TARJETA.test(v),
@@ -103,6 +106,7 @@ export const EVENTOS: Record<string, readonly string[]> = {
 	que_haras: ['modo', 'respuesta', 'resultado'],
 	comparte: ['modo', 'canal', 'boton', 'tarjeta_id', 'resultado'],
 	aporta: ['tipo'],
+	barcelona_clic: ['origen'],
 	mapa_capa: ['capa', 'fuente_mapa']
 };
 

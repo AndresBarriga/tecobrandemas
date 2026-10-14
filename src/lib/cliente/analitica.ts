@@ -9,7 +9,7 @@
  */
 import { PUBLIC_POSTHOG_ENABLED, PUBLIC_POSTHOG_KEY } from '$app/env/public';
 import {
-	type BOTONES_COMPARTIR, type BRECHAS, type CANALES, type CAPAS_MAPA, type FUENTES_MAPA, type METODOS_OFERTA, type MODOS, type MOTIVOS_SIN_DATO, type NIVELES_OFERTA, type RESPUESTAS_QUE_HARAS, type RESULTADOS, type RESULTADOS_OFERTA,
+	type BOTONES_COMPARTIR, type ORIGENES_BARCELONA, type BRECHAS, type CANALES, type CAPAS_MAPA, type FUENTES_MAPA, type METODOS_OFERTA, type MODOS, type MOTIVOS_SIN_DATO, type NIVELES_OFERTA, type RESPUESTAS_QUE_HARAS, type RESULTADOS, type RESULTADOS_OFERTA,
 	campanaValida, dominioDelReferrer, filtrarEvento, navegadorApp
 } from './analitica-filtro';
 import { leerOrigenDeLaUrl, tarjetaOrigen } from './origen';
@@ -188,6 +188,11 @@ export function comparte(d: { modo: Modo; canal: (typeof CANALES)[number]; boton
 
 export function aporta(tipo: 'alquiler' | 'habitacion'): void {
 	enviar('aporta', { tipo });
+}
+
+/** «¿Y Barcelona?»: solo desde dónde se pulsó */
+export function barcelonaClic(origen: (typeof ORIGENES_BARCELONA)[number]): void {
+	enviar('barcelona_clic', { origen });
 }
 
 /** /mapa: la capa (y su fuente) que se ve al cargar y cada vez que se cambia. Solo enums: nada de la zona, el barrio, el presupuesto ni los metros */
