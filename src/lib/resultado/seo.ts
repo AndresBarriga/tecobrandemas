@@ -4,7 +4,7 @@
  */
 import { NOMBRE } from './textos';
 import { SITE_URL } from './sitio';
-import { AUTOR, FECHA_PREGUNTAS, PREGUNTAS, type PaginaPregunta } from './preguntas';
+import { AUTOR, AUTOR_PUESTO, FECHA_PREGUNTAS, PREGUNTAS, type PaginaPregunta } from './preguntas';
 import { FECHA_MAPA, TEXTO_MAPA } from './mapa-texto';
 import { PAGINAS_EN, FECHA_EN, AUTOR_EN, type PaginaEn } from './en';
 import { FECHA_CORRECCIONES } from './correcciones';
@@ -121,6 +121,9 @@ export function jsonLdComoTexto(datos: object): string {
 
 const editor = () => ({ '@type': 'Organization', name: NOMBRE, url: `${SITE_URL}/`, logo: { '@type': 'ImageObject', url: LOGO_ORGANIZACION } });
 
+/** El autor de las páginas de texto: la persona que firma «Quiénes somos», con su puesto */
+const autor = (nombre: string) => ({ '@type': 'Person', name: nombre, jobTitle: AUTOR_PUESTO, url: `${SITE_URL}/como-calculamos#qui` });
+
 function migas(...pasos: { nombre: string; ruta: string }[]): object {
 	return {
 		'@context': 'https://schema.org',
@@ -141,7 +144,7 @@ export function jsonLdPregunta(p: PaginaPregunta): object[] {
 			inLanguage: 'es',
 			datePublished: FECHA_PREGUNTAS,
 			dateModified: FECHA_PREGUNTAS,
-			author: { '@type': 'Organization', name: AUTOR, url: `${SITE_URL}/` },
+			author: autor(AUTOR),
 			publisher: editor(),
 			mainEntityOfPage: url
 		},
@@ -193,7 +196,7 @@ export function jsonLdEn(p: PaginaEn): object[] {
 			url,
 			inLanguage: 'en',
 			dateModified: FECHA_EN,
-			author: { '@type': 'Organization', name: AUTOR_EN, url: `${SITE_URL}/` },
+			author: autor(AUTOR_EN),
 			publisher: editor(),
 			isPartOf: { '@type': 'WebSite', name: NOMBRE, url: `${SITE_URL}/` }
 		},

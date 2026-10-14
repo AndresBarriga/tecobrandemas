@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { EVENTOS, ORIGENES_BARCELONA, filtrarEvento } from '../src/lib/cliente/analitica-filtro';
-import { BARCELONA, BARRIOS_PILOTO, ESTADISTICA_SERPAVI_MADRID, QUIENES_SOMOS, construirBarrio } from '../src/lib/resultado';
+import {
+	AUTOR, AUTOR_PUESTO, BARCELONA, BARRIOS_PILOTO, ENTRADAS_SITEMAP, ESTADISTICA_SERPAVI_MADRID, PAGINAS_EN, PREGUNTAS, QUIENES_SOMOS, construirBarrio, jsonLdEn, jsonLdPregunta
+} from '../src/lib/resultado';
 
 const fuente = (ruta: string) => readFileSync(new URL(`../${ruta}`, import.meta.url), 'utf8');
 const URL_ESTADISTICA =
@@ -63,8 +65,29 @@ describe('«¿Y Barcelona?»', () => {
 	});
 });
 
-describe('«Quiénes somos»', () => {
+describe('/barcelona no se indexa', () => {
+	it('meta robots, X-Robots-Tag del Worker y de los ficheros estáticos; fuera del sitemap', () => {
+		expect(fuente('src/routes/+layout.svelte')).toContain("page.route.id === '/barcelona'");
+		expect(fuente('src/hooks.server.ts')).toContain("event.url.pathname === '/barcelona'");
+		expect(fuente('scripts/cabeceras.mjs')).toMatch(/\/barcelona\\n {2}X-Robots-Tag: noindex, nofollow/);
+		expect(ENTRADAS_SITEMAP.some((e) => e.ruta === '/barcelona')).toBe(false);
+	});
+});
+
+describe('«Quiénes somos» y el autor de las páginas', () => {
+	it('el autor es quien nombra «Quiénes somos», con su puesto, en el JSON-LD y en la página', () => {
+		expect(AUTOR).toBe('Andres Barriga');
+		expect(QUIENES_SOMOS.join(' ')).toContain(`${AUTOR}, ${AUTOR_PUESTO} de Madrid`);
+		const art = (jsonLdPregunta(PREGUNTAS[0]!) as Record<string, any>[])[0]!;
+		expect(art.author).toMatchObject({ '@type': 'Person', name: 'Andres Barriga', jobTitle: 'Product Manager' });
+		expect(art.publisher).toMatchObject({ '@type': 'Organization', name: 'A su precio' });
+		const en = (jsonLdEn(PAGINAS_EN[0]!) as Record<string, any>[])[0]!;
+		expect(en.author).toMatchObject({ '@type': 'Person', name: 'Andres Barriga' });
+	});
+});
+
+describe('«Quiénes somos» (texto)', () => {
 	it('nombra a quien creó A su precio', () => {
-		expect(QUIENES_SOMOS.join(' ')).toContain('Andres Barriga, Product Manager en Madrid');
+		expect(QUIENES_SOMOS.join(' ')).toContain('Andres Barriga, Product Manager de Madrid');
 	});
 });

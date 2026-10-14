@@ -33,7 +33,7 @@
 	// Una sola etiqueta: todo el sitio mientras no sea el lanzamiento, y siempre las tarjetas
 	// compartidas (el noindex no afecta a la vista previa de WhatsApp o X)
 	const noindex = $derived(
-		indexacion.noindex || page.route.id?.startsWith('/t/')
+		indexacion.noindex || page.route.id?.startsWith('/t/') || page.route.id === '/barcelona'
 	);
 </script>
 

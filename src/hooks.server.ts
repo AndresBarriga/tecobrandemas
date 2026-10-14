@@ -8,6 +8,6 @@ export async function handle({ event, resolve }) {
 	// Las páginas en inglés (/en y /en/…) llevan <html lang="en"> ya en el HTML del servidor
 	const ingles = event.url.pathname === '/en' || event.url.pathname.startsWith('/en/');
 	const respuesta = await resolve(event, { transformPageChunk: ({ html }) => (ingles ? html.replace('<html lang="es">', '<html lang="en">') : html) });
-	if (indexacion.noindex || event.url.pathname.startsWith('/t/')) respuesta.headers.set('x-robots-tag', 'noindex, nofollow');
+	if (indexacion.noindex || event.url.pathname.startsWith('/t/') || event.url.pathname === '/barcelona') respuesta.headers.set('x-robots-tag', 'noindex, nofollow');
 	return respuesta;
 }
