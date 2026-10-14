@@ -4,7 +4,8 @@
 	import CarrilMini from '#lib/componentes/CarrilMini.svelte';
 	import Costura from '#lib/componentes/Costura.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
-	import { SEO_COMO_CALCULAMOS } from '#lib/resultado';
+	import { BARCELONA, ESTADISTICA_SERPAVI_MADRID, SEO_COMO_CALCULAMOS } from '#lib/resultado';
+	import { barcelonaClic } from '#lib/cliente/analitica';
 
 	let { data } = $props();
 	const p = $derived(data.pagina);
@@ -309,6 +310,7 @@
 				<p class="ipc">{p.fuentes.ipc}</p>
 				<p class="chico">{p.fuentes.validacion}</p>
 				<p class="chico">Estimación independiente basada en la metodología SERPAVI; el valor oficial está en <a href={p.fuentes.enlaceOficial}>serpavi.mivau.gob.es</a>.</p>
+				<p class="chico"><a href={ESTADISTICA_SERPAVI_MADRID.url} target="_blank" rel="noopener">{ESTADISTICA_SERPAVI_MADRID.texto}</a></p>
 			</section>
 
 			<section id="qui">
@@ -326,6 +328,7 @@
 				<span class="cta-pregunta">{p.cta.pregunta}</span>
 				<a class="boton-cta" href="/">{p.cta.boton}</a>
 				<a class="enlace-preguntas" href="/preguntas">¿Dudas concretas? Mira las preguntas sobre el precio del alquiler</a>
+				<a class="enlace-barcelona" href="/barcelona" onclick={() => barcelonaClic('como_calculamos')}>{BARCELONA.enlace}</a>
 			</div>
 
 			<p class="nota-ia">Los textos de esta web se redactan con ayuda de herramientas de IA y se revisan a mano. Los datos salen de fuentes oficiales, enlazadas en cada página.</p>
@@ -969,6 +972,14 @@
 	.nota-ia {
 		font: 500 14px/1.45 var(--f-texto);
 		color: var(--grafito);
+	}
+	.enlace-barcelona {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		font: 500 14px/1.3 var(--f-texto);
+		color: var(--grafito);
+		text-underline-offset: 4px;
 	}
 	.enlace-preguntas {
 		display: inline-flex;

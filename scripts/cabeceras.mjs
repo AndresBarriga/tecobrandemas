@@ -11,6 +11,10 @@ if (noindex) {
 	console.log('_headers: indexación permitida');
 }
 
+// /barcelona es una página casi vacía (solo se mide el interés): nunca se indexa. Es prerenderizada, así que su cabecera sale de aquí
+appendFileSync('.svelte-kit/cloudflare/_headers', '\n/barcelona\n  X-Robots-Tag: noindex, nofollow\n');
+console.log('_headers: /barcelona con noindex');
+
 // Los ficheros de calles llevan el hash de su contenido en el nombre (scripts/copiar_datos.mjs): caché larga e immutable
 appendFileSync('.svelte-kit/cloudflare/_headers', '\n/data/viales_*\n  Cache-Control: public, max-age=31536000, immutable\n');
 console.log('_headers: /data/viales_* con caché immutable');

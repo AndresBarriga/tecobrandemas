@@ -14,6 +14,7 @@ import { referencia, tieneDato, TESTIGOS_MIN } from '../motor';
 import type { DatosMadrid } from './datos';
 import { euros, mesAnio, numero } from './formato';
 import type { Fuente } from './preguntas';
+import { ESTADISTICA_SERPAVI_MADRID } from './enlaces';
 
 /** AAAA-MM-DD: última revisión de las plantillas de texto. El `lastmod` del sitemap es el de los datos (fecha de extracción del IPC) */
 export const FECHA_BARRIOS = '2026-10-13';
@@ -281,7 +282,7 @@ export function construirBarrio(datos: DatosBarrios, slug: string): PaginaBarrio
 				`La cifra del barrio es la mediana de ${numero(cusecs.length)} zonas con dato, con ${numero(contratos)} contratos registrados. Dentro del barrio varía según la calle y las características de la vivienda.`,
 				'Es una estimación independiente. El valor oficial está en SERPAVI (serpavi.mivau.gob.es) y, para saber cuánto puede subir una renta, en la calculadora oficial del Ministerio de Vivienda.'
 			],
-			enlaces: [SERPAVI, CALCULADORA_MINISTERIO]
+			enlaces: [SERPAVI, CALCULADORA_MINISTERIO, { ...ESTADISTICA_SERPAVI_MADRID, nuevaPestana: true }]
 		},
 		donde: {
 			h2: 'Dónde está',

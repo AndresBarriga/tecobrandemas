@@ -10,7 +10,7 @@
 	import Pie from '#lib/componentes/Pie.svelte';
 	import Segmentado from '#lib/componentes/Segmentado.svelte';
 	import {
-		MAPA_REFERENCIA as T, SEO_MAPA, barrioPilotoDeSeccion, TEXTO_MAPA, jsonLdComoTexto, jsonLdMapa, RANGO_METROS, RANGO_PRESUPUESTO, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, ajustarARango, capaEvolucion, capaPresupuesto, capaReferencia,
+		MAPA_REFERENCIA as T, ESTADISTICA_SERPAVI_MADRID, SEO_MAPA, barrioPilotoDeSeccion, TEXTO_MAPA, jsonLdComoTexto, jsonLdMapa, RANGO_METROS, RANGO_PRESUPUESTO, SUPERFICIES_MAPA, SUPERFICIE_MAPA_INICIAL, ajustarARango, capaEvolucion, capaPresupuesto, capaReferencia,
 		capaReferenciaAnuncios, distanciaCorta, euros, extremoPresupuesto, hojaDeZona, mesAnio, numero, paletaDe, posicionPresupuestoAnuncios, superficieValida, zonasCercanas, zonasDelMapa,
 		type CapaMapa, type FuenteMapa, type SugerenciaVia, type SugerenciaZona
 	} from '#lib/resultado';
@@ -365,6 +365,7 @@
 		<nav aria-label="Más información">
 			<ul>
 				{#each TEXTO_MAPA.enlaces as e (e.href)}<li><a href={e.href}>{e.texto}</a></li>{/each}
+				<li><a href={ESTADISTICA_SERPAVI_MADRID.url} target="_blank" rel="noopener">{ESTADISTICA_SERPAVI_MADRID.texto}</a></li>
 			</ul>
 		</nav>
 	</article>

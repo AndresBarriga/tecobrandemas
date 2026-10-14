@@ -7,8 +7,9 @@
  * busca. Nuestro cálculo es una estimación independiente; el valor oficial es el de SERPAVI.
  */
 
-/** Autor de todas las páginas (artículo y JSON-LD). «Quiénes somos» no nombra a ninguna persona */
-export const AUTOR = 'A su precio';
+/** Autor de todas las páginas (artículo y JSON-LD): el mismo que nombra «Quiénes somos» */
+export const AUTOR = 'Andres Barriga';
+export const AUTOR_PUESTO = 'Product Manager';
 
 /** Última actualización de los textos (AAAA-MM-DD); se enseña como DD/MM/AAAA y va en el JSON-LD y en el sitemap */
 export const FECHA_PREGUNTAS = '2026-10-13';
@@ -16,6 +17,8 @@ export const FECHA_PREGUNTAS = '2026-10-13';
 export interface Fuente {
 	texto: string;
 	url: string;
+	/** Se abre en pestaña nueva con rel="noopener" */
+	nuevaPestana?: boolean;
 }
 
 export interface TablaEjemplo {

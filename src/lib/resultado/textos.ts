@@ -146,6 +146,14 @@ export const AVISO_UBICACION = {
 /** Año de los contratos de SERPAVI en los que se basa la referencia */
 export const ANIO_SERPAVI = 2024;
 
+/** «¿Y Barcelona?»: enlace discreto y página estática. Sin formulario ni correo: solo se mide el interés */
+export const BARCELONA = {
+	enlace: '¿Y Barcelona?',
+	titulo: 'Barcelona todavía no',
+	texto: 'Medimos el interés antes de decidir.',
+	volver: 'Comprobar un alquiler en Madrid'
+} as const;
+
 export const NOMBRE = 'A su precio';
 export const DESCRIPCION =
 	'Compara tu alquiler, o el de un anuncio en Madrid, con los contratos reales de tu zona y con los anuncios recientes.';

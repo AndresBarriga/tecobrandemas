@@ -236,6 +236,33 @@ test.describe('analítica sin cookies', () => {
 		expect(JSON.stringify(ev)).not.toMatch(/2500|2\.500|Berro|Calle/);
 	});
 
+	test('«¿Y Barcelona?»: barcelona_clic con su origen, sin dirección ni precio, y la página estática', async ({ page, context }) => {
+		await sinCompartirNativo(page);
+		const ev = await escuchar(context);
+		await abrir(page, '/?ph_prueba=1');
+		await comprobar(page, { precio: '2500', superficie: '90' });
+		await esperarAnimacion(page);
+		await page.getByRole('link', { name: '¿Y Barcelona?' }).click();
+		await expect(page).toHaveURL(/\/barcelona$/);
+		await expect(page.getByRole('heading', { level: 1, name: 'Barcelona todavía no' })).toBeVisible();
+		await expect(page.getByText('Medimos el interés antes de decidir.')).toBeVisible();
+		await expect(page.locator('form, input, a[href^="mailto:"]')).toHaveCount(0);
+		await esperar(ev, 'barcelona_clic');
+		expect(de(ev, 'barcelona_clic')[0]!.properties).toMatchObject({ origen: 'resultado' });
+		expect(JSON.stringify(de(ev, 'barcelona_clic'))).not.toMatch(/2500|2\.500|Berro|Calle|latitude|longitude/);
+	});
+
+	test('«¿Y Barcelona?» desde «Cómo calculamos»: barcelona_clic con origen como_calculamos', async ({ page, context }) => {
+		const ev = await escuchar(context);
+		await abrir(page, '/como-calculamos?ph_prueba=1');
+		// El SDK se inicia cuando el navegador está libre: antes de eso no hay analítica a la que mandar el clic
+		await esperar(ev, '$pageview');
+		await page.getByRole('link', { name: '¿Y Barcelona?' }).click();
+		await esperar(ev, 'barcelona_clic');
+		expect(de(ev, 'barcelona_clic')[0]!.properties).toMatchObject({ origen: 'como_calculamos' });
+		expect(Object.keys(de(ev, 'barcelona_clic')[0]!.properties!).filter((k) => !k.startsWith('$'))).not.toEqual(expect.arrayContaining(['direccion', 'precio', 'lat', 'lng']));
+	});
+
 	test('una pantalla de «Cómo calculamos» → «sin dato» no cuenta como análisis; /mapa no emite eventos propios', async ({ page, context }) => {
 		const ev = await escuchar(context);
 		await abrir(page, '/?ph_prueba=1&motivo=obra_nueva');
