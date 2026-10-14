@@ -11,6 +11,14 @@ import { geocodificar } from '#lib/ubicacion/geocodificar';
 export const prerender = false;
 
 const MAX_TEXTO = 200;
+/** Nada de lo que hace esta ruta puede tardar más: si D1 no contesta, se responde un error en vez de dejar la petición colgada */
+const LIMITE_MS = 10_000;
+
+function antes<T>(promesa: Promise<T>, ms: number): Promise<T> {
+	let reloj: ReturnType<typeof setTimeout>;
+	const limite = new Promise<never>((_, no) => (reloj = setTimeout(() => no(new Error('tiempo agotado')), ms)));
+	return Promise.race([promesa, limite]).finally(() => clearTimeout(reloj));
+}
 
 export async function POST({ request, platform, getClientAddress }) {
 	let texto: unknown;
@@ -30,8 +38,11 @@ export async function POST({ request, platform, getClientAddress }) {
 	// protección, no una condición para responder
 	// (En `vite dev` no se limita: las pruebas e2e hacen cientos de búsquedas desde la misma IP)
 	const c = import.meta.env.DEV ? null : await contextoRegistro(env);
-	const permitida = c ? await puedeGeocodificar(c, getClientAddress()).catch(() => true) : true;
+	const permitida = c ? await antes(puedeGeocodificar(c, getClientAddress()), LIMITE_MS).catch(() => true) : true;
 	if (!permitida) error(429, 'Demasiadas búsquedas hoy');
-	const resultado = await geocodificar(texto, await indiceD1(db), almacenD1(db));
+	const resultado = await antes(
+		indiceD1(db).then((indice) => geocodificar(texto, indice, almacenD1(db))),
+		LIMITE_MS
+	).catch(() => error(503, 'Callejero no disponible'));
 	return json(resultado, { headers: { 'cache-control': 'no-store' } });
 }

@@ -20,7 +20,9 @@ export async function buscarDireccion(texto: string): Promise<ResolucionDireccio
 		r = await fetch('/api/geocode', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify({ texto })
+			body: JSON.stringify({ texto }),
+			// Si el servidor no contesta, la persona ve «sin conexión» con su botón de reintentar, no «Buscando la dirección…» para siempre
+			signal: AbortSignal.timeout(15_000)
 		});
 	} catch {
 		throw new SinConexion();

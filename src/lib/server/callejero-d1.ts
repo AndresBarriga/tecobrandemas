@@ -25,16 +25,24 @@ export function almacenD1(db: D1Minimo): AlmacenCallejero {
 	};
 }
 
-let indice: Promise<IndiceViales> | null = null;
+/**
+ * Se guarda el índice YA CARGADO, nunca la promesa de cargarlo: una promesa compartida entre peticiones queda atada a la petición
+ * que la creó y, si esa petición se cancela (la persona cierra la pestaña) a media consulta, no termina jamás; todas las
+ * peticiones siguientes de ese isolate se quedan esperándola para siempre (fallo en producción el 14/10/2026: /api/geocode
+ * sin respuesta, con 1 ms de CPU). Dos peticiones en frío a la vez hacen la consulta cada una: no pasa nada.
+ */
+let indice: IndiceViales | null = null;
 
-export function indiceD1(db: D1Minimo): Promise<IndiceViales> {
-	indice ??= db
+export async function indiceD1(db: D1Minimo): Promise<IndiceViales> {
+	if (indice) return indice;
+	const r = await db
 		.prepare('SELECT id, tipo, nombre_norm AS nombreNorm, visible, n_portales AS nPortales FROM viales')
-		.all<Vial>()
-		.then((r) => new IndiceViales(r.results))
-		.catch((e) => {
-			indice = null; // se reintenta en la siguiente petición
-			throw e;
-		});
+		.all<Vial>();
+	indice = new IndiceViales(r.results);
 	return indice;
 }
+
+/** Solo para las pruebas: olvida el índice cargado */
+export const olvidarIndice = () => {
+	indice = null;
+};
