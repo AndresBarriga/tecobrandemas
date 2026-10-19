@@ -73,8 +73,8 @@ export const SIN_DATO: Record<ClaveSinDato, TextoSinDato> = {
 	},
 	obra_nueva: {
 		titular: 'Obra nueva',
-		frase: 'Es obra nueva y todavía no tiene historial: la referencia se construye con contratos que ya llevan tiempo registrados.',
-		extra: 'Las viviendas terminadas en 2022 o después aún no aparecen en los datos con los que se calcula la referencia de 2024.'
+		frase: 'El sistema oficial no da rango para edificios de 2022 o posteriores.',
+		extra: 'Los edificios construidos o rehabilitados por completo en 2022 o después no están en los datos con los que se calcula la referencia de 2024.'
 	},
 	unifamiliar: {
 		titular: 'Casa unifamiliar',
@@ -250,7 +250,7 @@ export const FORMULARIO = {
 	},
 	precio: 'Precio al mes',
 	superficie: 'Metros construidos',
-	obraNueva: '¿Es obra nueva, de 2022 o después?',
+	obraNueva: 'Edificio construido o rehabilitado por completo en 2022 o después',
 	largaDuracion: '¿Es alquiler de larga duración?',
 	tipo: '¿Piso o casa?',
 	comprobar: 'Comprobar el precio',

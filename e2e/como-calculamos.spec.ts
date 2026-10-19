@@ -15,7 +15,7 @@ test.describe('Cómo calculamos', () => {
 		await expect(barras).toHaveCount(3);
 		await expect(page.locator('#ej .panel[role="img"]')).toHaveCount(1);
 		await expect(page.locator('#leer')).toContainText('PIDEN MÁS');
-		await expect(barras.nth(1)).toHaveAttribute('aria-label', /Lo habitual, de [\d.]+ a [\d.]+; si fuera un piso excelente/);
+		await expect(barras.nth(1)).toHaveAttribute('aria-label', /Lo habitual, de [\d.]+ a [\d.]+\s€; si fuera un piso excelente/);
 
 		await expect(page.locator('#tus-datos')).toContainText('Qué guardamos (solo si marcas la casilla)');
 		await expect(page.locator('#lo-que-no-calculamos a')).toHaveCount(7);

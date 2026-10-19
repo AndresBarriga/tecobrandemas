@@ -45,7 +45,7 @@ test.describe('humo', () => {
 			await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 		}
 		await page.goto('/como-calculamos');
-		await expect(page.getByText(/factor 1,\d{3}/)).toBeVisible();
+		await expect(page.getByText('Datos de rentas declaradas en 2024 (SERPAVI); los alquileres han subido desde entonces.').first()).toBeVisible();
 
 		const contadores = await request.get('/api/contadores');
 		expect(contadores.status()).toBe(200);

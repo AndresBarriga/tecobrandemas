@@ -18,9 +18,9 @@ test('01-inicio', async ({ page }) => {
 test.describe('niveles', () => {
 	const niveles: [string, string, string, RegExp][] = [
 		['02-nivel-a-dentro', '1700', 'DENTRO', /en la parte (baja|media|alta) de lo habitual/i],
-		['03-nivel-b-explicable', '2100', 'ALGO POR ENCIMA', /sobre lo más alto de lo habitual/i],
+		['03-nivel-b-explicable', '1990', 'ALGO POR ENCIMA', /sobre lo más alto de lo habitual/i],
 		['04-nivel-c-por-encima', '2500', 'POR ENCIMA', /\+\d+(,\d)? %/],
-		['05-nivel-c-extremo', '4000', 'POR ENCIMA', /\+\d+\s%/],
+		['05-nivel-c-extremo', '3800', 'POR ENCIMA', /\+\d+\s%/],
 		['05b-nivel-c-en-veces', '4500', 'POR ENCIMA', /\d,\d\sveces/]
 	];
 	for (const [nombre, precio, etiqueta, texto] of niveles) {

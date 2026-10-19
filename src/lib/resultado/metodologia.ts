@@ -190,7 +190,7 @@ export const FINANCIACION = [
 const LIMITES: [ClaveSinDato, string, string][] = [
 	['superficie_menor', `Menos de 30${NB}m²`, 'Hay pocos contratos de ese tamaño.'],
 	['superficie_mayor', `Más de 150${NB}m²`, 'Hay tan pocos casos que la cifra no se sostendría.'],
-	['obra_nueva', 'Obra nueva, de 2022 o después', 'Aún no tiene historial en los datos de 2024.'],
+	['obra_nueva', 'Obra nueva, de 2022 o después', 'El sistema oficial no da rango para edificios de 2022 o posteriores.'],
 	['unifamiliar', 'Casa unifamiliar', 'La referencia está hecha con pisos.'],
 	['temporal', 'Alquiler temporal o de media estancia', 'La referencia solo mide alquileres de larga duración.'],
 	['testigos', 'Pocos datos en la zona', 'No hay suficientes contratos para dar una referencia fiable.'],

@@ -18,6 +18,12 @@ export interface SeccionEn extends SeccionPregunta {
 	definiciones?: { termino: string; texto: string }[];
 }
 
+/** Textos en inglés de la casilla «edificio de 2022 o después» y de su pantalla «sin dato». La herramienta es solo en español: no se pintan en ninguna página */
+export const EDIFICIO_2022_EN = {
+	casilla: 'Building built or fully renovated in 2022 or later',
+	sinDato: 'The official system gives no range for buildings from 2022 or later.'
+} as const;
+
 export interface PaginaEn {
 	/** Ruta de esta página y de la equivalente en español */
 	ruta: string;

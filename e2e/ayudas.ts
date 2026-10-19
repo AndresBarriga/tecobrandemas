@@ -42,7 +42,7 @@ export async function rellenar(page: Page, p: Piso) {
 	}
 	// Obra nueva y larga duración viven en el resumen plegado
 	if (p.obraNueva || p.largaDuracion === false) await page.getByRole('button', { name: 'cambiar', exact: true }).click();
-	if (p.obraNueva) await page.getByRole('radiogroup', { name: /obra nueva/ }).getByRole('radio', { name: 'Sí' }).check();
+	if (p.obraNueva) await page.getByRole('radiogroup', { name: /2022 o después/ }).getByRole('radio', { name: 'Sí' }).check();
 	if (p.largaDuracion === false) await page.getByRole('radiogroup', { name: /larga duración/ }).getByRole('radio', { name: 'No' }).check();
 }
 

@@ -11,7 +11,7 @@
  * Una fuente u otra, nunca las dos a la vez ni la diferencia entre ellas.
  * Sin dato: 20 testigos o menos, sin datos de la zona o superficie fuera de 30-150 m². En los textos, «zona».
  */
-import { OFERTA_BANDA_EN_LINEA, type DatoOferta, SUPERFICIE_MAX, SUPERFICIE_MIN, compararConOferta, motivoSeccion, referenciaOferta, ofertaDeZonas, rangoInicial, tieneDato } from '../motor';
+import { OFERTA_BANDA_EN_LINEA, type DatoOferta, SUPERFICIE_MAX, SUPERFICIE_MIN, TESTIGOS_MIN, compararConOferta, motivoSeccion, referenciaOferta, ofertaDeZonas, rangoInicial, tieneDato } from '../motor';
 import { type DatosMadrid, barrioDe, datosSeccion } from './datos';
 import { euros, mesAnio, numero } from './formato';
 import { MAPA_REFERENCIA as T } from './textos';
@@ -78,7 +78,7 @@ export function zonasDelMapa(datos: DatosMadrid, superficie: number): ZonaMapa[]
 		const r = conDato ? rangoInicial(superficie, d) : null;
 		const distrito = s.barrio ? datos.barrios[s.barrio]?.cod_distrito : undefined;
 		const oferta = datos.oferta && s.barrio && distrito ? ofertaDeZonas([{ barrio: s.barrio, distrito }], datos.oferta) : null;
-		const testigosOk = s.n !== null && s.n >= 21;
+		const testigosOk = s.n !== null && s.n >= TESTIGOS_MIN;
 		const conEvolucion = testigosOk && s.med2015 !== null && s.med2024 !== null && s.med2015 > 0;
 		return {
 			cusec,
@@ -321,13 +321,13 @@ export function hojaDeZona(
 	} else if (capa !== 'evolucion') {
 		hoja.sinDato = !superficieValida(superficie)
 			? T.hoja.sinDatoSuperficie
-			: z.n !== null && z.n <= 20 ? T.hoja.sinDatoTestigos(numero(z.n)) : T.hoja.sinDatoZona;
+			: z.n !== null && z.n < TESTIGOS_MIN ? T.hoja.sinDatoTestigos(numero(z.n)) : T.hoja.sinDatoZona;
 	}
 
 	if (capa === 'evolucion') {
 		if (z.evolucion !== null && z.med2015 !== null && z.med2024 !== null) {
 			hoja.evolucion = T.hoja.evolucion(numero(z.med2015, 1), numero(z.med2024, 1), subida(z.evolucion));
-		} else hoja.sinDato = z.n !== null && z.n <= 20 ? T.hoja.sinDatoTestigos(numero(z.n)) : T.hoja.sinDatoZona;
+		} else hoja.sinDato = z.n !== null && z.n < TESTIGOS_MIN ? T.hoja.sinDatoTestigos(numero(z.n)) : T.hoja.sinDatoZona;
 	}
 	return hoja;
 }

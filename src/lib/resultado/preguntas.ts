@@ -333,7 +333,7 @@ const PAGINAS: PaginaPregunta[] = [
 					'Nuestra estimación es independiente; si difiere del valor oficial, vale el oficial.'
 				],
 				tabla: {
-					titulo: 'Ejemplo (hipotético): zona imaginaria con mínimo de 800 € y máximo de 1.050 € al mes. La banda es inventada y puede no existir para tu zona',
+					titulo: 'Ejemplo ilustrativo: zona imaginaria con mínimo de 800 € y máximo de 1.050 € al mes. La banda es inventada y puede no existir para tu zona',
 					cabecera: ['Tu renta al mes', 'Frente a la banda', 'Qué dice el decreto'],
 					filas: [
 						['Más de 1.050 €', 'Supera el máximo', 'Ningún incremento (apartado a)'],
@@ -346,7 +346,7 @@ const PAGINAS: PaginaPregunta[] = [
 				h2: '¿Qué significa estar por encima o por debajo de la banda?',
 				parrafos: [
 					'El límite depende de las características de la vivienda, que A su precio no te pide. Por eso damos una banda: el mínimo sale con las características mínimas y el máximo, con las mejores («si fuera un piso excelente» en tu resultado).',
-					'Si tu renta supera el máximo (1.050 € en el ejemplo), supera el límite incluso en el mejor caso: es el apartado a) y no procede subirla. Entre ambos, puede que no proceda; depende de tus características: compruébalo en la calculadora oficial.',
+					'Si tu renta supera el máximo (1.050 € en el ejemplo ilustrativo), supera el límite incluso en el mejor caso: es el apartado a) y no procede subirla. Entre ambos, puede que no proceda; depende de tus características: compruébalo en la calculadora oficial.',
 					'Por debajo del mínimo no lo supera en ningún caso: es el apartado b). El resultado de A su precio es una orientación, no el cálculo legal.'
 				]
 			}

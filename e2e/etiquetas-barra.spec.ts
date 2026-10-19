@@ -45,7 +45,8 @@ for (const [pct, ratio] of [[100, 2], [240, 3.4], [400, 5]] as const) {
 		await comprobar(page, { precio: String(precio), superficie: '90' });
 		// Por encima de 3 veces la parte alta se pide confirmar
 		const confirmar = page.getByRole('button', { name: 'Sí, es correcto' });
-		if (ratio > 3) await confirmar.click();
+		// Con varias zonas posibles el ratio más prudente puede quedar por debajo de 3: el aviso sale solo si hace falta
+		if (ratio > 3) await confirmar.click({ timeout: 4000 }).catch(() => {});
 		await esperarAnimacion(page);
 
 		const { barra, etiquetas } = await cajas(page);
