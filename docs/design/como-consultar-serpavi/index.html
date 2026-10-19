@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#F6F4EE">
+<title>Cómo consultar el SERPAVI: precio de alquiler (Madrid)</title>
+<meta name="description" content="Qué es el SERPAVI, cómo consultar el precio de referencia de tu piso y qué hacer con el resultado. Compáralo en un clic con A su precio.">
+<link rel="canonical" href="https://asuprecio.com/como-consultar-serpavi">
+<link rel="icon" href="../../../static/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cómo consultar el SERPAVI: precio de alquiler (Madrid)">
+<meta property="og:description" content="Qué es el SERPAVI, cómo consultar el precio de referencia de tu piso y qué hacer con el resultado. Compáralo en un clic con A su precio.">
+<meta property="og:url" content="https://asuprecio.com/como-consultar-serpavi">
+
+<!--
+  Maqueta de /como-consultar-serpavi. Usa los tokens y componentes de src/app.css, Cabecera, Logo, Pie y
+  las páginas de /preguntas. Las rutas de fuentes e iconos son relativas a este fichero (para abrirlo en local);
+  en SvelteKit pasan a /fonts/… y /brand/…. Los marcadores [entre corchetes] los completa quien edita el texto.
+-->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "name": "Cómo consultar el SERPAVI: precio de alquiler (Madrid)",
+      "url": "https://asuprecio.com/como-consultar-serpavi",
+      "inLanguage": "es",
+      "dateModified": "2026-10-19",
+      "publisher": { "@type": "Organization", "name": "A su precio", "url": "https://asuprecio.com" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "¿Qué es el SERPAVI?",
+          "acceptedAnswer": { "@type": "Answer", "text": "El Sistema Estatal de Referencia del Precio del Alquiler de Vivienda, una base de datos del Ministerio de Vivienda y Agenda Urbana. Da un rango de precio de alquiler según la zona y las características de la vivienda, a partir de contratos declarados a Hacienda." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Es vinculante?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No en general: es una referencia orientativa. Solo condiciona el precio en las zonas declaradas tensionadas por la comunidad autónoma, en los casos que fija la norma." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Qué es una zona tensionada?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Una zona que la comunidad autónoma declara como mercado residencial tensionado, según la Ley 12/2023, de 24 de mayo, por el derecho a la vivienda. Solo en esas zonas el rango del SERPAVI puede limitar el precio de un contrato nuevo." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Qué hago si mi alquiler está por encima?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Comprueba que has indicado bien las características de la vivienda, mira el rango completo y no solo la cifra de arriba, y consulta si tu zona está declarada tensionada. Si tienes dudas, pide asesoramiento profesional." }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<style>
+/* ——— Tokens y base (src/app.css) ——— */
+@font-face { font-family: 'Sofia Sans'; src: url('../../../static/fonts/sofia-sans.woff2') format('woff2'); font-weight: 1 1000; font-display: swap; }
+@font-face { font-family: 'Sofia Sans Extra Condensed'; src: url('../../../static/fonts/sofia-sans-extra-condensed.woff2') format('woff2'); font-weight: 1 1000; font-display: swap; }
+:root {
+  --paja: #ebc85a; --papel: #f6f4ee; --superficie: #ede9e0; --blanco: #ffffff; --tinta: #1c1b19; --grafito: #5a5750; --pista: #e4dfd5;
+  --acero: #2f5f8a; --acero-tinte: #dde6ef;
+  --f-texto: 'Sofia Sans', system-ui, sans-serif; --f-extra: 'Sofia Sans Extra Condensed', 'Sofia Sans', system-ui, sans-serif;
+  --radio: 8px; --margen: 20px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body { margin: 0; background: var(--papel); color: var(--tinta); font: 400 16px/1.5 var(--f-texto); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p, ul, ol { margin: 0; padding: 0; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--tinta); outline-offset: 3px; }
+
+/* ——— Botones (src/app.css) ——— */
+.boton { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 56px; padding: 0 20px; border: 0; border-radius: var(--radio); background: var(--paja); color: var(--tinta); font: 800 17px/1.2 var(--f-texto); text-align: center; text-decoration: none; }
+.boton:hover { filter: brightness(0.96); }
+.boton-contorno { min-height: 48px; border: 1.5px solid var(--tinta); background: transparent; font-weight: 700; font-size: 16px; }
+
+/* ——— Cabecera (Cabecera.svelte + Logo.svelte) ——— */
+header.sitio { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; min-height: 44px; padding: 8px var(--margen) 0; }
+.marca { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
+.logo { display: inline-flex; align-items: center; gap: 0.5em; white-space: nowrap; font-size: 21px; }
+.logo img { flex: none; width: 1.9em; height: 1.9em; border-radius: 22%; }
+.logo .texto { display: inline-flex; flex-direction: column; gap: 0.14em; }
+.logo .nombre { font: 800 1em/1 var(--f-extra); text-transform: uppercase; letter-spacing: 0.01em; }
+.logo .lema { font: 500 0.57em/1.2 var(--f-texto); background: linear-gradient(transparent 55%, var(--paja) 55%); align-self: flex-start; padding: 0 0.2em; margin-left: -0.2em; }
+.nav { display: flex; width: 100%; gap: 20px; }
+.nav a { display: flex; align-items: center; min-height: 44px; font: 600 15px/1 var(--f-texto); text-decoration: none; }
+
+/* ——— Página ——— */
+main { width: 100%; max-width: 720px; margin: 0 auto; padding: 12px var(--margen) 56px; }
+article { display: flex; flex-direction: column; gap: 44px; }
+section { display: flex; flex-direction: column; gap: 14px; }
+h1 { font: 800 38px/0.97 var(--f-extra); text-transform: uppercase; text-wrap: balance; }
+h2 { font: 700 24px/1.2 var(--f-texto); text-wrap: balance; }
+h3 { font: 700 18px/1.3 var(--f-texto); }
+p { max-width: 62ch; font: 400 17px/1.55 var(--f-texto); text-wrap: pretty; }
+a.texto-enlace { text-decoration: underline; text-decoration-color: var(--paja); text-decoration-thickness: 2px; text-underline-offset: 3px; font-weight: 600; }
+.meta { font: 500 14px/1.4 var(--f-texto); color: var(--grafito); }
+
+/* Hero: el CTA se ve sin hacer scroll en un móvil de 390 × 844 */
+.hero { gap: 16px; padding-top: 8px; }
+.subtitulo { font: 600 20px/1.4 var(--f-texto); max-width: 34ch; }
+.cta { display: flex; flex-direction: column; gap: 8px; }
+.cta .boton { min-height: 60px; font-size: 19px; }
+.cta small { font: 500 14px/1.4 var(--f-texto); color: var(--grafito); }
+
+/* Pasos */
+.pasos { list-style: none; display: grid; gap: 12px; counter-reset: paso; }
+.pasos li { counter-increment: paso; display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; border-radius: var(--radio); background: var(--blanco); }
+.pasos li::before { content: counter(paso); display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--paja); font: 800 17px/1 var(--f-texto); }
+.pasos p { font-size: 16px; }
+.fuente-oficial { display: flex; flex-direction: column; gap: 10px; }
+
+/* Avisos y apartados destacados */
+.nota { padding: 12px 14px; border-left: 4px solid var(--paja); background: var(--blanco); }
+.nota p { font: 600 15px/1.45 var(--f-texto); }
+.marcador { background: var(--acero-tinte); color: var(--acero); font-weight: 700; padding: 0 4px; border-radius: 3px; white-space: nowrap; }
+.herramienta { padding: 20px 18px; border-radius: var(--radio); background: var(--blanco); gap: 14px; }
+.donde { display: grid; gap: 10px; }
+.donde > div { padding: 14px 16px; border-radius: var(--radio); background: var(--superficie); display: flex; flex-direction: column; gap: 4px; }
+.donde p { font-size: 16px; }
+
+/* FAQ */
+.faq { display: flex; flex-direction: column; border-top: 1px solid var(--pista); }
+.faq details { border-bottom: 1px solid var(--pista); }
+.faq summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 8px 0; cursor: pointer; list-style: none; font: 700 18px/1.3 var(--f-texto); }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: '+'; flex: none; font: 600 26px/1 var(--f-texto); }
+.faq details[open] summary::after { content: '–'; }
+.faq details p { padding: 0 0 16px; font-size: 16px; }
+
+/* Enlaces internos */
+.enlaces { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; }
+.enlaces a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid var(--tinta); font: 700 15px/1 var(--f-texto); text-decoration: none; }
+.enlaces a:hover { background: var(--paja); border-color: var(--paja); }
+
+/* Cierre */
+.cierre { padding: 22px 18px; border-radius: var(--radio); background: var(--paja); gap: 14px; }
+.cierre p { font: 700 20px/1.3 var(--f-texto); }
+.cierre .boton { background: var(--tinta); color: var(--papel); }
+
+/* Pie (Pie.svelte) */
+footer { margin-top: 28px; padding: 20px var(--margen) 24px; background: var(--superficie); display: flex; flex-direction: column; gap: 8px; font: 400 12.5px/1.5 var(--f-texto); color: var(--grafito); }
+footer p { font: inherit; max-width: none; }
+.enlaces-pie { display: flex; flex-wrap: wrap; gap: 4px 24px; }
+.enlaces-pie a { display: flex; align-items: center; min-height: 44px; font: 700 14px/1 var(--f-texto); color: var(--tinta); text-underline-offset: 4px; }
+.fuente-pie { color: var(--tinta); font-weight: 600; }
+
+/* ——— Escritorio ——— */
+@media (min-width: 960px) {
+  header.sitio { height: 72px; padding: 0 40px; flex-wrap: nowrap; }
+  .logo { font-size: 28px; }
+  .nav { width: auto; gap: 24px; }
+  main { max-width: 960px; padding: 40px 40px 80px; }
+  article { gap: 64px; }
+  .hero { max-width: 720px; gap: 20px; padding-top: 24px; }
+  h1 { font-size: 68px; }
+  h2 { font-size: 30px; }
+  .subtitulo { font-size: 24px; max-width: 40ch; }
+  .cta { flex-direction: row; align-items: center; gap: 20px; }
+  .cta .boton { width: auto; min-width: 340px; }
+  .pasos { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .pasos li { padding: 20px; }
+  .donde { grid-template-columns: repeat(3, 1fr); }
+  section.prosa > p, section.prosa > .nota, .faq { max-width: 720px; }
+  .cierre { flex-direction: row; align-items: center; justify-content: space-between; padding: 28px 32px; }
+  .cierre p { max-width: 26ch; font-size: 26px; }
+  .cierre .boton { width: auto; min-width: 320px; }
+  footer { margin-top: 0; padding: 36px 40px 40px; flex-direction: row; gap: 48px; }
+  footer p { flex: 1; }
+}
+</style>
+</head>
+<body>
+<div class="pagina">
+
+<header class="sitio">
+  <a class="marca" href="/" aria-label="A su precio, inicio">
+    <span class="logo"><img src="../../../static/brand/avatar-asuprecio.svg" alt="" width="40" height="40"><span class="texto"><span class="nombre">A su precio</span><span class="lema">Que el precio no sea a ciegas.</span></span></span>
+  </a>
+  <nav class="nav" aria-label="Principal">
+    <a href="/">Comprobar</a>
+    <a href="/mapa">Mapa</a>
+    <a href="/como-calculamos">Cómo calculamos</a>
+  </nav>
+</header>
+
+<main>
+<article>
+
+  <!-- 1–3 · H1, respuesta directa y CTA principal -->
+  <header class="hero">
+    <h1>SERPAVI alquiler: cómo consultar el precio de referencia de tu piso</h1>
+    <p class="subtitulo">El SERPAVI es la base de datos oficial del Ministerio de Vivienda con rangos de precio de alquiler por zona y por características de la vivienda.</p>
+    <div class="cta">
+      <a class="boton" href="/?utm_source=serpavi&amp;utm_content=como-consultar-arriba">Compara tu alquiler en A su precio</a>
+      <small>La herramienta cubre Madrid.</small>
+    </div>
+  </header>
+
+  <!-- 4 · Tres pasos -->
+  <section id="pasos" aria-labelledby="h-pasos">
+    <h2 id="h-pasos">Cómo consultarlo en 3 pasos</h2>
+    <ol class="pasos">
+      <li>
+        <h3>Indica la vivienda</h3>
+        <p>Escribe la dirección o, si la tienes a mano, la referencia catastral.</p>
+      </li>
+      <li>
+        <h3>Rellena sus características</h3>
+        <p>Estado de conservación, ascensor, garaje, año de construcción, planta y alguna más. Cuanto más exacto, mejor ajustado el rango.</p>
+      </li>
+      <li>
+        <h3>Lee el rango, no una cifra</h3>
+        <p>El resultado son dos importes, uno bajo y uno alto. Tu serpavi precio alquiler es esa horquilla, no un precio único.</p>
+      </li>
+    </ol>
+    <p class="fuente-oficial">La consulta se hace en la herramienta del Ministerio:</p>
+    <a class="boton boton-contorno" href="https://serpavi.mivau.gob.es/" rel="noopener noreferrer">Abrir el SERPAVI oficial (serpavi.mivau.gob.es)</a>
+  </section>
+
+  <!-- 5 · Referencia catastral -->
+  <section id="referencia-catastral" class="prosa" aria-labelledby="h-catastral">
+    <h2 id="h-catastral">Dónde encontrar tu referencia catastral</h2>
+    <p>Es el código de 20 caracteres que identifica cada inmueble en el Catastro. Con él, el SERPAVI sitúa tu vivienda sin ambigüedades. Es el paso donde más gente se atasca.</p>
+    <div class="donde">
+      <div>
+        <h3>En el recibo del IBI</h3>
+        <p>Aparece impreso en el recibo o en la carta de pago del impuesto.</p>
+      </div>
+      <div>
+        <h3>En la Sede Electrónica del Catastro</h3>
+        <p>Puedes buscar tu inmueble por dirección y consultar su referencia.</p>
+        <a class="texto-enlace" href="https://www.sedecatastro.gob.es/" rel="noopener noreferrer">sedecatastro.gob.es</a>
+      </div>
+      <div>
+        <h3>Sin ella también vale</h3>
+        <p>Si no la encuentras, introduce la dirección completa.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · Qué significa el resultado -->
+  <section id="resultado" class="prosa" aria-labelledby="h-resultado">
+    <h2 id="h-resultado">Qué significa el resultado</h2>
+    <p>Es una horquilla orientativa: cuánto suelen pagar los alquileres de viviendas parecidas en tu zona. No es una tasación ni el precio justo de tu piso.</p>
+    <p>Solo limita el precio en las zonas que la comunidad autónoma ha declarado tensionadas. Estado de la Comunidad de Madrid: <span class="marcador">[CONFIRMAR ESTADO ACTUAL]</span></p>
+  </section>
+
+  <!-- 7 · Lo que el SERPAVI no te dice -->
+  <section id="que-falta" class="herramienta" aria-labelledby="h-falta">
+    <h2 id="h-falta">Lo que el SERPAVI no te dice</h2>
+    <p>El SERPAVI te da un rango para una vivienda concreta. No te coloca de un vistazo frente a tu barrio ni frente a lo que pagan quienes ya viven allí.</p>
+    <p>A su precio pone tu alquiler, o el de un anuncio, junto a los contratos de tu zona y te dice si queda dentro del rango, algo por encima o fuera de lo habitual. Es una estimación independiente: el valor oficial es el del Ministerio.</p>
+    <a class="boton" href="/?utm_source=serpavi&amp;utm_content=como-consultar-medio">Compara tu alquiler en A su precio</a>
+  </section>
+
+  <!-- 8 · FAQ (schema FAQPage en el <head>) -->
+  <section id="preguntas" aria-labelledby="h-faq">
+    <h2 id="h-faq">Preguntas frecuentes</h2>
+    <div class="faq">
+      <details>
+        <summary>¿Qué es el SERPAVI?</summary>
+        <p>Es el Sistema Estatal de Referencia del Precio del Alquiler de Vivienda, del Ministerio de Vivienda y Agenda Urbana. Da un rango de precio según la zona y las características de la vivienda, a partir de contratos declarados a Hacienda.</p>
+      </details>
+      <details>
+        <summary>¿Es vinculante?</summary>
+        <p>No en general: es una referencia orientativa. Solo condiciona el precio en las zonas declaradas tensionadas, en los casos que fija la norma.</p>
+      </details>
+      <details>
+        <summary>¿Qué es una zona tensionada?</summary>
+        <p>Es una zona que la comunidad autónoma declara como mercado residencial tensionado, según la Ley 12/2023, de 24 de mayo, por el derecho a la vivienda. Solo en ellas el rango puede limitar el precio de un contrato nuevo.</p>
+      </details>
+      <details>
+        <summary>¿Qué hago si mi alquiler está por encima?</summary>
+        <p>Comprueba que has indicado bien las características, mira el rango completo y consulta si tu zona está declarada tensionada. Si tienes dudas, pide asesoramiento profesional.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- 9 · Enlaces internos -->
+  <section id="mas" aria-labelledby="h-mas">
+    <h2 id="h-mas">Mira tu zona</h2>
+    <p>Explora el mapa de Madrid o consulta la referencia de algunos barrios.</p>
+    <ul class="enlaces">
+      <li><a href="/mapa">Mapa de Madrid</a></li>
+      <li><a href="/alquiler/lavapies-embajadores">Lavapiés</a></li>
+      <li><a href="/alquiler/malasana-universidad">Malasaña</a></li>
+      <li><a href="/alquiler/arguelles">Argüelles</a></li>
+    </ul>
+  </section>
+
+  <!-- 10 · Fuente y fecha -->
+  <p class="meta">Fuente: Ministerio de Vivienda y Agenda Urbana (SERPAVI). Última actualización: <time datetime="2026-10-19">19 de octubre de 2026</time>.</p>
+
+  <!-- 11 · CTA secundario (mismo texto y destino) -->
+  <section class="cierre" aria-label="Comparar tu alquiler">
+    <p>¿Está tu alquiler dentro del rango de tu zona?</p>
+    <a class="boton" href="/?utm_source=serpavi&amp;utm_content=como-consultar-final">Compara tu alquiler en A su precio</a>
+  </section>
+
+</article>
+</main>
+
+<footer>
+  <p>Estimación independiente basada en la metodología SERPAVI; el valor oficial está en <a href="https://serpavi.mivau.gob.es">serpavi.mivau.gob.es</a>.</p>
+  <p>Origen de los datos: Ministerio de Vivienda y Agenda Urbana. Elaboración propia con datos extraídos del sitio web del INE: www.ine.es.</p>
+  <nav class="enlaces-pie" aria-label="Más información">
+    <a href="/como-calculamos">Cómo calculamos</a>
+    <a href="/preguntas">Preguntas</a>
+    <a href="/alquiler">Alquiler por barrios</a>
+    <a href="/correcciones">Correcciones</a>
+  </nav>
+</footer>
+
+</div>
+</body>
+</html>

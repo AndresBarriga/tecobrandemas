@@ -34,6 +34,7 @@ export * from './historial';
 export * from './metodologia';
 export * from './seo';
 export * from './preguntas';
+export * from './serpavi';
 export * from './mapa-texto';
 export * from './en';
 export * from './correcciones';

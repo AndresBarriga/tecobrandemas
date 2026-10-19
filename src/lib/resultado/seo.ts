@@ -8,6 +8,7 @@ import { AUTOR, AUTOR_PUESTO, FECHA_PREGUNTAS, PREGUNTAS, type PaginaPregunta } 
 import { FECHA_MAPA, TEXTO_MAPA } from './mapa-texto';
 import { PAGINAS_EN, FECHA_EN, AUTOR_EN, type PaginaEn } from './en';
 import { FECHA_CORRECCIONES } from './correcciones';
+import { FECHA_SERPAVI, RUTA_SERPAVI, TEXTO_SERPAVI } from './serpavi';
 import { BARRIOS_PILOTO, FECHA_BARRIOS, nombreCompleto, barrioPilotoPorSlug, type PaginaBarrio } from './barrios';
 import ogPaginas from './og-paginas.json';
 
@@ -37,6 +38,7 @@ export const ENTRADAS_SITEMAP: { ruta: string; lastmod?: string }[] = [
 	{ ruta: '/' },
 	{ ruta: '/como-calculamos' },
 	{ ruta: '/mapa', lastmod: FECHA_MAPA },
+	{ ruta: RUTA_SERPAVI, lastmod: FECHA_SERPAVI },
 	{ ruta: '/preguntas', lastmod: FECHA_PREGUNTAS },
 	...PREGUNTAS.map((p) => ({ ruta: `/preguntas/${p.slug}`, lastmod: FECHA_PREGUNTAS })),
 	...PAGINAS_EN.map((p) => ({ ruta: p.ruta, lastmod: FECHA_EN })),
@@ -154,6 +156,29 @@ export function jsonLdPregunta(p: PaginaPregunta): object[] {
 			mainEntity: p.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }))
 		},
 		migas({ nombre: 'Preguntas', ruta: '/preguntas' }, { nombre: p.h1, ruta: `/preguntas/${p.slug}` })
+	];
+}
+
+/** JSON-LD de /como-consultar-serpavi: WebPage, FAQPage (con sus cuatro preguntas) y BreadcrumbList */
+export function jsonLdSerpavi(): object[] {
+	return [
+		{
+			'@context': 'https://schema.org',
+			'@type': 'WebPage',
+			name: TEXTO_SERPAVI.h1,
+			description: TEXTO_SERPAVI.descripcion,
+			url: `${SITE_URL}${RUTA_SERPAVI}`,
+			inLanguage: 'es',
+			dateModified: FECHA_SERPAVI,
+			isPartOf: { '@type': 'WebSite', name: NOMBRE, url: `${SITE_URL}/` },
+			publisher: editor()
+		},
+		{
+			'@context': 'https://schema.org',
+			'@type': 'FAQPage',
+			mainEntity: TEXTO_SERPAVI.faq.items.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }))
+		},
+		migas({ nombre: 'Cómo consultar el SERPAVI', ruta: RUTA_SERPAVI })
 	];
 }
 
