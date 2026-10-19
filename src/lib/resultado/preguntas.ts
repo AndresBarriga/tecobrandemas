@@ -188,7 +188,7 @@ const PAGINAS: PaginaPregunta[] = [
 				h2: '¿Para qué se usa por ley?',
 				parrafos: [
 					'La Ley 12/2023, de 24 de mayo, por el derecho a la vivienda, prevé el índice como límite de la renta inicial en zonas declaradas tensionadas cuando el arrendador es gran tenedor. Esa regla está en el apartado 7 del artículo 17 de la Ley de Arrendamientos Urbanos.',
-					'El Real Decreto-ley 29/2026 lo usa además para la actualización anual de la renta hasta el 31/12/2027 y para graduar una reducción fiscal del propietario en el IRPF. Es un decreto-ley pendiente de convalidación, y la actualización anual se explica en otra pregunta.',
+					'El Real Decreto-ley 29/2026 remite además al sistema de índices de referencia en su limitación de la actualización anual de la renta, hasta el 31/12/2027. Está pendiente de convalidación y se explica en otra pregunta.',
 					'Que la ley lo use no lo convierte en un precio fijo: fuera de esos casos es solo una referencia informativa.'
 				]
 			},
@@ -319,39 +319,42 @@ const PAGINAS: PaginaPregunta[] = [
 			{
 				h2: '¿A qué contratos afecta y qué no queda claro?',
 				parrafos: [
-					'El texto habla de contratos de alquiler de vivienda sujetos a la Ley 29/1994. No lo limita a zonas tensionadas ni a una comunidad concreta. El propio decreto-ley dice que se aplica sin perjuicio de los regímenes civiles forales y de las competencias autonómicas en vivienda.',
-					'El texto de la disposición final sexta no exige que la vivienda esté en una zona tensionada, y el Ministerio de Vivienda ha incorporado el índice estatal a su calculadora de actualización de la renta. Aun así, no hay una aclaración oficial expresa sobre cómo se determina el “límite máximo aplicable” fuera de esas zonas, como la ciudad de Madrid. No des por hecho ni que se aplica ni que no se aplica a tu contrato: consulta la calculadora oficial y, si dudas, pide asesoramiento.',
-					'La actualización anual toca en la fecha en que tu contrato cumple un año más. Si esa fecha cae entre el 08/10/2026 y el 31/12/2027, la regla de arriba es la que importa.'
+					'El texto habla de contratos de alquiler de vivienda sujetos a la Ley 29/1994. No lo limita a zonas tensionadas ni a una comunidad concreta. Se aplica sin perjuicio de los regímenes civiles forales y de las competencias autonómicas.',
+					'El texto de la disposición final sexta no exige que la vivienda esté en una zona tensionada, pero no hay una aclaración oficial expresa sobre cómo se determina el “límite máximo aplicable” en Madrid. No des por hecho ni que se aplica ni que no.',
+					'La actualización toca cuando tu contrato cumple un año más. Si esa fecha cae entre el 08/10/2026 y el 31/12/2027, la regla de arriba es la que importa.',
+					'El texto remite al sistema de índices de referencia; consulta con el Ministerio si te afecta (calculadora oficial o teléfono 047).'
 				]
 			},
 			{
 				h2: '¿Cómo compruebo mi caso?',
-				enlaces: [CALCULADORA],
+				enlaces: [CALCULADORA, SERPAVI],
 				parrafos: [
-					'Primero, usa la calculadora oficial del Ministerio de Vivienda: calcula la actualización de la renta que corresponde a tu contrato. Después, consulta el valor oficial en SERPAVI (serpavi.mivau.gob.es) con la dirección y las características de tu vivienda. Por último, para una estimación rápida en Madrid, usa A su precio.',
+					'Primero, usa la calculadora oficial del Ministerio de Vivienda para tu contrato. Después, consulta el valor oficial en SERPAVI (serpavi.mivau.gob.es) con la dirección y las características de tu vivienda. Por último, usa A su precio para una estimación rápida.',
 					'Nuestra estimación es independiente; si difiere del valor oficial, vale el oficial.'
 				],
 				tabla: {
-					titulo: 'Ejemplo (hipotético): una renta de 900 € al mes en una zona imaginaria. El «límite oficial» de la tabla es inventado y puede no existir para tu zona',
-					cabecera: ['Límite oficial (hipotético)', 'Tu renta frente al límite', 'Qué dice el decreto'],
+					titulo: 'Ejemplo (hipotético): zona imaginaria con mínimo de 800 € y máximo de 1.050 € al mes. La banda es inventada y puede no existir para tu zona',
+					cabecera: ['Tu renta al mes', 'Frente a la banda', 'Qué dice el decreto'],
 					filas: [
-						['950 €', 'No lo supera', 'El pacto entre las partes; sin pacto, hasta 18 € más (el 2 %)'],
-						['850 €', 'Lo supera', 'Ningún incremento']
+						['Más de 1.050 €', 'Supera el máximo', 'Ningún incremento (apartado a)'],
+						['Entre 800 € y 1.050 €', 'Depende de tus características', 'Puede que no proceda incremento'],
+						['Menos de 800 €', 'Por debajo del mínimo', 'Lo pactado; sin pacto, hasta el 2 % (apartado b)']
 					]
 				}
 			},
 			{
-				h2: '¿Qué significa estar por encima o por debajo?',
+				h2: '¿Qué significa estar por encima o por debajo de la banda?',
 				parrafos: [
-					'«Por encima» del límite oficial es el caso del apartado a): no procede subir la renta. «Por debajo» es el del apartado b): lo que se pacte o, sin pacto, hasta el 2 %.',
-					'Si tu renta es igual al límite, no es «superior»: encaja en el apartado b). El resultado de A su precio («DENTRO», «ALGO POR ENCIMA»…) es una orientación, no el cálculo legal.'
+					'El límite depende de las características de la vivienda, que A su precio no te pide. Por eso damos una banda: el mínimo sale con las características mínimas y el máximo, con las mejores («si fuera un piso excelente» en tu resultado).',
+					'Si tu renta supera el máximo (1.050 € en el ejemplo), supera el límite incluso en el mejor caso: es el apartado a) y no procede subirla. Entre ambos, puede que no proceda; depende de tus características: compruébalo en la calculadora oficial.',
+					'Por debajo del mínimo no lo supera en ningún caso: es el apartado b). El resultado de A su precio es una orientación, no el cálculo legal.'
 				]
 			}
 		],
 		faq: [
 			{
 				q: '¿Y en Madrid?',
-				a: 'El texto de la disposición final sexta no exige que la vivienda esté en una zona tensionada, y el Ministerio de Vivienda ha incorporado el índice estatal a su calculadora de actualización de la renta. Aun así, no hay una aclaración oficial expresa sobre cómo se determina el «límite máximo aplicable» fuera de esas zonas, como la ciudad de Madrid, así que no des por hecho que se aplica ni que no: consulta la calculadora oficial.'
+				a: 'El texto de la disposición final sexta no exige que la vivienda esté en una zona tensionada, pero no hay una aclaración oficial expresa sobre cómo se determina el «límite máximo aplicable» en Madrid: consulta la calculadora oficial.'
 			},
 			{ q: '¿Cuánto es el 2 % de mi renta?', a: 'Multiplica tu renta mensual por 0,02: 18 € con 900 € (ejemplo).' },
 			{ q: '¿Qué pasa si el Congreso no lo convalida?', a: 'Si no se convalida, deja de estar en vigor; si se convalida, sigue vigente y puede modificarse.' }
