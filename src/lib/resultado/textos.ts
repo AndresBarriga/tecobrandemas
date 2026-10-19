@@ -93,7 +93,7 @@ export const SIN_DATO: Record<ClaveSinDato, TextoSinDato> = {
 	},
 	sin_dato_seccion: {
 		titular: 'Sin datos aquí',
-		frase: 'SERPAVI no publica referencia para esta zona: no figuran contratos.',
+		frase: 'SERPAVI no publica referencia para esta zona: faltan contratos o sus pisos quedan fuera de 30–150\u00A0m² de superficie mediana.',
 		extra: 'Prueba con una calle cercana si el piso está en el límite de la zona.'
 	},
 	fuera_de_madrid: {
@@ -1154,7 +1154,7 @@ export const MAPA_REFERENCIA = {
 			`${n} contratos vigentes de distintas fechas · propietarios particulares declarados a Hacienda (2024), sin empresas ni fondos · los alquileres han subido desde entonces`,
 		evolucion: (antes: string, despues: string, variacion: string) =>
 			`Mediana de contratos vigentes: de ${antes}\u00A0€/m² en 2015 a ${despues}\u00A0€/m² en 2024 (${variacion}). Sin descontar la inflación.`,
-		sinDatoZona: 'Esta zona no tiene dato de contratos.',
+		sinDatoZona: 'Esta zona no tiene referencia en SERPAVI: faltan contratos o sus pisos quedan fuera de 30–150\u00A0m² de superficie mediana.',
 		sinDatoTestigos: (n: string) => `Esta zona tiene ${n} contratos, pocos para dar una referencia.`,
 		sinDatoSuperficie: 'La referencia solo se calcula entre 30 y 150\u00A0m².',
 		vacia: 'Toca una zona para ver lo que pagan quienes ya viven allí.',

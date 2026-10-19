@@ -10,7 +10,7 @@
  * Reglas de contenido: sin evolución en el tiempo, sin comparar con anuncios, con la media de Madrid ni con otros barrios,
  * sin rankings (el índice va por distrito y en orden alfabético) y sin datos de análisis de usuarios.
  */
-import { referencia, tieneDato, TESTIGOS_MIN } from '../motor';
+import { referencia, motivoSeccion } from '../motor';
 import type { DatosMadrid } from './datos';
 import { euros, numero } from './formato';
 import type { Fuente } from './preguntas';
@@ -107,10 +107,10 @@ function mediana(valores: number[]): number {
 	return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2;
 }
 
-/** Secciones del barrio con dato suficiente (más de 20 contratos) */
+/** Secciones del barrio con dato suficiente: más de 20 contratos y superficie mediana de 30 a 150 m² (los criterios del motor) */
 export function seccionesConDato(datos: Pick<DatosMadrid, 'secciones'>, codigo: string): string[] {
 	return Object.entries(datos.secciones)
-		.filter(([, s]) => s.barrio === codigo && tieneDato({ cusec: '', smed: s.smed, p25: s.p25, p75: s.p75, n: s.n }) && (s.n ?? 0) >= TESTIGOS_MIN)
+		.filter(([c, s]) => s.barrio === codigo && motivoSeccion({ cusec: c, smed: s.smed, p25: s.p25, p75: s.p75, n: s.n }) === null)
 		.map(([c]) => c)
 		.sort();
 }

@@ -358,7 +358,7 @@ function construirReferencias(datos: DatosMadrid | undefined): Metodologia['refe
 		cierre: [
 			'Miden cosas distintas, así que pueden no coincidir: cada una se compara solo con tu precio, nunca una con otra.',
 			'Que un precio salga por encima no lo hace incorrecto: dice cuánto más se pide, o se paga, que la referencia. Nunca hablamos de precios correctos o incorrectos.',
-			'En las páginas de «Alquiler por barrios», la cifra de cada barrio es la mediana de la referencia de sus zonas con más de 20\u00A0contratos, calculada con el mismo método y los mismos datos que la herramienta, para 50, 70 y 90\u00A0m². Dentro del barrio, la cifra varía según la calle y las características de la vivienda.'
+			'En las páginas de «Alquiler por barrios», la cifra de cada barrio es la mediana de la referencia de sus zonas con más de 20\u00A0contratos y una superficie mediana de 30 a 150\u00A0m², calculada con el mismo método y los mismos datos que la herramienta, para 50, 70 y 90\u00A0m². Dentro del barrio, la cifra varía según la calle y las características de la vivienda.'
 		],
 		limites: {
 			titulo: 'Límites de cada referencia',
@@ -437,7 +437,7 @@ export function construirMetodologia(datos?: DatosMadrid): Metodologia {
 			parrafos: [
 				'El mapa de Madrid tiene tres vistas. «Mi presupuesto» («¿Dónde me llega?», la que abre por defecto) pinta cada zona según cómo queda tu presupuesto al mes frente a lo que se pide en los anuncios recientes de su barrio (o de su distrito, con punteado, si el barrio no tiene dato), para los metros que elijas con la barra o con el número.',
 				`La comparación usa la estimación de cada zona (€/m² ajustado por tamaño × tus metros): «No llega» por debajo del ${numero((1 - OFERTA_BANDA_EN_LINEA) * 100)}\u00A0%, «En línea» dentro de ±${numero(OFERTA_BANDA_EN_LINEA * 100)}\u00A0% y «Te sobra» por encima del ${numero((1 + OFERTA_BANDA_EN_LINEA) * 100)}\u00A0%. El mapa se recolorea al mover las barras: el cálculo lo hace tu navegador.`,
-				'«Referencia» pinta la parte alta de lo que pagan quienes ya viven aquí según los contratos, con el mismo método que el resultado, para la superficie que elijas (40, 55, 70, 90 o 110\u00A0m²); con «Oferta», el €/m² medio de los anuncios recientes del barrio o del distrito. Los cinco colores reparten las zonas con dato en cinco grupos del mismo tamaño, con cortes iguales para toda la ciudad. Las zonas con 20 contratos o menos, y las superficies fuera de 30-150\u00A0m², salen como «sin dato».',
+				'«Referencia» pinta la parte alta de lo que pagan quienes ya viven aquí según los contratos, con el mismo método que el resultado, para la superficie que elijas (40, 55, 70, 90 o 110\u00A0m²); con «Oferta», el €/m² medio de los anuncios recientes del barrio o del distrito. Los cinco colores reparten las zonas con dato en cinco grupos del mismo tamaño, con cortes iguales para toda la ciudad. Las zonas con 20 contratos o menos, las que tienen una superficie mediana fuera de 30-150\u00A0m² y las superficies elegidas fuera de ese rango salen como «sin dato».',
 				'«Evolución 2015-2024» muestra cuánto ha subido la mediana de los contratos de cada zona, sin descontar la inflación. Solo usa contratos.'
 			],
 			tuZona: {

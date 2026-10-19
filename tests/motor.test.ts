@@ -19,6 +19,7 @@ import {
 	type Anuncio,
 	type SeccionConDato
 } from '../src/lib/motor';
+import { readFileSync } from 'node:fs';
 import { leerFixture } from './fixture';
 
 const CENTIMO = 0.01;
@@ -104,6 +105,36 @@ describe('agregado del gate (42 anuncios con resultado)', () => {
 		const { niveles, mediana: m } = contar();
 		expect(niveles).toEqual({ dentro: 6, explicable: 3, por_encima: 33 });
 		expect(Math.round(m * 100)).toBe(26);
+	});
+});
+
+describe('elegibilidad de la sección: superficie mediana de 30 a 150 m² (§5.3)', () => {
+	const reales = JSON.parse(readFileSync('data/processed/secciones_madrid.json', 'utf8')) as Record<string, { smed: number | null; p25: number | null; p75: number | null; n: number | null }>;
+	const datos = (cusec: string) => ({ cusec, ...reales[cusec]! });
+
+	it('la sección 2807905002 (Smed 151, k = 1,005 sin recortar) ya no llega al cálculo', () => {
+		const s = datos('2807905002');
+		expect(s.smed).toBe(151);
+		expect(s.n).toBeGreaterThan(20);
+		expect(motivoSeccion(s)).toBe('sin_dato_seccion');
+		expect(analizar({ precio: 1500, superficie: 70, obraNueva: false, tipo: 'piso', largaDuracion: true }, [s])).toEqual({ tipo: 'sin_dato', motivo: 'sin_dato_seccion' });
+	});
+
+	it('los límites 30 y 150 entran; 29,9 y 150,1 no', () => {
+		const base = { cusec: 'x', p25: 10, p75: 15, n: 50 };
+		expect(motivoSeccion({ ...base, smed: 30 })).toBeNull();
+		expect(motivoSeccion({ ...base, smed: 150 })).toBeNull();
+		expect(motivoSeccion({ ...base, smed: 29.9 })).toBe('sin_dato_seccion');
+		expect(motivoSeccion({ ...base, smed: 150.1 })).toBe('sin_dato_seccion');
+		// Con pocos testigos, el motivo sigue siendo «testigos»
+		expect(motivoSeccion({ ...base, smed: 190, n: 20 })).toBe('testigos');
+	});
+
+	it('en Madrid, 10 secciones con más de 20 testigos quedan fuera por Smed (151-190) y ninguna por Smed < 30', () => {
+		const fuera = Object.entries(reales).filter(([, s]) => s.smed !== null && s.p25 !== null && s.p75 !== null && s.n !== null && s.n > 20 && (s.smed < 30 || s.smed > 150));
+		expect(fuera).toHaveLength(10);
+		expect(Math.min(...fuera.map(([, s]) => s.smed!))).toBe(151);
+		expect(Math.max(...fuera.map(([, s]) => s.smed!))).toBe(190);
 	});
 });
 
