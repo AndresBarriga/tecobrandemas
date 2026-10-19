@@ -1,6 +1,6 @@
 # A su precio
 
-Herramienta web que compara el precio de un anuncio de alquiler de Madrid con los alquileres registrados de su zona (SERPAVI 2024, ajustado por el IPC del alquiler). Estimación independiente: el valor oficial está en https://serpavi.mivau.gob.es
+Herramienta web que compara el precio de un anuncio de alquiler de Madrid con los alquileres registrados de su zona (SERPAVI 2024, sin actualizar: los alquileres han subido desde entonces). Estimación independiente: el valor oficial está en https://serpavi.mivau.gob.es
 
 SvelteKit 3 + Svelte 5 en Cloudflare Workers (D1 y R2). El motor de cálculo está en `src/lib/motor`, la ubicación en `src/lib/ubicacion`, la lógica de pantalla en `src/lib/resultado` y los componentes en `src/lib/componentes`. Los datos oficiales se preparan con scripts de Python en `scripts/`.
 
@@ -27,27 +27,16 @@ Los datos originales (`data/raw/`) y los grandes (`geocoder.sqlite`, `madrid.pmt
 
 ```sh
 python3.12 -m venv .venv && .venv/bin/pip install -e .
-.venv/bin/python scripts/00_descargar.py       # seccionado 2021, barrios e IPC. CartoCiudad es manual (ver el aviso del script)
+.venv/bin/python scripts/00_descargar.py       # seccionado 2021 y barrios. CartoCiudad es manual (ver el aviso del script)
 .venv/bin/python scripts/01_poligonos.py       # polígonos, sección → barrio, vecinas
 .venv/bin/python scripts/02_serpavi_secciones.py
 .venv/bin/python scripts/03_callejero.py       # genera geocoder.sqlite
-.venv/bin/python scripts/04_ipc.py
 .venv/bin/python scripts/10_oferta.py        # anuncios recientes por distrito y barrio (ver docs/operacion.md); el Excel del Ayuntamiento va en data/raw/oferta_AAAA-MM.csv|xlsx
 .venv/bin/python scripts/05_verificar.py       # criterios de aceptación; sale con 1 si falla algo
 scripts/09_mapa_base.sh                        # data/processed/madrid.pmtiles (necesita la CLI de pmtiles)
 ```
 
 El Excel de SERPAVI se descarga a mano del Ministerio y va a `data/raw/`.
-
-## Actualizar el IPC
-
-Es automático: `.github/workflows/ipc-mensual.yml` corre el día 18 de cada mes, descarga la serie del INE, recalcula `data/processed/ipc_alquiler.json` y abre un PR si cambia. Al fusionarlo, el CI despliega. A mano:
-
-```sh
-.venv/bin/python scripts/00_descargar.py && .venv/bin/python scripts/04_ipc.py
-```
-
-(o sin el entorno: `curl` de la serie, como en el workflow, y `python3 scripts/04_ipc.py`).
 
 ## Desplegar
 

@@ -67,10 +67,6 @@ export interface PaginaPregunta {
 
 const CALCULADORA: Fuente = { texto: 'Calculadora oficial del Ministerio de Vivienda y Agenda Urbana para actualizar la renta', url: 'https://www.mivau.gob.es/vivienda/calculadora-precio-alquiler' };
 const SERPAVI: Fuente = { texto: 'Ministerio de Vivienda y Agenda Urbana: SERPAVI, sistema estatal de referencia del precio del alquiler', url: 'https://serpavi.mivau.gob.es' };
-const INE: Fuente = {
-	texto: 'INE: IPC, subclase 04.1.1.0 «Alquiler de vivienda principal», nacional (tabla 76128, serie IPC291807)',
-	url: 'https://servicios.ine.es/wstempus/js/ES/DATOS_SERIE/IPC291807?date=20240101:20991231'
-};
 const LEY_VIVIENDA: Fuente = { texto: 'BOE: Ley 12/2023, de 24 de mayo, por el derecho a la vivienda', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2023-12203' };
 const RDL: Fuente = { texto: 'BOE: Real Decreto-ley 29/2026, de 6 de octubre (BOE núm. 249, de 07/10/2026)', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2026-20823' };
 const MADRID: Fuente = { texto: 'Ayuntamiento de Madrid: serie 4.3.21.D de precios de oferta (elaboración a partir de datos de Idealista)', url: 'https://servpub.madrid.es/CSEBD_WBINTER/seleccionSerie.html?numSerie=0504030000214' };
@@ -87,11 +83,11 @@ const PAGINAS: PaginaPregunta[] = [
 		modo: 'mirando',
 		boton: 'Comprobar un anuncio',
 		titulo: 'Alquiler caro en Madrid: cómo saberlo',
-		descripcion: 'Compara tu alquiler con lo que pagan quienes ya viven de alquiler en tu zona, ajustado a tu tamaño y al IPC. Compruébalo gratis en un minuto.',
+		descripcion: 'Compara tu alquiler con lo que pagan quienes ya viven de alquiler en tu zona, ajustado a tu tamaño. Compruébalo gratis en un minuto.',
 		h1: '¿Cómo saber si un alquiler está caro en Madrid?',
 		respuesta: [
 			'Compáralo con lo que pagan quienes ya viven de alquiler en la zona: los contratos declarados a Hacienda que recoge el índice de referencia del Ministerio de Vivienda (SERPAVI).',
-			'La referencia se ajusta al tamaño de la vivienda y sus contratos se actualizan con el IPC del alquiler.'
+			'La referencia se ajusta al tamaño de la vivienda; los contratos son de 2024 y los alquileres han subido desde entonces.'
 		],
 		secciones: [
 			{
@@ -146,9 +142,9 @@ const PAGINAS: PaginaPregunta[] = [
 			{ q: '¿Esto me dice si pago demasiado?', a: 'No. Te dice dónde queda tu precio frente a lo que pagan quienes ya viven de alquiler en tu zona, no si el precio es adecuado.' },
 			{ q: '¿Sirve para cualquier barrio de Madrid?', a: 'Sirve para la ciudad de Madrid, donde hay datos suficientes. Si una zona tiene muy pocos contratos, te lo decimos en lugar de dar una cifra.' },
 			{ q: '¿Hace falta registrarse?', a: 'No. Es gratis y no se guarda tu dirección.' },
-			{ q: '¿Qué datos se usan?', a: 'Los contratos de 2024 del Ministerio de Vivienda, actualizados con el IPC del alquiler del INE.' }
+			{ q: '¿Qué datos se usan?', a: 'Los contratos de 2024 del Ministerio de Vivienda, tal como los publica el SERPAVI. Los alquileres han subido desde entonces.' }
 		],
-		fuentes: [SERPAVI, INE, LEY_VIVIENDA],
+		fuentes: [SERPAVI, LEY_VIVIENDA],
 		relacionadas: [P2, P3]
 	},
 	{
@@ -214,11 +210,11 @@ const PAGINAS: PaginaPregunta[] = [
 		],
 		faq: [
 			{ q: '¿Es el índice un precio máximo?', a: 'No en general: es la parte alta de lo que pagan quienes ya viven allí, y hay contratos por encima. Solo tiene efecto legal en los casos que fija la norma.' },
-			{ q: '¿Cómo se actualiza?', a: 'A su precio actualiza los contratos con el IPC del alquiler del INE. El valor oficial depende de la versión que publique el Ministerio.' },
+			{ q: '¿Cómo se actualiza?', a: 'A su precio no actualiza los contratos: usa los datos de 2024 tal como los publica el Ministerio, y los alquileres han subido desde entonces. El valor oficial depende de la versión que publique el Ministerio.' },
 			{ q: '¿Quién puede consultarlo?', a: 'Cualquier persona, en la web del Ministerio de Vivienda y Agenda Urbana.' },
 			{ q: '¿Cubre toda España?', a: 'El sistema es estatal y las comunidades autónomas pueden tener el suyo. A su precio solo calcula para la ciudad de Madrid.' }
 		],
-		fuentes: [SERPAVI, LEY_VIVIENDA, RDL, INE],
+		fuentes: [SERPAVI, LEY_VIVIENDA, RDL],
 		relacionadas: [P1, P4]
 	},
 	{
@@ -268,8 +264,8 @@ const PAGINAS: PaginaPregunta[] = [
 			{
 				h2: '¿Qué datos usa A su precio para cada referencia?',
 				parrafos: [
-					'Los contratos salen de SERPAVI (Ministerio de Vivienda) y se ajustan con el IPC del alquiler del INE. Los anuncios recientes salen de la serie 4.3.21.D del Ayuntamiento de Madrid, elaborada a partir de datos de Idealista.',
-					'Los anuncios no se ajustan por IPC, porque ya son recientes, pero sí por tamaño: los pisos pequeños suelen anunciarse con un precio mayor por metro cuadrado.'
+					'Los contratos salen de SERPAVI (Ministerio de Vivienda), con datos de 2024 que no actualizamos: los alquileres han subido desde entonces. Los anuncios recientes salen de la serie 4.3.21.D del Ayuntamiento de Madrid, elaborada a partir de datos de Idealista.',
+					'Los anuncios ya son recientes, pero se ajustan por tamaño: los pisos pequeños suelen anunciarse con un precio mayor por metro cuadrado.'
 				]
 			},
 			{
@@ -286,7 +282,7 @@ const PAGINAS: PaginaPregunta[] = [
 			{ q: '¿Los contratos antiguos pagan siempre menos?', a: 'No siempre. Depende de cuándo se firmaron y de cómo se han actualizado, por eso miramos la referencia de cada zona.' },
 			{ q: '¿Por qué A su precio no mezcla anuncios y contratos?', a: 'Porque miden cosas distintas. Mostramos cada referencia por separado y cada una se compara solo con tu precio.' }
 		],
-		fuentes: [SERPAVI, MADRID, INE],
+		fuentes: [SERPAVI, MADRID],
 		relacionadas: [P1, P2]
 	},
 	{

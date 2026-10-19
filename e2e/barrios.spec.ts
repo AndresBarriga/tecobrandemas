@@ -20,7 +20,7 @@ test.describe('alquiler por barrios (piloto)', () => {
 		await expect(page.locator('h1')).toHaveText('Precio de referencia del alquiler en Lavapiés (Embajadores), Madrid');
 		expect(await page.title()).toBe('Alquiler en Lavapiés: precio de referencia · A su precio');
 		await expect(page.locator('table tbody tr')).toHaveCount(3);
-		await expect(page.getByText(/^Datos actualizados a [a-zé]+ de 20\d\d\.$/).first()).toBeVisible();
+		await expect(page.getByText('Datos de rentas declaradas en 2024 (SERPAVI); los alquileres han subido desde entonces.').first()).toBeVisible();
 		await expect(page.getByRole('link', { name: 'Comprobar mi alquiler en Lavapiés' })).toHaveAttribute('href', '/?utm_source=barrio&utm_content=lavapies-embajadores');
 		await expect(page.getByRole('link', { name: 'Mapa del índice de referencia del alquiler en Madrid' })).toHaveAttribute('href', '/mapa');
 		const tipos = (await page.locator('script[type="application/ld+json"]').allTextContents()).map((t) => JSON.parse(t)['@type']);

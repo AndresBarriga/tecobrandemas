@@ -33,8 +33,8 @@ export type Analisis =
 			horquilla: boolean;
 	  };
 
-export function calcularSeccion(a: Anuncio, s: SeccionConDato, factorIpc: number): ResultadoSeccion {
-	const ref = referencia(a.superficie, s, factorIpc);
+export function calcularSeccion(a: Anuncio, s: SeccionConDato): ResultadoSeccion {
+	const ref = referencia(a.superficie, s);
 	return {
 		seccion: s,
 		referencia: ref,
@@ -44,7 +44,7 @@ export function calcularSeccion(a: Anuncio, s: SeccionConDato, factorIpc: number
 	};
 }
 
-export function analizar(a: Anuncio, candidatas: DatosSeccion[], factorIpc: number): Analisis {
+export function analizar(a: Anuncio, candidatas: DatosSeccion[]): Analisis {
 	const motivo = motivoAnuncio(a);
 	if (motivo) return { tipo: 'sin_dato', motivo };
 
@@ -62,7 +62,7 @@ export function analizar(a: Anuncio, candidatas: DatosSeccion[], factorIpc: numb
 		return { tipo: 'sin_dato', motivo: porTestigos ? 'testigos' : 'sin_dato_seccion' };
 	}
 
-	const secciones = validas.map((s) => calcularSeccion(a, s, factorIpc)).sort((x, y) => x.pct - y.pct);
+	const secciones = validas.map((s) => calcularSeccion(a, s)).sort((x, y) => x.pct - y.pct);
 	const prudente = secciones.reduce((mejor, r) => (rangoNivel(r.nivel) < rangoNivel(mejor.nivel) ? r : mejor));
 
 	return {

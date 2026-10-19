@@ -22,7 +22,6 @@ import {
 import { leerFixture } from './fixture';
 
 const CENTIMO = 0.01;
-const F_AGOSTO_2026 = 102.895 / 97.623;
 
 const casos = leerFixture();
 const conRango = casos.filter((c) => c.rInfInicial !== null);
@@ -54,7 +53,7 @@ describe('§5.3 rango inicial', () => {
 	});
 });
 
-describe('§5.3 + §5.4 frente a la app oficial (cuestionario mínimo, sin IPC)', () => {
+describe('§5.3 + §5.4 frente a la app oficial (cuestionario mínimo)', () => {
 	const x = xDesdePuntuacion(PUNTUACION_MINIMA);
 
 	it.each(validacionApp.map((c) => [c.caso, c] as const))('%s: error ≤ 1 céntimo', (_, c) => {
@@ -66,6 +65,15 @@ describe('§5.3 + §5.4 frente a la app oficial (cuestionario mínimo, sin IPC)'
 		expect(Math.abs(r.sup - c.calcSup!)).toBeLessThanOrEqual(CENTIMO);
 	});
 
+	it('la mayor diferencia con la app oficial es de 0,62 céntimos (el texto de «Cómo calculamos» dice lo mismo)', () => {
+		const S = (c: (typeof validacionApp)[number]) => c.anuncio.superficie;
+		const dif = validacionApp.map((c) => {
+			const r = corregir(rangoInicial(S(c), c.seccion), S(c), c.seccion, x);
+			return Math.max(Math.abs(r.inf - c.appInf!), Math.abs(r.sup - c.appSup!));
+		});
+		expect(Math.round(Math.max(...dif) * 10000) / 100).toBe(0.62);
+	});
+
 	it('los coeficientes con P = 33,865 son −0,02909 y −0,39134', () => {
 		expect(0.28 * (x - 0.26)).toBeCloseTo(-0.02909, 5);
 		expect(0.696 * (x - 0.5 / 0.696)).toBeCloseTo(-0.39134, 5);
@@ -74,14 +82,14 @@ describe('§5.3 + §5.4 frente a la app oficial (cuestionario mínimo, sin IPC)'
 
 describe('casos sin dato', () => {
 	it.each(sinDato.map((c) => [c.caso, c] as const))('%s → %s', (_, c) => {
-		const r = analizar(c.anuncio, [c.seccion], F_AGOSTO_2026);
+		const r = analizar(c.anuncio, [c.seccion]);
 		expect(r).toEqual({ tipo: 'sin_dato', motivo: c.motivoEsperado });
 	});
 });
 
 describe('agregado del gate (42 anuncios con resultado)', () => {
-	const contar = (f: number) => {
-		const res = delGate.map((c) => analizar(c.anuncio, [c.seccion], f));
+	const contar = () => {
+		const res = delGate.map((c) => analizar(c.anuncio, [c.seccion]));
 		const niveles = { dentro: 0, explicable: 0, por_encima: 0 };
 		const pcts: number[] = [];
 		for (const r of res) {
@@ -92,14 +100,8 @@ describe('agregado del gate (42 anuncios con resultado)', () => {
 		return { niveles, mediana: mediana(pcts) };
 	};
 
-	it('con IPC (1,054): 9 dentro, 4 explicables, 29 por encima; mediana +19 %', () => {
-		const { niveles, mediana: m } = contar(F_AGOSTO_2026);
-		expect(niveles).toEqual({ dentro: 9, explicable: 4, por_encima: 29 });
-		expect(Math.round(m * 100)).toBe(19);
-	});
-
-	it('sin IPC: 6, 3 y 33; mediana +26 %', () => {
-		const { niveles, mediana: m } = contar(1);
+	it('sin IPC: 6 dentro, 3 explicables, 33 por encima; mediana +26 %', () => {
+		const { niveles, mediana: m } = contar();
 		expect(niveles).toEqual({ dentro: 6, explicable: 3, por_encima: 33 });
 		expect(Math.round(m * 100)).toBe(26);
 	});
@@ -110,9 +112,9 @@ describe('pares de secciones vecinas (Gate C)', () => {
 
 	it.each(pares.map((c) => [c.caso, c] as const))('%s: la horquilla mantiene el nivel', (_, c) => {
 		const original = casos.find((o) => o.caso === c.tipo.replace('horquilla_par_de_', ''))!;
-		const a = analizar(original.anuncio, [original.seccion], F_AGOSTO_2026);
-		const b = analizar(original.anuncio, [c.seccion], F_AGOSTO_2026);
-		const h = analizar(original.anuncio, [original.seccion, c.seccion], F_AGOSTO_2026);
+		const a = analizar(original.anuncio, [original.seccion]);
+		const b = analizar(original.anuncio, [c.seccion]);
+		const h = analizar(original.anuncio, [original.seccion, c.seccion]);
 		if (a.tipo !== 'resultado' || b.tipo !== 'resultado' || h.tipo !== 'resultado') throw new Error();
 
 		expect(b.prudente.nivel.nivel).toBe(a.prudente.nivel.nivel);
@@ -138,20 +140,10 @@ const anuncio = (cambios: Partial<Anuncio> = {}): Anuncio => ({
 });
 
 describe('propiedades', () => {
-	it('R_max − R_sup = 0,196·(P75−P25)·S·f y coincide con §5.4 con x = 1', () => {
-		for (const f of [1, F_AGOSTO_2026]) {
-			const ref = referencia(65, seccion, f);
-			expect(ref.max - ref.sup).toBeCloseTo(0.196 * (seccion.p75 - seccion.p25) * 65 * f, 9);
-			expect(corregir(rangoInicial(65, seccion, f), 65, seccion, 1, f).sup).toBeCloseTo(ref.max, 9);
-		}
-	});
-
-	it('el factor IPC escala el rango de forma lineal', () => {
-		const sin = referencia(80, seccion, 1);
-		const con = referencia(80, seccion, 1.054);
-		expect(con.inf / sin.inf).toBeCloseTo(1.054, 12);
-		expect(con.sup / sin.sup).toBeCloseTo(1.054, 12);
-		expect(con.max / sin.max).toBeCloseTo(1.054, 12);
+	it('R_max − R_sup = 0,196·(P75−P25)·S y coincide con §5.4 con x = 1', () => {
+		const ref = referencia(65, seccion);
+		expect(ref.max - ref.sup).toBeCloseTo(0.196 * (seccion.p75 - seccion.p25) * 65, 9);
+		expect(corregir(rangoInicial(65, seccion), 65, seccion, 1).sup).toBeCloseTo(ref.max, 9);
 	});
 
 	it('k se limita a [0, 1]', () => {
@@ -226,7 +218,7 @@ describe('horquilla', () => {
 	const cara: SeccionConDato = { ...seccion, cusec: 'cara', p25: 20, p75: 30 };
 
 	it('muestra el nivel más prudente y el intervalo de %', () => {
-		const r = analizar(anuncio({ precio: 1500 }), [barata, cara], 1);
+		const r = analizar(anuncio({ precio: 1500 }), [barata, cara]);
 		if (r.tipo !== 'resultado') throw new Error();
 		expect(r.horquilla).toBe(true);
 		expect(r.prudente.seccion.cusec).toBe('cara');
@@ -239,7 +231,7 @@ describe('horquilla', () => {
 	});
 
 	it('a igual nivel, la prudente es la de menor %', () => {
-		const r = analizar(anuncio({ precio: 5000 }), [barata, { ...barata, cusec: 'otra', p75: 15 }], 1);
+		const r = analizar(anuncio({ precio: 5000 }), [barata, { ...barata, cusec: 'otra', p75: 15 }]);
 		if (r.tipo !== 'resultado') throw new Error();
 		expect(r.prudente.seccion.cusec).toBe('otra');
 	});
@@ -247,7 +239,7 @@ describe('horquilla', () => {
 	it('el nivel manda sobre el %: una sección con más % puede ser más prudente si su R_max es más holgado', () => {
 		const estrecha: SeccionConDato = { ...seccion, cusec: 'estrecha', p25: 19, p75: 20 };
 		const ancha: SeccionConDato = { ...seccion, cusec: 'ancha', p25: 10, p75: 19.9 };
-		const r = analizar(anuncio({ precio: 1300 }), [estrecha, ancha], 1);
+		const r = analizar(anuncio({ precio: 1300 }), [estrecha, ancha]);
 		if (r.tipo !== 'resultado') throw new Error();
 		expect(r.secciones.map((s) => [s.seccion.cusec, s.nivel.nivel])).toEqual([
 			['estrecha', 'por_encima'],
@@ -257,7 +249,7 @@ describe('horquilla', () => {
 	});
 
 	it('excluye las secciones sin dato o con ≤20 testigos', () => {
-		const r = analizar(anuncio(), [seccion, { ...cara, n: 20 }, { ...barata, smed: null }], 1);
+		const r = analizar(anuncio(), [seccion, { ...cara, n: 20 }, { ...barata, smed: null }]);
 		if (r.tipo !== 'resultado') throw new Error();
 		expect(r.horquilla).toBe(false);
 		expect(r.excluidas).toEqual([
@@ -267,12 +259,12 @@ describe('horquilla', () => {
 	});
 
 	it('si no queda ninguna, el motivo es testigos o sin dato', () => {
-		expect(analizar(anuncio(), [{ ...cara, n: 5 }, { ...barata, p75: null }], 1)).toEqual({ tipo: 'sin_dato', motivo: 'testigos' });
-		expect(analizar(anuncio(), [{ ...barata, p75: null }], 1)).toEqual({ tipo: 'sin_dato', motivo: 'sin_dato_seccion' });
-		expect(analizar(anuncio(), [], 1)).toEqual({ tipo: 'sin_dato', motivo: 'sin_dato_seccion' });
+		expect(analizar(anuncio(), [{ ...cara, n: 5 }, { ...barata, p75: null }])).toEqual({ tipo: 'sin_dato', motivo: 'testigos' });
+		expect(analizar(anuncio(), [{ ...barata, p75: null }])).toEqual({ tipo: 'sin_dato', motivo: 'sin_dato_seccion' });
+		expect(analizar(anuncio(), [])).toEqual({ tipo: 'sin_dato', motivo: 'sin_dato_seccion' });
 	});
 
 	it('los motivos del anuncio van antes que los de la sección', () => {
-		expect(analizar(anuncio({ obraNueva: true }), [{ ...seccion, n: 3 }], 1)).toEqual({ tipo: 'sin_dato', motivo: 'obra_nueva' });
+		expect(analizar(anuncio({ obraNueva: true }), [{ ...seccion, n: 3 }])).toEqual({ tipo: 'sin_dato', motivo: 'obra_nueva' });
 	});
 });

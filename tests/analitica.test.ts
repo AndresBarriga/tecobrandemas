@@ -218,7 +218,6 @@ describe('analítica: «completa» a partir de una pantalla real', () => {
 	const DATOS: DatosMadrid = {
 		secciones: { A: sec(12, 20, 100) },
 		barrios: { '071': { nombre: 'Almagro', cod_distrito: '07', distrito: 'Chamberí' } },
-		ipc: { factor: 1.05, ultimo_mes: '2026-08' }
 	};
 	const ubic = { cusecs: ['A'], aproximada: false, motivo: null, numerosUsados: [] as number[], punto: null, via: null };
 	const pantalla = (precio: number) => {

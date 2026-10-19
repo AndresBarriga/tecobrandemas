@@ -1,10 +1,10 @@
 /**
  * Piloto de páginas de barrio (/alquiler/[slug]): 15 barrios de Madrid con la referencia de lo que pagan quienes ya viven
- * de alquiler, para 50, 70 y 90 m². Todo sale de los mismos datos y del mismo motor que la herramienta (SERPAVI + IPC del
- * alquiler); no hay cifras escritas a mano, así que cuando se actualiza el IPC cambian solas.
+ * de alquiler, para 50, 70 y 90 m². Todo sale de los mismos datos y del mismo motor que la herramienta (SERPAVI 2024); no
+ * hay cifras escritas a mano, así que cuando cambian los datos cambian solas.
  *
  * Método por barrio: para cada zona (sección censal) del barrio con más de 20 contratos se calcula la referencia con el
- * motor (`referencia`, con el ajuste por tamaño y el IPC) y se toma la MEDIANA de las zonas, por separado para la parte
+ * motor (`referencia`, con el ajuste por tamaño) y se toma la MEDIANA de las zonas, por separado para la parte
  * baja y para la parte alta. Dentro del barrio la cifra varía según la calle y las características de la vivienda.
  *
  * Reglas de contenido: sin evolución en el tiempo, sin comparar con anuncios, con la media de Madrid ni con otros barrios,
@@ -12,11 +12,12 @@
  */
 import { referencia, tieneDato, TESTIGOS_MIN } from '../motor';
 import type { DatosMadrid } from './datos';
-import { euros, mesAnio, numero } from './formato';
+import { euros, numero } from './formato';
 import type { Fuente } from './preguntas';
+import { NOTA_DATOS } from './textos';
 import { ESTADISTICA_SERPAVI_MADRID } from './enlaces';
 
-/** AAAA-MM-DD: última revisión de las plantillas de texto. El `lastmod` del sitemap es el de los datos (fecha de extracción del IPC) */
+/** AAAA-MM-DD: última revisión de las plantillas de texto. El `lastmod` del sitemap es esta misma fecha */
 export const FECHA_BARRIOS = '2026-10-13';
 
 export const TAMANOS_BARRIO = [50, 70, 90] as const;
@@ -95,7 +96,7 @@ export const TITULO_INDICE_BARRIOS = 'Alquiler por barrios de Madrid: referencia
 
 export type VecinasJson = Record<string, Record<string, number>>;
 
-export interface DatosBarrios extends Pick<DatosMadrid, 'secciones' | 'barrios' | 'ipc'> {
+export interface DatosBarrios extends Pick<DatosMadrid, 'secciones' | 'barrios'> {
 	/** vecinas.json: para cada sección, las secciones cercanas; 0 = comparten límite */
 	vecinas: VecinasJson;
 }
@@ -120,13 +121,13 @@ export interface RangoBarrio {
 	sup: number;
 }
 
-/** La referencia de un barrio para `m2`, con el mismo motor, los mismos datos y el mismo IPC que la herramienta */
+/** La referencia de un barrio para `m2`, con el mismo motor, y los mismos datos que la herramienta */
 export function rangoBarrio(datos: DatosBarrios, codigo: string, m2: number): RangoBarrio | null {
 	const cusecs = seccionesConDato(datos, codigo);
 	if (!cusecs.length) return null;
 	const refs = cusecs.map((c) => {
 		const s = datos.secciones[c]!;
-		return referencia(m2, { cusec: c, smed: s.smed!, p25: s.p25!, p75: s.p75!, n: s.n! }, datos.ipc.factor);
+		return referencia(m2, { cusec: c, smed: s.smed!, p25: s.p25!, p75: s.p75!, n: s.n! });
 	});
 	return { inf: mediana(refs.map((r) => r.inf)), sup: mediana(refs.map((r) => r.sup)) };
 }
@@ -187,9 +188,7 @@ export interface PaginaBarrio {
 	h1: string;
 	titulo: string;
 	descripcion: string;
-	/** «agosto de 2026»: el mes del último dato del IPC, leído de los datos */
-	actualizado: string;
-	/** AAAA-MM-DD: la fecha de los datos (extracción del IPC); va en el JSON-LD y en el sitemap */
+	/** AAAA-MM-DD: última revisión de la página (FECHA_BARRIOS); va en el JSON-LD y en el sitemap */
 	modificado: string;
 	respuesta: string[];
 	boton: string;
@@ -207,10 +206,6 @@ const SERPAVI: Fuente = { texto: 'Ministerio de Vivienda y Agenda Urbana: SERPAV
 export const CALCULADORA_MINISTERIO: Fuente = {
 	texto: 'Calculadora oficial del Ministerio de Vivienda y Agenda Urbana para actualizar la renta',
 	url: 'https://www.mivau.gob.es/vivienda/calculadora-precio-alquiler'
-};
-const INE: Fuente = {
-	texto: 'INE: IPC, subclase 04.1.1.0 «Alquiler de vivienda principal», nacional (tabla 76128, serie IPC291807)',
-	url: 'https://servicios.ine.es/wstempus/js/ES/DATOS_SERIE/IPC291807?date=20240101:20991231'
 };
 
 const NB = ' ';
@@ -241,7 +236,6 @@ export function construirBarrio(datos: DatosBarrios, slug: string): PaginaBarrio
 	const info = datos.barrios[b.codigo]!;
 	const cusecs = seccionesConDato(datos, b.codigo);
 	const contratos = cusecs.reduce((t, c) => t + (datos.secciones[c]!.n ?? 0), 0);
-	const actualizado = mesAnio(datos.ipc.ultimo_mes);
 	const nombre = nombreEnFrase(b);
 	const completo = nombreCompleto(b);
 	const m2 = (n: number) => `${n}${NB}m²`;
@@ -263,11 +257,10 @@ export function construirBarrio(datos: DatosBarrios, slug: string): PaginaBarrio
 		h1: h1Barrio(b),
 		titulo: tituloBarrio(b).replace(SUFIJO_TITULO, ''),
 		descripcion: descripcionBarrio(completo, nombre, rangoMensual(f70), m2(TAMANO_CLAVE)),
-		actualizado,
-		modificado: datos.ipc.fecha_extraccion ?? FECHA_BARRIOS,
+		modificado: FECHA_BARRIOS,
 		respuesta: [
 			`Para un piso de ${m2(TAMANO_CLAVE)} en ${completo}, la referencia de lo que pagan quienes ya viven de alquiler va de ${euros(f70.inf)} (parte baja) a ${euros(f70.sup)} (parte alta) al mes.`,
-			`Fuente: SERPAVI (Ministerio de Vivienda y Agenda Urbana) con el IPC del alquiler del INE; datos actualizados a ${actualizado}.`
+			'Fuente: SERPAVI (Ministerio de Vivienda y Agenda Urbana), rentas declaradas en 2024; los alquileres han subido desde entonces.'
 		],
 		boton: `Comprobar mi alquiler en ${nombre}`,
 		utm: { source: 'barrio', content: slug },
@@ -304,7 +297,7 @@ export function construirBarrio(datos: DatosBarrios, slug: string): PaginaBarrio
 				a: `${numero(contratos)} contratos de propietarios particulares declarados a Hacienda, repartidos en ${numero(cusecs.length)} zonas del barrio de ${info.nombre}.`
 			}
 		],
-		fuentes: [SERPAVI, INE, CALCULADORA_MINISTERIO],
+		fuentes: [SERPAVI, CALCULADORA_MINISTERIO],
 		contratos,
 		zonas: cusecs.length
 	};
@@ -313,7 +306,6 @@ export function construirBarrio(datos: DatosBarrios, slug: string): PaginaBarrio
 // ——— Índice /alquiler ———
 
 export interface IndiceBarrios {
-	actualizado: string;
 	/** Por distrito, en orden alfabético; dentro, los barrios en orden alfabético (nunca por precio) */
 	distritos: { distrito: string; barrios: { slug: string; nombre: string; rango70: string }[] }[];
 }
@@ -328,7 +320,6 @@ export function construirIndiceBarrios(datos: DatosBarrios): IndiceBarrios {
 		porDistrito.set(d, [...(porDistrito.get(d) ?? []), { b, rango70: rangoMensual(f70) }]);
 	}
 	return {
-		actualizado: mesAnio(datos.ipc.ultimo_mes),
 		distritos: [...porDistrito.entries()]
 			.sort(([a], [b]) => a.localeCompare(b, 'es'))
 			.map(([distrito, lista]) => ({
@@ -344,10 +335,10 @@ export const TEXTO_INDICE_BARRIOS = {
 	titulo: TITULO_INDICE_BARRIOS,
 	h1: H1_INDICE_BARRIOS,
 	descripcion: 'Referencia del alquiler en 15 barrios de Madrid, por distrito: lo que pagan quienes ya viven de alquiler. Compruébalo con tu dirección, gratis.',
-	intro: 'Estas páginas dan, para cada barrio, la referencia de lo que pagan quienes ya viven de alquiler: contratos declarados a Hacienda, actualizados con el IPC del alquiler. Los barrios van por distrito y en orden alfabético.',
+	intro: 'Estas páginas dan, para cada barrio, la referencia de lo que pagan quienes ya viven de alquiler: contratos declarados a Hacienda en 2024. Los barrios van por distrito y en orden alfabético.',
 	boton: 'Comprobar mi alquiler',
 	utm: 'indice',
-	nota: (mes: string) => `Los rangos son para un piso de 70${NB}m², en euros al mes. Datos actualizados a ${mes}.`,
+	nota: `Los rangos son para un piso de 70${NB}m², en euros al mes. ${NOTA_DATOS}`,
 	/** Para «Alquiler por barrios» en el pie y en los enlaces */
 	enlace: 'Alquiler por barrios'
 } as const;

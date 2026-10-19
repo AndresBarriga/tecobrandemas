@@ -15,7 +15,7 @@ export function coeficienteK(smed: number, p75: number): number {
 	return Math.min(1, Math.log(argumento) / Math.log(100));
 }
 
-/** V_inf y V_sup en €/m²·mes, sin IPC */
+/** V_inf y V_sup en €/m²·mes */
 export function rangoInicialM2(superficie: number, s: SeccionConDato): Rango {
 	const S = superficie;
 	const k = coeficienteK(s.smed, s.p75);
@@ -28,8 +28,8 @@ export function rangoInicialM2(superficie: number, s: SeccionConDato): Rango {
 	return { inf, sup };
 }
 
-/** R_inf y R_sup en €/mes: V × S × f, con f el factor IPC del alquiler (1 = sin ajuste) */
-export function rangoInicial(superficie: number, s: SeccionConDato, factorIpc = 1): Rango {
+/** R_inf y R_sup en €/mes: V × S */
+export function rangoInicial(superficie: number, s: SeccionConDato): Rango {
 	const v = rangoInicialM2(superficie, s);
-	return { inf: v.inf * superficie * factorIpc, sup: v.sup * superficie * factorIpc };
+	return { inf: v.inf * superficie, sup: v.sup * superficie };
 }

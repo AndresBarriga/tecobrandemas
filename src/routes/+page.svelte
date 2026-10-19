@@ -16,7 +16,7 @@
 	import TuZona from '#lib/componentes/TuZona.svelte';
 	import { type TuZonaCargada, cargarTuZona } from '#lib/cliente/zona';
 	import {
-		AFINAR, DESCRIPCION, NOMBRE, SEO_PORTADA, jsonLdPortada, jsonLdComoTexto, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
+		AFINAR, DESCRIPCION, NOMBRE, NOTA_DATOS, SEO_PORTADA, jsonLdPortada, jsonLdComoTexto, SUBTITULAR_INICIO, TITULAR_INICIO, FORMULARIO, FORMULARIO_VIVO,
 		construirTarjeta, tiposDe, type TipoTarjeta, textoCompartir, textosEnlace, contadorBarrio, enlacesCompartir, idDeTarjeta, type Canal, filaHistorial, interpretarNumero, normalizarNumero, pantallaSinDato, pantallaSinDatoDeClave,
 		parecePrecioErroneo,
 		type Pantalla, type PantallaResultado, type SugerenciaZona, type Ubicacion
@@ -38,8 +38,6 @@
 	import { leerOrigenDeLaUrl } from '#lib/cliente/origen';
 	import { dibujarTarjeta } from '#lib/cliente/tarjeta-canvas';
 	import { COMPARATIVA, MAPA_REFERENCIA, TARJETA, urlAbsoluta } from '#lib/resultado';
-
-	let { data } = $props();
 
 	type Fase = 'inicio' | 'buscando' | 'confirmar' | 'resultado' | 'negociar' | 'sin_conexion';
 
@@ -583,7 +581,7 @@
 			>
 				{#snippet mapa()}<Mapa alMarcar={marcarPunto} enfocar={enfoqueMapa} {puntoInicial} />{/snippet}
 			</Formulario>
-			<p class="datos-al-dia">Datos actualizados a {data.actualizado}.</p>
+			<p class="datos-al-dia">{NOTA_DATOS}</p>
 			<div class="historial"><HistorialSesion {filas} {activa} alElegir={elegirHistorial} /></div>
 			<!-- Móvil: el ejemplo bajo el formulario, y solo se calcula al llegar a él -->
 			{#if !hayResultado}<MuestraResultado modo={esVivo ? 'vivo' : 'mirando'} movil />{/if}

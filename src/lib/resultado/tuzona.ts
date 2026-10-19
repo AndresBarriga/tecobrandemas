@@ -51,7 +51,7 @@ export interface VistaTuZona {
 	/** Con horquilla: «Tu calle cruza 2 zonas» (todas las zonas afectadas van con contorno grueso) */
 	cruce: string | null;
 	evolucion: Evolucion | null;
-	/** Fuente y periodo de la capa de contratos (SERPAVI, ajustado por el IPC) */
+	/** Fuente y periodo de la capa de contratos (SERPAVI 2024) */
 	fuenteContratos: string;
 	/**
 	 * Capa «Oferta» (solo con los anuncios recientes cargados): cada zona con el €/m² de oferta de su barrio o, si el barrio
@@ -133,7 +133,7 @@ export function construirTuZona({ anuncio, clase, origen, cusecs, motivo = null,
 		contexto: modo === 'contexto' ? (inquilino ? (cusecs.length > 1 ? TU_ZONA.contextoInquilinoVarias : TU_ZONA.contextoInquilino) : TU_ZONA.contexto) : null,
 		cruce: cusecs.length > 1 ? (motivo === 'calle' ? TU_ZONA.cruce.calle : motivo === 'pin' ? TU_ZONA.cruce.pin : TU_ZONA.cruce.otro)(cusecs.length) : null,
 		evolucion: evolucion(datos, cusecs),
-		fuenteContratos: TU_ZONA.capas.fuenteContratos(mesAnio(datos.ipc.ultimo_mes)),
+		fuenteContratos: TU_ZONA.capas.fuenteContratos,
 		oferta: datos.oferta ? capaOferta(datos) : null
 	};
 }

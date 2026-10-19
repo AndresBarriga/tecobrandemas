@@ -8,7 +8,6 @@ import csv
 import json
 import sqlite3
 import sys
-from datetime import date
 
 from comun import FIXTURES, PROCESSED
 
@@ -74,16 +73,6 @@ def verificar_vecinas(vecinas, secciones):
     print(f"  · vecinas por sección: {medias:.1f} de media")
 
 
-def verificar_ipc(ipc):
-    print("IPC del alquiler")
-    comprobar(1.0 < ipc["factor"] < 1.3, f"factor plausible ({ipc['factor']})")
-    año, mes = map(int, ipc["ultimo_mes"].split("-"))
-    meses = (date.today().year - año) * 12 + date.today().month - mes
-    comprobar(meses <= 3, f"último mes publicado reciente ({ipc['ultimo_mes']})")
-    if ipc["ultimo_mes"] == "2026-08":
-        comprobar(round(ipc["factor"], 3) == 1.054, "factor = 1,054 a agosto de 2026 (PRD)")
-
-
 def verificar_callejero():
     print("Callejero (CartoCiudad)")
     ruta = PROCESSED / "geocoder.sqlite"
@@ -106,7 +95,6 @@ def main():
     verificar_secciones(secciones, barrios, topo)
     verificar_fixture(secciones)
     verificar_vecinas(cargar("vecinas.json"), secciones)
-    verificar_ipc(cargar("ipc_alquiler.json"))
     verificar_callejero()
 
     for a in avisos:

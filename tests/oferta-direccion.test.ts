@@ -7,7 +7,6 @@ const NB = ' ';
 const datos = (v: number): DatosMadrid => ({
 	secciones: { A: { cdis: '07', barrio: '071', smed: 70, p25: 12, p75: 20, n: 100, n_vu: 0, med2015: 10, med2024: 15 } },
 	barrios: { '071': { nombre: 'Almagro', cod_distrito: '07', distrito: 'Chamberí' } },
-	ipc: { factor: 1.05, ultimo_mes: '2026-08' },
 	oferta: { serie: '4.3.21.D', fuente: 'Ayuntamiento de Madrid', mes: '2026-06', barrios: {}, distritos: { '07': { v, mes: '2026-06' } } }
 });
 const base: Anuncio = { precio: 1000, superficie: 70, obraNueva: false, tipo: 'piso', largaDuracion: true };

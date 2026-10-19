@@ -26,15 +26,6 @@ export interface BarrioJson {
 	distrito: string;
 }
 
-/** ipc_alquiler.json */
-export interface IpcJson {
-	factor: number;
-	/** AAAA-MM */
-	ultimo_mes: string;
-	/** AAAA-MM-DD: cuándo se leyó la serie del INE */
-	fecha_extraccion?: string;
-}
-
 /** oferta_madrid.json: anuncios recientes (€/m²) del Ayuntamiento; solo se carga con la flag de la oferta encendida */
 export interface OfertaJson extends TablaOferta {
 	serie: string;
@@ -46,7 +37,6 @@ export interface OfertaJson extends TablaOferta {
 export interface DatosMadrid {
 	secciones: Record<string, SeccionJson>;
 	barrios: Record<string, BarrioJson>;
-	ipc: IpcJson;
 	/** Sin esto (flag apagada, o el fichero no carga) no hay ninguna línea de oferta */
 	oferta?: OfertaJson;
 	/** Centroide de cada sección; llega con los polígonos (carga diferida) */

@@ -29,7 +29,7 @@ export const SEO_MAPA = {
 export const SEO_COMO_CALCULAMOS = {
 	titulo: `Alquiler Madrid: cómo calculamos la referencia · ${NOMBRE}`,
 	descripcion:
-		'Método de la referencia de alquiler Madrid: contratos vigentes del Ministerio de Vivienda (SERPAVI 2024) ajustados por IPC. Fuentes y límites.'
+		'Método de la referencia de alquiler Madrid: contratos vigentes del Ministerio de Vivienda (SERPAVI 2024). Fuentes y límites.'
 } as const;
 
 /** Páginas indexables, en el orden del sitemap, con `lastmod` cuando se conoce. Sin /t/*, /r7k/* ni rutas con parámetros */
@@ -47,7 +47,7 @@ export const ENTRADAS_SITEMAP: { ruta: string; lastmod?: string }[] = [
 
 /**
  * Entradas del sitemap con los datos reales: un barrio sin dato suficiente no se publica (no entra) y el `lastmod` de las
- * páginas de barrio es el de los datos (fecha de extracción del IPC)
+ * páginas de barrio es el de su última revisión (FECHA_BARRIOS)
  */
 export function entradasSitemap(opciones?: { barrios?: string[]; lastmodBarrios?: string }): { ruta: string; lastmod?: string }[] {
 	if (!opciones) return ENTRADAS_SITEMAP;

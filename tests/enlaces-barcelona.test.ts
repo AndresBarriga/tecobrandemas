@@ -28,7 +28,6 @@ describe('estadística SERPAVI del Ayuntamiento de Madrid', () => {
 		const datos = {
 			secciones: JSON.parse(fuente('data/processed/secciones_madrid.json')),
 			barrios: JSON.parse(fuente('data/processed/seccion_barrio.json')).barrios,
-			ipc: JSON.parse(fuente('data/processed/ipc_alquiler.json')),
 			vecinas: JSON.parse(fuente('data/processed/vecinas.json'))
 		};
 		for (const b of BARRIOS_PILOTO) {

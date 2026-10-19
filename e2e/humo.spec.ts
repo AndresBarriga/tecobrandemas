@@ -4,7 +4,7 @@
  * No ensucia las métricas: se bloquea la analítica (/r7k, PostHog) y no se registra ningún análisis ni aportación.
  * Es de solo lectura: no escribe nada. La tarjeta de la tercera prueba es una fija (`pruebahumo`),
  * creada una vez a mano, marcada como de prueba y excluida de las métricas.
- * Las cifras exactas cambian con el IPC: se comprueba el nivel y la forma, no los números.
+ * Las cifras exactas cambian con los datos: se comprueba el nivel y la forma, no los números.
  */
 import { expect, test, type Page } from '@playwright/test';
 import { SITE_URL } from '../src/lib/resultado/sitio';

@@ -87,7 +87,7 @@
 			<div class="titulo">
 				<h1>{p.titulo}</h1>
 				<p class="lead">{p.intro}</p>
-				<p class="actualizado">Datos actualizados a {p.datosActualizados}.</p>
+				<p class="actualizado">{p.notaDatos}</p>
 			</div>
 
 			<section id="resumen" class="caja-blanca">
@@ -307,7 +307,7 @@
 						</div>
 					{/each}
 				</div>
-				<p class="ipc">{p.fuentes.ipc}</p>
+				<p class="nota-datos">{p.fuentes.datos}</p>
 				<p class="chico">{p.fuentes.validacion}</p>
 				<p class="chico">Estimación independiente basada en la metodología SERPAVI; el valor oficial está en <a href={p.fuentes.enlaceOficial}>serpavi.mivau.gob.es</a>.</p>
 				<p class="chico"><a href={ESTADISTICA_SERPAVI_MADRID.url} target="_blank" rel="noopener">{ESTADISTICA_SERPAVI_MADRID.texto}</a></p>
@@ -651,10 +651,6 @@
 	.muestra-l.banda {
 		background: #f6f4ee;
 	}
-	.muestra-l.anterior {
-		border: 1.5px dashed #d6d1c6;
-		box-sizing: border-box;
-	}
 	.muestra-l.excelente {
 		background: #857f74;
 	}
@@ -945,7 +941,7 @@
 	.atr {
 		font-weight: 500;
 	}
-	.ipc {
+	.nota-datos {
 		font: 500 15px/1.5 var(--f-texto);
 	}
 	.chico {

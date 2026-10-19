@@ -35,7 +35,6 @@ function cadenas(v: unknown): string[] {
 const DATOS: DatosMadrid = {
 	secciones: { A: { cdis: '07', barrio: '071', smed: 70, p25: 12, p75: 20, n: 100, n_vu: 0, med2015: 10, med2024: 15 } },
 	barrios: { '071': { nombre: 'Almagro', cod_distrito: '07', distrito: 'Chamberí' } },
-	ipc: { factor: 1.05, ultimo_mes: '2026-08' },
 	// Anuncios recientes: 24 €/m² en el barrio (en línea con 1.700 €) y 22 €/m² en el distrito
 	oferta: {
 		serie: '4.3.21.D', fuente: 'Ayuntamiento de Madrid', mes: '2026-06',

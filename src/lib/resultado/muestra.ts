@@ -1,6 +1,6 @@
 /**
  * Resultado de muestra de la portada («Así se ve un resultado», marcado EJEMPLO): un caso real de un barrio
- * cercano (Delicias, 1.650 €, 65 m²) calculado por el motor con el último IPC y los anuncios recientes. No son
+ * cercano (Delicias, 1.650 €, 65 m²) calculado por el motor con los contratos de 2024 y los anuncios recientes. No son
  * cifras del diseño: cambian si cambian los datos. Usa el mismo diseño que el resultado y sigue a la pestaña activa:
  * «Un anuncio» o «Mi alquiler». Es el mismo ejemplo de «Cómo calculamos» (metodologia.ts).
  */

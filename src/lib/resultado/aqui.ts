@@ -35,7 +35,7 @@ export function aquiEstariasDentro(
 		if (d > RADIO_ZONA_M) continue;
 		const s = datosSeccion(datos, cusec);
 		if (motivoSeccion(s) !== null || !tieneDato(s)) continue;
-		const ref = referencia(anuncio.superficie, s, datos.ipc.factor);
+		const ref = referencia(anuncio.superficie, s);
 		const nivel = clasificar(anuncio.precio, ref);
 		if (nivel.nivel !== 'dentro') continue;
 		candidatas.push({ cusec, barrio: barrioDe(datos, cusec), distanciaM: d, refInf: ref.inf, refSup: ref.sup, posicion: nivel.posicion });

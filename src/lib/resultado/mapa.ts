@@ -1,5 +1,5 @@
 /**
- * Página /mapa: Madrid entera coloreada, calculada en el navegador con el mismo motor y el factor IPC que
+ * Página /mapa: Madrid entera coloreada, calculada en el navegador con el mismo motor que
  * el resultado. Tres capas:
  *  - «Mi presupuesto» («¿Dónde me llega?», la vista por defecto): tu presupuesto al mes frente a la estimación de anuncios de cada
  *    zona para los metros elegidos (€/m² del barrio, o del distrito, ajustado por tamaño): «No llega», «En línea» o «Te sobra».
@@ -54,9 +54,9 @@ export interface ZonaMapa {
 	cusec: string;
 	/** Código del barrio, para el nombre y las líneas entre barrios */
 	barrio: string | null;
-	/** Parte alta en €/m² al mes (con IPC); null = sin dato para esta superficie */
+	/** Parte alta en €/m² al mes; null = sin dato para esta superficie */
 	supM2: number | null;
-	/** R_inf y R_sup en €/mes (con IPC); null = sin dato */
+	/** R_inf y R_sup en €/mes; null = sin dato */
 	refInf: number | null;
 	refSup: number | null;
 	/** Alquileres registrados en la zona */
@@ -75,7 +75,7 @@ export function zonasDelMapa(datos: DatosMadrid, superficie: number): ZonaMapa[]
 	return Object.entries(datos.secciones).map(([cusec, s]) => {
 		const d = datosSeccion(datos, cusec);
 		const conDato = valida && motivoSeccion(d) === null && tieneDato(d);
-		const r = conDato ? rangoInicial(superficie, d, datos.ipc.factor) : null;
+		const r = conDato ? rangoInicial(superficie, d) : null;
 		const distrito = s.barrio ? datos.barrios[s.barrio]?.cod_distrito : undefined;
 		const oferta = datos.oferta && s.barrio && distrito ? ofertaDeZonas([{ barrio: s.barrio, distrito }], datos.oferta) : null;
 		const testigosOk = s.n !== null && s.n >= 21;
@@ -317,7 +317,7 @@ export function hojaDeZona(
 	if (capa !== 'evolucion' && z.refInf !== null && z.refSup !== null && z.supM2 !== null) {
 		hoja.referencia = T.hoja.referencia(m2, numero(z.refInf), euros(z.refSup));
 		hoja.parteAlta = T.hoja.parteAlta(numero(z.supM2, 1));
-		hoja.procedencia = T.hoja.procedencia(numero(z.n ?? 0), mesAnio(datos.ipc.ultimo_mes));
+		hoja.procedencia = T.hoja.procedencia(numero(z.n ?? 0));
 	} else if (capa !== 'evolucion') {
 		hoja.sinDato = !superficieValida(superficie)
 			? T.hoja.sinDatoSuperficie

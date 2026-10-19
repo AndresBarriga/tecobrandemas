@@ -30,7 +30,7 @@ export const TEXTO_MAPA = {
 		{
 			h2: 'De dónde salen los datos',
 			parrafos: [
-				'La referencia sale del sistema SERPAVI del Ministerio de Vivienda y Agenda Urbana: contratos de alquiler de propietarios particulares declarados a Hacienda (2024). Los importes se actualizan con el IPC del alquiler del INE.',
+				'La referencia sale del sistema SERPAVI del Ministerio de Vivienda y Agenda Urbana: contratos de alquiler de propietarios particulares declarados a Hacienda (2024). Los importes son de 2024 y no se actualizan: los alquileres han subido desde entonces.',
 				'Es una estimación independiente. El valor oficial está en serpavi.mivau.gob.es.'
 			]
 		},
