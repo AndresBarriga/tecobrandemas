@@ -1,18 +1,16 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-	type BarrioJson, type DatosMadrid, type IpcJson, type OfertaJson, type SeccionJson, CUSEC_EJEMPLO, construirMetodologia
+	type BarrioJson, type DatosMadrid, type OfertaJson, type SeccionJson, CUSEC_EJEMPLO, construirMetodologia
 } from '../src/lib/resultado';
 
 const leer = <T>(f: string) => JSON.parse(readFileSync(`data/processed/${f}`, 'utf8')) as T;
-const ipc = leer<IpcJson>('ipc_alquiler.json');
 const datos: DatosMadrid = {
 	secciones: leer<Record<string, SeccionJson>>('secciones_madrid.json'),
 	barrios: leer<{ barrios: Record<string, BarrioJson> }>('seccion_barrio.json').barrios,
-	ipc,
 	oferta: leer<OfertaJson>('oferta_madrid.json')
 };
-const m = construirMetodologia(ipc, datos);
+const m = construirMetodologia(datos);
 const texto = JSON.stringify(m);
 
 describe('página «Cómo calculamos»', () => {
@@ -21,30 +19,24 @@ describe('página «Cómo calculamos»', () => {
 		expect(texto).not.toMatch(/De Más/i);
 	});
 
-	it('lee el factor y el mes del IPC, no los copia: ni en el resumen, ni en Fuentes, ni en el ejemplo', () => {
-		expect(m.treintaSegundos[1]).toContain('+5,4\u00A0%');
-		expect(m.treintaSegundos[1]).toContain('agosto de 2026');
-		expect(m.fuentes.ipc).toContain('factor 1,054');
-		expect(m.ejemplo!.pasos[1]!.titulo).toBe('Con el ajuste del IPC (×1,054)');
-		const otro = construirMetodologia({ ...ipc, factor: 1.1, ultimo_mes: '2027-01' }, datos);
-		expect(otro.fuentes.ipc).toContain('factor 1,1');
-		expect(otro.treintaSegundos[1]).toContain('enero de 2027');
-		expect(otro.ejemplo!.pasos[1]!.titulo).toBe('Con el ajuste del IPC (×1,100)');
-		expect(otro.ejemplo!.pasos[1]!.carril!.banda!.hasta).toBeGreaterThan(m.ejemplo!.pasos[1]!.carril!.banda!.hasta);
+	it('no aplica ningún factor de IPC: dice de qué año son los datos y que los alquileres han subido desde entonces', () => {
+		const nota = 'Datos de rentas declaradas en 2024 (SERPAVI); los alquileres han subido desde entonces.';
+		expect(m.notaDatos).toBe(nota);
+		expect(m.fuentes.datos).toBe(nota);
+		const todo = JSON.stringify(m);
+		expect(todo).not.toMatch(/IPC|factor 1,|ajuste del IPC/);
+		expect(m.fuentes.filas.map((f) => f.host)).not.toContain('ine.es');
 	});
 
-	it('el ejemplo sale del motor con los datos de la zona: tres pasos de contratos, uno de oferta y el resultado, en la misma escala', () => {
+	it('el ejemplo sale del motor con los datos de la zona: dos pasos de contratos, uno de oferta y el resultado, en la misma escala', () => {
 		const e = m.ejemplo!;
-		expect(e.pasos.map((p) => p.fuente)).toEqual(['contratos', 'contratos', 'contratos', 'oferta', 'precio']);
+		expect(e.pasos.map((p) => p.fuente)).toEqual(['contratos', 'contratos', 'oferta', 'precio']);
 		expect(datos.secciones[CUSEC_EJEMPLO]).toBeTruthy();
-		const [sin, con, exc, ofe] = e.pasos.map((p) => p.carril);
-		// La referencia ajustada es la sin ajustar × factor, y el paso 2 marca la de antes
-		expect(con!.anterior).toEqual(sin!.banda);
-		expect(con!.banda!.hasta).toBeGreaterThan(sin!.banda!.hasta);
+		const [con, exc, ofe] = e.pasos.map((p) => p.carril);
 		expect(exc!.excelente!.desde).toBeCloseTo(con!.banda!.hasta, 6);
 		// La oferta: la marca en el centro de su margen «en línea»
 		expect(ofe!.marca!).toBeCloseTo((ofe!.margen!.desde + ofe!.margen!.hasta) / 2, 2);
-		for (const c of [sin, con, exc]) for (const x of [c!.banda!.desde, c!.banda!.hasta]) expect(x).toBeGreaterThanOrEqual(0), expect(x).toBeLessThanOrEqual(1);
+		for (const c of [con, exc]) for (const x of [c!.banda!.desde, c!.banda!.hasta]) expect(x).toBeGreaterThanOrEqual(0), expect(x).toBeLessThanOrEqual(1);
 		// El último paso es el resultado tal cual: «Un anuncio», con las dos mitades
 		expect(e.pasos.at(-1)!.carril).toBeNull();
 		expect(e.costura.modo).toBe('mirando');
@@ -100,7 +92,7 @@ describe('página «Cómo calculamos»', () => {
 	});
 
 	it('sin datos de la sección, la página se ve igual pero sin ejemplo ni «cómo se lee» dibujados', () => {
-		const vacia = construirMetodologia(ipc, { ...datos, secciones: {} });
+		const vacia = construirMetodologia({ ...datos, secciones: {} });
 		expect(vacia.ejemplo).toBeNull();
 		expect(vacia.lectura).toBeNull();
 	});

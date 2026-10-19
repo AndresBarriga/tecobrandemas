@@ -9,7 +9,7 @@ Lo que depende de un PR sin fusionar lleva su número. Producción: https://asup
 |---|---|---|---|
 | R1 | Formulario (dirección, calle, mapa; precio, m², obra nueva, larga duración, habitación) | Hecho | `e2e/flujo.spec.ts`, `e2e/estados.spec.ts` (14, 20), `tests/resultado.test.ts`. El mapa tiene base de OpenStreetMap con el PR #2 |
 | R2 | Ubicación → sección y horquilla | Hecho | `tests/ubicacion.test.ts` (100 direcciones), `tests/pin.test.ts` (1.000 puntos), `e2e/estados.spec.ts` 06 |
-| R3 | Rango SERPAVI ajustado por IPC | Hecho | `tests/motor.test.ts` (30 casos de la app oficial, error ≤ 1 céntimo); el factor sale de `ipc_alquiler.json` |
+| R3 | Rango SERPAVI (sin ajuste por IPC desde la fase 1 de «quitar-ipc») | Hecho | `tests/motor.test.ts` (30 casos de la app oficial, error máximo 0,62 céntimos) |
 | R4 | Tres niveles de resultado | Hecho | `tests/vista.test.ts`, `e2e/estados.spec.ts` 02-05, `e2e/humo.spec.ts` |
 | R5 | Pantallas «sin dato» (8 motivos) | Hecho | `e2e/estados.spec.ts` 07-14 |
 | R6 | Tarjeta compartible y `/t/:id` | Parcial | `e2e/tarjeta.spec.ts`. Falta comprobar la vista previa en WhatsApp y X desde un móvil (no se puede automatizar) |

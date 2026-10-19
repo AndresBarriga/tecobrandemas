@@ -1,7 +1,6 @@
 """Descarga las fuentes oficiales a data/raw/.
 
-Automático: seccionado censal 2021 (INE), barrios (Ayuntamiento de Madrid) e IPC del
-alquiler de vivienda principal (INE, tabla 76128, serie IPC291807).
+Automático: seccionado censal 2021 (INE) y barrios (Ayuntamiento de Madrid).
 
 Manual: el callejero de CartoCiudad se descarga del Centro de Descargas del CNIG, que
 exige aceptar la licencia en la web. Este script solo comprueba que esté en su sitio.
@@ -12,7 +11,7 @@ Uso: .venv/bin/python scripts/00_descargar.py [--forzar]
 import sys
 import urllib.request
 
-from comun import BARRIOS_ZIP, CARTOCIUDAD_DIR, IPC_JSON, RAW, SECCIONADO_ZIP, SERPAVI_XLSX
+from comun import BARRIOS_ZIP, CARTOCIUDAD_DIR, RAW, SECCIONADO_ZIP, SERPAVI_XLSX
 
 FUENTES = [
     (
@@ -24,12 +23,6 @@ FUENTES = [
         BARRIOS_ZIP,
         "https://geoportal.madrid.es/fsdescargas/IDEAM_WBGEOPORTAL/LIMITES_ADMINISTRATIVOS/Barrios/Barrios.zip",
         "Barrios municipales (Ayuntamiento de Madrid)",
-    ),
-    (
-        IPC_JSON,
-        # Alquiler de vivienda principal, índice nacional, desde enero de 2024
-        "https://servicios.ine.es/wstempus/js/ES/DATOS_SERIE/IPC291807?date=20240101:20991231",
-        "IPC alquiler de vivienda principal (INE, serie IPC291807)",
     ),
 ]
 
@@ -43,8 +36,7 @@ INSTRUCCIONES_CARTOCIUDAD = f"""
 
 
 def descargar(ruta, url, nombre, forzar):
-    # El IPC se refresca siempre: cambia cada mes
-    if ruta.exists() and not forzar and ruta != IPC_JSON:
+    if ruta.exists() and not forzar:
         print(f"✓ {nombre}: ya existe")
         return
     print(f"↓ {nombre}…")

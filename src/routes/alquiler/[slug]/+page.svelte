@@ -2,7 +2,7 @@
 	import Cabecera from '#lib/componentes/Cabecera.svelte';
 	import MetaSocial from '#lib/componentes/MetaSocial.svelte';
 	import Pie from '#lib/componentes/Pie.svelte';
-	import { enlaceHerramientaBarrio, fechaLegible, jsonLdBarrio, jsonLdComoTexto } from '#lib/resultado';
+	import { NOTA_DATOS, enlaceHerramientaBarrio, fechaLegible, jsonLdBarrio, jsonLdComoTexto } from '#lib/resultado';
 
 	let { data } = $props();
 	const p = $derived(data.pagina);
@@ -25,7 +25,7 @@
 		<article>
 			<header class="cabecera-articulo">
 				<h1>{p.h1}</h1>
-				<p class="meta">Datos actualizados a {p.actualizado}.</p>
+				<p class="meta">{NOTA_DATOS}</p>
 			</header>
 
 			<div class="respuesta"><p>{p.respuesta.join(' ')}</p></div>
@@ -82,7 +82,7 @@
 				<ul class="lista">
 					{#each p.fuentes as f (f.url)}<li><a href={f.url} rel="noopener noreferrer">{f.texto}</a></li>{/each}
 				</ul>
-				<p class="meta">Datos actualizados a {p.actualizado} (fecha de los datos: {fechaLegible(p.modificado)}). <a href="/como-calculamos">Cómo calculamos</a>.</p>
+				<p class="meta">{NOTA_DATOS} Página revisada el {fechaLegible(p.modificado)}. <a href="/como-calculamos">Cómo calculamos</a>.</p>
 			</section>
 		</article>
 	</main>

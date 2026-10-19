@@ -30,7 +30,6 @@ const DATOS: DatosMadrid = {
 		'071': { nombre: 'Almagro', cod_distrito: '07', distrito: 'Chamberí' },
 		'072': { nombre: 'Gaztambide', cod_distrito: '07', distrito: 'Chamberí' }
 	},
-	ipc: { factor: 1.05, ultimo_mes: '2026-08' }
 };
 
 const ORIGEN: Punto = { lon: -3.7, lat: 40.42 };
@@ -50,7 +49,7 @@ const anuncio = (precio: number, extra: Partial<Anuncio> = {}): Anuncio => ({
 const ubic = (cusecs: string[], extra = {}) => ({
 	cusecs, aproximada: false, motivo: null, numerosUsados: [] as number[], punto: ORIGEN, via: null, ...extra
 });
-const refDe = (id: string) => referencia(70, { cusec: id, ...DATOS.secciones[id] } as unknown as SeccionConDato, DATOS.ipc.factor);
+const refDe = (id: string) => referencia(70, { cusec: id, ...DATOS.secciones[id] } as unknown as SeccionConDato);
 
 // ——— Formato ———
 
@@ -149,7 +148,7 @@ describe('pantalla de resultado', () => {
 		expect(p.brechaPct).toBe(porcentaje(precio / r.sup - 1, true));
 		expect(p.brechaEuros).toBe(`+${numero(precio - r.sup)}\u00A0€/mes · +${numero((precio - r.sup) * 12)}\u00A0€/año`);
 		expect(p.base).toContain('Basado en 100 contratos vigentes en la zona');
-		expect(p.base).toContain('agosto de 2026');
+		expect(p.base).toContain('Datos de rentas declaradas en 2024 (SERPAVI); los alquileres han subido desde entonces.');
 		expect(p.quePuedesHacer.length).toBeGreaterThan(0);
 		expect(p.avisoUbicacion).toBeNull();
 	});
@@ -245,15 +244,14 @@ describe('con los datos reales (caso A01 del gate)', () => {
 	const real: DatosMadrid = {
 		secciones: leer('secciones_madrid.json'),
 		barrios: leer('seccion_barrio.json').barrios,
-		ipc: leer('ipc_alquiler.json')
 	};
 
-	it('A01: por encima, +41 %, Almagro', () => {
+	it('A01: por encima, +49 %, Almagro', () => {
 		const a01 = leerFixture().find((c) => c.caso === 'A01')!;
 		const p = construirPantalla(a01.anuncio, ubic([a01.seccion.cusec]), real);
 		if (p.tipo !== 'resultado') throw new Error('esperaba resultado');
 		expect(p.nivel.nivel).toBe('por_encima');
-		expect(p.brechaPct).toBe('+41\u00A0%');
+		expect(p.brechaPct).toBe('+49\u00A0%');
 		expect(p.barrio).toBe('Almagro');
 		expect(p.evolucion).not.toBeNull();
 	});

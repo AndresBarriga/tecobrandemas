@@ -15,7 +15,7 @@
 import type { Analisis, Anuncio, Nivel } from '../motor';
 import { type Barra, mostrarMedia, referenciaMedia } from './barra';
 import type { BarrioDeSeccion } from './datos';
-import { euros, mesAnio, numero, porcentaje } from './formato';
+import { euros, numero, porcentaje } from './formato';
 import { partesRatio, UMBRAL_VECES } from './ratio';
 import {
 	ETIQUETA_NIVEL, ETIQUETA_POR_DEBAJO, FRASE_NIVEL, FUENTE, MIRANDO, NIVEL_CONTRATOS, type ContextoAviso, AVISO_UBICACION
@@ -162,13 +162,11 @@ export interface EntradaVista {
 	analisis: Extract<Analisis, { tipo: 'resultado' }>;
 	barra: Barra;
 	barrio: BarrioDeSeccion | null;
-	/** AAAA-MM del último dato del IPC */
-	ipcMes: string;
 	/** El bloque de «Lo que se pide» lleva veredicto: los textos de nivel hablan expresamente de los contratos de la zona */
 	conVeredicto?: boolean;
 }
 
-export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ipcMes, conVeredicto = false }: EntradaVista): Vista {
+export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, conVeredicto = false }: EntradaVista): Vista {
 	const { prudente, secciones, horquilla } = analisis;
 	const nivel = prudente.nivel;
 	const clase = claseDe(nivel);
@@ -235,14 +233,13 @@ export function construirVista({ anuncio, ubicacion, analisis, barra, barrio, ip
 	}
 
 	const suma = secciones.reduce((t, s) => t + s.seccion.n, 0);
-	const mes = mesAnio(ipcMes);
 	const zonas = ubicacion.motivo === 'calle' ? 'las zonas que cruza la calle' : 'las zonas posibles';
 	const fuente = horquilla
-		? FUENTE.varias(numero(suma), zonas, mes) +
+		? FUENTE.varias(numero(suma), zonas) +
 			(numero(barra.inf.min) !== numero(barra.inf.max)
 				? ` La parte baja de lo habitual va de ${numero(barra.inf.min)} a ${euros(barra.inf.max)}.`
 				: '')
-		: FUENTE.una(numero(suma), mes);
+		: FUENTE.una(numero(suma));
 
 	// Aclaración: solo con una cifra en pantalla (por encima) y si las zonas difieren de verdad
 	const sups = secciones.map((s) => s.referencia.sup);

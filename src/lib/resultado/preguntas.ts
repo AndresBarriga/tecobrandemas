@@ -67,10 +67,6 @@ export interface PaginaPregunta {
 
 const CALCULADORA: Fuente = { texto: 'Calculadora oficial del Ministerio de Vivienda y Agenda Urbana para actualizar la renta', url: 'https://www.mivau.gob.es/vivienda/calculadora-precio-alquiler' };
 const SERPAVI: Fuente = { texto: 'Ministerio de Vivienda y Agenda Urbana: SERPAVI, sistema estatal de referencia del precio del alquiler', url: 'https://serpavi.mivau.gob.es' };
-const INE: Fuente = {
-	texto: 'INE: IPC, subclase 04.1.1.0 «Alquiler de vivienda principal», nacional (tabla 76128, serie IPC291807)',
-	url: 'https://servicios.ine.es/wstempus/js/ES/DATOS_SERIE/IPC291807?date=20240101:20991231'
-};
 const LEY_VIVIENDA: Fuente = { texto: 'BOE: Ley 12/2023, de 24 de mayo, por el derecho a la vivienda', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2023-12203' };
 const RDL: Fuente = { texto: 'BOE: Real Decreto-ley 29/2026, de 6 de octubre (BOE núm. 249, de 07/10/2026)', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2026-20823' };
 const MADRID: Fuente = { texto: 'Ayuntamiento de Madrid: serie 4.3.21.D de precios de oferta (elaboración a partir de datos de Idealista)', url: 'https://servpub.madrid.es/CSEBD_WBINTER/seleccionSerie.html?numSerie=0504030000214' };
@@ -87,11 +83,11 @@ const PAGINAS: PaginaPregunta[] = [
 		modo: 'mirando',
 		boton: 'Comprobar un anuncio',
 		titulo: 'Alquiler caro en Madrid: cómo saberlo',
-		descripcion: 'Compara tu alquiler con lo que pagan quienes ya viven de alquiler en tu zona, ajustado a tu tamaño y al IPC. Compruébalo gratis en un minuto.',
+		descripcion: 'Compara tu alquiler con lo que pagan quienes ya viven de alquiler en tu zona, ajustado a tu tamaño. Compruébalo gratis en un minuto.',
 		h1: '¿Cómo saber si un alquiler está caro en Madrid?',
 		respuesta: [
 			'Compáralo con lo que pagan quienes ya viven de alquiler en la zona: los contratos declarados a Hacienda que recoge el índice de referencia del Ministerio de Vivienda (SERPAVI).',
-			'La referencia se ajusta al tamaño de la vivienda y sus contratos se actualizan con el IPC del alquiler.'
+			'La referencia se ajusta al tamaño de la vivienda; los contratos son de 2024 y los alquileres han subido desde entonces.'
 		],
 		secciones: [
 			{
@@ -146,9 +142,9 @@ const PAGINAS: PaginaPregunta[] = [
 			{ q: '¿Esto me dice si pago demasiado?', a: 'No. Te dice dónde queda tu precio frente a lo que pagan quienes ya viven de alquiler en tu zona, no si el precio es adecuado.' },
 			{ q: '¿Sirve para cualquier barrio de Madrid?', a: 'Sirve para la ciudad de Madrid, donde hay datos suficientes. Si una zona tiene muy pocos contratos, te lo decimos en lugar de dar una cifra.' },
 			{ q: '¿Hace falta registrarse?', a: 'No. Es gratis y no se guarda tu dirección.' },
-			{ q: '¿Qué datos se usan?', a: 'Los contratos de 2024 del Ministerio de Vivienda, actualizados con el IPC del alquiler del INE.' }
+			{ q: '¿Qué datos se usan?', a: 'Los contratos de 2024 del Ministerio de Vivienda, tal como los publica el SERPAVI. Los alquileres han subido desde entonces.' }
 		],
-		fuentes: [SERPAVI, INE, LEY_VIVIENDA],
+		fuentes: [SERPAVI, LEY_VIVIENDA],
 		relacionadas: [P2, P3]
 	},
 	{
@@ -192,7 +188,7 @@ const PAGINAS: PaginaPregunta[] = [
 				h2: '¿Para qué se usa por ley?',
 				parrafos: [
 					'La Ley 12/2023, de 24 de mayo, por el derecho a la vivienda, prevé el índice como límite de la renta inicial en zonas declaradas tensionadas cuando el arrendador es gran tenedor. Esa regla está en el apartado 7 del artículo 17 de la Ley de Arrendamientos Urbanos.',
-					'El Real Decreto-ley 29/2026 lo usa además para la actualización anual de la renta hasta el 31/12/2027 y para graduar una reducción fiscal del propietario en el IRPF. Es un decreto-ley pendiente de convalidación, y la actualización anual se explica en otra pregunta.',
+					'El Real Decreto-ley 29/2026 remite además al sistema de índices de referencia en su limitación de la actualización anual de la renta, hasta el 31/12/2027. Está pendiente de convalidación y se explica en otra pregunta.',
 					'Que la ley lo use no lo convierte en un precio fijo: fuera de esos casos es solo una referencia informativa.'
 				]
 			},
@@ -214,11 +210,11 @@ const PAGINAS: PaginaPregunta[] = [
 		],
 		faq: [
 			{ q: '¿Es el índice un precio máximo?', a: 'No en general: es la parte alta de lo que pagan quienes ya viven allí, y hay contratos por encima. Solo tiene efecto legal en los casos que fija la norma.' },
-			{ q: '¿Cómo se actualiza?', a: 'A su precio actualiza los contratos con el IPC del alquiler del INE. El valor oficial depende de la versión que publique el Ministerio.' },
+			{ q: '¿Cómo se actualiza?', a: 'A su precio no actualiza los contratos: usa los datos de 2024 tal como los publica el Ministerio, y los alquileres han subido desde entonces. El valor oficial depende de la versión que publique el Ministerio.' },
 			{ q: '¿Quién puede consultarlo?', a: 'Cualquier persona, en la web del Ministerio de Vivienda y Agenda Urbana.' },
 			{ q: '¿Cubre toda España?', a: 'El sistema es estatal y las comunidades autónomas pueden tener el suyo. A su precio solo calcula para la ciudad de Madrid.' }
 		],
-		fuentes: [SERPAVI, LEY_VIVIENDA, RDL, INE],
+		fuentes: [SERPAVI, LEY_VIVIENDA, RDL],
 		relacionadas: [P1, P4]
 	},
 	{
@@ -268,8 +264,8 @@ const PAGINAS: PaginaPregunta[] = [
 			{
 				h2: '¿Qué datos usa A su precio para cada referencia?',
 				parrafos: [
-					'Los contratos salen de SERPAVI (Ministerio de Vivienda) y se ajustan con el IPC del alquiler del INE. Los anuncios recientes salen de la serie 4.3.21.D del Ayuntamiento de Madrid, elaborada a partir de datos de Idealista.',
-					'Los anuncios no se ajustan por IPC, porque ya son recientes, pero sí por tamaño: los pisos pequeños suelen anunciarse con un precio mayor por metro cuadrado.'
+					'Los contratos salen de SERPAVI (Ministerio de Vivienda), con datos de 2024 que no actualizamos: los alquileres han subido desde entonces. Los anuncios recientes salen de la serie 4.3.21.D del Ayuntamiento de Madrid, elaborada a partir de datos de Idealista.',
+					'Los anuncios ya son recientes, pero se ajustan por tamaño: los pisos pequeños suelen anunciarse con un precio mayor por metro cuadrado.'
 				]
 			},
 			{
@@ -286,7 +282,7 @@ const PAGINAS: PaginaPregunta[] = [
 			{ q: '¿Los contratos antiguos pagan siempre menos?', a: 'No siempre. Depende de cuándo se firmaron y de cómo se han actualizado, por eso miramos la referencia de cada zona.' },
 			{ q: '¿Por qué A su precio no mezcla anuncios y contratos?', a: 'Porque miden cosas distintas. Mostramos cada referencia por separado y cada una se compara solo con tu precio.' }
 		],
-		fuentes: [SERPAVI, MADRID, INE],
+		fuentes: [SERPAVI, MADRID],
 		relacionadas: [P1, P2]
 	},
 	{
@@ -323,39 +319,42 @@ const PAGINAS: PaginaPregunta[] = [
 			{
 				h2: '¿A qué contratos afecta y qué no queda claro?',
 				parrafos: [
-					'El texto habla de contratos de alquiler de vivienda sujetos a la Ley 29/1994. No lo limita a zonas tensionadas ni a una comunidad concreta. El propio decreto-ley dice que se aplica sin perjuicio de los regímenes civiles forales y de las competencias autonómicas en vivienda.',
-					'El texto de la disposición final sexta no exige que la vivienda esté en una zona tensionada, y el Ministerio de Vivienda ha incorporado el índice estatal a su calculadora de actualización de la renta. Aun así, no hay una aclaración oficial expresa sobre cómo se determina el “límite máximo aplicable” fuera de esas zonas, como la ciudad de Madrid. No des por hecho ni que se aplica ni que no se aplica a tu contrato: consulta la calculadora oficial y, si dudas, pide asesoramiento.',
-					'La actualización anual toca en la fecha en que tu contrato cumple un año más. Si esa fecha cae entre el 08/10/2026 y el 31/12/2027, la regla de arriba es la que importa.'
+					'El texto habla de contratos de alquiler de vivienda sujetos a la Ley 29/1994. No lo limita a zonas tensionadas ni a una comunidad concreta. Se aplica sin perjuicio de los regímenes civiles forales y de las competencias autonómicas.',
+					'El texto de la disposición final sexta no exige que la vivienda esté en una zona tensionada, pero no hay una aclaración oficial expresa sobre cómo se determina el “límite máximo aplicable” en Madrid. No des por hecho ni que se aplica ni que no.',
+					'La actualización toca cuando tu contrato cumple un año más. Si esa fecha cae entre el 08/10/2026 y el 31/12/2027, la regla de arriba es la que importa.',
+					'El texto remite al sistema de índices de referencia; consulta con el Ministerio si te afecta (calculadora oficial o teléfono 047).'
 				]
 			},
 			{
 				h2: '¿Cómo compruebo mi caso?',
-				enlaces: [CALCULADORA],
+				enlaces: [CALCULADORA, SERPAVI],
 				parrafos: [
-					'Primero, usa la calculadora oficial del Ministerio de Vivienda: calcula la actualización de la renta que corresponde a tu contrato. Después, consulta el valor oficial en SERPAVI (serpavi.mivau.gob.es) con la dirección y las características de tu vivienda. Por último, para una estimación rápida en Madrid, usa A su precio.',
+					'Primero, usa la calculadora oficial del Ministerio de Vivienda para tu contrato. Después, consulta el valor oficial en SERPAVI (serpavi.mivau.gob.es) con la dirección y las características de tu vivienda. Por último, usa A su precio para una estimación rápida.',
 					'Nuestra estimación es independiente; si difiere del valor oficial, vale el oficial.'
 				],
 				tabla: {
-					titulo: 'Ejemplo (hipotético): una renta de 900 € al mes en una zona imaginaria. El «límite oficial» de la tabla es inventado y puede no existir para tu zona',
-					cabecera: ['Límite oficial (hipotético)', 'Tu renta frente al límite', 'Qué dice el decreto'],
+					titulo: 'Ejemplo ilustrativo: zona imaginaria con mínimo de 800 € y máximo de 1.050 € al mes. La banda es inventada y puede no existir para tu zona',
+					cabecera: ['Tu renta al mes', 'Frente a la banda', 'Qué dice el decreto'],
 					filas: [
-						['950 €', 'No lo supera', 'El pacto entre las partes; sin pacto, hasta 18 € más (el 2 %)'],
-						['850 €', 'Lo supera', 'Ningún incremento']
+						['Más de 1.050 €', 'Supera el máximo', 'Ningún incremento (apartado a)'],
+						['Entre 800 € y 1.050 €', 'Depende de tus características', 'Puede que no proceda incremento'],
+						['Menos de 800 €', 'Por debajo del mínimo', 'Lo pactado; sin pacto, hasta el 2 % (apartado b)']
 					]
 				}
 			},
 			{
-				h2: '¿Qué significa estar por encima o por debajo?',
+				h2: '¿Qué significa estar por encima o por debajo de la banda?',
 				parrafos: [
-					'«Por encima» del límite oficial es el caso del apartado a): no procede subir la renta. «Por debajo» es el del apartado b): lo que se pacte o, sin pacto, hasta el 2 %.',
-					'Si tu renta es igual al límite, no es «superior»: encaja en el apartado b). El resultado de A su precio («DENTRO», «ALGO POR ENCIMA»…) es una orientación, no el cálculo legal.'
+					'El límite depende de las características de la vivienda, que A su precio no te pide. Por eso damos una banda: el mínimo sale con las características mínimas y el máximo, con las mejores («si fuera un piso excelente» en tu resultado).',
+					'Si tu renta supera el máximo (1.050 € en el ejemplo ilustrativo), supera el límite incluso en el mejor caso: es el apartado a) y no procede subirla. Entre ambos, puede que no proceda; depende de tus características: compruébalo en la calculadora oficial.',
+					'Por debajo del mínimo no lo supera en ningún caso: es el apartado b). El resultado de A su precio es una orientación, no el cálculo legal.'
 				]
 			}
 		],
 		faq: [
 			{
 				q: '¿Y en Madrid?',
-				a: 'El texto de la disposición final sexta no exige que la vivienda esté en una zona tensionada, y el Ministerio de Vivienda ha incorporado el índice estatal a su calculadora de actualización de la renta. Aun así, no hay una aclaración oficial expresa sobre cómo se determina el «límite máximo aplicable» fuera de esas zonas, como la ciudad de Madrid, así que no des por hecho que se aplica ni que no: consulta la calculadora oficial.'
+				a: 'El texto de la disposición final sexta no exige que la vivienda esté en una zona tensionada, pero no hay una aclaración oficial expresa sobre cómo se determina el «límite máximo aplicable» en Madrid: consulta la calculadora oficial.'
 			},
 			{ q: '¿Cuánto es el 2 % de mi renta?', a: 'Multiplica tu renta mensual por 0,02: 18 € con 900 € (ejemplo).' },
 			{ q: '¿Qué pasa si el Congreso no lo convalida?', a: 'Si no se convalida, deja de estar en vigor; si se convalida, sigue vigente y puede modificarse.' }

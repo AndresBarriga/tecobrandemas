@@ -15,7 +15,6 @@ const DATOS: DatosMadrid = {
 		'071': { nombre: 'Almagro', cod_distrito: '07', distrito: 'Chamberí' },
 		'072': { nombre: 'Gaztambide', cod_distrito: '07', distrito: 'Chamberí' }
 	},
-	ipc: { factor: 1.05, ultimo_mes: '2026-08' }
 };
 const anuncio = (precio: number, extra: Partial<Anuncio> = {}): Anuncio => ({
 	precio, superficie: 70, obraNueva: false, tipo: 'piso', largaDuracion: true, ...extra
@@ -68,7 +67,7 @@ describe('vista del resultado', () => {
 		expect(v.lugar).toBe('Almagro, Chamberí');
 		expect(v.contexto).toBe(`70${NB}m², 2.500${NB}€/mes`);
 		expect(v.fuente).toBe(
-			'Basado en 100 contratos vigentes en la zona, de propietarios particulares declarados a Hacienda (2024), ajustados por el IPC del alquiler hasta agosto de 2026. No incluye empresas ni fondos.'
+			'Basado en 100 contratos vigentes en la zona, de propietarios particulares declarados a Hacienda. No incluye empresas ni fondos. Datos de rentas declaradas en 2024 (SERPAVI); los alquileres han subido desde entonces.'
 		);
 		// Bajo la cifra grande, «sobre lo más alto habitual…»; «Piden un X % más…» y su línea pequeña, solo en el cuadro
 		expect(v.principal).toMatchObject({ nota: `sobre lo más alto habitual en tu zona (70${NB}m²)` });
@@ -120,7 +119,7 @@ describe('vista del resultado', () => {
 		expect(p.vista.principal.tipo).toBe('cifra');
 		expect(p.vista.brecha!.mes.startsWith('+')).toBe(true);
 		expect(p.vista.meses!.extra.startsWith('+')).toBe(true);
-		expect(p.vista.aclaracion).toBe('Media de las zonas cercanas; según la zona exacta, de 2,7 a 3,4 veces.');
+		expect(p.vista.aclaracion).toBe('Media de las zonas cercanas; según la zona exacta, de 2,9 a 3,6 veces.');
 		expect(p.vista.fuente).toContain('Basado en 180 contratos vigentes en las zonas que cruza la calle');
 		expect(p.vista.fuente).not.toContain('La parte baja de lo habitual va de');
 		expect(p.vista.aviso).toBe(
@@ -133,7 +132,7 @@ describe('vista del resultado', () => {
 		expect(mixto.barra.horquilla).toBe(true);
 		expect(mixto.vista.aclaracion).toBe('Punto cerca de zonas con referencias distintas: la cifra depende de cuál sea la tuya.');
 		expect(mixto.vista.barra.parteAlta).toMatch(/^entre [\d.]+ y [\d.]+ €$/);
-		expect(resultado(1500, u).vista.principal).toMatchObject({ tipo: 'titular', texto: 'En el límite alto de lo habitual aquí.' });
+		expect(resultado(1423, u).vista.principal).toMatchObject({ tipo: 'titular', texto: 'En el límite alto de lo habitual aquí.' });
 	});
 
 	it('sin dato: lugar, contexto y variante según el lado del límite de superficie', () => {

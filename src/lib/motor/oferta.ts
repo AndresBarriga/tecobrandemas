@@ -1,7 +1,7 @@
 /**
  * «Lo que se pide»: los anuncios recientes (€/m²) de la serie del Ayuntamiento de Madrid, como segundo punto de
  * referencia junto a los contratos vigentes de SERPAVI. Módulo independiente: no toca los niveles contra
- * contratos ni el factor IPC, y solo se enciende con la flag de compilación (la decide quien carga los datos).
+ * contratos, y solo se enciende con la flag de compilación (la decide quien carga los datos).
  *
  *   estimada = €/m² de la zona × m² × (m² / 78) ^ −0,40        (solo con m² ≥ 30 y zona con dato)
  *

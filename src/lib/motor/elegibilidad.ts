@@ -11,6 +11,9 @@ export const SUPERFICIE_MIN = 30;
 export const SUPERFICIE_MAX = 150;
 /** Metodología SERPAVI §5: hacen falta más de 20 testigos */
 export const TESTIGOS_MIN = 21;
+/** Metodología SERPAVI §5.3: la superficie mediana de la sección debe estar entre 30 y 150 m² */
+export const SMED_MIN = 30;
+export const SMED_MAX = 150;
 
 export function motivoAnuncio(a: Anuncio): MotivoSinDato | null {
 	if (a.tipo === 'casa') return 'unifamiliar';
@@ -27,5 +30,6 @@ export function tieneDato(s: DatosSeccion): s is SeccionConDato {
 export function motivoSeccion(s: DatosSeccion): MotivoSinDato | null {
 	if (!tieneDato(s)) return 'sin_dato_seccion';
 	if (s.n < TESTIGOS_MIN) return 'testigos';
+	if (s.smed < SMED_MIN || s.smed > SMED_MAX) return 'sin_dato_seccion';
 	return null;
 }

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
 	MAPA_REFERENCIA, RANGO_METROS, RANGO_PRESUPUESTO, ajustarARango, capaPresupuesto, euros, hojaDeZona, paletaDe, posicionPresupuestoAnuncios, zonasCercanas, zonasDelMapa,
-	type BarrioJson, type DatosMadrid, type IpcJson, type OfertaJson, type SeccionJson, type ZonaMapa
+	type BarrioJson, type DatosMadrid, type OfertaJson, type SeccionJson, type ZonaMapa
 } from '../src/lib/resultado';
 import { OFERTA_BANDA_EN_LINEA, referenciaOferta } from '../src/lib/motor';
 
@@ -10,7 +10,6 @@ const leer = <T>(f: string) => JSON.parse(readFileSync(`data/processed/${f}`, 'u
 const datos: DatosMadrid = {
 	secciones: leer<Record<string, SeccionJson>>('secciones_madrid.json'),
 	barrios: leer<{ barrios: Record<string, BarrioJson> }>('seccion_barrio.json').barrios,
-	ipc: leer<IpcJson>('ipc_alquiler.json'),
 	oferta: leer<OfertaJson>('oferta_madrid.json')
 };
 

@@ -12,7 +12,6 @@ const J = (r: string) => JSON.parse(readFileSync(new URL(`../${r}`, import.meta.
 const datos: DatosBarrios = {
 	secciones: J('data/processed/secciones_madrid.json'),
 	barrios: J('data/processed/seccion_barrio.json').barrios,
-	ipc: J('data/processed/ipc_alquiler.json'),
 	vecinas: J('data/processed/vecinas.json')
 };
 const topo = J('data/processed/secciones_madrid.topo.json');
@@ -82,7 +81,7 @@ describe('barrios: coincide con la herramienta para una dirección céntrica', (
 		const cy = mediana(pts.map((p) => p[1]));
 		const central = cusecs.reduce((m, c) => ((centros.get(c)![0] - cx) ** 2 + (centros.get(c)![1] - cy) ** 2 < (centros.get(m)![0] - cx) ** 2 + (centros.get(m)![1] - cy) ** 2 ? c : m));
 		const s = datos.secciones[central]!;
-		const r = analizar({ precio: 1000, superficie: 70, obraNueva: false, tipo: 'piso', largaDuracion: true }, [{ cusec: central, smed: s.smed, p25: s.p25, p75: s.p75, n: s.n }], datos.ipc.factor);
+		const r = analizar({ precio: 1000, superficie: 70, obraNueva: false, tipo: 'piso', largaDuracion: true }, [{ cusec: central, smed: s.smed, p25: s.p25, p75: s.p75, n: s.n }]);
 		expect(r.tipo).toBe('resultado');
 		if (r.tipo !== 'resultado') return;
 		const f70 = filasBarrio(datos, b.codigo)!.find((f) => f.m2 === 70)!;
@@ -106,12 +105,11 @@ describe('barrios: cada página', () => {
 		expect(p.descripcion).toContain(`de ${numero(f70.inf)} a ${numero(f70.sup)}\u00A0€ al mes`);
 		expect(p.descripcion).toContain('70 m²');
 		expect(p.descripcion).toContain('Compruébalo con tu dirección');
-		// 2 frases con cifras: el rango para 70 m² y la fuente con el mes de los datos
+		// 2 frases con cifras: el rango para 70 m² y la fuente con el año de los datos
 		expect(p.respuesta).toHaveLength(2);
 		for (const r of p.respuesta) expect(frases(r), r).toBe(1);
 		expect(p.respuesta[0]).toMatch(/70 m².*[\d.]+ € \(parte baja\).*[\d.]+ € \(parte alta\) al mes/);
-		expect(p.respuesta[1]).toMatch(/SERPAVI.*IPC del alquiler.*datos actualizados a [a-z]+ de 20\d\d\.$/);
-		expect(p.actualizado).toMatch(/^[a-z]+ de 20\d\d$/);
+		expect(p.respuesta[1]).toMatch(/^Fuente: SERPAVI.*2024.*han subido desde entonces\.$/);
 		expect(p.boton).toMatch(/^Comprobar mi alquiler en /);
 		expect(enlaceHerramientaBarrio(slug)).toBe(`/?utm_source=barrio&utm_content=${slug}`);
 	});
@@ -161,7 +159,6 @@ describe('barrios: cada página', () => {
 		expect(p.faq[0]!.q).toMatch(/^¿Cuánto se paga por un piso de 50 m² en /);
 		expect(p.fuentes.map((f) => f.url)).toEqual([
 			'https://serpavi.mivau.gob.es',
-			'https://servicios.ine.es/wstempus/js/ES/DATOS_SERIE/IPC291807?date=20240101:20991231',
 			'https://www.mivau.gob.es/vivienda/calculadora-precio-alquiler'
 		]);
 	});

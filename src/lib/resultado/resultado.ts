@@ -14,7 +14,7 @@ import { type Barra, construirBarra, mostrarMedia, referenciaMedia } from './bar
 import { type Comparativa, construirComparativa } from './comparativa';
 import { type Costura, type EntradaCostura, construirCostura } from './costura';
 import { type Evolucion, evolucion } from './evolucion';
-import { euros, mesAnio, numero } from './formato';
+import { euros, numero } from './formato';
 import { type PantallaOferta, construirOferta } from './oferta';
 import {
 	type Accion, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ETIQUETA_BRECHA, ETIQUETA_POR_DEBAJO, FUENTE, NIVEL_CONTRATOS, OFERTA, type ClaveSinDato, type MotivoPantalla,
@@ -204,7 +204,7 @@ function desdeAnalisis(
 		nivel.nivel !== 'dentro' ? 'encima' : a.precio < Math.min(...an.secciones.map((x) => x.referencia.inf)) ? 'debajo' : 'dentro';
 	const oferta = construirOferta(a, cusecs, frenteAContratos, datos);
 	const conVeredicto = oferta?.veredicto === true;
-	const vista = construirVista({ anuncio: a, ubicacion: u, analisis: an, barra, barrio, ipcMes: datos.ipc.ultimo_mes, conVeredicto });
+	const vista = construirVista({ anuncio: a, ubicacion: u, analisis: an, barra, barrio, conVeredicto });
 	const comparativa = construirComparativa({
 		modo: 'mirando',
 		precio: a.precio,
@@ -248,7 +248,7 @@ function desdeAnalisis(
 				? `Si fuera un piso excelente, lo habitual llegaría a ${euros(media.max)} al mes en ${an.horquilla ? 'estas zonas' : 'esta zona'}.`
 				: null,
 		rango: `Lo habitual aquí: ${numero(media.inf)} – ${euros(media.sup)} al mes`,
-		base: FUENTE.una(numero(r.seccion.n), mesAnio(datos.ipc.ultimo_mes)),
+		base: FUENTE.una(numero(r.seccion.n)),
 		avisoUbicacion: vista.aviso,
 		horquilla: an.horquilla,
 		barra,
@@ -273,7 +273,7 @@ function desdeAnalisis(
 }
 
 export function construirPantalla(a: Anuncio, u: Ubicacion, datos: DatosMadrid): Pantalla {
-	const an = analizar(a, u.cusecs.map((c) => datosSeccion(datos, c)), datos.ipc.factor);
+	const an = analizar(a, u.cusecs.map((c) => datosSeccion(datos, c)));
 	if (an.tipo === 'resultado') return desdeAnalisis(a, u, an, datos);
 	const b = u.cusecs[0] ? barrioDe(datos, u.cusecs[0]) : null;
 	return pantallaSinDato(an.motivo, { anuncio: a, lugar: b ? `${b.nombre}, ${b.distrito}` : null });

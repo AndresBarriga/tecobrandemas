@@ -14,7 +14,6 @@ CRS_METRICO = "EPSG:25830"  # ETRS89 / UTM 30N, el del seccionado y los barrios
 SERPAVI_XLSX = RAW / "2026-03_09_bd_SERPAVI_2011-2024 - DEFINITIVO WEB_v2.xlsx"
 SECCIONADO_ZIP = RAW / "seccionado_2021.zip"
 BARRIOS_ZIP = RAW / "barrios_madrid.zip"
-IPC_JSON = RAW / "ipc_alquiler_serie.json"
 CARTOCIUDAD_DIR = RAW / "cartociudad"
 
 

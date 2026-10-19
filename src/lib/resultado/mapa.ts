@@ -1,5 +1,5 @@
 /**
- * Página /mapa: Madrid entera coloreada, calculada en el navegador con el mismo motor y el factor IPC que
+ * Página /mapa: Madrid entera coloreada, calculada en el navegador con el mismo motor que
  * el resultado. Tres capas:
  *  - «Mi presupuesto» («¿Dónde me llega?», la vista por defecto): tu presupuesto al mes frente a la estimación de anuncios de cada
  *    zona para los metros elegidos (€/m² del barrio, o del distrito, ajustado por tamaño): «No llega», «En línea» o «Te sobra».
@@ -11,7 +11,7 @@
  * Una fuente u otra, nunca las dos a la vez ni la diferencia entre ellas.
  * Sin dato: 20 testigos o menos, sin datos de la zona o superficie fuera de 30-150 m². En los textos, «zona».
  */
-import { OFERTA_BANDA_EN_LINEA, type DatoOferta, SUPERFICIE_MAX, SUPERFICIE_MIN, compararConOferta, motivoSeccion, referenciaOferta, ofertaDeZonas, rangoInicial, tieneDato } from '../motor';
+import { OFERTA_BANDA_EN_LINEA, type DatoOferta, SUPERFICIE_MAX, SUPERFICIE_MIN, TESTIGOS_MIN, compararConOferta, motivoSeccion, referenciaOferta, ofertaDeZonas, rangoInicial, tieneDato } from '../motor';
 import { type DatosMadrid, barrioDe, datosSeccion } from './datos';
 import { euros, mesAnio, numero } from './formato';
 import { MAPA_REFERENCIA as T } from './textos';
@@ -54,9 +54,9 @@ export interface ZonaMapa {
 	cusec: string;
 	/** Código del barrio, para el nombre y las líneas entre barrios */
 	barrio: string | null;
-	/** Parte alta en €/m² al mes (con IPC); null = sin dato para esta superficie */
+	/** Parte alta en €/m² al mes; null = sin dato para esta superficie */
 	supM2: number | null;
-	/** R_inf y R_sup en €/mes (con IPC); null = sin dato */
+	/** R_inf y R_sup en €/mes; null = sin dato */
 	refInf: number | null;
 	refSup: number | null;
 	/** Alquileres registrados en la zona */
@@ -75,10 +75,10 @@ export function zonasDelMapa(datos: DatosMadrid, superficie: number): ZonaMapa[]
 	return Object.entries(datos.secciones).map(([cusec, s]) => {
 		const d = datosSeccion(datos, cusec);
 		const conDato = valida && motivoSeccion(d) === null && tieneDato(d);
-		const r = conDato ? rangoInicial(superficie, d, datos.ipc.factor) : null;
+		const r = conDato ? rangoInicial(superficie, d) : null;
 		const distrito = s.barrio ? datos.barrios[s.barrio]?.cod_distrito : undefined;
 		const oferta = datos.oferta && s.barrio && distrito ? ofertaDeZonas([{ barrio: s.barrio, distrito }], datos.oferta) : null;
-		const testigosOk = s.n !== null && s.n >= 21;
+		const testigosOk = s.n !== null && s.n >= TESTIGOS_MIN;
 		const conEvolucion = testigosOk && s.med2015 !== null && s.med2024 !== null && s.med2015 > 0;
 		return {
 			cusec,
@@ -317,17 +317,17 @@ export function hojaDeZona(
 	if (capa !== 'evolucion' && z.refInf !== null && z.refSup !== null && z.supM2 !== null) {
 		hoja.referencia = T.hoja.referencia(m2, numero(z.refInf), euros(z.refSup));
 		hoja.parteAlta = T.hoja.parteAlta(numero(z.supM2, 1));
-		hoja.procedencia = T.hoja.procedencia(numero(z.n ?? 0), mesAnio(datos.ipc.ultimo_mes));
+		hoja.procedencia = T.hoja.procedencia(numero(z.n ?? 0));
 	} else if (capa !== 'evolucion') {
 		hoja.sinDato = !superficieValida(superficie)
 			? T.hoja.sinDatoSuperficie
-			: z.n !== null && z.n <= 20 ? T.hoja.sinDatoTestigos(numero(z.n)) : T.hoja.sinDatoZona;
+			: z.n !== null && z.n < TESTIGOS_MIN ? T.hoja.sinDatoTestigos(numero(z.n)) : T.hoja.sinDatoZona;
 	}
 
 	if (capa === 'evolucion') {
 		if (z.evolucion !== null && z.med2015 !== null && z.med2024 !== null) {
 			hoja.evolucion = T.hoja.evolucion(numero(z.med2015, 1), numero(z.med2024, 1), subida(z.evolucion));
-		} else hoja.sinDato = z.n !== null && z.n <= 20 ? T.hoja.sinDatoTestigos(numero(z.n)) : T.hoja.sinDatoZona;
+		} else hoja.sinDato = z.n !== null && z.n < TESTIGOS_MIN ? T.hoja.sinDatoTestigos(numero(z.n)) : T.hoja.sinDatoZona;
 	}
 	return hoja;
 }

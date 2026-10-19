@@ -1,6 +1,6 @@
 /**
  * «Suma las habitaciones del piso»: la suma de lo que cuestan las habitaciones frente a la referencia del
- * piso entero (rango en €/mes con el factor IPC), con los dos extremos del tamaño. Todo en el navegador y
+ * piso entero (rango en €/mes), con los dos extremos del tamaño. Todo en el navegador y
  * sin guardar nada. Es una comparación aparte, no un resultado: sin niveles, sin colores de nivel y sin
  * veredicto (la referencia no cubre habitaciones).
  */
@@ -64,7 +64,7 @@ export function calcularSuma({ precios, tramo, metros, cusecs, datos }: EntradaS
 
 	const suma = precios.reduce((t, p) => t + p, 0);
 	const lineas = tamanos.map((m): LineaSuma => {
-		const refs = validas.map((s) => referencia(m, s, datos.ipc.factor));
+		const refs = validas.map((s) => referencia(m, s));
 		// Con varias zonas posibles, el rango que las abarca a todas
 		const inf = Math.min(...refs.map((r) => r.inf));
 		const sup = Math.max(...refs.map((r) => r.sup));

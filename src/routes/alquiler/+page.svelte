@@ -25,7 +25,7 @@
 		<header>
 			<h1>{T.h1}</h1>
 			<p class="intro">{T.intro}</p>
-			<p class="meta">{T.nota(i.actualizado)}</p>
+			<p class="meta">{T.nota}</p>
 		</header>
 
 		<section class="herramienta" aria-label="Comprobar con la herramienta">

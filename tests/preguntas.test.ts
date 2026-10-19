@@ -117,12 +117,12 @@ describe('preguntas: la del decreto (supera-mi-alquiler-el-indice-de-referencia)
 		expect(texto).not.toMatch(/no hay zonas declaradas|13\/10\/2026, y/);
 		const calc = 'https://www.mivau.gob.es/vivienda/calculadora-precio-alquiler';
 		const paso = p.secciones.find((s) => s.h2 === '¿Cómo compruebo mi caso?')!;
-		expect(paso.enlaces!.map((e) => e.url)).toEqual([calc]);
+		expect(paso.enlaces!.map((e) => e.url)).toEqual([calc, 'https://serpavi.mivau.gob.es']);
 		expect(paso.parrafos[0]!.indexOf('calculadora oficial')).toBeLessThan(paso.parrafos[0]!.indexOf('SERPAVI'));
 		expect(p.fuentes[0]!.url).toBe(calc);
 		expect(texto).toContain('IRAV (Índice de Referencia de Arrendamientos de Vivienda) del INE');
 		expect(p.aviso).toContain('Diputación Permanente del Congreso. El plazo constitucional vence hacia el 5 de noviembre de 2026. Estado a 13/10/2026.');
-		expect(p.secciones.find((s) => s.tabla)!.tabla!.titulo).toMatch(/inventado y puede no existir para tu zona/);
+		expect(p.secciones.find((s) => s.tabla)!.tabla!.titulo).toMatch(/inventada y puede no existir para tu zona/);
 	});
 	it('dice el valor oficial y que la estimación es independiente', () => {
 		expect(texto).toContain('serpavi.mivau.gob.es');

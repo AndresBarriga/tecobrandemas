@@ -5,7 +5,6 @@ import {
 	CONSEJO_TRADUCCION_EN, CORRECCIONES, ENLACE_HERRAMIENTA_EN, ENTRADAS_SITEMAP, FECHA_EN, HUB_PREGUNTAS, MAPA_REFERENCIA, OG_PAGINAS, PAGINAS_EN, PARES_IDIOMA, PREGUNTAS, SITE_URL,
 	TEXTO_CORRECCIONES, alternativas, contenidoSitemap, jsonLdComoTexto, jsonLdEn, mesAnio, textoDePaginaEn, ogDe
 } from '../src/lib/resultado';
-import ipc from '../data/processed/ipc_alquiler.json';
 
 const fuente = (ruta: string) => readFileSync(new URL(`../${ruta}`, import.meta.url), 'utf8');
 const palabras = (t: string[]) => t.join(' ').split(/\s+/).filter(Boolean).length;
@@ -168,15 +167,13 @@ describe('confianza', () => {
 		expect(CORRECCIONES).toEqual([]);
 		expect(fuente('src/routes/correcciones/+page.svelte')).not.toMatch(/noindex|name="robots"/);
 	});
-	it('«Cómo calculamos»: aviso de IA al final y «Datos actualizados a» leído de los datos', () => {
+	it('«Cómo calculamos»: aviso de IA al final y la nota de los datos de 2024', () => {
 		const c = fuente('src/routes/como-calculamos/+page.svelte');
 		expect(c).toContain('Los textos de esta web se redactan con ayuda de herramientas de IA y se revisan a mano. Los datos salen de fuentes oficiales, enlazadas en cada página.');
-		expect(c).toContain('Datos actualizados a {p.datosActualizados}');
+		expect(c).toContain('{p.notaDatos}');
 		expect(c.indexOf('nota-ia">')).toBeGreaterThan(c.indexOf('class="cta"'));
 	});
-	it('la portada lee el mes del IPC de los datos, no de un texto escrito a mano', () => {
-		expect(fuente('src/routes/+page.server.ts')).toContain('ipc.ultimo_mes');
-		expect(fuente('src/routes/+page.svelte')).toContain('Datos actualizados a {data.actualizado}');
-		expect(mesAnio(ipc.ultimo_mes)).toMatch(/^[a-z]+ de 20\d\d$/);
+	it('la portada dice de qué año son los datos, sin un mes de actualización escrito a mano', () => {
+		expect(fuente('src/routes/+page.svelte')).toContain('{NOTA_DATOS}');
 	});
 });

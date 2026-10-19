@@ -34,7 +34,7 @@ export interface Rango {
 	sup: number;
 }
 
-/** Rango inicial ajustado por IPC y máximo con el cuestionario más favorable (x = 1) */
+/** Rango inicial y máximo con el cuestionario más favorable (x = 1) */
 export interface Referencia extends Rango {
 	max: number;
 }

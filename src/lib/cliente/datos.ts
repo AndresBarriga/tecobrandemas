@@ -1,6 +1,6 @@
 /** Carga de los datos de data/processed/ que sirve el propio dominio (static/data). Una sola vez por visita. */
 import { PUBLIC_OFERTA_ENABLED, PUBLIC_OFERTA_MAPA_ENABLED } from '$app/env/public';
-import type { BarrioJson, DatosMadrid, IpcJson, OfertaJson, SeccionJson } from '#lib/resultado';
+import type { BarrioJson, DatosMadrid, OfertaJson, SeccionJson } from '#lib/resultado';
 
 let cargados: Promise<DatosMadrid> | null = null;
 let cargadosSinOferta: Promise<DatosMadrid> | null = null;
@@ -18,10 +18,9 @@ function leer(conOferta: boolean): Promise<DatosMadrid> {
 	return Promise.all([
 		json<Record<string, SeccionJson>>('/data/secciones_madrid.json'),
 		json<{ barrios: Record<string, BarrioJson> }>('/data/seccion_barrio.json'),
-		json<IpcJson>('/data/ipc_alquiler.json'),
 		// Con la flag apagada (PUBLIC_OFERTA_ENABLED=false) no se pide el fichero. Si falla, no hay línea de oferta: el resto funciona igual
 		conOferta ? json<OfertaJson>('/data/oferta_madrid.json').catch(() => undefined) : Promise.resolve(undefined)
-	]).then(([secciones, b, ipc, oferta]) => ({ secciones, barrios: b.barrios, ipc, ...(oferta ? { oferta } : {}) }));
+	]).then(([secciones, b, oferta]) => ({ secciones, barrios: b.barrios, ...(oferta ? { oferta } : {}) }));
 }
 
 export function cargarDatos(): Promise<DatosMadrid> {

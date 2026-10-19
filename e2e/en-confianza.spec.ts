@@ -50,12 +50,12 @@ test.describe('confianza', () => {
 		await expect(page.getByText('fecha · página · qué cambió')).toBeVisible();
 	});
 
-	test('«Datos actualizados a» en la portada y en «Cómo calculamos», con el mismo mes; aviso de IA', async ({ page }) => {
+	test('la nota de los datos de 2024 en la portada y en «Cómo calculamos»; aviso de IA', async ({ page }) => {
+		const nota = 'Datos de rentas declaradas en 2024 (SERPAVI); los alquileres han subido desde entonces.';
 		await page.goto('/');
-		const portada = await page.getByText(/^Datos actualizados a /).first().innerText();
-		expect(portada).toMatch(/^Datos actualizados a [a-zé]+ de 20\d\d\.$/);
+		await expect(page.getByText(nota, { exact: true }).first()).toBeVisible();
 		await page.goto('/como-calculamos');
-		await expect(page.getByText(portada, { exact: true })).toBeVisible();
+		await expect(page.getByText(nota, { exact: true }).first()).toBeVisible();
 		await expect(page.getByText('Los textos de esta web se redactan con ayuda de herramientas de IA y se revisan a mano.')).toBeVisible();
 	});
 });

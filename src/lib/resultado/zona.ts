@@ -43,7 +43,7 @@ export function zona(
 		if (!esUsuario && d > RADIO_ZONA_M) continue;
 		const s = datosSeccion(datos, cusec);
 		const conDato = motivoSeccion(s) === null && tieneDato(s);
-		const eurosM2 = conDato ? rangoInicialM2(superficie, s).sup * datos.ipc.factor : null;
+		const eurosM2 = conDato ? rangoInicialM2(superficie, s).sup : null;
 		celdas.push({
 			cusec,
 			barrio: barrioDe(datos, cusec)?.codigo ?? null,

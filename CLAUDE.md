@@ -1,7 +1,7 @@
 # A su precio (antes «¿Tiene sentido este precio?») — instrucciones para Claude Code
 
 Herramienta web: el usuario introduce un anuncio de alquiler de Madrid y ve cuánto
-supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado por IPC).
+supera la referencia de alquileres registrados de su zona (SERPAVI 2024, sin ajustar por IPC: es el rango oficial tal cual).
 
 ## Documentación (leer antes de empezar)
 - docs/prd.md: qué se construye (requisitos R1-R13, métricas, plan).
@@ -11,7 +11,7 @@ supera la referencia de alquileres registrados de su zona (SERPAVI 2024 ajustado
   cerrar cada hito o cuando cambie algo relevante.
 - docs/estado.md: tabla de R1-R13 y de las pantallas del diseño (hecho / parcial / falta).
 - docs/operacion.md: límites del plan gratuito, métricas y pasos antes del lanzamiento.
-- README.md: cómo desarrollar, regenerar datos, actualizar el IPC, desplegar y rotar el secreto.
+- README.md: cómo desarrollar, regenerar datos, desplegar y rotar el secreto.
 
 ## Reglas que no se rompen nunca
 - Los tests de tests/fixtures/tests_motor_serpavi.csv deben pasar siempre

@@ -3,16 +3,16 @@
  * referencia), un ejemplo paso a paso con el mismo motor y la misma escala que el resultado, las dos referencias,
  * el mapa y «Tu zona», los datos que se guardan, lo que no se calcula, las fuentes, quiénes somos y financiación.
  *
- * Nada de cifras copiadas: el factor y el mes del IPC salen de ipc_alquiler.json, la oferta de oferta_madrid.json y el
+ * Nada de cifras copiadas: la oferta sale de oferta_madrid.json y el
  * ejemplo se calcula con los datos de la zona (Delicias, 65 m², 1.650 €; el mismo de la portada). Si cambian los
  * datos, cambia el ejemplo. Mismas reglas de tono que textos.ts (lo comprueba tests/textos.test.ts).
  */
 import { type Anuncio, OFERTA_BANDA_EN_LINEA, OFERTA_S_REF_M2, type Referencia, factorTamano, referencia, tieneDato } from '../motor';
 import { type Costura, escalaCostura } from './costura';
-import { type DatosMadrid, type IpcJson, datosSeccion } from './datos';
-import { euros, mesAnio, numero, porcentaje } from './formato';
+import { type DatosMadrid, datosSeccion } from './datos';
+import { euros, mesAnio, numero } from './formato';
 import { construirPantalla } from './resultado';
-import { ATRIBUCIONES, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ANIO_SERPAVI, COSTURA, OFERTA, type ClaveSinDato, NOMBRE } from './textos';
+import { ATRIBUCIONES, AVISO_INDEPENDIENTE, ENLACE_OFICIAL, ANIO_SERPAVI, COSTURA, NOTA_DATOS, OFERTA, type ClaveSinDato, NOMBRE } from './textos';
 import type { Ubicacion } from './ubicacion';
 
 const NB = ' ';
@@ -42,8 +42,6 @@ export interface CarrilEjemplo {
 	fuente: 'contratos' | 'oferta';
 	/** Lo habitual (contratos) */
 	banda: TramoEscala | null;
-	/** La referencia sin ajustar, con contorno discontinuo (paso 2) */
-	anterior: TramoEscala | null;
 	/** Hasta el máximo si fuera un piso excelente */
 	excelente: TramoEscala | null;
 	/** La oferta estimada: marca vertical ciruela */
@@ -56,7 +54,7 @@ export interface CarrilEjemplo {
 
 /** Bajo el carril: qué es cada cosa y su valor («lo habitual · 685–987 €») */
 export interface LeyendaEjemplo {
-	clave: 'banda' | 'anterior' | 'excelente' | 'marca' | 'margen';
+	clave: 'banda' | 'excelente' | 'marca' | 'margen';
 	texto: string;
 	valor: string;
 }
@@ -128,8 +126,8 @@ export interface Metodologia {
 	intro: string;
 	indice: { id: string; titulo: string }[];
 	treintaSegundos: string[];
-	/** «agosto de 2026»: el mes del último dato del IPC usado, leído de los datos */
-	datosActualizados: string;
+	/** De qué año son los contratos y que el mercado ha cambiado desde entonces (NOTA_DATOS) */
+	notaDatos: string;
 	/** null sin datos de la zona del ejemplo */
 	lectura: Lectura | null;
 	ejemplo: Ejemplo | null;
@@ -151,7 +149,7 @@ export interface Metodologia {
 	mapa: { titulo: string; parrafos: string[]; tuZona: { titulo: string; parrafos: string[] }; muestra: string[]; noMuestra: string[] };
 	datos: { parrafos: string[]; guardamos: string[]; noGuardamos: string[]; notas: { titulo: string; texto: string[]; ancha?: boolean }[] };
 	limites: { intro: string; items: LimiteMetodologia[]; cierre: string };
-	fuentes: { filas: FuenteMetodologia[]; ipc: string; validacion: string; nota: string; enlaceOficial: string };
+	fuentes: { filas: FuenteMetodologia[]; datos: string; validacion: string; nota: string; enlaceOficial: string };
 	quienesSomos: { parrafos: string[]; contacto: { texto: string; correo: string } };
 	financiacion: string[];
 	cta: { pregunta: string; boton: string };
@@ -192,7 +190,7 @@ export const FINANCIACION = [
 const LIMITES: [ClaveSinDato, string, string][] = [
 	['superficie_menor', `Menos de 30${NB}m²`, 'Hay pocos contratos de ese tamaño.'],
 	['superficie_mayor', `Más de 150${NB}m²`, 'Hay tan pocos casos que la cifra no se sostendría.'],
-	['obra_nueva', 'Obra nueva, de 2022 o después', 'Aún no tiene historial en los datos de 2024.'],
+	['obra_nueva', 'Obra nueva, de 2022 o después', 'El sistema oficial no da rango para edificios de 2022 o posteriores.'],
 	['unifamiliar', 'Casa unifamiliar', 'La referencia está hecha con pisos.'],
 	['temporal', 'Alquiler temporal o de media estancia', 'La referencia solo mide alquileres de larga duración.'],
 	['testigos', 'Pocos datos en la zona', 'No hay suficientes contratos para dar una referencia fiable.'],
@@ -201,12 +199,11 @@ const LIMITES: [ClaveSinDato, string, string][] = [
 
 const rango = (inf: number, sup: number) => `${numero(inf)}–${euros(sup)}`;
 const carril = (fuente: CarrilEjemplo['fuente'], c: Partial<Omit<CarrilEjemplo, 'fuente'>>): CarrilEjemplo => ({
-	fuente, banda: null, anterior: null, excelente: null, marca: null, margen: null, punto: null, ...c
+	fuente, banda: null, excelente: null, marca: null, margen: null, punto: null, ...c
 });
 
 interface Base {
-	sin: Referencia;
-	con: Referencia;
+	ref: Referencia;
 	oferta: { estimada: number; eurosM2: number; banda: number; nivel: 'barrio' | 'distrito'; mes: string } | null;
 	costura: Costura;
 	lugar: string;
@@ -220,50 +217,42 @@ function baseEjemplo(datos: DatosMadrid): Base | null {
 	const p = construirPantalla(ANUNCIO_EJEMPLO, UBICACION_EJEMPLO, datos);
 	if (p.tipo !== 'resultado') return null;
 	const a = ANUNCIO_EJEMPLO;
-	const sin = referencia(a.superficie, s, 1);
-	const con = referencia(a.superficie, s, datos.ipc.factor);
+	const ref = referencia(a.superficie, s);
 	const o = p.entradaCostura.oferta;
 	const oferta = o ? { estimada: o.estimada, eurosM2: o.eurosM2, banda: o.banda, nivel: o.nivel, mes: o.mes } : null;
-	const { X } = escalaCostura([con.inf, a.precio, con.max, ...(oferta ? [oferta.estimada * (1 - oferta.banda), oferta.estimada * (1 + oferta.banda)] : [])]);
-	return { sin, con, oferta, costura: p.costura, lugar: p.vista.lugar, X };
+	const { X } = escalaCostura([ref.inf, a.precio, ref.max, ...(oferta ? [oferta.estimada * (1 - oferta.banda), oferta.estimada * (1 + oferta.banda)] : [])]);
+	return { ref, oferta, costura: p.costura, lugar: p.vista.lugar, X };
 }
 
-function construirEjemplo(b: Base, f: number, ultimoMes: string): Ejemplo {
-	const { sin, con, oferta, X } = b;
+function construirEjemplo(b: Base): Ejemplo {
+	const { ref, oferta, X } = b;
 	const a = ANUNCIO_EJEMPLO;
 	const tramo = (inf: number, sup: number): TramoEscala => ({ desde: X(inf), hasta: X(sup) });
 	const m2 = `${numero(a.superficie)}${NB}m²`;
 	const habitual = (r: Referencia): LeyendaEjemplo => ({ clave: 'banda', texto: COSTURA.contratos.banda, valor: rango(r.inf, r.sup) });
-	const excelente: LeyendaEjemplo = { clave: 'excelente', texto: 'si fuera un piso excelente', valor: euros(con.max) };
+	const excelente: LeyendaEjemplo = { clave: 'excelente', texto: 'si fuera un piso excelente', valor: euros(ref.max) };
 
 	const pasos: PasoEjemplo[] = [
 		{
 			n: 1, fuente: 'contratos', titulo: 'Lo que pagan en la zona',
-			descripcion: `Con los contratos vigentes de esta zona para ${m2}, lo habitual va de ${numero(sin.inf)} a ${euros(sin.sup)} al mes. Son datos de ${ANIO_SERPAVI}.`,
-			aria: `Referencia sin ajustar, de ${numero(sin.inf)} a ${euros(sin.sup)}`,
-			carril: carril('contratos', { banda: tramo(sin.inf, sin.sup) }),
-			leyenda: [habitual(sin)]
+			descripcion: `Con los contratos vigentes de esta zona para ${m2}, lo habitual va de ${numero(ref.inf)} a ${euros(ref.sup)} al mes. Son datos de ${ANIO_SERPAVI}: los alquileres han subido desde entonces.`,
+			aria: `Lo habitual, de ${numero(ref.inf)} a ${euros(ref.sup)}`,
+			carril: carril('contratos', { banda: tramo(ref.inf, ref.sup) }),
+			leyenda: [habitual(ref)]
 		},
 		{
-			n: 2, fuente: 'contratos', titulo: `Con el ajuste del IPC (×${numero(f, 3)})`,
-			descripcion: `Multiplicamos por ${numero(f, 3)} (${porcentaje(f - 1, true)} hasta ${mesAnio(ultimoMes)}): lo habitual pasa a ir de ${numero(con.inf)} a ${euros(con.sup)} al mes. El contorno discontinuo marca lo de antes.`,
-			aria: `Referencia ajustada, de ${numero(con.inf)} a ${euros(con.sup)}`,
-			carril: carril('contratos', { banda: tramo(con.inf, con.sup), anterior: tramo(sin.inf, sin.sup) }),
-			leyenda: [habitual(con), { clave: 'anterior', texto: 'sin ajustar', valor: rango(sin.inf, sin.sup) }]
-		},
-		{
-			n: 3, fuente: 'contratos', titulo: 'Si fuera un piso excelente',
-			descripcion: `La referencia deja margen para las mejores características (ascensor, garaje, reforma reciente, piscina o vistas): hasta ${euros(con.max)}. Es la parte alta de lo que pagan quienes ya viven aquí, no el precio de mercado: hay contratos por encima.`,
-			aria: `Lo habitual, de ${numero(con.inf)} a ${euros(con.sup)}; si fuera un piso excelente, ${euros(con.max)}`,
-			carril: carril('contratos', { banda: tramo(con.inf, con.sup), excelente: tramo(con.sup, con.max) }),
-			leyenda: [habitual(con), excelente]
+			n: 2, fuente: 'contratos', titulo: 'Si fuera un piso excelente',
+			descripcion: `La referencia deja margen para las mejores características (ascensor, garaje, reforma reciente, piscina o vistas): hasta ${euros(ref.max)}. Es la parte alta de lo que pagan quienes ya viven aquí, no el precio de mercado: hay contratos por encima.`,
+			aria: `Lo habitual, de ${numero(ref.inf)} a ${euros(ref.sup)}; si fuera un piso excelente, ${euros(ref.max)}`,
+			carril: carril('contratos', { banda: tramo(ref.inf, ref.sup), excelente: tramo(ref.sup, ref.max) }),
+			leyenda: [habitual(ref), excelente]
 		}
 	];
 	if (oferta) {
 		const lo = oferta.estimada * (1 - oferta.banda);
 		const hi = oferta.estimada * (1 + oferta.banda);
 		pasos.push({
-			n: 4, fuente: 'oferta', titulo: 'Lo que se pide ahora',
+			n: 3, fuente: 'oferta', titulo: 'Lo que se pide ahora',
 			descripcion: `Los anuncios del ${oferta.nivel} piden de media ${numero(oferta.eurosM2, 2)}${NB}€/m² (${mesAnio(oferta.mes)}). Por ${m2}, con el ajuste por tamaño: ≈${euros(oferta.estimada)} al mes. «En línea» es ±${numero(oferta.banda * 100)}${NB}% de esa cifra: de ${numero(lo)} a ${euros(hi)}.`,
 			aria: `Lo que se pide ahora, ≈${euros(oferta.estimada)}; en línea, de ${numero(lo)} a ${euros(hi)}`,
 			carril: carril('oferta', { marca: X(oferta.estimada), margen: tramo(lo, hi) }),
@@ -286,7 +275,7 @@ function construirEjemplo(b: Base, f: number, ultimoMes: string): Ejemplo {
 }
 
 function construirLectura(b: Base): Lectura {
-	const { con, oferta, X } = b;
+	const { ref: con, oferta, X } = b;
 	const banda = `${numero(OFERTA_BANDA_EN_LINEA * 100)}${NB}%`;
 	const P = COSTURA.palabras;
 	const contratos = (x: number) => carril('contratos', { banda: { desde: X(con.inf), hasta: X(con.sup) }, excelente: { desde: X(con.sup), hasta: X(con.max) }, punto: X(x) });
@@ -328,10 +317,10 @@ function construirLectura(b: Base): Lectura {
 const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 /**
- * «Las dos referencias»: el mes y la serie de la oferta salen de oferta_madrid.json y los del IPC de ipc_alquiler.json; la
+ * «Las dos referencias»: el mes y la serie de la oferta salen de oferta_madrid.json; la
  * banda de «en línea», de config/oferta.json. Sin el fichero de oferta (solo en pruebas) se habla del último mes publicado.
  */
-function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): Metodologia['referencias'] {
+function construirReferencias(datos: DatosMadrid | undefined): Metodologia['referencias'] {
 	const mes = datos?.oferta ? mayuscula(mesAnio(datos.oferta.mes)) : 'El último mes publicado';
 	const serie = datos?.oferta?.serie ?? '4.3.21.D';
 	const banda = numero(OFERTA_BANDA_EN_LINEA * 100);
@@ -344,7 +333,7 @@ function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): M
 				filas: [
 					{ etiqueta: 'Qué mide', texto: 'Rentas ya firmadas, de contratos de distintos años' },
 					{ etiqueta: 'Fuente', texto: `SERPAVI ${ANIO_SERPAVI}, del Ministerio de Vivienda y Agenda Urbana, con datos de Hacienda` },
-					{ etiqueta: 'Al día', texto: `Con el IPC del alquiler hasta ${mesIpc}` },
+					{ etiqueta: 'Al día', texto: `Rentas de ${ANIO_SERPAVI}: los alquileres han subido desde entonces` },
 					{ etiqueta: 'Ojo', texto: 'Solo propietarios particulares: no incluye empresas, fondos ni contratos no declarados' }
 				],
 				terminos: [
@@ -357,7 +346,7 @@ function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): M
 				filas: [
 					{ etiqueta: 'Qué mide', texto: 'Precios pedidos en anuncios, antes de cerrar el precio' },
 					{ etiqueta: 'Fuente', texto: `Serie ${serie} del Ayuntamiento de Madrid, elaborada a partir de Idealista` },
-					{ etiqueta: 'Al día', texto: `${mes}, sin ajuste de IPC: ya es reciente` },
+					{ etiqueta: 'Al día', texto: `${mes}: es reciente` },
 					{ etiqueta: 'Ojo', texto: 'Es lo que se anuncia, no lo que se firma' }
 				],
 				terminos: [
@@ -369,7 +358,7 @@ function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): M
 		cierre: [
 			'Miden cosas distintas, así que pueden no coincidir: cada una se compara solo con tu precio, nunca una con otra.',
 			'Que un precio salga por encima no lo hace incorrecto: dice cuánto más se pide, o se paga, que la referencia. Nunca hablamos de precios correctos o incorrectos.',
-			'En las páginas de «Alquiler por barrios», la cifra de cada barrio es la mediana de la referencia de sus zonas con más de 20\u00A0contratos, calculada con el mismo método y los mismos datos que la herramienta, para 50, 70 y 90\u00A0m². Dentro del barrio, la cifra varía según la calle y las características de la vivienda.'
+			'En las páginas de «Alquiler por barrios», la cifra de cada barrio es la mediana de la referencia de sus zonas con más de 20\u00A0contratos y una superficie mediana de 30 a 150\u00A0m², calculada con el mismo método y los mismos datos que la herramienta, para 50, 70 y 90\u00A0m². Dentro del barrio, la cifra varía según la calle y las características de la vivienda.'
 		],
 		limites: {
 			titulo: 'Límites de cada referencia',
@@ -377,7 +366,7 @@ function construirReferencias(datos: DatosMadrid | undefined, mesIpc: string): M
 				{
 					titulo: 'Contratos',
 					items: [
-						`Son datos de ${ANIO_SERPAVI}: el IPC con el que los ponemos al día es nacional, no de Madrid.`,
+						`Son datos de ${ANIO_SERPAVI} y no los actualizamos: los alquileres han subido desde entonces, así que la referencia puede quedarse corta frente a lo que se firma hoy.`,
 						'Mezclan contratos de distintos años; los más antiguos suelen tener rentas más bajas.',
 						'Con pocos contratos en la zona no damos cifra (ver «Lo que no calculamos»).'
 					]
@@ -420,12 +409,9 @@ function construirAjuste(): Metodologia['ajuste'] {
 	};
 }
 
-export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodologia {
-	const factor = numero(ipc.factor, 3);
-	const pct = porcentaje(ipc.factor - 1, true);
-	const mes = mesAnio(ipc.ultimo_mes);
-	const base = datos ? baseEjemplo({ ...datos, ipc }) : null;
-	const ejemplo = base ? construirEjemplo(base, ipc.factor, ipc.ultimo_mes) : null;
+export function construirMetodologia(datos?: DatosMadrid): Metodologia {
+	const base = datos ? baseEjemplo(datos) : null;
+	const ejemplo = base ? construirEjemplo(base) : null;
 	const lectura = base ? construirLectura(base) : null;
 
 	const mesOferta = datos?.oferta ? mesAnio(datos.oferta.mes) : null;
@@ -434,24 +420,24 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 		titulo: 'Cómo calculamos',
 		intro: 'Qué datos usamos, qué hacemos con ellos y hasta dónde llegan.',
 		indice: INDICE.map((i) => ({ ...i })),
-		datosActualizados: mes,
+		notaDatos: NOTA_DATOS,
 		treintaSegundos: [
 			'Comparamos el precio de un anuncio, o de tu alquiler, con dos referencias: lo que pagan quienes ya viven de alquiler en la zona (contratos vigentes declarados a Hacienda, 2024) y lo que se pide ahora en los anuncios del barrio o del distrito.',
-			`Ajustamos los contratos con el IPC del alquiler: ${pct} hasta ${mes}. Lo que se pide no se ajusta por IPC (ya es reciente), pero sí por tamaño: los pisos pequeños se anuncian más caros por m².`,
+			'Los contratos son de 2024 y no los actualizamos: los alquileres han subido desde entonces. Lo que se pide es reciente, pero se ajusta por tamaño: los pisos pequeños se anuncian más caros por m².',
 			'Los contratos ya están firmados, algunos hace años; los anuncios son precios pedidos que aún pueden cambiar. Miden cosas distintas: cada referencia se compara solo con tu precio, nunca una con otra.',
 			'No vemos el piso por dentro ni sabemos qué se firmará: por eso damos una palabra y un margen, no una cifra exacta.',
 			'No somos una tasación ni sustituimos al valor oficial.'
 		],
 		lectura,
 		ejemplo,
-		referencias: construirReferencias(datos, mes),
+		referencias: construirReferencias(datos),
 		ajuste: construirAjuste(),
 		mapa: {
 			titulo: 'El mapa y Tu zona',
 			parrafos: [
 				'El mapa de Madrid tiene tres vistas. «Mi presupuesto» («¿Dónde me llega?», la que abre por defecto) pinta cada zona según cómo queda tu presupuesto al mes frente a lo que se pide en los anuncios recientes de su barrio (o de su distrito, con punteado, si el barrio no tiene dato), para los metros que elijas con la barra o con el número.',
 				`La comparación usa la estimación de cada zona (€/m² ajustado por tamaño × tus metros): «No llega» por debajo del ${numero((1 - OFERTA_BANDA_EN_LINEA) * 100)}\u00A0%, «En línea» dentro de ±${numero(OFERTA_BANDA_EN_LINEA * 100)}\u00A0% y «Te sobra» por encima del ${numero((1 + OFERTA_BANDA_EN_LINEA) * 100)}\u00A0%. El mapa se recolorea al mover las barras: el cálculo lo hace tu navegador.`,
-				'«Referencia» pinta la parte alta de lo que pagan quienes ya viven aquí según los contratos, con el mismo método y el mismo ajuste del IPC que el resultado, para la superficie que elijas (40, 55, 70, 90 o 110\u00A0m²); con «Oferta», el €/m² medio de los anuncios recientes del barrio o del distrito. Los cinco colores reparten las zonas con dato en cinco grupos del mismo tamaño, con cortes iguales para toda la ciudad. Las zonas con 20 contratos o menos, y las superficies fuera de 30-150\u00A0m², salen como «sin dato».',
+				'«Referencia» pinta la parte alta de lo que pagan quienes ya viven aquí según los contratos, con el mismo método que el resultado, para la superficie que elijas (40, 55, 70, 90 o 110\u00A0m²); con «Oferta», el €/m² medio de los anuncios recientes del barrio o del distrito. Los cinco colores reparten las zonas con dato en cinco grupos del mismo tamaño, con cortes iguales para toda la ciudad. Las zonas con 20 contratos o menos, las que tienen una superficie mediana fuera de 30-150\u00A0m² y las superficies elegidas fuera de ese rango salen como «sin dato».',
 				'«Evolución 2015-2024» muestra cuánto ha subido la mediana de los contratos de cada zona, sin descontar la inflación. Solo usa contratos.'
 			],
 			tuZona: {
@@ -462,7 +448,7 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 				]
 			},
 			muestra: [
-				'Con «Contratos»: lo que pagan quienes ya viven de alquiler, en contratos vigentes de distintas fechas, de propietarios particulares declarados a Hacienda (2024), ajustados por el IPC',
+				'Con «Contratos»: lo que pagan quienes ya viven de alquiler, en contratos vigentes de distintas fechas, de propietarios particulares declarados a Hacienda (2024)',
 				'Con «Oferta»: lo que se pide en los anuncios recientes de cada barrio o distrito, con su mes y la aclaración «no son contratos firmados»',
 				'Cuánto ha subido la renta de los contratos entre 2015 y 2024',
 				'Dónde llega tu presupuesto frente a esa referencia'
@@ -513,10 +499,6 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 					atribucion: OFERTA.fuente(mesOferta ?? 'último mes publicado')
 				},
 				{
-					nombre: 'Índice de Precios de Consumo, alquiler de vivienda (INE)', host: 'ine.es', url: 'https://www.ine.es',
-					uso: 'Poner la referencia al día hasta el último mes publicado. Serie IPC291807, subclase 04.1.1.0.', atribucion: 'Elaboración propia con datos extraídos del sitio web del INE: www.ine.es'
-				},
-				{
 					nombre: 'CartoCiudad', host: 'cartociudad.es', url: 'https://www.cartociudad.es',
 					uso: 'Situar la dirección en su zona y dibujar el mapa.', atribucion: 'CartoCiudad CC-BY 4.0 scne.es'
 				},
@@ -525,8 +507,8 @@ export function construirMetodologia(ipc: IpcJson, datos?: DatosMadrid): Metodol
 					uso: 'Los límites de los barrios y el mapa de fondo, servido desde esta web.', atribucion: 'Barrios: Ayuntamiento de Madrid. © OpenStreetMap contributors'
 				}
 			],
-			ipc: `Último dato del IPC del alquiler: ${mes}, factor ${factor} (${pct}).`,
-			validacion: 'Comprobamos nuestro cálculo contra la aplicación oficial con 30 casos: la mayor diferencia es de 0,6 céntimos al mes.',
+			datos: NOTA_DATOS,
+			validacion: 'Comprobamos nuestro cálculo contra la aplicación oficial con 30 casos: la mayor diferencia es de 0,62 céntimos al mes.',
 			nota: AVISO_INDEPENDIENTE,
 			enlaceOficial: ENLACE_OFICIAL
 		},

@@ -73,8 +73,8 @@ export const SIN_DATO: Record<ClaveSinDato, TextoSinDato> = {
 	},
 	obra_nueva: {
 		titular: 'Obra nueva',
-		frase: 'Es obra nueva y todavía no tiene historial: la referencia se construye con contratos que ya llevan tiempo registrados.',
-		extra: 'Las viviendas terminadas en 2022 o después aún no aparecen en los datos con los que se calcula la referencia de 2024.'
+		frase: 'El sistema oficial no da rango para edificios de 2022 o posteriores.',
+		extra: 'Los edificios construidos o rehabilitados por completo en 2022 o después no están en los datos con los que se calcula la referencia de 2024.'
 	},
 	unifamiliar: {
 		titular: 'Casa unifamiliar',
@@ -93,7 +93,7 @@ export const SIN_DATO: Record<ClaveSinDato, TextoSinDato> = {
 	},
 	sin_dato_seccion: {
 		titular: 'Sin datos aquí',
-		frase: 'SERPAVI no publica referencia para esta zona: no figuran contratos.',
+		frase: 'SERPAVI no publica referencia para esta zona: faltan contratos o sus pisos quedan fuera de 30–150\u00A0m² de superficie mediana.',
 		extra: 'Prueba con una calle cercana si el piso está en el límite de la zona.'
 	},
 	fuera_de_madrid: {
@@ -210,12 +210,15 @@ export const MIRANDO = {
 	aviso: 'Se compara con contratos vigentes, algunos de hace años. Por eso un anuncio suele salir por encima.'
 } as const;
 
-/** Línea de fuente de los dos modos; el mes sale del dato del IPC */
+/** Qué año son los datos de los contratos y que el mercado ha cambiado desde entonces (sin cifra de actualización) */
+export const NOTA_DATOS = 'Datos de rentas declaradas en 2024 (SERPAVI); los alquileres han subido desde entonces.';
+
+/** Línea de fuente de los dos modos */
 export const FUENTE = {
-	una: (n: string, mes: string) =>
-		`Basado en ${n} contratos vigentes en la zona, de propietarios particulares declarados a Hacienda (2024), ajustados por el IPC del alquiler hasta ${mes}. No incluye empresas ni fondos.`,
-	varias: (n: string, zonas: string, mes: string) =>
-		`Basado en ${n} contratos vigentes en ${zonas}, de propietarios particulares declarados a Hacienda (2024), ajustados por el IPC del alquiler hasta ${mes}. No incluye empresas ni fondos.`
+	una: (n: string) =>
+		`Basado en ${n} contratos vigentes en la zona, de propietarios particulares declarados a Hacienda. No incluye empresas ni fondos. ${NOTA_DATOS}`,
+	varias: (n: string, zonas: string) =>
+		`Basado en ${n} contratos vigentes en ${zonas}, de propietarios particulares declarados a Hacienda. No incluye empresas ni fondos. ${NOTA_DATOS}`
 } as const;
 
 export const ETIQUETA_SIN_REFERENCIA = 'Sin referencia para este caso';
@@ -247,7 +250,7 @@ export const FORMULARIO = {
 	},
 	precio: 'Precio al mes',
 	superficie: 'Metros construidos',
-	obraNueva: '¿Es obra nueva, de 2022 o después?',
+	obraNueva: 'Edificio construido o rehabilitado por completo en 2022 o después',
 	largaDuracion: '¿Es alquiler de larga duración?',
 	tipo: '¿Piso o casa?',
 	comprobar: 'Comprobar el precio',
@@ -930,17 +933,17 @@ export const PAGINA_TARJETA = {
 	introInquilino: (barrio: string | null) =>
 		`Alguien ha comprobado su alquiler en ${barrio ?? 'Madrid'} y te ha enviado su resultado.`,
 	explicacionInquilino:
-		'Esta herramienta compara un alquiler de Madrid con lo que pagan quienes ya viven de alquiler en la zona: contratos vigentes declarados a Hacienda (2024, datos del Ministerio de Vivienda), ajustados por el IPC del alquiler.',
+		'Esta herramienta compara un alquiler de Madrid con lo que pagan quienes ya viven de alquiler en la zona: contratos vigentes declarados a Hacienda (2024, datos del Ministerio de Vivienda).',
 	notaInquilino: 'La tarjeta no incluye la dirección ni la renta.',
 	titular: '¿Y el tuyo?',
 	explicacion:
-		'Esta herramienta compara lo que piden en un anuncio de alquiler en Madrid con lo que pagan quienes ya viven de alquiler en la zona: contratos vigentes declarados a Hacienda (2024, datos del Ministerio de Vivienda), ajustados por el IPC del alquiler.',
+		'Esta herramienta compara lo que piden en un anuncio de alquiler en Madrid con lo que pagan quienes ya viven de alquiler en la zona: contratos vigentes declarados a Hacienda (2024, datos del Ministerio de Vivienda).',
 	/** Tarjetas del rediseño: dos referencias */
 	explicacionDos: {
 		mirando:
-			'Esta herramienta compara lo que piden en un anuncio de alquiler en Madrid con dos referencias: los contratos vigentes de la zona (declarados a Hacienda en 2024, datos del Ministerio de Vivienda, ajustados por el IPC del alquiler) y los anuncios recientes del barrio o del distrito (Ayuntamiento de Madrid).',
+			'Esta herramienta compara lo que piden en un anuncio de alquiler en Madrid con dos referencias: los contratos vigentes de la zona (declarados a Hacienda en 2024, datos del Ministerio de Vivienda) y los anuncios recientes del barrio o del distrito (Ayuntamiento de Madrid).',
 		vivo:
-			'Esta herramienta compara un alquiler de Madrid con dos referencias: los contratos vigentes de la zona (declarados a Hacienda en 2024, datos del Ministerio de Vivienda, ajustados por el IPC del alquiler) y los anuncios recientes del barrio o del distrito (Ayuntamiento de Madrid).'
+			'Esta herramienta compara un alquiler de Madrid con dos referencias: los contratos vigentes de la zona (declarados a Hacienda en 2024, datos del Ministerio de Vivienda) y los anuncios recientes del barrio o del distrito (Ayuntamiento de Madrid).'
 	},
 	boton: 'Comprueba tu piso',
 	nota: 'La tarjeta no incluye la dirección ni el precio exacto del anuncio.',
@@ -1079,8 +1082,7 @@ export const TU_ZONA = {
 		introContratos: 'Tu zona y las cercanas (hasta 1,5 km), coloreadas según lo más alto de lo habitual en los alquileres registrados en cada una, en €/m².',
 		/** El dato es del barrio si lo tiene y, si no, del distrito: el texto lo dice así */
 		introOferta: 'Las zonas se colorean según el precio de oferta de alquiler publicado para su barrio o, si el barrio no tiene dato, para su distrito, en €/m².',
-		fuenteContratos: (mes: string) =>
-			`Contratos: SERPAVI (Ministerio de Vivienda y Agenda Urbana), propietarios particulares declarados a Hacienda (2024), ajustados por el IPC del alquiler hasta ${mes}.`,
+		fuenteContratos: `Contratos: SERPAVI (Ministerio de Vivienda y Agenda Urbana), propietarios particulares declarados a Hacienda (2024). Los alquileres han subido desde entonces.`,
 		leyendaOferta: 'Precio de oferta del barrio o del distrito, en €/m² al mes',
 		notaOferta: 'Punteado: valor del distrito (el barrio no tiene dato propio). Cortes iguales para toda la ciudad. Las líneas gruesas separan barrios.'
 	}
@@ -1148,11 +1150,11 @@ export const MAPA_REFERENCIA = {
 		zonaDe: 'Una zona de',
 		referencia: (m2: string, inf: string, sup: string) => `Lo habitual para ${m2}: de ${inf} a ${sup} al mes`,
 		parteAlta: (m2: string) => `Lo más alto de lo habitual: ${m2}\u00A0€/m² al mes`,
-		procedencia: (n: string, mes: string) =>
-			`${n} contratos vigentes de distintas fechas · propietarios particulares declarados a Hacienda (2024), sin empresas ni fondos · ajustado por el IPC hasta ${mes}`,
+		procedencia: (n: string) =>
+			`${n} contratos vigentes de distintas fechas · propietarios particulares declarados a Hacienda (2024), sin empresas ni fondos · los alquileres han subido desde entonces`,
 		evolucion: (antes: string, despues: string, variacion: string) =>
 			`Mediana de contratos vigentes: de ${antes}\u00A0€/m² en 2015 a ${despues}\u00A0€/m² en 2024 (${variacion}). Sin descontar la inflación.`,
-		sinDatoZona: 'Esta zona no tiene dato de contratos.',
+		sinDatoZona: 'Esta zona no tiene referencia en SERPAVI: faltan contratos o sus pisos quedan fuera de 30–150\u00A0m² de superficie mediana.',
 		sinDatoTestigos: (n: string) => `Esta zona tiene ${n} contratos, pocos para dar una referencia.`,
 		sinDatoSuperficie: 'La referencia solo se calcula entre 30 y 150\u00A0m².',
 		vacia: 'Toca una zona para ver lo que pagan quienes ya viven allí.',

@@ -47,9 +47,9 @@ describe('mapa: texto debajo del mapa', () => {
 		expect(TEXTO_MAPA.enlaceHerramienta).toBe('/?utm_source=mapa');
 		expect(TEXTO_MAPA.enlaces.map((e) => e.href)).toEqual(['/preguntas/que-es-el-indice-de-referencia-del-alquiler', '/como-calculamos']);
 	});
-	it('cubre lo pedido: colores, tamaño, parte alta, SERPAVI, IPC, estimación independiente y qué no muestra', () => {
+	it('cubre lo pedido: colores, tamaño, parte alta, SERPAVI, datos de 2024, estimación independiente y qué no muestra', () => {
 		const t = TEXTO.join(' ');
-		for (const x of [/colores/, /tamaño/, /parte alta/, /SERPAVI/, /IPC del alquiler/, /estimación independiente/, /serpavi\.mivau\.gob\.es/, /Los contratos no son precios de anuncios/, /cumple la ley/, /sin dato/]) expect(t).toMatch(x);
+		for (const x of [/colores/, /tamaño/, /parte alta/, /SERPAVI/, /los alquileres han subido desde entonces/, /estimación independiente/, /serpavi\.mivau\.gob\.es/, /Los contratos no son precios de anuncios/, /cumple la ley/, /sin dato/]) expect(t).toMatch(x);
 	});
 	it('vocabulario prohibido, sin cifras de zonas, sin listas de barrios ni datos de usuarios', () => {
 		for (const t of TEXTO) for (const palabra of PROHIBIDAS) expect(sinTildes(t), `«${palabra}» en «${t.slice(0, 50)}»`).not.toContain(palabra);

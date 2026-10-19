@@ -18,6 +18,12 @@ export interface SeccionEn extends SeccionPregunta {
 	definiciones?: { termino: string; texto: string }[];
 }
 
+/** Textos en inglés de la casilla «edificio de 2022 o después» y de su pantalla «sin dato». La herramienta es solo en español: no se pintan en ninguna página */
+export const EDIFICIO_2022_EN = {
+	casilla: 'Building built or fully renovated in 2022 or later',
+	sinDato: 'The official system gives no range for buildings from 2022 or later.'
+} as const;
+
 export interface PaginaEn {
 	/** Ruta de esta página y de la equivalente en español */
 	ruta: string;
@@ -43,10 +49,6 @@ export const BOTON_EN = 'Check a rent (in Spanish, 1 minute)';
 export const CONSEJO_TRADUCCION_EN = 'Tip: Chrome, Safari and Edge can translate the tool into English automatically.';
 
 const SERPAVI: Fuente = { texto: 'Spain’s Ministry of Housing and Urban Agenda: SERPAVI, the state rent reference system', url: 'https://serpavi.mivau.gob.es' };
-const INE: Fuente = {
-	texto: 'INE (National Statistics Institute): CPI, subclass 04.1.1.0 “Rent for main residence”, national series IPC291807',
-	url: 'https://servicios.ine.es/wstempus/js/ES/DATOS_SERIE/IPC291807?date=20240101:20991231'
-};
 const LEY: Fuente = { texto: 'BOE (in Spanish): Ley 12/2023, de 24 de mayo, por el derecho a la vivienda', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2023-12203' };
 const CALCULADORA: Fuente = { texto: 'Ministry of Housing (in Spanish): official rent-update calculator', url: 'https://www.mivau.gob.es/vivienda/calculadora-precio-alquiler' };
 
@@ -105,7 +107,7 @@ export const PAGINAS_EN: PaginaEn[] = [
 			{ q: 'Does it work outside Madrid?', a: 'No. It covers the city of Madrid only.' },
 			{ q: 'Is the result the official figure?', a: 'No. It is an independent estimate. The official value is at SERPAVI (serpavi.mivau.gob.es).' }
 		],
-		fuentes: [SERPAVI, INE],
+		fuentes: [SERPAVI],
 		relacionadas: [R_INDICE, R_ALTO]
 	},
 	{
@@ -162,10 +164,10 @@ export const PAGINAS_EN: PaginaEn[] = [
 		],
 		faq: [
 			{ q: 'Is the index a maximum price?', a: 'Not in general. It is the upper end of what tenants already pay in the area, and some contracts are above it. It only has legal effect in the cases the law sets.' },
-			{ q: 'How is it kept up to date?', a: 'A su precio updates the contracts with the rent component of the national consumer price index (INE). The official value depends on the version the Ministry publishes.' },
+			{ q: 'How is it kept up to date?', a: 'A su precio does not update the contracts: it uses the 2024 data as the Ministry publishes it, and rents have risen since. The official value depends on the version the Ministry publishes.' },
 			{ q: 'Does it cover all of Spain?', a: 'The system is national, and regions can have their own. A su precio only calculates for the city of Madrid.' }
 		],
-		fuentes: [SERPAVI, LEY, INE, CALCULADORA],
+		fuentes: [SERPAVI, LEY, CALCULADORA],
 		relacionadas: [R_ALTO, R_INICIO],
 		enlacesEs: [
 			{ texto: 'The 2026 royal decree-law and rent updates (in Spanish)', href: '/preguntas/supera-mi-alquiler-el-indice-de-referencia' },
@@ -176,11 +178,11 @@ export const PAGINAS_EN: PaginaEn[] = [
 		ruta: R_ALTO,
 		rutaEs: '/preguntas/como-saber-si-un-alquiler-es-caro-en-madrid',
 		titulo: 'Is a Madrid rent too high? How to check',
-		descripcion: 'Compare a rent with what tenants in the same area already pay, adjusted for size and rent inflation. Check yours free in a minute (tool in Spanish).',
+		descripcion: 'Compare a rent with what tenants in the same area already pay, adjusted for size. Check yours free in a minute (tool in Spanish).',
 		h1: 'How can you tell if a rent in Madrid is too high?',
 		respuesta: [
 			'Compare it with what tenants who already rent in the same area pay: the contracts declared to the tax authority that Spain’s Ministry of Housing publishes as the SERPAVI reference index.',
-			'That reference is adjusted for the size of the home and updated with the rent component of inflation, so you compare like with like.'
+			'That reference is adjusted for the size of the home; the contracts date from 2024 and rents have risen since.'
 		],
 		boton: BOTON_EN,
 		secciones: [
@@ -227,9 +229,9 @@ export const PAGINAS_EN: PaginaEn[] = [
 			{ q: 'Does this tell me if I pay too much?', a: 'No. It tells you where your price falls against what tenants who already rent in your area pay, not whether the price is adequate.' },
 			{ q: 'Does it work for any neighbourhood in Madrid?', a: 'It works for the city of Madrid, where there is enough data. If an area has very few contracts, we say so instead of giving a figure.' },
 			{ q: 'Do I need to register?', a: 'No. It is free. The address is sent to our server to locate the flat and is not stored.' },
-			{ q: 'What data does it use?', a: 'The 2024 contracts from the Ministry of Housing, updated with the rent component of the consumer price index from INE.' }
+			{ q: 'What data does it use?', a: 'The 2024 contracts from the Ministry of Housing, as published by SERPAVI. Rents have risen since.' }
 		],
-		fuentes: [SERPAVI, INE, LEY],
+		fuentes: [SERPAVI, LEY],
 		relacionadas: [R_INDICE, R_INICIO]
 	}
 ];

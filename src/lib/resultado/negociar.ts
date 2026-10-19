@@ -20,7 +20,7 @@ export function textoNegociar(p: PantallaResultado, tratamiento: Tratamiento): s
 		`Me interesa la vivienda de ${v.m2} en ${lugar} que anuncian por ${v.precio} al mes.`,
 		`He mirado lo que pagan quienes ya viven de alquiler en la zona. Para esta superficie, la mayoría de los contratos vigentes llegan hasta ${hasta} al mes.`,
 		diferencia,
-		'Fuente: contratos de alquiler declarados a Hacienda (2024, ajustados por el IPC del alquiler), publicados por el Ministerio de Vivienda y Agenda Urbana. Es una estimación independiente basada en la metodología SERPAVI; el valor oficial está en serpavi.mivau.gob.es.',
+		'Fuente: contratos de alquiler declarados a Hacienda (2024), publicados por el Ministerio de Vivienda y Agenda Urbana. Es una estimación independiente basada en la metodología SERPAVI; el valor oficial está en serpavi.mivau.gob.es.',
 		'Un saludo.'
 	].join('\n\n');
 }

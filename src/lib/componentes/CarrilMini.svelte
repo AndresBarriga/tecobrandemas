@@ -12,7 +12,6 @@
 
 <div class="carril {c.fuente}" style:--h="{alto}px">
 	<div class="pista">
-		{#if c.anterior}<span class="anterior" style:left={pc(c.anterior.desde)} style:width={ancho(c.anterior)}></span>{/if}
 		{#if c.banda}<span class="banda" style:left={pc(c.banda.desde)} style:width={ancho(c.banda)}></span>{/if}
 		{#if c.excelente}<span class="excelente" style:left={pc(c.excelente.desde)} style:width={ancho(c.excelente)}></span>{/if}
 		{#if c.margen}<span class="banda" style:left={pc(c.margen.desde)} style:width={ancho(c.margen)}></span>{/if}
@@ -50,14 +49,6 @@
 	}
 	.excelente {
 		background: #857f74;
-	}
-	/* La referencia sin ajustar: solo el contorno, un poco más alto que el carril */
-	.pista > .anterior {
-		top: -5px;
-		height: calc(100% + 10px);
-		box-sizing: border-box;
-		border: 1.5px dashed #d6d1c6;
-		border-radius: 3px;
 	}
 	.pista > .marca {
 		top: -6px;
