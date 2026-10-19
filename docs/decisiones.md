@@ -146,3 +146,11 @@ Decisiones del usuario para la serie del Ayuntamiento 4.3.21.D (PR 1 de 3: motor
 - **«Mi presupuesto» solo con la oferta:** compara con la estimación de anuncios (€/m² ajustado por tamaño × metros, banda ±15 %), no con contratos. Los contratos se ven en «Referencia».
 - **Barras con número:** presupuesto 500–3.000 € (paso 50) y metros 30–150 (paso 5); un número fuera de rango se ajusta al límite. En móvil son fijos y compactos sobre el mapa porque en la hoja el teclado la subía a pantalla completa y tapaba lo que se estaba moviendo.
 
+
+## Se quita el ajuste por IPC (19/10/2026)
+- **Decisión:** el rango es el oficial de SERPAVI 2024, sin factor IPC. La metodología oficial (§5.3 y §5.4, marzo de 2026) no aplica IPC ni ninguna actualización temporal, y nuestras cifras salían un 5,4 % por encima de las del Ministerio (factor 1,054; mismo porcentaje en los 15 casos de la muestra).
+- **Sustituye:** la nota «Datos de rentas declaradas en 2024 (SERPAVI); los alquileres han subido desde entonces», sin cifra de actualización. Se eliminan `scripts/04_ipc.py`, `ipc_alquiler.json` y el workflow mensual.
+- **Impacto:** las referencias bajan una media del 5,12 %. En los 42 anuncios del gate: sin IPC, 6 dentro, 3 explicables y 33 por encima (mediana +26 %).
+- **Validación:** error máximo frente a la app oficial de 0,62 céntimos (30 casos, P = 33,865).
+- **Elegibilidad:** también se aplica el criterio oficial de superficie mediana de la sección entre 30 y 150 m² (10 secciones de Madrid con más de 20 testigos quedan sin dato).
+- **Suelo de la banda del RDL:** pasa a P = 18,365 (`PUNTUACION_MINIMA_BANDA`) en vez de 18,115, porque el oficial cuenta el ascensor como «Sí» en planta baja y 18,115 no es alcanzable; el máximo sigue siendo R_max con P = 119. Pendiente validar contra la app oficial.

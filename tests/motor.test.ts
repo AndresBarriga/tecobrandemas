@@ -4,7 +4,8 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
-	PUNTUACION_MINIMA,
+	PUNTUACION_FIXTURE,
+	PUNTUACION_MINIMA_BANDA,
 	analizar,
 	brecha,
 	clasificar,
@@ -55,7 +56,7 @@ describe('§5.3 rango inicial', () => {
 });
 
 describe('§5.3 + §5.4 frente a la app oficial (cuestionario mínimo)', () => {
-	const x = xDesdePuntuacion(PUNTUACION_MINIMA);
+	const x = xDesdePuntuacion(PUNTUACION_FIXTURE);
 
 	it.each(validacionApp.map((c) => [c.caso, c] as const))('%s: error ≤ 1 céntimo', (_, c) => {
 		const S = c.anuncio.superficie;
@@ -79,6 +80,28 @@ describe('§5.3 + §5.4 frente a la app oficial (cuestionario mínimo)', () => {
 		expect(0.28 * (x - 0.26)).toBeCloseTo(-0.02909, 5);
 		expect(0.696 * (x - 0.5 / 0.696)).toBeCloseTo(-0.39134, 5);
 	});
+});
+
+describe('suelo de la banda del RDL (P = 18,365)', () => {
+	const reales = JSON.parse(readFileSync('data/processed/secciones_madrid.json', 'utf8')) as Record<string, { smed: number; p25: number; p75: number; n: number }>;
+	const cusecs = ['2807913010', '2807916037', '2807906079', '2807905047', '2807904005'];
+	const x0 = xDesdePuntuacion(PUNTUACION_MINIMA_BANDA);
+	const xFixture = xDesdePuntuacion(PUNTUACION_FIXTURE);
+
+	it('P = 18,365 es x = 0,25/100,885', () => {
+		expect(x0).toBeCloseTo(0.25 / 100.885, 12);
+	});
+
+	it.each(cusecs.flatMap((c) => [40, 60, 90].map((S) => [c, S] as const)))('%s, %i m²: límite = parte alta + 0,696·(P75−P25)·S·(x − 0,5/0,696), por debajo del del fixture y de R_max', (c, S) => {
+		const s: SeccionConDato = { cusec: c, ...reales[c]! };
+		const ini = rangoInicial(S, s);
+		const piso = corregir(ini, S, s, x0);
+		expect(piso.sup).toBeCloseTo(ini.sup + 0.696 * (s.p75 - s.p25) * S * (x0 - 0.5 / 0.696), 9);
+		expect(piso.sup).toBeLessThan(corregir(ini, S, s, xFixture).sup);
+		expect(piso.sup).toBeLessThan(referencia(S, s).max);
+	});
+
+	it.todo('pendiente validar contra la app oficial: consultar SERPAVI con el cuestionario de puntuación mínima alcanzable (P = 18,365) y comparar con este límite');
 });
 
 describe('casos sin dato', () => {
